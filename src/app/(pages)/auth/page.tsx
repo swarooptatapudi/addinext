@@ -16,9 +16,8 @@ export default function SignIn(): React.JSX.Element {
 
   useEffect(() => {
     if (isSuccess) {
-      router.replace('/dashboard');
-      window.location.reload();
       toast.success('Login successful');
+      router.replace('/'); // go to protected root
     }
   }, [isSuccess, router]);
 
