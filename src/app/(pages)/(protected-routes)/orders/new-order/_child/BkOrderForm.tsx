@@ -26,19 +26,26 @@ import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import { BK_FORM_INITIAL_VALUES } from './constants';
 import PatientPicker from '@/components/app/common/PatientPicker';
+import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 
 const validationSchema = Yup.object().shape({
   patient_name: Yup.string()
-    .min(2, 'Too Short!')
-    .max(50, 'Too Long!')
-    .required('Patient Name is required'),
-  socket_type: Yup.string().required('This field is required'),
-  design_variation: Yup.string().required('This field is required'),
-  model_name: Yup.string().required('This field is required'),
-  activity_level: Yup.string().required('This field is required'),
-  stump_length: Yup.string().required('This field is required'),
-  weight: Yup.string().required('This field is required'),
-  date_of_birth: Yup.string().required('This field is required')
+    .min(FORMIK_ERRORS.MIN_2.VALUE, FORMIK_ERRORS.MIN_2.MESSAGE)
+    .max(FORMIK_ERRORS.MAX_50.VALUE ,FORMIK_ERRORS.MAX_50.MESSAGE)
+    .required(FORMIK_ERRORS.REQUIRED),
+  socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  design_variation: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  model_name: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  stump_length: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  weight: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  email: Yup.string()
+      .matches(FORMIK_ERRORS.INVALID_EMAIL.VALUE,FORMIK_ERRORS.INVALID_EMAIL.MESSAGE)
+      .max(FORMIK_ERRORS.MAX_320.VALUE, FORMIK_ERRORS.MAX_320.MESSAGE)
+      .required(FORMIK_ERRORS.REQUIRED),
+  mobile_no: Yup.string()
+      .matches(FORMIK_ERRORS.MOBILE_NUMBER.VALUE,FORMIK_ERRORS.MOBILE_NUMBER.MESSAGE)
 });
 
 const initialValues = BK_FORM_INITIAL_VALUES;
@@ -58,14 +65,15 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
   const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
-  const [selectedItem, setSelectedItem] = React.useState<string>('');
+  const [selectedItem, setSelectedItem] = React.useState<string>('');  
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameByDetailsMutation();
   const [formValues, setFormValues] = useState<BK_FORM_TYPE>(initialValues);
   const [modelOpen, setModelOpen] = useState(false);
   const router = useRouter();
+
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
-    if (data) {
+    if (data) {      
       return getFormOptionsObject(data?.order_from_details);
     }
     return {};
@@ -83,8 +91,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
 
   const OnSubmit = async (values: BK_FORM_TYPE) => {
     setFormValues(values);
-    setModelOpen(true);
-
+    setModelOpen(true); 
     const itemPayload = {
       item_type: 'BK',
       socket_type: values.socket_type,
@@ -92,8 +99,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       activity_level: values.activity_level,
       model_name: values.model_name,
       stump_length: values.stump_length,
-      weight: values.weight
-    };
+      weight: values.weight 
+    };  
     const itemCode = await getItemCodeByValues(itemPayload);
     setSelectedItem(itemCode);
   };
@@ -172,12 +179,16 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 label="Mobile Number"
                 value={values.mobile_no}
                 onChange={handleChange('mobile_no')}
+                inVaild={!!errors.mobile_no && !!touched.mobile_no}
+                error={errors.mobile_no}
               />
               <Input
                 placeholder="Email"
                 label="Email"
                 value={values.email}
                 onChange={handleChange('email')}
+                inVaild={!!errors.email && !!touched.email}
+                error={errors.email}
               />
               <SelectBox
                 options={[
@@ -276,32 +287,68 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                   className="object-cover"
                 />
               </div>
-              <div className="flex flex-col gap-4">
-                <Input
-                  placeholder="20"
-                  label="Value A Stump Length (cm)"
-                  required
-                  value={values.stump_length}
-                  onChange={handleChange('stump_length')}
-                  inVaild={!!errors.stump_length && !!touched.stump_length}
-                  error={errors.stump_length}
-                />
-                {/* <SelectBox
-                  options={FORM_OPTIONS?.stump_length || []}
-                  label="Value A Stump Length (cm)"
-                  value={values.stump_length}
-                  onValueChange={handleChange('stump_length')}
-                /> */}
+            <div className="flex flex-col gap-4">
+              <Input
+               label={`Value 𝗔 Stump Length (cm)`}
+               placeholder="20"
+               required
+               value={values.stump_length}
+               onChange={handleChange('stump_length')}
+               inVaild={!!errors.stump_length && !!touched.stump_length}
+               error={errors.stump_length}
+               />
                 <Input
                   placeholder="20"
                   label="Value B Stump Size (cm)"
-                  required
                   value={values.stump_size}
                   onChange={handleChange('stump_size')}
                 />
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <SelectBox
+                options={[
+                  { value: 'Single_Axis', label: 'Single Axis' },
+                  { value: 'Multi_Axis', label: 'Multi Axis' },
+                  { value: 'Hydraulic', label: 'Hydraulic' },
+                  { value: 'Sach_Foot', label: 'SACH Foot' },
+                  { value: 'Carbon', label: 'Carbon' },
+                  { value: 'Energy', label: 'Energy' },
+                ]}
+                  // options={FORM_OPTIONS['foot_type'] ?? []}
+                  label="Foot Type"
+                  required={false}
+                  value={values.foot_type}
+                  onValueChange={handleChange('foot_type')}
+                />
+                <Input
+                  placeholder="65"
+                  label="Shoe Size (cm)"
+                  value={values.shoe_size}
+                  onChange={handleChange('shoe_size')}
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <Input
+                  label="Flexion Angle"
+                  value={values.flexion_angle}
+                  onChange={handleChange('flexion_angle')}
+                />
+                <Input
+                  label="Add/Abd Angle"
+                  value={values.abductionadduction_angle}
+                  onChange={handleChange('abductionadduction_angle')}
+                />
+                <SelectBox
+                  options={FORM_OPTIONS['stump_type'] ?? []}
+                  label="Stump Type"
+                  value={values.stump_type}
+                  onValueChange={handleChange('stump_type')}
+                />
+              </div>
+            </div>
             <div className="divider"></div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -335,41 +382,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <SelectBox
-                  options={FORM_OPTIONS['foot_type'] ?? []}
-                  label="Foot Type"
-                  required={true}
-                  value={values.foot_type}
-                  onValueChange={handleChange('foot_type')}
-                />
-                <Input
-                  placeholder="65"
-                  label="Shoe Size (cm)"
-                  value={values.shoe_size}
-                  onChange={handleChange('shoe_size')}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <Input
-                  label="Flexion Angle"
-                  value={values.flexion_angle}
-                  onChange={handleChange('flexion_angle')}
-                />
-                <Input
-                  label="Add/Abd Angle"
-                  value={values.abductionadduction_angle}
-                  onChange={handleChange('abductionadduction_angle')}
-                />
-                <SelectBox
-                  options={FORM_OPTIONS['stump_type'] ?? []}
-                  label="Stump Type"
-                  value={values.stump_type}
-                  onValueChange={handleChange('stump_type')}
-                />
-              </div>
-            </div>
+          
 
             <div className="divider"></div>
 
