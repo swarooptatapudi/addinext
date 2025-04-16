@@ -42,9 +42,17 @@ function StlViewerR3F({ fileUrl }: { fileUrl: string }) {
     </div>
   );
 }
-
-export default function StlFilePicker() {
-  const [file, setFile] = useState<any | null>(null);
+type StlFilePickerProps = {
+  label?: string;
+  buttonText?: string;
+  onFileSelect?: (file: File | null) => void;
+};
+export default function StlFilePicker({
+  label = 'Select Scan',
+  buttonText = 'Upload Scan File',
+  onFileSelect,
+}: StlFilePickerProps) {
+  const [file, setFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,20 +60,21 @@ export default function StlFilePicker() {
     if (f && f.name.endsWith('.stl')) {
       setFile(f);
       setFileUrl(URL.createObjectURL(f));
+      onFileSelect?.(f);
     }
   };
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="pl-4 pr-4 pb-4 space-y-4 w-[170px]">
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" className="w-full ">
-            {file ? <p className="truncate">{file?.name} </p> : 'Upload Scan File'}
+          <Button variant="outline" className="w-full">
+            {file ? <p className="truncate">{file?.name}</p> : buttonText}
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{file ? 'Preview STL File' : 'Select STL File'}</DialogTitle>
+            <DialogTitle>{file ? 'Preview STL File' : buttonText}</DialogTitle>
           </DialogHeader>
           {file ? (
             <div>
@@ -76,6 +85,7 @@ export default function StlFilePicker() {
                   onClick={() => {
                     setFile(null);
                     setFileUrl(null);
+                    onFileSelect?.(null);
                   }}
                 >
                   Remove File
@@ -87,7 +97,7 @@ export default function StlFilePicker() {
             </div>
           ) : (
             <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="picture">Select Scan</Label>
+              <Label htmlFor="picture">{label}</Label>
               <Input id="picture" type="file" onChange={handleChange} accept=".stl" />
             </div>
           )}
@@ -97,3 +107,57 @@ export default function StlFilePicker() {
     </div>
   );
 }
+// export default function StlFilePicker() {
+//   const [file, setFile] = useState<any | null>(null);
+//   const [fileUrl, setFileUrl] = useState<string | null>(null);
+
+//   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const f = e.target.files?.[0];
+//     if (f && f.name.endsWith('.stl')) {
+//       setFile(f);
+//       setFileUrl(URL.createObjectURL(f));
+//     }
+//   };
+
+//   return (
+//     <div className="p-4 space-y-4">
+//       <Dialog>
+//         <DialogTrigger asChild>
+//           <Button variant="outline" className="w-full ">
+//             {file ? <p className="truncate">{file?.name} </p> : 'Upload Scan File'}
+//           </Button>
+//         </DialogTrigger>
+//         <DialogContent>
+//           <DialogHeader>
+//             <DialogTitle>{file ? 'Preview STL File' : 'Select STL File'}</DialogTitle>
+//           </DialogHeader>
+//           {file ? (
+//             <div>
+//               <p className="text-xs text-muted-foreground truncate max-w-[500px]">{file.name}</p>
+//               <div className="flex items-center gap-4 mt-4">
+//                 <Button
+//                   variant="outline"
+//                   onClick={() => {
+//                     setFile(null);
+//                     setFileUrl(null);
+//                   }}
+//                 >
+//                   Remove File
+//                 </Button>
+//                 <DialogTrigger asChild>
+//                   <Button>Done</Button>
+//                 </DialogTrigger>
+//               </div>
+//             </div>
+//           ) : (
+//             <div className="grid w-full max-w-sm items-center gap-1.5">
+//               <Label htmlFor="picture">Select Scan</Label>
+//               <Input id="picture" type="file" onChange={handleChange} accept=".stl" />
+//             </div>
+//           )}
+//           {fileUrl && <StlViewerR3F fileUrl={fileUrl} />}
+//         </DialogContent>
+//       </Dialog>
+//     </div>
+//   );
+// }

@@ -42,8 +42,7 @@ const validationSchema = Yup.object().shape({
   date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   email: Yup.string()
       .matches(FORMIK_ERRORS.INVALID_EMAIL.VALUE,FORMIK_ERRORS.INVALID_EMAIL.MESSAGE)
-      .max(FORMIK_ERRORS.MAX_320.VALUE, FORMIK_ERRORS.MAX_320.MESSAGE)
-      .required(FORMIK_ERRORS.REQUIRED),
+      .max(FORMIK_ERRORS.MAX_320.VALUE, FORMIK_ERRORS.MAX_320.MESSAGE),
   mobile_no: Yup.string()
       .matches(FORMIK_ERRORS.MOBILE_NUMBER.VALUE,FORMIK_ERRORS.MOBILE_NUMBER.MESSAGE)
 });
@@ -349,20 +348,86 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 />
               </div>
             </div>
-            <div className="divider"></div>
+             <div className="divider"></div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="w-fit">
-                <p className="mb-1 text-xs ">Upload Scan</p>
-                <StlFilePicker />
+            <h3 className="font-semibold text-lg ">Upload Files</h3>
+            <div className="grid grid-cols-8 gap-4">
+              <div className="col-span-3">
+                <div className="grid grid-cols-2">
+                <p className="mb-1 text-base ">Upload Scan</p>
+                <div className="w-[150px] ml-8"> 
+                 {/* <p className="mb-1 text-xs "></p> */}
+                {/* <p className="mb-1 text-xs ">Any Other Files</p> */}
+                {/* <StlFilePicker /> */}
+                <SelectBox
+                options={FORM_OPTIONS?.amputated_leg || []}
+                
+                value={values.amputated_leg}
+                onValueChange={handleChange('amputated_leg')}
+                />
+                </div>
+                </div>
+                {/* <StlFilePicker /> */}
+                
               </div>
+              
+              <div className="w-fit justify-center">
+                {/* <p className="mb-1 text-xs ">Any Other Files</p> */}
+                {/* <StlFilePicker  /> */}
+                <StlFilePicker 
+                   label="Upload STL file (left foot)" 
+                   buttonText="Left Foot" 
+                   onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+                 />
+              </div>
+              <div className="w-fit ml-2">
+                {/* <p className="mb-1 text-xs ">Any Other Files</p> */}
+                <StlFilePicker
+                label="Upload STL file (Rgiht foot)" 
+                buttonText="Right Foot" 
+                onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+                 />
+              </div>
+            </div>
+            <div className="grid grid-cols-8 gap-4">
+              <div className="col-span-3">
+                
+                <p className="mb-0 text-base ">Upload Addtional Files</p>
+                <span className="mb-1 text-[10px] ">Design / Rough   calculations etc.</span>
+              </div>
+              
+              <div className="w-[150px]">
+                <StlFilePicker
+                label="Upload STL file1" 
+                buttonText="File 1" 
+                onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+                 />
+              </div>
+              <div className="w-fit ml-2">
+                <StlFilePicker
+                label="Upload STL file2" 
+                buttonText="File 2" 
+                onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+                 />
+              </div>
+            </div>
+            <div className="grid grid-cols-8 gap-4">
+              <div className="col-span-3">
+                <p className="mb-1 text-base ">Upload Link with Photos</p>
+                <p className="mb-1 text-[10px] ">Upload in Google /Cloud drive and give relevant permission			
+                </p>
+              </div>
+              
               <div className="w-fit">
-                <p className="mb-1 text-xs ">Any Other Files</p>
-                <StlFilePicker />
+              <StlFilePicker
+                label="Upload STL file2" 
+                buttonText="Link" 
+                onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+                 />
               </div>
             </div>
             <div className="w-full">
-              <Input placeholder="Images Link" label="Any Upuloaded Images Link (optional)" />
+              <Input placeholder="Images Link" label="Any Upuloaded Images Link (optional)" className='w-[50%] mt-3' />
             </div>
 
             <div className="divider"></div>
