@@ -27,6 +27,7 @@ import * as Yup from 'yup';
 import { BK_FORM_INITIAL_VALUES } from './constants';
 import PatientPicker from '@/components/app/common/PatientPicker';
 import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
+import { GenericFileViewer } from '@/components/app/common/GenericFileViewer';
 
 const validationSchema = Yup.object().shape({
   patient_name: Yup.string()
@@ -37,14 +38,57 @@ const validationSchema = Yup.object().shape({
   design_variation: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   model_name: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
-  stump_length: Yup.string().required(FORMIK_ERRORS.REQUIRED),
-  weight: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  height: Yup.string()
+  .matches(/^\d+(\.\d{1,2})?$/, {
+    message: 'Must be a number (e.g. 92.57 or 95)',
+    excludeEmptyString: true
+  })
+  .test(
+    'min-height',
+    'Minimum height is 91cm',
+    (value) => !value || parseFloat(value) >= 91
+  )
+  .test(
+    'max-height',
+    'Maximum height is 213.00cm',
+    (value) => !value || parseFloat(value) <= 213.00
+  ),
+  weight: Yup.string()
+    .required('Weight is required')
+    .matches(/^\d+(\.\d{1,2})?$/, {
+      message: 'Must be a number (e.g. 65.5 or 70)',
+      excludeEmptyString: false
+    })
+    .test(
+      'min-weight',
+      'Minimum weight is 10kg',
+      (value) => parseFloat(value) >= 10
+    )
+    .test(
+      'max-weight',
+      'Maximum weight is 180kg',
+      (value) => parseFloat(value) <= 180
+    ),
+  stump_length: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+$/, 'Must contain only numbers')
+    .test(
+      'min-value',
+      'Weight must be at least 1',
+      (value) => Number(value) >= 1
+    ),
   date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   email: Yup.string()
       .matches(FORMIK_ERRORS.INVALID_EMAIL.VALUE,FORMIK_ERRORS.INVALID_EMAIL.MESSAGE)
       .max(FORMIK_ERRORS.MAX_320.VALUE, FORMIK_ERRORS.MAX_320.MESSAGE),
-  mobile_no: Yup.string()
-      .matches(FORMIK_ERRORS.MOBILE_NUMBER.VALUE,FORMIK_ERRORS.MOBILE_NUMBER.MESSAGE)
+  // mobile_no: Yup.string()
+  //   .matches(/^\d{10}$/, 'Must be exactly 10 digits')
+  //   .required('Phone number is required'),
+  mobile_no: Yup.string() // it used to +91123456789 allow
+      .matches(FORMIK_ERRORS.MOBILE_NUMBER.VALUE,FORMIK_ERRORS.MOBILE_NUMBER.MESSAGE),
+      images_link: Yup.string()
+      .url('Must be a valid URL (e.g., https://drive.google.com/...)') // Basic URL validation
+      .nullable(),
 });
 
 const initialValues = BK_FORM_INITIAL_VALUES;
@@ -64,6 +108,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
   const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
+  const [isPatientSelected, setIsPatientSelected] = useState(false);
   const [selectedItem, setSelectedItem] = React.useState<string>('');  
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameByDetailsMutation();
   const [formValues, setFormValues] = useState<BK_FORM_TYPE>(initialValues);
@@ -129,26 +174,19 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
             <h3 className="font-semibold text-lg">Basic Details</h3>
             {/* line 1 */}
             <div className="grid grid-cols-3 gap-4">
-              {/* <Input
-                placeholder="Patient Name"
-                label="Patient Name"
-                value={values.patient_name}
-                onChange={handleChange('patient_name')}
-                inVaild={!!errors.patient_name && !!touched.patient_name}
-                error={errors.patient_name}
-                required
-              /> */}
               <PatientPicker
+                label="Patient Name"
+               placeholder="Patient Name"
                 value={values.patient_name}
                 onChange={handleChange('patient_name')}
                 setFieldValue={setFieldValue}
                 required
                 inVaild={!!errors.patient_name && !!touched.patient_name}
                 error={errors.patient_name}
+                setIsPatientSelected={setIsPatientSelected} 
               />
               <div className="grid grid-cols-3 gap-2 col-span-2">
                 <Input
-                  placeholder="Patient Name"
                   label="Date of Birth"
                   type="date"
                   value={values.date_of_birth}
@@ -156,22 +194,27 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                   required
                   inVaild={!!errors.date_of_birth && !!touched.date_of_birth}
                   error={errors.date_of_birth}
+                  disabled={isPatientSelected}
                 />
                 <Input
                   placeholder="65"
-                  label="Height (feet)"
-                  value={values.height}
+                  label="Height (cm)"
                   onChange={handleChange('height')}
+                  value={values.height}
+                  inVaild={!!errors.height && !!touched.height}
+                  error={errors.height}
+                  disabled={isPatientSelected}
                 />
                 <Input
-                  placeholder="50"
-                  label="Weight (kg)"
-                  value={values.weight}
-                  onChange={handleChange('weight')}
-                  required
-                  inVaild={!!errors.weight && !!touched.weight}
-                  error={errors.weight}
-                />
+                placeholder="50"
+                label="Weight (kgs)"
+                required
+                value={values.weight}
+                onChange={handleChange('weight')}
+                inVaild={!!errors.weight && !!touched.weight}
+                error={errors.weight}
+                disabled={isPatientSelected}
+               />
               </div>
               <Input
                 placeholder="10 digit phone number"
@@ -200,6 +243,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 onValueChange={handleChange('gender')}
                 inVaild={!!errors.gender && !!touched.gender}
                 error={errors.gender}
+                disabled={isPatientSelected}
               />
               {/* <DatePicker
                   label="Date of Birth"
@@ -275,7 +319,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
             <div className="divider"></div>
 
             <h3 className="font-semibold text-lg ">Measurements</h3>
-            {/* measurements and images will go here */}
             <div className="grid grid-cols-3 gap-4 items-center">
               <div>
                 <Image
@@ -350,85 +393,90 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
             </div>
              <div className="divider"></div>
 
-            <h3 className="font-semibold text-lg ">Upload Files</h3>
+            <h3 className="font-semibold text-lg ">File Upload</h3>
             <div className="grid grid-cols-8 gap-4">
               <div className="col-span-3">
                 <div className="grid grid-cols-2">
                 <p className="mb-1 text-base ">Upload Scan</p>
                 <div className="w-[150px] ml-8"> 
-                 {/* <p className="mb-1 text-xs "></p> */}
-                {/* <p className="mb-1 text-xs ">Any Other Files</p> */}
-                {/* <StlFilePicker /> */}
                 <SelectBox
-                options={FORM_OPTIONS?.amputated_leg || []}
-                
-                value={values.amputated_leg}
-                onValueChange={handleChange('amputated_leg')}
+                options={[
+                  { value: 'Left_Foot', label: 'Left_Foot ' },
+                  { value: 'Right_Foot', label: 'Right_Foot' },
+                  { value: 'Both', label: 'Both' }
+                ]}                
+                value={values.foot_Amputation}
+                onValueChange={handleChange('foot_Amputation')}
                 />
                 </div>
                 </div>
-                {/* <StlFilePicker /> */}
                 
               </div>
-              
+              {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
               <div className="w-fit justify-center">
-                {/* <p className="mb-1 text-xs ">Any Other Files</p> */}
-                {/* <StlFilePicker  /> */}
                 <StlFilePicker 
                    label="Upload STL file (left foot)" 
                    buttonText="Left Foot" 
                    onFileSelect={(file) => console.log('Model A selected:', file?.name)}
                  />
               </div>
+               )}
+
+            {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
               <div className="w-fit ml-2">
-                {/* <p className="mb-1 text-xs ">Any Other Files</p> */}
                 <StlFilePicker
                 label="Upload STL file (Rgiht foot)" 
                 buttonText="Right Foot" 
                 onFileSelect={(file) => console.log('Model A selected:', file?.name)}
                  />
               </div>
+               )}
             </div>
             <div className="grid grid-cols-8 gap-4">
               <div className="col-span-3">
-                
                 <p className="mb-0 text-base ">Upload Addtional Files</p>
                 <span className="mb-1 text-[10px] ">Design / Rough   calculations etc.</span>
               </div>
               
               <div className="w-[150px]">
-                <StlFilePicker
-                label="Upload STL file1" 
-                buttonText="File 1" 
+              <GenericFileViewer 
+                allowedTypes={['.pdf','.png', '.jpg', '.jpeg']}
+                maxSizeMB={5}
+                label="Select Image"
+                buttonText="File 1"
                 onFileSelect={(file) => console.log('Model A selected:', file?.name)}
-                 />
+              />
               </div>
-              <div className="w-fit ml-2">
-                <StlFilePicker
-                label="Upload STL file2" 
-                buttonText="File 2" 
+              <div className="w-fit ml-6">
+              <GenericFileViewer 
+                allowedTypes={['.pdf','.png', '.jpg', '.jpeg']}
+                maxSizeMB={5}
+                label="Select Image"
+                buttonText="File 2"
                 onFileSelect={(file) => console.log('Model A selected:', file?.name)}
-                 />
+              />
               </div>
             </div>
-            <div className="grid grid-cols-8 gap-4">
+            <div className="flex flex-col-6 gap-4">
               <div className="col-span-3">
                 <p className="mb-1 text-base ">Upload Link with Photos</p>
                 <p className="mb-1 text-[10px] ">Upload in Google /Cloud drive and give relevant permission			
                 </p>
               </div>
-              
-              <div className="w-fit">
-              <StlFilePicker
-                label="Upload STL file2" 
-                buttonText="Link" 
-                onFileSelect={(file) => console.log('Model A selected:', file?.name)}
-                 />
-              </div>
+             <div className="flex flex-col-6 gap-4">
+                 <Input
+                    placeholder="https://drive.google.com/..."
+                    className="mt-3 min-w-max ml-0"
+                    value={values.images_link}
+                    onChange={handleChange('images_link')}
+                    inVaild={!!errors.images_link && !!touched.images_link}
+                    error={errors.images_link}
+                    />
+                 </div>
             </div>
-            <div className="w-full">
+            {/* <div className="w-full">
               <Input placeholder="Images Link" label="Any Upuloaded Images Link (optional)" className='w-[50%] mt-3' />
-            </div>
+            </div> */}
 
             <div className="divider"></div>
 
