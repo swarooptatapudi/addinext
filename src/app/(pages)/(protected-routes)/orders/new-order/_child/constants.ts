@@ -31,6 +31,8 @@ export const BK_FORM_INITIAL_VALUES = {
   design_variation: '',
   model_name: '',
   additional_customization_requirements: '',
+  foot_Amputation :'Both',
+  images_link:'',
   socket_design_details: [
     {
       area: 'A',

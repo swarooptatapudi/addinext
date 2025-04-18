@@ -2,9 +2,9 @@
 
 import { Input } from '@/components/ui/input';
 import { useLazyGetPatientsQuery } from '@/rtk-query/apis/patient';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-export default function PatientPicker({ value, onChange, setFieldValue, ...props }: any) {
+export default function PatientPicker({ value, onChange, setFieldValue,setIsPatientSelected, ...props }: any) {
   const [getPatients, { data }] = useLazyGetPatientsQuery();
   const [search, setSearch] = React.useState('');
   const [open, setOpen] = React.useState(false);
@@ -43,6 +43,9 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
           if (onChange) {
             onChange(e);
           }
+          if (!e.target.value) {
+            setIsPatientSelected(false); // Reset when input is cleared
+          }
         }}
         onFocus={() => setOpen(true)}
         {...props}
@@ -66,6 +69,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
               setFieldValue('email', patient?.email || '');
               setFieldValue('mobile_no', patient?.mobile_no || '');
               setFieldValue('gender', patient?.gender || '');
+              setIsPatientSelected(true);
             }}
           >
             {patient.patient_name}

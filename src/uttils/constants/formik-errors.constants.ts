@@ -13,6 +13,13 @@ export const FORMIK_ERRORS = {
   FILES: {
     MIN_3MB: 'The file you upload is too big. Choose a file smaller than 3 MB.',
   },
+  NUMBER_ONLY: {
+    VALUE: /^\d+$/,
+    MESSAGE: 'Must be a number'
+  },
+  POSITIVE_NUMBER: {
+    MESSAGE: 'Must be a positive number'
+  },
   INVALID_CONTACT_NUMBER: {
     VALUE: /^\d+$/,
     MESSAGE: ' Invalid contact number',
