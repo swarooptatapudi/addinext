@@ -223,6 +223,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 onChange={handleChange('mobile_no')}
                 inVaild={!!errors.mobile_no && !!touched.mobile_no}
                 error={errors.mobile_no}
+                disabled={isPatientSelected}
               />
               <Input
                 placeholder="Email"
@@ -231,6 +232,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 onChange={handleChange('email')}
                 inVaild={!!errors.email && !!touched.email}
                 error={errors.email}
+                disabled={isPatientSelected}
               />
               <SelectBox
                 options={[
@@ -245,11 +247,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 error={errors.gender}
                 disabled={isPatientSelected}
               />
-              {/* <DatePicker
-                  label="Date of Birth"
-                  value={values.date_of_birth}
-                  onChange={(date: any) => setFieldValue('date_of_birth', date)}
-                /> */}
             </div>
             <div className="divider"></div>
 

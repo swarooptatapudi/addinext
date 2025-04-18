@@ -3,9 +3,11 @@
 import { Input } from '@/components/ui/input';
 import { useLazyGetPatientsQuery } from '@/rtk-query/apis/patient';
 import React, { useEffect, useRef, useState } from 'react';
-
+import { RootState } from '@/rtk-query/store';
+import { useSelector } from 'react-redux';
 export default function PatientPicker({ value, onChange, setFieldValue,setIsPatientSelected, ...props }: any) {
   const [getPatients, { data }] = useLazyGetPatientsQuery();
+  const { user } = useSelector((state: RootState) => state.userReducer);
   const [search, setSearch] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -14,7 +16,11 @@ export default function PatientPicker({ value, onChange, setFieldValue,setIsPati
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (search) {
-        const filters = [['patient_name', 'like', `%${search}%`]];
+         // const filters = [['patient_name', 'like', `%${search}%`]];
+          const filters = {
+          patient_name: ['like', `%${search}%`],
+          owner: ['like',  `%${user.user_id}%`]
+        };
         getPatients(JSON.stringify(filters));
       }
     }, 500);
@@ -72,7 +78,7 @@ export default function PatientPicker({ value, onChange, setFieldValue,setIsPati
               setIsPatientSelected(true);
             }}
           >
-            {patient.patient_name}
+            {patient.patient_name}({patient.date_of_birth})
           </div>
         ))}
       </div>
