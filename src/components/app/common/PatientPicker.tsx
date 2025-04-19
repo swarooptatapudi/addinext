@@ -72,6 +72,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, setIsPat
                 setFieldValue('email', patient?.email || '');
                 setFieldValue('mobile_no', patient?.mobile_no || '');
                 setFieldValue('gender', patient?.gender || '');
+                setFieldValue('clinic_name', patient?.clinic_name || '');
                 setIsPatientSelected(true);
               }}
             >

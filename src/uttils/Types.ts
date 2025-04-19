@@ -12,6 +12,7 @@ export interface USER {
   customer_available_coins: number;
   active_plan: string;
   plan_expiration_date: string;
+  clinic_name?:string;
 }
 export interface PatientFormValuesData {
   first_name: string;
@@ -57,6 +58,7 @@ export interface COINS_RULES {
 //bk form type
 
 export interface BK_FORM_TYPE {
+  clinic_name?:string;
   patient_name: string;
   gender: string;
   date_of_birth: string;
