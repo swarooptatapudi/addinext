@@ -391,7 +391,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <Input
-                  label="Flexion Angle"
+                  label="Flexion Angle(Deg)"
                   value={values.flexion_angle}
                   onChange={handleChange('flexion_angle')}
                   inVaild={!!errors.flexion_angle && !!touched.flexion_angle}
