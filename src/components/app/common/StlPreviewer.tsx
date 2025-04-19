@@ -124,7 +124,7 @@ export default function ModelFilePicker({
   };
 
   return (
-    <div className="pl-4 pr-4 pb-4 space-y-4 w-[170px]">
+      <div className="space-y-2 pl-4 pr-4 pb-4  w-[200px] sm:w-[150px] md:[150px] lg:w-[145px] xl:w-[170px]">
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="outline" className="w-full">

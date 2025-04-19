@@ -39,7 +39,8 @@ export default function Orders(): React.JSX.Element {
     },
     {
       accessorKey: 'patient_name',
-      header: 'Patient Name'
+      header: 'Patient Name',
+       cell: ({ row }) => row.original.patient_name || '-'
     },
     {
       accessorKey: 'device_type',

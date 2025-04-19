@@ -13,6 +13,17 @@ export interface USER {
   active_plan: string;
   plan_expiration_date: string;
 }
+export interface PatientFormValuesData {
+  first_name: string;
+  last_name:string,
+  date_of_birth: string;
+  height: string;
+  weight: string;
+  mobile_no: string;
+  email: string;
+  gender: string;
+  clinic_name:string;
+}
 
 export interface SUBSCRIPTION_PLAN {
   name: string;

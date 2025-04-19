@@ -74,20 +74,47 @@ const validationSchema = Yup.object().shape({
     .matches(/^\d+$/, 'Must contain only numbers')
     .test(
       'min-value',
-      'Weight must be at least 1',
+      'stupm length must be at least 1',
       (value) => Number(value) >= 1
     ),
+  shoe_size: Yup.string()
+  .matches(/^\d+(\.\d{1,2})?$/, {
+    message: 'Must be a number (e.g. 92.57 or 95)',
+    excludeEmptyString: true
+  })
+  .test(
+    'min-height',
+    'Minimum height is 1cm',
+    (value) => !value || parseFloat(value) >= 1
+  )
+  .test(
+    'max-height',
+    'Maximum height',
+    (value) => !value || parseFloat(value) <= 200.00
+  ),
+  flexion_angle: Yup.string()
+  .matches(/^\d*$/, 'Must contain only numbers') 
+  .test(
+    'value-range',
+    'Flexion angle must be ≤ 60',
+    (value) => !value || Number(value) <= 60 
+  ),
+
+abductionadduction_angle: Yup.string()
+  .matches(/^\d*$/, 'Must contain only numbers') 
+  .test(
+    'value-range',
+    'Abd/adduct angle must be ≤ 60',
+    (value) => !value || Number(value) <= 60 
+  ),
   date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   email: Yup.string()
       .matches(FORMIK_ERRORS.INVALID_EMAIL.VALUE,FORMIK_ERRORS.INVALID_EMAIL.MESSAGE)
       .max(FORMIK_ERRORS.MAX_320.VALUE, FORMIK_ERRORS.MAX_320.MESSAGE),
-  // mobile_no: Yup.string()
-  //   .matches(/^\d{10}$/, 'Must be exactly 10 digits')
-  //   .required('Phone number is required'),
-  mobile_no: Yup.string() // it used to +91123456789 allow
+  mobile_no: Yup.string()
       .matches(FORMIK_ERRORS.MOBILE_NUMBER.VALUE,FORMIK_ERRORS.MOBILE_NUMBER.MESSAGE),
       images_link: Yup.string()
-      .url('Must be a valid URL (e.g., https://drive.google.com/...)') // Basic URL validation
+      .url('Must be a valid URL (e.g., https://drive.google.com/...)')
       .nullable(),
 });
 
@@ -133,7 +160,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     createOrder(payload);
   };
 
-  const OnSubmit = async (values: BK_FORM_TYPE) => {
+  const OnSubmit = async (values: BK_FORM_TYPE) => { 
     setFormValues(values);
     setModelOpen(true); 
     const itemPayload = {
@@ -154,7 +181,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     return res?.data?.item_code;
   };
 
-  // after order success
   useEffect(() => {
     if (isSuccess) {
       toast.success('Order created successfully');
@@ -348,15 +374,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
             <div className="grid grid-cols-2 gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <SelectBox
-                options={[
-                  { value: 'Single_Axis', label: 'Single Axis' },
-                  { value: 'Multi_Axis', label: 'Multi Axis' },
-                  { value: 'Hydraulic', label: 'Hydraulic' },
-                  { value: 'Sach_Foot', label: 'SACH Foot' },
-                  { value: 'Carbon', label: 'Carbon' },
-                  { value: 'Energy', label: 'Energy' },
-                ]}
-                  // options={FORM_OPTIONS['foot_type'] ?? []}
+                  options={FORM_OPTIONS['foot_type'] ?? []}
                   label="Foot Type"
                   required={false}
                   value={values.foot_type}
@@ -367,6 +385,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                   label="Shoe Size (cm)"
                   value={values.shoe_size}
                   onChange={handleChange('shoe_size')}
+                  inVaild={!!errors.shoe_size && !!touched.shoe_size}
+                  error={errors.shoe_size}
                 />
               </div>
               <div className="grid grid-cols-3 gap-4">
@@ -374,11 +394,15 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                   label="Flexion Angle"
                   value={values.flexion_angle}
                   onChange={handleChange('flexion_angle')}
+                  inVaild={!!errors.flexion_angle && !!touched.flexion_angle}
+                  error={errors.flexion_angle}
                 />
                 <Input
                   label="Add/Abd Angle"
                   value={values.abductionadduction_angle}
                   onChange={handleChange('abductionadduction_angle')}
+                  inVaild={!!errors.abductionadduction_angle && !!touched.abductionadduction_angle}
+                  error={errors.abductionadduction_angle}
                 />
                 <SelectBox
                   options={FORM_OPTIONS['stump_type'] ?? []}
@@ -398,8 +422,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 <div className="w-[150px] ml-8"> 
                 <SelectBox
                 options={[
-                  { value: 'Left_Foot', label: 'Left_Foot ' },
-                  { value: 'Right_Foot', label: 'Right_Foot' },
+                  { value: 'Left_Foot', label: 'Left Foot ' },
+                  { value: 'Right_Foot', label: 'Right Foot' },
                   { value: 'Both', label: 'Both' }
                 ]}                
                 value={values.foot_Amputation}
@@ -435,7 +459,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 <span className="mb-1 text-[10px] ">Design / Rough   calculations etc.</span>
               </div>
               
-              <div className="w-[150px]">
+              <div className='w-fit'>
               <GenericFileViewer 
                 allowedTypes={['.pdf','.png', '.jpg', '.jpeg']}
                 maxSizeMB={5}
@@ -444,7 +468,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 onFileSelect={(file) => console.log('Model A selected:', file?.name)}
               />
               </div>
-              <div className="w-fit ml-6">
+              <div className="w-fit ml-2">
               <GenericFileViewer 
                 allowedTypes={['.pdf','.png', '.jpg', '.jpeg']}
                 maxSizeMB={5}
@@ -463,7 +487,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
              <div className="flex flex-col-6 gap-4">
                  <Input
                     placeholder="https://drive.google.com/..."
-                    className="mt-3 min-w-max ml-0"
+                    className="mt-3 min-w-max ml-0 w-[410px]"
                     value={values.images_link}
                     onChange={handleChange('images_link')}
                     inVaild={!!errors.images_link && !!touched.images_link}
@@ -471,12 +495,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                     />
                  </div>
             </div>
-            {/* <div className="w-full">
-              <Input placeholder="Images Link" label="Any Upuloaded Images Link (optional)" className='w-[50%] mt-3' />
-            </div> */}
-
             <div className="divider"></div>
-
             <div className="grid grid-cols-2 gap-4">
               <Textarea
                 label="Stump Condition"
@@ -511,11 +530,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                   value={values.adapter_type}
                   onValueChange={handleChange('adapter_type')}
                 />
-                {/* <Textarea
-                  label="Adapter : 4 Hole Pyramid"
-                  value={values.adapter_type}
-                  onChange={handleChange('adapter_type')}
-                /> */}
               </div>
               <div>
                 <p className="font-semibold my-4">Scan Condition</p>
