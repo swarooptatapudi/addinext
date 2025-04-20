@@ -1,17 +1,42 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*', // Match the API path
-        // destination: 'https://erp.addiwise.com/api/:path*'
-          destination: 'http://147.93.96.6/api/:path*'
-        // destination: 'http://127.0.0.1:8000/api/:path*'
-        // destination: 'http://frappe-bench.localhost/api/:path*',
+        source: '/api/:path*',
+        destination: 'http://147.93.96.6/api/:path*'
       }
     ];
+  },
+  webpack: (config: { optimization: any; }) => {
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: {
+        chunks: 'all',
+        maxSize: 244 * 1024, 
+      }
+    };
+    return config;
   }
 };
 
 export default nextConfig;
+
+// import type { NextConfig } from 'next';
+
+// const nextConfig: NextConfig = {
+//   async rewrites() {
+//     return [
+//       {
+//         source: '/api/:path*', // Match the API path
+//         // destination: 'https://erp.addiwise.com/api/:path*'
+//           destination: 'http://147.93.96.6/api/:path*'
+//         // destination: 'http://127.0.0.1:8000/api/:path*'
+//         // destination: 'http://frappe-bench.localhost/api/:path*',
+//       }
+//     ];
+//   }
+// };
+
+// export default nextConfig;
