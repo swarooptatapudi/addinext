@@ -1,17 +1,13 @@
 'use client';
 
-import React, { useEffect } from 'react';
-
-import { ChevronRight, LogOutIcon, Plus, PlusIcon } from 'lucide-react';
-
+import React from 'react';
+import { ChevronRight, LogOutIcon, PlusIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { Popover } from '@radix-ui/react-popover';
-import { PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useLazyLogoutQuery } from '@/rtk-query/apis/auth';
 import useUser from '@/hooks/useUser';
-import { USER } from '@/uttils/Types';
 import { Label } from '@/components/ui/label';
 import {
   Menubar,
@@ -20,82 +16,110 @@ import {
   MenubarMenu,
   MenubarTrigger
 } from '@/components/ui/menubar';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 export default function Header(): React.JSX.Element {
-  const [logout, { isSuccess, isLoading }] = useLazyLogoutQuery();
-  const { user }: { user: USER } = useUser();
+  const router = useRouter();
+  const [logout] = useLazyLogoutQuery();
+  const { user } = useUser();
 
-  useEffect(() => {
-    if (isSuccess) {
-      window.location.href = '/auth';
+  const handleLogout = async () => {
+    try {
+      await logout('').unwrap();
+      toast.success('Logged out successfully');
+      router.push('/auth');
+      router.refresh();
+    } catch (error) {
+      toast.error('Logout failed. Please try again.');
     }
-  }, [isSuccess]);
+  };
 
   return (
-    <div className="h-16 bg-white    px-4 shadow-md">
-      <div className="flex items-center justify-between h-full">
-        <h3 className="text-2xl font-bold text-center text-primary">O&P Design Platform</h3>
-        <div className="flex items-center gap-4">
-          <Button variant={'secondary'}>Support</Button>
+    <header className="sticky top-0 z-50 h-16 bg-white px-4 shadow-md">
+      <div className="mx-auto flex h-full max-w-7xl items-center justify-between">
+        <Link href="/" className="text-2xl font-bold text-primary hover:opacity-80">
+          O&P Design Platform
+        </Link>
+
+        <div className="flex items-center gap-3">
+          <Button variant="secondary" asChild>
+            <Link href="/support">Support</Link>
+          </Button>
+
           {!user?.active_plan && (
-            <Link href="/subscription/select-plan">
-              <Button variant={'secondary'} className="cursor-pointer">
-                Subscribe
-              </Button>
-            </Link>
+            <Button variant="secondary" asChild>
+              <Link href="/subscription/select-plan">Subscribe</Link>
+            </Button>
           )}
+
           <Menubar>
             <MenubarMenu>
-              <MenubarTrigger>AddiCoins:- {user?.customer_available_coins}</MenubarTrigger>
+              <MenubarTrigger className="cursor-pointer">
+                AddiCoins: {user?.customer_available_coins || 0}
+              </MenubarTrigger>
               <MenubarContent>
-                <Link href="/addicoins">
-                  <MenubarItem>
-                    <Plus /> Add
-                  </MenubarItem>
-                </Link>
+                <MenubarItem asChild>
+                  <Link href="/addicoins" className="flex items-center gap-2">
+                    <PlusIcon size={16} /> Add Coins
+                  </Link>
+                </MenubarItem>
               </MenubarContent>
             </MenubarMenu>
           </Menubar>
-          <Link href="/orders/new-order">
-            <Button className="flex items-center gap-2">
-              <PlusIcon />
+
+          <Button asChild className="flex items-center gap-2">
+            <Link href="/orders/new-order">
+              <PlusIcon/>
               New Order
-            </Button>
-          </Link>
+            </Link>
+          </Button>
+
           <Popover>
-            <PopoverTrigger>
-              <Avatar>
-                <AvatarFallback>{user?.first_name?.slice(0, 1)}</AvatarFallback>
-              </Avatar>
+            <PopoverTrigger asChild>
+              <button
+                className="rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
+                aria-label="User menu"
+              >
+                <Avatar>
+                  <AvatarFallback className="bg-primary text-white">
+                    {user?.first_name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
             </PopoverTrigger>
-            <PopoverContent className="min-w-[150px]  p-3 mr-3 mt-2 flex flex-col gap-4 items-start">
+            <PopoverContent
+              className="w-56 p-2"
+              align="end"
+              sideOffset={8}
+            >
               <Link
-                href={'/profile'}
-                className="flex items-center justify-between  gap-2 cursor-pointer w-full"
+                href="/profile"
+                className="flex w-full items-center justify-between rounded p-2 hover:bg-gray-100"
               >
                 <div className="flex items-center gap-2">
-                  <Avatar>
-                    <AvatarFallback>{user?.first_name?.slice(0, 1)}</AvatarFallback>
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary text-white">
+                      {user?.first_name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
-                  <Label>{user?.full_name}</Label>
+                  <Label className="font-normal">{user?.full_name}</Label>
                 </div>
-                <ChevronRight size={20} />
+                <ChevronRight size={16} />
               </Link>
 
               <Button
-                variant={'destructive'}
-                className="cursor-pointer w-full"
-                onClick={(): void => {
-                  void logout('');
-                }}
-                disabled={isLoading}
+                variant="destructive"
+                className="mt-2 w-full justify-start gap-2"
+                onClick={handleLogout}
               >
-                <LogOutIcon /> Logout
+                <LogOutIcon size={16} />
+                Logout
               </Button>
             </PopoverContent>
           </Popover>
         </div>
       </div>
-    </div>
+    </header>
   );
 }

@@ -12,9 +12,11 @@ import { USER } from '@/uttils/Types';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 export default function Addicoins(): React.JSX.Element {
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
+  const router = useRouter();
   const { data } = useGetRateAndDiscountsQuery({
     customer: user?.customer_id
   });
@@ -42,7 +44,8 @@ export default function Addicoins(): React.JSX.Element {
 
     if (res?.data) {
       toast.success(res?.data?.message);
-      window.location.reload();
+      router.refresh();
+      // window.location.reload();
     }
   };
 

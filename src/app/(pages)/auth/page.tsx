@@ -5,15 +5,18 @@ import { useLoginMutation } from '@/rtk-query/apis/auth';
 import { Formik } from 'formik';
 import React, { useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 export default function SignIn(): React.JSX.Element {
   const [login, { isSuccess, isLoading }] = useLoginMutation();
+  const router = useRouter();
+
   useEffect(() => {
     if (isSuccess) {
-      window.location.href = '/dashboard';
+      router.push('/dashboard');
       toast.success('Login successful');
     }
-  }, [isSuccess]);
+  }, [isSuccess,router]);
   return (
     <div className="h-full p-4 flex flex-col items-center justify-center w-full">
       <div className="flex flex-col items-center justify-center w-[80%] bg-white p-4 rounded-lg drop--lg py-10">
