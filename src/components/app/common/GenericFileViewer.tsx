@@ -96,7 +96,9 @@ export function GenericFileViewer({
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="outline" className="w-full">
+            <p className='truncate'>
             {file ? file.name : buttonText}
+            </p>
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-[90vw]">

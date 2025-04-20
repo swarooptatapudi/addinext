@@ -6,9 +6,8 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from '@/components/ui/dialog';
-
 import { Input } from '@/components/ui/input';
 import { SelectBox } from '@/components/ui/selectbox';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,90 +31,55 @@ import { GenericFileViewer } from '@/components/app/common/GenericFileViewer';
 const validationSchema = Yup.object().shape({
   patient_name: Yup.string()
     .min(FORMIK_ERRORS.MIN_2.VALUE, FORMIK_ERRORS.MIN_2.MESSAGE)
-    .max(FORMIK_ERRORS.MAX_50.VALUE ,FORMIK_ERRORS.MAX_50.MESSAGE)
+    .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
     .required(FORMIK_ERRORS.REQUIRED),
   socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   design_variation: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   model_name: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   height: Yup.string()
-  .matches(/^\d+(\.\d{1,2})?$/, {
-    message: 'Must be a number (e.g. 92.57 or 95)',
-    excludeEmptyString: true
-  })
-  .test(
-    'min-height',
-    'Minimum height is 91cm',
-    (value) => !value || parseFloat(value) >= 91
-  )
-  .test(
-    'max-height',
-    'Maximum height is 213.00cm',
-    (value) => !value || parseFloat(value) <= 213.00
-  ),
+    .matches(/^\d+(\.\d{1,2})?$/, {
+      message: 'Must be a number (e.g. 92.57 or 95)',
+      excludeEmptyString: true,
+    })
+    .test('min-height', 'Minimum height is 91cm', (value) => !value || parseFloat(value) >= 91)
+    .test('max-height', 'Maximum height is 213.00cm', (value) => !value || parseFloat(value) <= 213.0),
   weight: Yup.string()
     .required('Weight is required')
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 65.5 or 70)',
-      excludeEmptyString: false
+      excludeEmptyString: false,
     })
-    .test(
-      'min-weight',
-      'Minimum weight is 10kg',
-      (value) => parseFloat(value) >= 10
-    )
-    .test(
-      'max-weight',
-      'Maximum weight is 180kg',
-      (value) => parseFloat(value) <= 180
-    ),
+    .test('min-weight', 'Minimum weight is 10kg', (value) => parseFloat(value) >= 10)
+    .test('max-weight', 'Maximum weight is 180kg', (value) => parseFloat(value) <= 180),
   stump_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only numbers')
-    .test(
-      'min-value',
-      'stupm length must be at least 1',
-      (value) => Number(value) >= 1
-    ),
+    .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
   shoe_size: Yup.string()
-  .matches(/^\d+(\.\d{1,2})?$/, {
-    message: 'Must be a number (e.g. 92.57 or 95)',
-    excludeEmptyString: true
-  })
-  .test(
-    'min-height',
-    'Minimum height is 1cm',
-    (value) => !value || parseFloat(value) >= 1
-  )
-  .test(
-    'max-height',
-    'Maximum height',
-    (value) => !value || parseFloat(value) <= 200.00
-  ),
+    .matches(/^\d+(\.\d{1,2})?$/, {
+      message: 'Must be a number (e.g. 92.57 or 95)',
+      excludeEmptyString: true,
+    })
+    .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
+    .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 200.0),
   flexion_angle: Yup.string()
-  .matches(/^\d*$/, 'Must contain only numbers') 
-  .test(
-    'value-range',
-    'Flexion angle must be ≤ 60',
-    (value) => !value || Number(value) <= 60 
-  ),
-
-abductionadduction_angle: Yup.string()
-  .matches(/^\d*$/, 'Must contain only numbers') 
-  .test(
-    'value-range',
-    'Abd/adduct angle must be ≤ 60',
-    (value) => !value || Number(value) <= 60 
-  ),
+    .matches(/^\d*$/, 'Must contain only numbers')
+    .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
+  abductionadduction_angle: Yup.string()
+    .matches(/^\d*$/, 'Must contain only numbers')
+    .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
   date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   email: Yup.string()
-      .matches(FORMIK_ERRORS.INVALID_EMAIL.VALUE,FORMIK_ERRORS.INVALID_EMAIL.MESSAGE)
-      .max(FORMIK_ERRORS.MAX_320.VALUE, FORMIK_ERRORS.MAX_320.MESSAGE),
-  mobile_no: Yup.string()
-      .matches(FORMIK_ERRORS.MOBILE_NUMBER.VALUE,FORMIK_ERRORS.MOBILE_NUMBER.MESSAGE),
-      images_link: Yup.string()
-      .url('Must be a valid URL (e.g., https://drive.google.com/...)')
-      .nullable(),
+    .matches(FORMIK_ERRORS.INVALID_EMAIL.VALUE, FORMIK_ERRORS.INVALID_EMAIL.MESSAGE)
+    .max(FORMIK_ERRORS.MAX_320.VALUE, FORMIK_ERRORS.MAX_320.MESSAGE),
+  mobile_no: Yup.string().matches(
+    FORMIK_ERRORS.MOBILE_NUMBER.VALUE,
+    FORMIK_ERRORS.MOBILE_NUMBER.MESSAGE
+  ),
+  images_link: Yup.string()
+    .url('Must be a valid URL (e.g., https://drive.google.com/...)')
+    .nullable(),
 });
 
 const initialValues = BK_FORM_INITIAL_VALUES;
@@ -136,7 +100,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
   const [isPatientSelected, setIsPatientSelected] = useState(false);
-  const [selectedItem, setSelectedItem] = React.useState<string>('');  
+  const [selectedItem, setSelectedItem] = React.useState<string>('');
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameByDetailsMutation();
   const [formValues, setFormValues] = useState<BK_FORM_TYPE>(initialValues);
   const [modelOpen, setModelOpen] = useState(false);
@@ -144,7 +108,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
 
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
-    if (data) {      
+    if (data) {
       return getFormOptionsObject(data?.order_from_details);
     }
     return {};
@@ -160,9 +124,9 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     createOrder(payload);
   };
 
-  const OnSubmit = async (values: BK_FORM_TYPE) => { 
+  const OnSubmit = async (values: BK_FORM_TYPE) => {
     setFormValues(values);
-    setModelOpen(true); 
+    setModelOpen(true);
     const itemPayload = {
       item_type: 'BK',
       socket_type: values.socket_type,
@@ -170,8 +134,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       activity_level: values.activity_level,
       model_name: values.model_name,
       stump_length: values.stump_length,
-      weight: values.weight 
-    };  
+      weight: values.weight,
+    };
     const itemCode = await getItemCodeByValues(itemPayload);
     setSelectedItem(itemCode);
   };
@@ -202,14 +166,14 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
             <div className="grid grid-cols-3 gap-4">
               <PatientPicker
                 label="Patient Name"
-               placeholder="Patient Name"
+                placeholder="Patient Name"
                 value={values.patient_name}
                 onChange={handleChange('patient_name')}
                 setFieldValue={setFieldValue}
                 required
                 inVaild={!!errors.patient_name && !!touched.patient_name}
                 error={errors.patient_name}
-                setIsPatientSelected={setIsPatientSelected} 
+                setIsPatientSelected={setIsPatientSelected}
               />
               <div className="grid grid-cols-3 gap-2 col-span-2">
                 <Input
@@ -232,15 +196,15 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                   disabled={isPatientSelected}
                 />
                 <Input
-                placeholder="50"
-                label="Weight (kgs)"
-                required
-                value={values.weight}
-                onChange={handleChange('weight')}
-                inVaild={!!errors.weight && !!touched.weight}
-                error={errors.weight}
-                disabled={isPatientSelected}
-               />
+                  placeholder="50"
+                  label="Weight (kgs)"
+                  required
+                  value={values.weight}
+                  onChange={handleChange('weight')}
+                  inVaild={!!errors.weight && !!touched.weight}
+                  error={errors.weight}
+                  disabled={isPatientSelected}
+                />
               </div>
               <Input
                 placeholder="10 digit phone number"
@@ -263,7 +227,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
               <SelectBox
                 options={[
                   { value: 'Male', label: 'Male' },
-                  { value: 'Female', label: 'Female' }
+                  { value: 'Female', label: 'Female' },
                 ]}
                 label="Gender"
                 required={true}
@@ -342,7 +306,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
             <div className="divider"></div>
 
             <h3 className="font-semibold text-lg ">Measurements</h3>
-            <div className="grid grid-cols-3 gap-4 items-center">
+            <div className="grid grid-cols-3 gap-4 items-center ml-1">
               <div>
                 <Image
                   src={'/assets/order-forms/bk-order/BK1.png'}
@@ -350,18 +314,20 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                   width={300}
                   height={300}
                   className="object-cover"
+                  loading="lazy"
+                  priority={false}
                 />
               </div>
-            <div className="flex flex-col gap-4">
-              <Input
-               label={`Value 𝗔 Stump Length (cm)`}
-               placeholder="20"
-               required
-               value={values.stump_length}
-               onChange={handleChange('stump_length')}
-               inVaild={!!errors.stump_length && !!touched.stump_length}
-               error={errors.stump_length}
-               />
+              <div className="flex flex-col gap-4">
+                <Input
+                  label={`Value 𝗔 Stump Length (cm)`}
+                  placeholder="20"
+                  required
+                  value={values.stump_length}
+                  onChange={handleChange('stump_length')}
+                  inVaild={!!errors.stump_length && !!touched.stump_length}
+                  error={errors.stump_length}
+                />
                 <Input
                   placeholder="20"
                   label="Value B Stump Size (cm)"
@@ -392,13 +358,15 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
               <div className="grid grid-cols-3 gap-4">
                 <Input
                   label="Flexion Angle(Deg)"
+                  placeholder="(Deg)"
                   value={values.flexion_angle}
                   onChange={handleChange('flexion_angle')}
                   inVaild={!!errors.flexion_angle && !!touched.flexion_angle}
                   error={errors.flexion_angle}
                 />
                 <Input
-                  label="Add/Abd Angle"
+                  label="Add/Abd Angle (Deg)"
+                  placeholder="(Deg)"
                   value={values.abductionadduction_angle}
                   onChange={handleChange('abductionadduction_angle')}
                   inVaild={!!errors.abductionadduction_angle && !!touched.abductionadduction_angle}
@@ -412,172 +380,201 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 />
               </div>
             </div>
-             <div className="divider"></div>
-
-            <h3 className="font-semibold text-lg ">File Upload</h3>
-            <div className="grid grid-cols-8 gap-4">
-              <div className="col-span-3">
-                <div className="grid grid-cols-2">
-                <p className="mb-1 text-base ">Upload Scan</p>
-                <div className="w-[150px] ml-8"> 
-                <SelectBox
-                options={[
-                  { value: 'Left_Foot', label: 'Left Foot ' },
-                  { value: 'Right_Foot', label: 'Right Foot' },
-                  { value: 'Both', label: 'Both' }
-                ]}                
-                value={values.foot_Amputation}
-                onValueChange={handleChange('foot_Amputation')}
+            <div className="grid grid-cols-3 gap-4 items-center ml-1">
+              <div>
+                <Image
+                  src={'/assets/order-forms/bk-order/Stumpcondition1.jpg'}
+                  alt="measurements"
+                  width={700}
+                  height={700}
+                  className="object-cover"
                 />
-                </div>
-                </div>
-                
-              </div>
-              {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
-              <div className="w-fit justify-center">
-                <StlFilePicker 
-                   label="Upload STL file (left foot)" 
-                   buttonText="Left Foot" 
-                   onFileSelect={(file) => console.log('Model A selected:', file?.name)}
-                 />
-              </div>
-               )}
-
-            {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
-              <div className="w-fit ml-2">
-                <StlFilePicker
-                label="Upload STL file (Rgiht foot)" 
-                buttonText="Right Foot" 
-                onFileSelect={(file) => console.log('Model A selected:', file?.name)}
-                 />
-              </div>
-               )}
-            </div>
-            <div className="grid grid-cols-8 gap-4">
-              <div className="col-span-3">
-                <p className="mb-0 text-base ">Upload Addtional Files</p>
-                <span className="mb-1 text-[10px] ">Design / Rough   calculations etc.</span>
-              </div>
-              
-              <div className='w-fit'>
-              <GenericFileViewer 
-                allowedTypes={['.pdf','.png', '.jpg', '.jpeg']}
-                maxSizeMB={5}
-                label="Select Image"
-                buttonText="File 1"
-                onFileSelect={(file) => console.log('Model A selected:', file?.name)}
-              />
-              </div>
-              <div className="w-fit ml-2">
-              <GenericFileViewer 
-                allowedTypes={['.pdf','.png', '.jpg', '.jpeg']}
-                maxSizeMB={5}
-                label="Select Image"
-                buttonText="File 2"
-                onFileSelect={(file) => console.log('Model A selected:', file?.name)}
-              />
               </div>
             </div>
-            <div className="flex flex-col-6 gap-4">
-              <div className="col-span-3">
-                <p className="mb-1 text-base ">Upload Link with Photos</p>
-                <p className="mb-1 text-[10px] ">Upload in Google /Cloud drive and give relevant permission			
-                </p>
-              </div>
-             <div className="flex flex-col-6 gap-4">
-                 <Input
-                    placeholder="https://drive.google.com/..."
-                    className="mt-3 min-w-max ml-0 w-[410px]"
-                    value={values.images_link}
-                    onChange={handleChange('images_link')}
-                    inVaild={!!errors.images_link && !!touched.images_link}
-                    error={errors.images_link}
-                    />
-                 </div>
-            </div>
-            <div className="divider"></div>
             <div className="grid grid-cols-2 gap-4">
               <Textarea
-                label="Stump Condition"
+                label="Stump Condition (please describe any specific condition of the stump example bony prominence etc.)"
                 className="h-[100px] "
                 value={values.stump_condition}
                 onChange={handleChange('stump_condition')}
               />
               <Textarea
-                label="Previous Prosthetic Experience"
+                label="Previous Prosthetic Experience (Please describe any previous experience of Prosthetics used, Make, Model,
+                       Type, Issues with it and expectation from the new Prosthetic socket)"
                 className="h-[100px] "
                 value={values.previous_prosthetic_experience}
                 onChange={handleChange('previous_prosthetic_experience')}
               />
             </div>
-
-          
-
             <div className="divider"></div>
-
-            <div className="grid grid-cols-2 gap-4 items-end">
-              <div className="grid grid-cols-1 gap-4">
-                <SelectBox
-                  options={FORM_OPTIONS['locking_system'] ?? []}
-                  label="Locking System / Adapter"
-                  required={true}
-                  value={values.locking_system}
-                  onValueChange={handleChange('locking_system')}
-                />
-                <SelectBox
-                  options={FORM_OPTIONS?.adapter_type || []}
-                  label="Adapter Type"
-                  value={values.adapter_type}
-                  onValueChange={handleChange('adapter_type')}
-                />
-              </div>
-              <div>
-                <p className="font-semibold my-4">Scan Condition</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <SelectBox
-                    options={[{ value: 'Yes' }, { value: 'No' }]}
-                    label="Direct Body"
-                    required={true}
-                    value={values.direct_body}
-                    onValueChange={handleChange('direct_body')}
-                  />
-                  <Input label="With Liner (mm)" placeholder="3" />
-                  <SelectBox
-                    options={FORM_OPTIONS['liner_type'] ?? []}
-                    label="Liner Type"
-                    required={true}
-                    value={values.liner_type}
-                    onValueChange={handleChange('liner_type')}
-                  />
-                  <Input label="Marking Sock (mm)" placeholder="2" />
+            <h3 className="font-semibold text-lg ">File Upload</h3>
+            <div className="grid grid-cols-8 gap-4">
+              <div className="col-span-3">
+                <div className="grid grid-cols-2">
+                  <p className="mb-1 text-base flex items-center">Upload Scan</p>
+                  <div className="w-[150px] ml-8">
+                    <SelectBox
+                      options={[
+                        { value: 'Left_Foot', label: 'Left Foot ' },
+                        { value: 'Right_Foot', label: 'Right Foot' },
+                        { value: 'Both', label: 'Both' },
+                      ]}
+                      value={values.foot_Amputation}
+                      onValueChange={handleChange('foot_Amputation')}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+              {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
+                <div className="w-fit justify-center">
+                  <StlFilePicker
+                    label="Upload STL file (left foot)"
+                    buttonText="Left Foot"
+                    onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+                  />
+                </div>
+              )}
 
+              {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
+                <div className="w-fit ml-2">
+                  <StlFilePicker
+                    label="Upload STL file (Rgiht foot)"
+                    buttonText="Right Foot"
+                    onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-8 gap-4">
+              <div className="col-span-3">
+                <p className="mb-0 text-base ">Upload Addtional Files</p>
+                <span className="mb-1 text-[12px] ">(Design / Rough calculations etc.)</span>
+              </div>
+
+              <div className="w-fit">
+                <GenericFileViewer
+                  allowedTypes={['.pdf', '.png', '.jpg', '.jpeg']}
+                  maxSizeMB={5}
+                  label="Select Image"
+                  buttonText="File 1"
+                  onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+                />
+              </div>
+              <div className="w-fit ml-2">
+                <GenericFileViewer
+                  allowedTypes={['.pdf', '.png', '.jpg', '.jpeg']}
+                  maxSizeMB={5}
+                  label="Select Image"
+                  buttonText="File 2"
+                  onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col-6 gap-4">
+              <div className="col-span-3">
+                <p className="mb-1 text-base ">Upload Link with Photos</p>
+                <p className="mb-1 text-[12px] ">
+                  Upload in Google /Cloud drive and give relevant permission
+                </p>
+              </div>
+              <div className="flex flex-col-6 gap-4">
+                <Input
+                  placeholder="https://drive.google.com/..."
+                  className="mt-3 min-w-max ml-0 w-[410px]"
+                  value={values.images_link}
+                  onChange={handleChange('images_link')}
+                  inVaild={!!errors.images_link && !!touched.images_link}
+                  error={errors.images_link}
+                />
+              </div>
+            </div>
+            <div className="divider"></div>
+            <div className="grid grid-cols-3 gap-4 items-end">
+              <div className="grid grid-cols-1 gap-4 ">
+                <h3 className="font-semibold text-lg ">Scan Condition</h3>
+                <SelectBox
+                  options={[
+                    { label: 'Direct Body', value: 'Direct_Body ' },
+                    { label: 'With Liner', value: 'With_Liner' },
+                  ]}
+                  label="Direct Body"
+                  required={true}
+                  value={values.direct_body}
+                  onValueChange={handleChange('direct_body')}
+                />
+                {values.direct_body === 'With_Liner' && (
+                  <SelectBox
+                    options={FORM_OPTIONS['locking_system'] ?? []}
+                    label="Adapter/Locking System"
+                    value={values.locking_system}
+                    onValueChange={handleChange('locking_system')}
+                  />
+                )}
+              </div>
+              <div>
+                <div className="grid grid-cols gap-4">
+                  {values.direct_body === 'With_Liner' && (
+                    <>
+                      <SelectBox
+                        options={FORM_OPTIONS['liner_thickness'] ?? []}
+                        label="Liner Thickness"
+                        value={values.liner_thickness}
+                        onValueChange={handleChange('liner_thickness')}
+                      />
+                      <div style={{ marginBottom: '55px' }}></div>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols gap-4">
+                {values.direct_body === 'With_Liner' && (
+                  <>
+                    <SelectBox
+                      options={FORM_OPTIONS['liner_type'] ?? []}
+                      label="Liner Type"
+                      value={values.liner_type}
+                      onValueChange={handleChange('liner_type')}
+                    />
+                    <div style={{ marginBottom: '55px' }}></div>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="divider"></div>
             <div>
               <p className="font-semibold my-4">Socket Design</p>
               <p className="text-xs">
-                For the attention of CPO: Please specify the design considerations for each point
-                from A to N. Use “+” to indicate pressure sensitive areas where relief is required
-                and “ - ” to indicate pressure tolerant areas where tension needs to be applied.
-                Ensure that all measurements are provided in millimetres (mm).
+                Please specify the design considerations for each point from A to N. Use "-" to
+                indicate Apply pressure (Reduction) and "+" to indicate Relief at the particular
+                area. All values should be in millimetres (mm). For eg for applying reduction of 6 mm
+                at Patela Tendon, please specify -6
               </p>
-              <div className="flex justify-center">
+              <div className="flex justify-center p-2 mr-20">
                 <Image
-                  src={'/assets/order-forms/bk-order/BK2.png'}
+                  src={'/assets/order-forms/bk-order/SocketDesign-BK.jpg'}
                   alt="measurements"
-                  width={500}
-                  height={500}
+                  width={800}
+                  height={900}
                   className="object-cover"
                 />
               </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="mb-6">
+                  <p className="text-xs">
+                    {' '}
+                    <span className="text-sm"> Global Volume Reduction </span>
+                    <br /> (please specify the percentage reduction in Volume without reducing the
+                    length of the socket)
+                  </p>
+                </div>
+                <Input placeholder="Default Value:2%" type="text" />
+              </div>
               <p className="text-xs">
                 Please note as a general guideline our design algorithm will consider an overall 2%
-                reduction in the stump dimensions to design the Socket. The below values for “+”
-                and”-” should be done based on this assumption.
+                reduction in the stump dimensions to design the Socket. The below values for "+" and
+                "-" should be done based on this assumption.
               </p>
             </div>
-
             <div className="grid grid-cols-3 gap-10">
               {values.socket_design_details.map((item, index) => (
                 <div key={index} className="flex items-start gap-4 w-full">
@@ -585,7 +582,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                   <div className="flex-1">
                     <Input
                       placeholder={'Default Value ' + item?.default_mm}
-                      label={item?.area_name + ' ' + 'CPO Input (mm)'}
+                      label={item?.area_name + ' ' + ' (mm)'}
                       value={item?.cpo_input_mm}
                       name={`socket_design_details[${index}].cpo_input_mm`}
                       onChange={handleChange}
@@ -628,7 +625,11 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
             </div>
             <div className="flex justify-between items-center border-b p-2 font-semibold">
               <span>Item Code</span>
-              {isItemFetching ? <span className="loader"></span> : <span>{selectedItem}</span>}
+              {isItemFetching ? (
+                <span className="loader"></span>
+              ) : (
+                <span>{selectedItem}</span>
+              )}
             </div>
           </div>
 

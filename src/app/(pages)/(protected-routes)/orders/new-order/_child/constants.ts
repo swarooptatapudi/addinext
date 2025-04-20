@@ -24,6 +24,7 @@ export const BK_FORM_INITIAL_VALUES = {
   flexion_angle: '',
   abductionadduction_angle: '',
   liner_type: '',
+  liner_thickness:'',
   direct_body: '',
   activity_level: '',
   adapter_type: '',
