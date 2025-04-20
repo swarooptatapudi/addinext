@@ -635,7 +635,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
 
           <DialogFooter>
             <Button onClick={() => setModelOpen(false)} variant={'outline'}>
-              Cancel
+            Amend
             </Button>
             <Button
               onClick={handleConfirmOrder}
