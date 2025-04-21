@@ -383,10 +383,10 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
             <div className="grid grid-cols-3 gap-4 items-center ml-1">
               <div>
                 <Image
-                  src={'/assets/order-forms/bk-order/Stumpcondition1.jpg'}
+                  src={'/assets/order-forms/bk-order/stumpcondtion.png'}
                   alt="measurements"
-                  width={700}
-                  height={700}
+                  width={300}
+                  height={300}
                   className="object-cover"
                 />
               </div>
