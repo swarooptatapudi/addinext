@@ -309,7 +309,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
             <div className="grid grid-cols-3 gap-4 items-center ml-1">
               <div>
                 <Image
-                  src={'/assets/order-forms/bk-order/BK1.png'}
+                  src={'/assets/order-forms/bk-order/stupm.png'}
                   alt="measurements"
                   width={300}
                   height={300}

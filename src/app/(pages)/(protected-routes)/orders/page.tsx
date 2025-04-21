@@ -26,11 +26,22 @@ export default function Orders(): React.JSX.Element {
     console.log('Viewing order:', order);
     router.push(`/orders/new-order/${order.order_id}`);
   };
-
+  
+  const handleOrderIdClick = (orderId: string) => {
+    console.log('Clicked Order ID:', orderId);
+  };
   const columns: ColumnDef<Order>[] = [
     {
       accessorKey: 'order_id',
-      header: 'Order ID'
+      header: 'Order ID',
+      cell: ({ row }) => (
+        <span 
+          className="cursor-pointer hover:underline hover:text-blue-500"
+          onClick={() => handleOrderIdClick(row.original.order_id)}
+        >
+          {row.original.order_id}
+        </span>
+      )
     },
     {
       accessorKey: 'custom_clinic_name',
