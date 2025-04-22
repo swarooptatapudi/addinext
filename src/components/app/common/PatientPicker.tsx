@@ -7,7 +7,7 @@ import { RootState } from '@/rtk-query/store';
 import { useSelector } from 'react-redux';
 import { AddPatientDialog } from './AddPatientDialog';
 
-export default function PatientPicker({ value, onChange, setFieldValue, setIsPatientSelected, ...props }: any) {
+export default function PatientPicker({ value, onChange, setFieldValue, ...props }: any) {
   const [getPatients, { data }] = useLazyGetPatientsQuery();
   const [search, setSearch] = useState('');
   const { user } = useSelector((state: RootState) => state.userReducer);
@@ -52,7 +52,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, setIsPat
         onChange={(e) => {
           setSearch(e.target.value);
           if (onChange) onChange(e);
-          if (!e.target.value) setIsPatientSelected(false);
+          // if (!e.target.value) setIsPatientSelected(false);
         }}
         onFocus={() => setOpen(true)}
         {...props}
@@ -73,7 +73,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, setIsPat
                 setFieldValue('mobile_no', patient?.mobile_no || '');
                 setFieldValue('gender', patient?.gender || '');
                 setFieldValue('clinic_name', patient?.clinic_name || '');
-                setIsPatientSelected(true);
+                // setIsPatientSelected(true);
               }}
             >
               {patient.patient_name}({patient.date_of_birth})
