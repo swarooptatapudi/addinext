@@ -423,7 +423,7 @@ const Step1 = ({
                 Value <strong>A</strong> Stump Size (cm) <span className="text-red-500">*</span>
               </label>
               <Input
-                placeholder="20"
+                placeholder="10"
                 value={values.stump_length}
                 onChange={handleChange('stump_length')}
                 required
