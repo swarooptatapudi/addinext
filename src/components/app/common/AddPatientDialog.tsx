@@ -244,6 +244,7 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
         </Dialog>
     );
 }
+//--------------------------------------------------------------------------
 // 'use client';
 // import { Button } from '@/components/ui/button';
 // import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
