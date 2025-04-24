@@ -33,8 +33,9 @@ import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
 import { BK_FORM_TYPE, USER } from '@/uttils/Types';
 import { getFormOptionsObject } from '@/uttils/UttilFuncations';
 import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
-import { BK_FORM_INITIAL_VALUES } from './constants';
+// import { BK_FORM_INITIAL_VALUES } from '../bkForm/';
 import { Step5 } from '@/components/form/bkForm/Step5Finishing';
+import { BK_FORM_INITIAL_VALUES } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
 
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
@@ -220,6 +221,24 @@ function getSocketTypeFeatures(type: string) {
       'Good for sensitive limbs',
       'Excellent comfort for long wear'
     ],
+    'ischial_containment': [
+      'Contains ischial tuberosity',
+      'Improved rotational control',
+      'Good for high activity users',
+      'Enhanced stability'
+    ],
+    'suction_socket': [
+      'Negative pressure suspension',
+      'Excellent proprioception',
+      'Direct skeletal connection feel',
+      'Requires good tissue integrity'
+    ],
+    'hybrid_socket': [
+      'Custom combination of features',
+      'Tailored to individual needs',
+      'Can address specific issues',
+      'Versatile design options'
+    ]
   };
   return features[type] || ['No features information available'];
 }
@@ -822,7 +841,7 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
   );
 };
 
-export default function BkOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
+export default function BkOrderFormTest({ item_type }: { item_type: string }): React.JSX.Element {
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
   const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);

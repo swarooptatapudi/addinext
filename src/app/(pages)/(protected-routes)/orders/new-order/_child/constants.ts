@@ -34,6 +34,7 @@ export const BK_FORM_INITIAL_VALUES = {
   additional_customization_requirements: '',
   foot_Amputation :'Both',
   images_link:'',
+  global_volume_reduction: '',
   socket_design_details: [
     {
       area: 'A',
@@ -150,6 +151,7 @@ export const AK_FORM_INITIAL_VALUES = {
   model_name: '',
   stump_length: '',
   marking_sock_thickness: '',
+  global_volume_reduction: '2%',
   ak_socket_measurements: [
     {
       circumference_at_cm: '0cm',

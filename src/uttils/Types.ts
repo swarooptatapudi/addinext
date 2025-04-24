@@ -91,6 +91,7 @@ export interface BK_FORM_TYPE {
   design_variation: string;
   model_name: string;
   additional_customization_requirements: string;
+  global_volume_reduction: string,
   socket_design_details: Array<{
     area: string;
     area_name: string;
