@@ -8,98 +8,210 @@ import { useSelector } from 'react-redux';
 import { AddPatientDialog } from './AddPatientDialog';
 
 export default function PatientPicker({ value, onChange, setFieldValue, ...props }: any) {
-  const [getPatients, { data }] = useLazyGetPatientsQuery();
-  const [search, setSearch] = useState('');
-  const { user } = useSelector((state: RootState) => state.userReducer);
-  const [open, setOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const [modelOpen, setModelOpen] = useState(false);
+    const [getPatients, { data }] = useLazyGetPatientsQuery();
+    const [search, setSearch] = useState('');
+    const { user } = useSelector((state: RootState) => state.userReducer);
+    const [open, setOpen] = useState(false);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const [modelOpen, setModelOpen] = useState(false);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (search) {
-        const filters = {
-          patient_name: ['like', `%${search}%`],
-          owner: ['like', `%${user.user_id}%`]
-        };
-        getPatients(JSON.stringify(filters));
-      }
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [search]);
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (search) {
+                const filters = {
+                    patient_name: ['like', `%${search}%`],
+                    owner: ['like', `%${user.user_id}%`]
+                };
+                getPatients(JSON.stringify(filters));
+            }
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [search]);
 
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleConfirm = () => {
-    setModelOpen(false);
-  };
-
-  return (
-    <div className="relative" ref={wrapperRef}>
-      <Input
-        label="Patient Name"
-        value={value}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          if (onChange) onChange(e);
-          // if (!e.target.value) setIsPatientSelected(false);
-        }}
-        onFocus={() => setOpen(true)}
-        {...props}
-      />
-      <div className={`absolute top-[105%] w-full z-10 bg-white shadow rounded border ${open ? 'block' : 'hidden'}`}>
-        {data?.length ? (
-          data.map((patient: any) => (
-            <div
-              key={patient.name}
-              className="p-2 cursor-pointer hover:bg-primary/10 text-xs border-b last:border-b-0"
-              onClick={() => {
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setOpen(false);
-                setFieldValue('patient_name', patient?.patient_name || '');
-                setFieldValue('weight', patient?.weight);
-                setFieldValue('date_of_birth', patient?.date_of_birth || '');
-                setFieldValue('height', patient?.height || '');
-                setFieldValue('email', patient?.email || '');
-                setFieldValue('mobile_no', patient?.mobile_no || '');
-                setFieldValue('gender', patient?.gender || '');
-                setFieldValue('clinic_name', patient?.clinic_name || '');
-                // setIsPatientSelected(true);
-              }}
-            >
-              {patient.patient_name}({patient.date_of_birth})
-            </div>
-          ))
-        ) : (
-          <button 
-            onClick={() => {
-              setOpen(false);
-              setModelOpen(true);
-            }} 
-            className="w-full p-2 text-center bg-[#735daf] text-sm text-white"
-          >
-            + Add New Patient
-          </button>
-        )}
-      </div>
+            }
+        }
 
-      <AddPatientDialog 
-        open={modelOpen} 
-        onOpenChange={setModelOpen} 
-        onConfirm={handleConfirm} 
-      />
-    </div>
-  );
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleNewPatientConfirm = (newPatient: any) => {
+        setModelOpen(false);
+        setOpen(false);
+        
+        // Auto-fill all the form fields with the new patient data
+        setFieldValue('patient_name', `${newPatient.first_name} ${newPatient.last_name}`);
+        setFieldValue('first_name', newPatient.first_name);
+        setFieldValue('last_name', newPatient.last_name);
+        setFieldValue('date_of_birth', newPatient.date_of_birth);
+        setFieldValue('height', newPatient.height);
+        setFieldValue('weight', newPatient.weight);
+        setFieldValue('mobile_no', newPatient.mobile_no);
+        setFieldValue('email', newPatient.email);
+        setFieldValue('gender', newPatient.gender);
+        setFieldValue('clinic_name', newPatient.clinic_name);
+    };
+
+    return (
+        <div className="relative" ref={wrapperRef}>
+            <Input
+                label="Patient Name"
+                value={value}
+                onChange={(e) => {
+                    setSearch(e.target.value);
+                    if (onChange) onChange(e);
+                }}
+                onFocus={() => setOpen(true)}
+                {...props}
+            />
+            <div className={`absolute top-[105%] w-full z-10 bg-white shadow rounded border ${open ? 'block' : 'hidden'}`}>
+                {data?.length ? (
+                    data.map((patient: any) => (
+                        <div
+                            key={patient.name}
+                            className="p-2 cursor-pointer hover:bg-primary/10 text-xs border-b last:border-b-0"
+                            onClick={() => {
+                                setOpen(false);
+                                setFieldValue('patient_name', patient?.patient_name || '');
+                                setFieldValue('weight', patient?.weight);
+                                setFieldValue('date_of_birth', patient?.date_of_birth || '');
+                                setFieldValue('height', patient?.height || '');
+                                setFieldValue('email', patient?.email || '');
+                                setFieldValue('mobile_no', patient?.mobile_no || '');
+                                setFieldValue('gender', patient?.gender || '');
+                                setFieldValue('clinic_name', patient?.clinic_name || '');
+                            }}
+                        >
+                            {patient.patient_name}({patient.date_of_birth})
+                        </div>
+                    ))
+                ) : (
+                    <button 
+                        onClick={() => {
+                            setOpen(false);
+                            setModelOpen(true);
+                        }} 
+                        className="w-full p-2 text-center bg-[#735daf] text-sm text-white"
+                    >
+                        + Add New Patient
+                    </button>
+                )}
+            </div>
+
+            <AddPatientDialog 
+                open={modelOpen} 
+                onOpenChange={setModelOpen} 
+                onConfirm={handleNewPatientConfirm} 
+            />
+        </div>
+    );
 }
+// 'use client';
+// import { Input } from '@/components/ui/input';
+// import { SelectBox } from '@/components/ui/selectbox';
+// import { useLazyGetPatientsQuery } from '@/rtk-query/apis/patient';
+// import React, { useEffect, useRef, useState } from 'react';
+// import { RootState } from '@/rtk-query/store';
+// import { useSelector } from 'react-redux';
+// import { AddPatientDialog } from './AddPatientDialog';
+
+// export default function PatientPicker({ value, onChange, setFieldValue, ...props }: any) {
+//   const [getPatients, { data }] = useLazyGetPatientsQuery();
+//   const [search, setSearch] = useState('');
+//   const { user } = useSelector((state: RootState) => state.userReducer);
+//   const [open, setOpen] = useState(false);
+//   const wrapperRef = useRef<HTMLDivElement>(null);
+//   const [modelOpen, setModelOpen] = useState(false);
+
+//   useEffect(() => {
+//     const timeout = setTimeout(() => {
+//       if (search) {
+//         const filters = {
+//           patient_name: ['like', `%${search}%`],
+//           owner: ['like', `%${user.user_id}%`]
+//         };
+//         getPatients(JSON.stringify(filters));
+//       }
+//     }, 500);
+//     return () => clearTimeout(timeout);
+//   }, [search]);
+
+
+//   useEffect(() => {
+//     function handleClickOutside(event: MouseEvent) {
+//       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+//         setOpen(false);
+//       }
+//     }
+
+//     document.addEventListener('mousedown', handleClickOutside);
+//     return () => document.removeEventListener('mousedown', handleClickOutside);
+//   }, []);
+
+//   const handleConfirm = () => {
+//     setModelOpen(false);
+//   };
+
+//   return (
+//     <div className="relative" ref={wrapperRef}>
+//       <Input
+//         label="Patient Name"
+//         value={value}
+//         onChange={(e) => {
+//           setSearch(e.target.value);
+//           if (onChange) onChange(e);
+//           // if (!e.target.value) setIsPatientSelected(false);
+//         }}
+//         onFocus={() => setOpen(true)}
+//         {...props}
+//       />
+//       <div className={`absolute top-[105%] w-full z-10 bg-white shadow rounded border ${open ? 'block' : 'hidden'}`}>
+//         {data?.length ? (
+//           data.map((patient: any) => (
+//             <div
+//               key={patient.name}
+//               className="p-2 cursor-pointer hover:bg-primary/10 text-xs border-b last:border-b-0"
+//               onClick={() => {
+//                 setOpen(false);
+//                 setFieldValue('patient_name', patient?.patient_name || '');
+//                 setFieldValue('weight', patient?.weight);
+//                 setFieldValue('date_of_birth', patient?.date_of_birth || '');
+//                 setFieldValue('height', patient?.height || '');
+//                 setFieldValue('email', patient?.email || '');
+//                 setFieldValue('mobile_no', patient?.mobile_no || '');
+//                 setFieldValue('gender', patient?.gender || '');
+//                 setFieldValue('clinic_name', patient?.clinic_name || '');
+//                 // setIsPatientSelected(true);
+//               }}
+//             >
+//               {patient.patient_name}({patient.date_of_birth})
+//             </div>
+//           ))
+//         ) : (
+//           <button 
+//             onClick={() => {
+//               setOpen(false);
+//               setModelOpen(true);
+//             }} 
+//             className="w-full p-2 text-center bg-[#735daf] text-sm text-white"
+//           >
+//             + Add New Patient
+//           </button>
+//         )}
+//       </div>
+
+//       <AddPatientDialog 
+//         open={modelOpen} 
+//         onOpenChange={setModelOpen} 
+//         onConfirm={handleConfirm} 
+//       />
+//     </div>
+//   );
+// }
 
 
 //=====will be use in feture and check ================================================================================
