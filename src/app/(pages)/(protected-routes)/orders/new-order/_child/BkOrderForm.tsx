@@ -993,7 +993,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                         <span className="flex items-center gap-2">
                           {currentStep === step && (
                             <></>
-                            // <span className="h-2 w-2 rounded-full bg-white/90 animate-pulse flex-shrink-0"></span>
                           )}
                           {completedSteps.includes(step) && !(currentStep === step) && (
                             <svg
