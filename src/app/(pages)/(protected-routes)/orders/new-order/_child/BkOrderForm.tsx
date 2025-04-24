@@ -945,6 +945,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
         }
         validateOnChange={true}
         validateOnBlur={true}
+        enableReinitialize
       >
         {({ values, handleChange, handleSubmit, errors, touched, setFieldValue, setErrors, isValid }) => (
           <div className="flex flex-col gap-6">

@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import BkOrderForm from '../_child/BkOrderForm';
 import AkOrderForm from '../_child/AkOrderForm';
