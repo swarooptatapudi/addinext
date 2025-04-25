@@ -127,8 +127,8 @@ export const Step5 = ({
           <div className="ml-26 text-gray-500">Not Applicable</div>
         )}
 
-      {/* Information Section */}
-      <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mt-4">
+      {/* Information Section Footer for remove in feture use */}
+      {/* <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mt-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-3">
             <div className="p-2 bg-blue-50 rounded">
@@ -163,7 +163,7 @@ export const Step5 = ({
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

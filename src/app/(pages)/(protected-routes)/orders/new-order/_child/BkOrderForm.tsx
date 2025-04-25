@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 // API Hooks
 import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
@@ -175,6 +176,226 @@ const SocketTypeDialog = ({
     </Dialog>
   );
 };
+
+const DesignVariationDialog = ({
+  open,
+  onOpenChange,
+  options,
+  onSelect,
+  socketType
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  options: any[];
+  onSelect: (value: string) => void;
+  socketType: string;
+}) => {
+  const getDynamicContent = (variation: string) => {
+    
+    const normalizedVariation = variation.trim().toLowerCase();
+    
+    const contentMap: Record<string, { title: string; description: string; image: string }> = {
+      'standard (sx)': {
+        title: 'Standard (SX)',
+        description: 'Premium Definitive Sockets Printed on HP-MJF',
+        image: '/assets/order-forms/bk-order/foot-type/SX.png'
+      },
+      'adjustable (ax)': {
+        title: 'Adjustable (AX)',
+        description: 'Adjustable Socket for varying residual limb conditions',
+        image: '/assets/order-forms/bk-order/foot-type/AX.png'
+      },
+    };
+
+    // Try exact match first
+    if (contentMap[normalizedVariation]) {
+      return contentMap[normalizedVariation];
+    }
+
+    // Try partial match (without parentheses)
+    const baseVariation = normalizedVariation.split(' (')[0];
+    const partialMatch = Object.entries(contentMap).find(([key]) => 
+      key.startsWith(baseVariation)
+    );
+
+    if (partialMatch) {
+      return partialMatch[1];
+    }
+
+    // Default fallback
+    return {
+      title: variation.trim(),
+      description: 'No description available',
+      image: '/assets/design-variations/default.jpg'
+    };
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Select Design Variation</DialogTitle>
+          <DialogDescription>
+            Choose your preferred design variation from the options below
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {options.map((option) => {
+            const variationText = option.label || option.value;
+            const content = getDynamicContent(variationText);
+            
+            return (
+              <div 
+                key={option.value}
+                className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => {
+                  onSelect(option.value);
+                  onOpenChange(false);
+                }}
+              >
+                <h4 className="font-sm text-lg">{content.title}</h4>
+                <p className="text-[12px] text-gray-700 mt-1">{content.description}</p>
+                <div className="mt-0">
+                  <Image 
+                    src={content.image} 
+                    alt={content.title} 
+                    width={200}
+                    height={150}
+                    className="rounded-md border object-cover"
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const ModelDialog = ({
+  open,
+  onOpenChange,
+  options,
+  onSelect,
+  socketType
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  options: any[];
+  onSelect: (value: string) => void;
+  socketType: string;
+}) => {
+
+  const getDynamicContent = (variation: string) => {
+
+    const normalizedVariation = variation.trim().toLowerCase();   
+
+    const contentMap: Record<string, { title: string; description: string; image: string }> = {
+      'addieaseeco': {
+        title: 'AddiEaseEco',
+        description: 'Economy Definitive & Check Sockets Printed on FDM Printer',
+        image: '/assets/order-forms/bk-order/foot-type/AddiEaseEco.png'
+      },
+      'addiease': {
+        title: 'AddiEase',
+        description: 'Premium Definitive Sockets Printed on HP-MJF',
+        image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
+
+      },
+      'addieasemould': {
+        title: 'AddiEaseMould',
+        description: 'Moulds Printed on FDM Printe',
+        image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould.png'
+      },
+      'addieasemould-hr': {
+        title: 'AddiEaseMould-HR',
+        description: 'Heat Resistant Moulds Printed on FDM Printer',
+        image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
+
+      },
+    };
+
+    // Try exact match first
+    if (contentMap[normalizedVariation]) {
+      return contentMap[normalizedVariation];
+    }
+
+    // Try partial match (without parentheses)
+    const baseVariation = normalizedVariation.split(' (')[0];
+    const partialMatch = Object.entries(contentMap).find(([key]) => 
+      key.startsWith(baseVariation)
+    );
+
+    if (partialMatch) {
+      return partialMatch[1];
+    }
+
+    // Default fallback
+    return {
+      title: variation.trim(),
+      description: 'No description available',
+      image: '/assets/design-variations/default.jpg'
+    };
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Select Design Variation</DialogTitle>
+          <DialogDescription>
+            Choose your preferred design variation from the options below
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {options.map((option) => {
+            const variationText = option.label || option.value;
+            const content = getDynamicContent(variationText);
+            
+            return (
+              <div 
+                key={option.value}
+                className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => {
+                  onSelect(option.value);
+                  onOpenChange(false);
+                }}
+              >
+                <h4 className="font-sm text-lg">{content.title}</h4>
+                <p className="text-[12px] text-gray-700 mt-1">{content.description}</p>
+                <div className="mt-1">
+                  <Image 
+                    src={content.image} 
+                    alt={content.title} 
+                    width={200}
+                    height={150}
+                    className="rounded-md border object-cover"
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const WatchFieldReset = () => {
   const { values, setFieldValue } = useFormikContext<any>();
 
@@ -185,44 +406,7 @@ const WatchFieldReset = () => {
 
   return null;
 };
-// Helper functions for socket type info
-function getSocketTypeDescription(type: string) {
-  const descriptions: Record<string, string> = {
-    'patellar_tendon_bearing': 'Distributes weight primarily over the patellar tendon area and medial tibial flare. Ideal for medium to long residual limbs.',
-    'total_surface_bearing': 'Distributes weight evenly across the entire residual limb surface. Provides maximum comfort and stability.',
-    'ischial_containment': 'Designed to contain the ischial tuberosity for better weight distribution. Often used for high activity levels.',
-    'suction_socket': 'Uses negative pressure to maintain suspension. Provides excellent proprioception and control.',
-    'hybrid_socket': 'Combines features of multiple socket types for customized fit and function.'
-  };
-  return descriptions[type] || 'No description available.';
-}
-function getSocketTypeImage(type: string) {
-  const images: Record<string, string> = {
-    'patellar_tendon_bearing': '/assets/socket-types/ptb-socket.jpg',
-    'total_surface_bearing': '/assets/socket-types/tsb-socket.jpg',
-    'ischial_containment': '/assets/socket-types/ischial-socket.jpg',
-    'suction_socket': '/assets/socket-types/suction-socket.jpg',
-    'hybrid_socket': '/assets/socket-types/hybrid-socket.jpg'
-  };
-  return images[type] || '';
-}
-function getSocketTypeFeatures(type: string) {
-  const features: Record<string, string[]> = {
-    'patellar_tendon_bearing': [
-      'Weight bearing on patellar tendon',
-      'Relief for fibular head',
-      'Medial tibial flare support',
-      'Good for medium to long residual limbs'
-    ],
-    'total_surface_bearing': [
-      'Even pressure distribution',
-      'Reduced peak pressures',
-      'Good for sensitive limbs',
-      'Excellent comfort for long wear'
-    ],
-  };
-  return features[type] || ['No features information available'];
-}
+
 const Step1 = ({ 
   values, 
   handleChange, 
@@ -234,6 +418,16 @@ const Step1 = ({
   formSubmitted,
   setSocketTypeDialog  
 }: any) => {
+  const [designVariationDialog, setDesignVariationDialog] = useState({
+    open: false,
+    options: []
+  });
+  
+  const [modelDialog, setModelDialog] = useState({
+    open: false,
+    options: []
+  });
+
   const shouldShowError = (fieldName: string, isRequired = false) => {
     if (!values[fieldName]) {
       if (!isRequired) return false;
@@ -241,15 +435,31 @@ const Step1 = ({
     }
     return !!errors[fieldName] && (touched[fieldName] || formSubmitted);
   };
- // Enhanced socket type options with additional info
- const socketTypeOptions = useMemo(() => {
-  return (FORM_OPTIONS?.socket_type || []).map((option: { value: any }) => ({
-    ...option,
-    description: getSocketTypeDescription(option.value),
-    image: getSocketTypeImage(option.value),
-    features: getSocketTypeFeatures(option.value)
-  }));
-}, [FORM_OPTIONS?.socket_type]);
+
+  const socketTypeOptions = useMemo(() => {
+    return (FORM_OPTIONS?.socket_type || []).map((option: { value: any }) => ({
+      ...option,
+    }));
+  }, [FORM_OPTIONS?.socket_type]);
+  
+  // Enhanced design variation options
+  const designVariationOptions = useMemo(() => {
+    if (!values.socket_type) return [];
+    const baseOptions = FORM_OPTIONS[values.socket_type + '_design_variation'] || [];
+    
+    return baseOptions.map((option: { value: string; label: string }) => ({
+      ...option,
+    }));
+  }, [values.socket_type, FORM_OPTIONS]);
+
+  const modelOptions = useMemo(() => {
+    if (!values.socket_type || !values.design_variation) return [];
+    const baseOptions  = FORM_OPTIONS[values.socket_type + '_' + values.design_variation +'_'+'model_name'] || [];
+    
+    return baseOptions.map((option: { value: string; label: string }) => ({
+      ...option,
+    }));
+  }, [values.socket_type, values.design_variation, FORM_OPTIONS]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -360,43 +570,76 @@ const Step1 = ({
       </div>
 
       <div className="divider"></div>
-      <div className="grid grid-cols-2 gap-4">
-      <SelectBox
+      <div className="grid grid-cols-3 gap-4">
+        <SelectBox
           options={socketTypeOptions}
           label="Socket Type"
           value={values.socket_type}
           onValueChange={(value) => {
             handleChange('socket_type')(value);
-            const selectedData = socketTypeOptions.find((opt: { value: any }) => opt.value === value);
-            if (selectedData) {
-              setSocketTypeDialog({
-                open: true,
-                data: selectedData
-              });
-            }
           }}
           inVaild={shouldShowError('socket_type', true)}
           error={errors.socket_type}
           required
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <SelectBox
-            options={FORM_OPTIONS[values.socket_type + '_' + 'design_variation'] || []}
-            label="Design Variation"
-            value={values.design_variation}
-            onValueChange={handleChange('design_variation')}
-            inVaild={shouldShowError('design_variation', true)}
-            required
-          />
-          <SelectBox
-            options={FORM_OPTIONS[values.socket_type + '_' + values.design_variation + '_' + 'model_name'] || []}
-            label="Model"
-            value={values.model_name}
-            onValueChange={handleChange('model_name')}
-            inVaild={shouldShowError('model_name', true)}
-            required
-          />
+        <div className="flex flex-col">
+          <label className="block text-xs font-medium text-black mb-1">
+            Design Variation <span className="text-red-500">*</span>
+          </label>
+          {values.socket_type ? (
+            <>
+              <Button
+                variant="outline"
+                className="w-full text-left justify-start h-10"
+                onClick={() => setDesignVariationDialog({
+                  open: true,
+                  options: designVariationOptions
+                })}
+              >
+                {values.design_variation 
+                  ? designVariationOptions.find((opt: { value: string }) => opt.value === values.design_variation)?.label
+                  : "Select Design Variation"}
+              </Button>
+              {shouldShowError('design_variation', true) && (
+                <p className="text-xs text-red-500 mt-1">{errors.design_variation}</p>
+              )}
+            </>
+          ) : (
+            <Input
+              placeholder="Select socket type first"
+              disabled
+            />
+          )}
+        </div>
+        <div className="flex flex-col">
+          <label className="block text-xs font-medium text-black mb-1">
+            Model <span className="text-red-500">*</span>
+          </label>
+          {values.socket_type && values.design_variation ? (
+            <>
+              <Button
+                variant="outline"
+                className="w-full text-left justify-start h-10"
+                onClick={() => setModelDialog({
+                  open: true,
+                  options: modelOptions
+                })}
+              >
+                {values.model_name 
+                  ? modelOptions.find((opt: { value: string }) => opt.value === values.model_name)?.label
+                  : "Select Model"}
+              </Button>
+              {shouldShowError('model_name', true) && (
+                <p className="text-xs text-red-500 mt-1">{errors.model_name}</p>
+              )}
+            </>
+          ) : (
+            <Input
+              placeholder={!values.socket_type ? "Select socket type first" : "Select design variation first"}
+              disabled
+            />
+          )}
         </div>
       </div>
 
@@ -508,68 +751,63 @@ const Step1 = ({
         </div>
       </div>
       <div className="grid grid-cols-5 gap-4 mt-5">
-  {/* Foot Type - Column 1 */}
-  <div className="col-span-1">
-    <SelectBox
-      options={FORM_OPTIONS['foot_type'] ?? []}
-      label="Foot Type"
-      required={false}
-      value={values.foot_type}
-      onValueChange={handleChange('foot_type')}
-      className="w-full"
-    />
-  </div>
+        <div className="col-span-1">
+          <SelectBox
+            options={FORM_OPTIONS['foot_type'] ?? []}
+            label="Foot Type"
+            required={false}
+            value={values.foot_type}
+            onValueChange={handleChange('foot_type')}
+            className="w-full"
+          />
+        </div>
 
-  {/* Shoe Size - Column 2 */}
-  <div className="col-span-1">
-    <Input
-      placeholder="0"
-      label="Shoe Size (cm)"
-      value={values.shoe_size}
-      onChange={handleChange('shoe_size')}
-      inVaild={shouldShowError('shoe_size')}
-      error={errors.shoe_size}
-      className="w-full placeholder:text-[12px]"
-    />
-  </div>
+        <div className="col-span-1">
+          <Input
+            placeholder="0"
+            label="Shoe Size (cm)"
+            value={values.shoe_size}
+            onChange={handleChange('shoe_size')}
+            inVaild={shouldShowError('shoe_size')}
+            error={errors.shoe_size}
+            className="w-full placeholder:text-[12px]"
+          />
+        </div>
 
-  {/* Flexion Angle - Column 3 */}
-  <div className="col-span-1">
-    <Input
-      label="Flexion Angle (Deg)"
-      placeholder="(Deg)"
-      value={values.flexion_angle}
-      onChange={handleChange('flexion_angle')}
-      inVaild={shouldShowError('flexion_angle')}
-      error={errors.flexion_angle}
-      className="w-full placeholder:text-[12px]"
-    />
-  </div>
+        <div className="col-span-1">
+          <Input
+            label="Flexion Angle (Deg)"
+            placeholder="(Deg)"
+            value={values.flexion_angle}
+            onChange={handleChange('flexion_angle')}
+            inVaild={shouldShowError('flexion_angle')}
+            error={errors.flexion_angle}
+            className="w-full placeholder:text-[12px]"
+          />
+        </div>
 
-  {/* Add/Abd Angle - Column 4 */}
-  <div className="col-span-1">
-    <Input
-      label="Add/Abd Angle (Deg)"
-      placeholder="(Deg)"
-      value={values.abductionadduction_angle}
-      onChange={handleChange('abductionadduction_angle')}
-      inVaild={shouldShowError('abductionadduction_angle')}
-      error={errors.abductionadduction_angle}
-      className="w-full placeholder:text-[12px]"
-    />
-  </div>
+        <div className="col-span-1">
+          <Input
+            label="Add/Abd Angle (Deg)"
+            placeholder="(Deg)"
+            value={values.abductionadduction_angle}
+            onChange={handleChange('abductionadduction_angle')}
+            inVaild={shouldShowError('abductionadduction_angle')}
+            error={errors.abductionadduction_angle}
+            className="w-full placeholder:text-[12px]"
+          />
+        </div>
 
-  {/* Stump Type - Column 5 */}
-  <div className="col-span-1">
-    <SelectBox
-      options={FORM_OPTIONS['stump_type'] ?? []}
-      label="Stump Type"
-      value={values.stump_type}
-      onValueChange={handleChange('stump_type')}
-      className="w-full"
-    />
-  </div>
-</div>
+        <div className="col-span-1">
+          <SelectBox
+            options={FORM_OPTIONS['stump_type'] ?? []}
+            label="Stump Type"
+            value={values.stump_type}
+            onValueChange={handleChange('stump_type')}
+            className="w-full"
+          />
+        </div>
+      </div>
 
       <h3 className="font-semibold text-lg">Stump Condition</h3>
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
@@ -600,6 +838,23 @@ const Step1 = ({
           onChange={handleChange('previous_prosthetic_experience')}
         />
       </div>
+
+      <DesignVariationDialog
+        open={designVariationDialog.open}
+        onOpenChange={(open) => setDesignVariationDialog(prev => ({...prev, open}))}
+        options={designVariationOptions}
+        onSelect={(value) => setFieldValue('design_variation', value)}
+        socketType={values.socket_type}
+      />
+
+      <ModelDialog
+        open={modelDialog.open}
+        onOpenChange={(open) => setModelDialog(prev => ({...prev, open}))}
+        options={modelOptions}
+        onSelect={(value) => setFieldValue('model_name', value)}
+        socketType={values.socket_type}
+        // designVariation={values.design_variation}
+      />
     </div>
   );
 };
@@ -768,7 +1023,7 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
   };
   return (
     <div>
-      <h3 className="font-semibold text-lg">Stump Condition</h3>
+      {/* <h3 className="font-semibold text-lg">Stump Condition</h3> */}
       <p className="text-xs mt-2">
         Please specify the design considerations for each point from A to N. Use "-" to
         indicate Apply pressure (Reduction) and "+" to indicate Relief at the particular
@@ -1202,6 +1457,613 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     </div>
   );
 }
+
+//--------------above code step1 to abouve full code --------------
+// 'use client';
+// import React, { useEffect, useMemo, useState } from 'react';
+// import { useSelector } from 'react-redux';
+// import { useRouter } from 'next/navigation';
+// import Image from 'next/image';
+// import { toast } from 'react-toastify';
+// import { Formik, useFormikContext } from 'formik';
+// import * as Yup from 'yup';
+
+// // Components
+// import StlFilePicker from '@/components/app/common/StlPreviewer';
+// import { Button } from '@/components/ui/button';
+// import { Input } from '@/components/ui/input';
+// import { SelectBox } from '@/components/ui/selectbox';
+// import { Textarea } from '@/components/ui/textarea';
+// import PatientPicker from '@/components/app/common/PatientPicker';
+// import { GenericFileViewer } from '@/components/app/common/GenericFileViewer';
+// import { ConfirmOrderDialog } from '@/components/app/common/ConfirmOrderDialog';
+// import { Step3 } from '@/components/form/bkForm/Step3LockingMechanism';
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogFooter,
+// } from '@/components/ui/dialog';
+// // API Hooks
+// import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
+// import { useCreateOrderMutation } from '@/rtk-query/apis/orders';
+// import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
+
+// // Constants & Utils
+// import { BK_FORM_TYPE, USER } from '@/uttils/Types';
+// import { getFormOptionsObject } from '@/uttils/UttilFuncations';
+// import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
+// import { BK_FORM_INITIAL_VALUES } from './constants';
+// import { Step5 } from '@/components/form/bkForm/Step5Finishing';
+
+// const step1Validation = Yup.object().shape({
+//   patient_name: Yup.string()
+//     .min(FORMIK_ERRORS.MIN_2.VALUE, FORMIK_ERRORS.MIN_2.MESSAGE)
+//     .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
+//     .required(FORMIK_ERRORS.REQUIRED),
+//   socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+//   design_variation: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+//   model_name: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+//   activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+//   height: Yup.string()
+//     .matches(/^\d+(\.\d{1,2})?$/, {
+//       message: 'Must be a number (e.g. 92.57 or 95)',
+//       excludeEmptyString: true,
+//     })
+//     .test('min-height', 'Minimum height is 91cm', (value) => !value || parseFloat(value) >= 91)
+//     .test('max-height', 'Maximum height is 213.00cm', (value) => !value || parseFloat(value) <= 213.0),
+//   weight: Yup.string()
+//     .required('Weight is required')
+//     .matches(/^\d+(\.\d{1,2})?$/, {
+//       message: 'Must be a number (e.g. 65.5 or 70)',
+//       excludeEmptyString: false,
+//     })
+//     .test('min-weight', 'Minimum weight is 10kg', (value) => parseFloat(value) >= 10)
+//     .test('max-weight', 'Maximum weight is 180kg', (value) => parseFloat(value) <= 180),
+//   stump_length: Yup.string()
+//     .required(FORMIK_ERRORS.REQUIRED)
+//     .matches(/^\d+$/, 'Must contain only numbers')
+//     .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
+//   shoe_size: Yup.string()
+//     .matches(/^\d+(\.\d{1,2})?$/, {
+//       message: 'Must be a number (e.g. 92.57 or 95)',
+//       excludeEmptyString: true,
+//     })
+//     .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
+//     .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 200.0),
+//   flexion_angle: Yup.string()
+//     .matches(/^\d*$/, 'Must contain only numbers')
+//     .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
+//   abductionadduction_angle: Yup.string()
+//     .matches(/^\d*$/, 'Must contain only numbers')
+//     .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
+//   date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+// });
+
+// const step2Validation = Yup.object().shape({
+//   images_link: Yup.string()
+//     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
+//     .nullable(),
+//   direct_body: Yup.string().required('Scan condition is required'),
+// });
+// const step4Validation = Yup.object().shape({
+//   global_volume_reduction: Yup.string()
+//     .nullable() 
+//     .test(
+//       'is-valid-percentage',
+//       'Must be a percentage between 0% and 5% (e.g. 2%)',
+//       (value) => {
+//         if (!value) return true;
+        
+//         const regex = /^\d{1,2}%$/;
+//         if (!regex.test(value)) return false;
+        
+//         const num = parseInt(value.replace('%', ''));
+//         return num >= 0 && num <= 5;
+//       }
+//     )
+// });
+
+// const step3Validation = Yup.object().shape({
+//   locking_mechanism: Yup.string(),
+// });
+
+// const step5Validation = Yup.object().shape({
+//   finishing_type: Yup.string(),
+//   delivery_date: Yup.string(),
+// });
+
+// const initialValues = BK_FORM_INITIAL_VALUES;
+// const SocketTypeDialog = ({ 
+//   open, 
+//   onOpenChange, 
+//   data 
+// }: { 
+//   open: boolean; 
+//   onOpenChange: (open: boolean) => void; 
+//   data: any 
+// }) => {
+//   return (
+//     <Dialog open={open} onOpenChange={onOpenChange}>
+//       <DialogContent className="max-w-2xl">
+//         <DialogHeader>
+//           <DialogTitle>Socket Type Information</DialogTitle>
+//         </DialogHeader>
+        
+//         <div className="space-y-4">
+//           {data && (
+//             <>
+//               <div>
+//                 <h4 className="font-medium text-lg">{data.label}</h4>
+//                 <p className="text-sm text-gray-600 mt-2">
+//                   {data.description || 'No description available'}
+//                 </p>
+//               </div>
+              
+//               {data.image && (
+//                 <div className="mt-4">
+//                   <Image 
+//                     src={data.image} 
+//                     alt={data.label} 
+//                     width={500} 
+//                     height={300}
+//                     className="rounded-md border"
+//                   />
+//                 </div>
+//               )}
+              
+//               {data.features && (
+//                 <div className="mt-4">
+//                   <h5 className="font-medium mb-2">Key Features:</h5>
+//                   <ul className="list-disc pl-5 space-y-1 text-sm">
+//                     {data.features.map((feature: string, index: number) => (
+//                       <li key={index}>{feature}</li>
+//                     ))}
+//                   </ul>
+//                 </div>
+//               )}
+//             </>
+//           )}
+//         </div>
+
+//         <DialogFooter>
+//           <Button onClick={() => onOpenChange(false)}>
+//             Close
+//           </Button>
+//         </DialogFooter>
+//       </DialogContent>
+//     </Dialog>
+//   );
+// };
+// const WatchFieldReset = () => {
+//   const { values, setFieldValue } = useFormikContext<any>();
+
+//   useEffect(() => {
+//     setFieldValue('design_variation', '');
+//     setFieldValue('model_name', '');
+//   }, [values.socket_type]);
+
+//   return null;
+// };
+// // Helper functions for socket type info
+// function getSocketTypeDescription(type: string) {
+//   const descriptions: Record<string, string> = {
+//     'patellar_tendon_bearing': 'Distributes weight primarily over the patellar tendon area and medial tibial flare. Ideal for medium to long residual limbs.',
+//     'total_surface_bearing': 'Distributes weight evenly across the entire residual limb surface. Provides maximum comfort and stability.',
+//     'ischial_containment': 'Designed to contain the ischial tuberosity for better weight distribution. Often used for high activity levels.',
+//     'suction_socket': 'Uses negative pressure to maintain suspension. Provides excellent proprioception and control.',
+//     'hybrid_socket': 'Combines features of multiple socket types for customized fit and function.'
+//   };
+//   return descriptions[type] || 'No description available.';
+// }
+// function getSocketTypeImage(type: string) {
+//   const images: Record<string, string> = {
+//     'patellar_tendon_bearing': '/assets/socket-types/ptb-socket.jpg',
+//     'total_surface_bearing': '/assets/socket-types/tsb-socket.jpg',
+//     'ischial_containment': '/assets/socket-types/ischial-socket.jpg',
+//     'suction_socket': '/assets/socket-types/suction-socket.jpg',
+//     'hybrid_socket': '/assets/socket-types/hybrid-socket.jpg'
+//   };
+//   return images[type] || '';
+// }
+// function getSocketTypeFeatures(type: string) {
+//   const features: Record<string, string[]> = {
+//     'patellar_tendon_bearing': [
+//       'Weight bearing on patellar tendon',
+//       'Relief for fibular head',
+//       'Medial tibial flare support',
+//       'Good for medium to long residual limbs'
+//     ],
+//     'total_surface_bearing': [
+//       'Even pressure distribution',
+//       'Reduced peak pressures',
+//       'Good for sensitive limbs',
+//       'Excellent comfort for long wear'
+//     ],
+//   };
+//   return features[type] || ['No features information available'];
+// }
+// const Step1 = ({ 
+//   values, 
+//   handleChange, 
+//   errors, 
+//   touched, 
+//   setFieldValue, 
+//   isPatientSelected, 
+//   FORM_OPTIONS, 
+//   formSubmitted,
+//   setSocketTypeDialog  
+// }: any) => {
+//   const shouldShowError = (fieldName: string, isRequired = false) => {
+//     if (!values[fieldName]) {
+//       if (!isRequired) return false;
+//       return formSubmitted || touched[fieldName];
+//     }
+//     return !!errors[fieldName] && (touched[fieldName] || formSubmitted);
+//   };
+//  // Enhanced socket type options with additional info
+//  const socketTypeOptions = useMemo(() => {
+//   return (FORM_OPTIONS?.socket_type || []).map((option: { value: any }) => ({
+//     ...option,
+//     description: getSocketTypeDescription(option.value),
+//     image: getSocketTypeImage(option.value),
+//     features: getSocketTypeFeatures(option.value)
+//   }));
+// }, [FORM_OPTIONS?.socket_type]);
+
+//   return (
+//     <div className="flex flex-col gap-6">
+//       <h3 className="font-semibold text-lg">Basic Details</h3>
+//       <div className="grid grid-cols-3 gap-4"> 
+//         <PatientPicker
+//           label="Patient Name"
+//           placeholder="Patient Name"
+//           value={values.patient_name}
+//           onChange={handleChange('patient_name')}
+//           setFieldValue={setFieldValue}
+//           required
+//           inVaild={shouldShowError('patient_name', true)}
+//           error={errors.patient_name}
+//         />
+//         <div className="grid grid-cols-3 gap-2 col-span-2">
+//           <Input
+//             label="Date of Birth"
+//             type="date"
+//             value={values.date_of_birth || ''}
+//             onChange={handleChange('date_of_birth')}
+//             required
+//             inVaild={shouldShowError('date_of_birth', true)}
+//             error={errors.date_of_birth}
+//             disabled={true}
+//           />
+//           <Input
+//             placeholder="65"
+//             label="Height (cm)"
+//             onChange={handleChange('height')}
+//             value={values.height}
+//             inVaild={shouldShowError('height')}
+//             error={errors.height}
+//             disabled={true}
+//           />
+//           <Input
+//             placeholder="50"
+//             label="Weight (kgs)"
+//             required
+//             value={values.weight}
+//             onChange={handleChange('weight')}
+//             inVaild={shouldShowError('weight', true)}
+//             error={errors.weight}
+//             disabled={true}
+//           />
+//         </div>
+//         <Input
+//           placeholder="10 digit phone number"
+//           label="Mobile Number"
+//           onChange={handleChange('mobile_no')}
+//           value={values.mobile_no}
+//           error={errors.mobile_no}
+//           disabled={true}
+//         />
+//         <Input
+//           placeholder="Email"
+//           label="Email"
+//           value={values.email}
+//           onChange={handleChange('email')}
+//           error={errors.email}
+//           disabled={true}
+//         />
+//         <SelectBox
+//           options={[
+//             { value: 'Male', label: 'Male' },
+//             { value: 'Female', label: 'Female' },
+//           ]}
+//           label="Gender"
+//           value={values.gender}
+//           onValueChange={handleChange('gender')}
+//           inVaild={shouldShowError('gender', true)}
+//           required
+//           error={errors.gender}
+//           disabled={true}
+//         />
+//       </div>
+//       <div className="divider"></div>
+
+//       <div className="grid grid-cols-4 gap-4">
+//         <Input
+//           placeholder="Patient Name"
+//           label="Amputation Date"
+//           type="date"
+//           value={values.amputation_date}
+//           onChange={handleChange('amputation_date')}
+//         />
+//         <SelectBox
+//           options={FORM_OPTIONS?.amputated_leg || []}
+//           label="Amputation Leg"
+//           value={values.amputated_leg}
+//           onValueChange={handleChange('amputated_leg')}
+//         />
+//         <SelectBox
+//           options={FORM_OPTIONS?.reason_for_amputation || []}
+//           label="Reason of Amputation"
+//           value={values.reason_for_amputation}
+//           onValueChange={handleChange('reason_for_amputation')}
+//         />
+//         <SelectBox
+//           options={FORM_OPTIONS?.activity_level || []}
+//           label="Activity Level"
+//           value={values.activity_level}
+//           onValueChange={handleChange('activity_level')}
+//           required
+//           inVaild={shouldShowError('activity_level', true)}
+//           error={errors.activity_level}
+//         />
+//       </div>
+
+//       <div className="divider"></div>
+//       <div className="grid grid-cols-2 gap-4">
+//       <SelectBox
+//           options={socketTypeOptions}
+//           label="Socket Type"
+//           value={values.socket_type}
+//           onValueChange={(value) => {
+//             handleChange('socket_type')(value);
+//             // const selectedData = socketTypeOptions.find((opt: { value: any }) => opt.value === value);
+//             // if (selectedData) {
+//             //   setSocketTypeDialog({
+//             //     open: true,
+//             //     data: selectedData
+//             //   });
+//             // }
+//           }}
+//           inVaild={shouldShowError('socket_type', true)}
+//           error={errors.socket_type}
+//           required
+//         />
+
+//         <div className="grid grid-cols-2 gap-4">
+//           <SelectBox
+//             options={FORM_OPTIONS[values.socket_type + '_' + 'design_variation'] || []}
+//             label="Design Variation"
+//             value={values.design_variation}
+//             onValueChange={handleChange('design_variation')}
+//             inVaild={shouldShowError('design_variation', true)}
+//             required
+//           />
+//           <SelectBox
+//             options={FORM_OPTIONS[values.socket_type + '_' + values.design_variation + '_' + 'model_name'] || []}
+//             label="Model"
+//             value={values.model_name}
+//             onValueChange={handleChange('model_name')}
+//             inVaild={shouldShowError('model_name', true)}
+//             required
+//           />
+//         </div>
+//       </div>
+
+//       <div className="divider"></div>
+
+//       <h3 className="font-semibold text-lg ">Measurements</h3>
+//       <div className="grid grid-cols-3 gap-4 items-center ml-1">
+//         <div>
+//           <Image
+//             src={'/assets/order-forms/bk-order/stupm.png'}
+//             alt="measurements"
+//             width={300}
+//             height={300}
+//             className="object-cover"
+//             loading="lazy"
+//             priority={false}
+//             unoptimized={true}
+//           />
+//         </div>
+//         <div className="flex flex-col col-span-2 gap-4">
+//           <div className="grid grid-cols-2 gap-4 ">
+//             <div className="mb-2">
+//               <label className="block text-xs font-medium text-black">
+//                 Value <strong>A</strong> Stump Size (cm) <span className="text-red-500">*</span>
+//               </label>
+//               <Input
+//                 placeholder="10"
+//                 value={values.stump_length}
+//                 onChange={handleChange('stump_length')}
+//                 required
+//                 inVaild={shouldShowError('stump_length', true)}
+//                 error={errors.stump_length}
+//               />
+//             </div>
+//           </div>
+//           <div className="grid grid-cols-2 gap-4">
+//             <div className="mb-2">
+//               <label className="block text-xs font-medium text-black">
+//                 Value <strong>B</strong> Stump Size (cm)
+//               </label>
+//               <Input
+//                 placeholder="20"
+//                 value={values.stump_size}
+//                 onChange={handleChange('stump_size')}
+//               />
+//             </div>
+//           </div>
+//           <div className="">
+//             <p className='text-xs'>Value <strong>C</strong> - Circumfrence of Stmp at 5 cm gap (cm)</p>
+//           </div>
+//           <div className="grid grid-cols-2 gap-3 ">
+//             <div className="grid sm:col-span-4 xl:col-span-2 gap-0">
+//               <div className="grid grid-cols-3">
+//                 <div className="flex gap-2 items-center">
+//                   <p className="text-[10px]">0 Cm</p>
+//                   <Input />
+//                 </div>
+//                 <div className="grid col-span-2">
+//                   <div className="flex gap-2 items-center ml-[10px]">
+//                     <p className="text-[10px]">15 Cm</p>
+//                     <Input />
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="grid sm:col-span-3 xl:col-span-2">
+//               <div className="grid grid-cols-3">
+//                 <div className="flex gap-2 items-center">
+//                   <p className="text-[10px]">0 Cm</p>
+//                   <Input />
+//                 </div>
+//                 <div className="grid col-span-2">
+//                   <div className="flex gap-2 items-center ml-[10px]">
+//                     <p className="text-[10px]">20 Cm</p>
+//                     <Input />
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="grid sm:col-span-3 xl:col-span-2">
+//               <div className="grid grid-cols-3">
+//                 <div className="flex gap-2 items-center">
+//                   <p className="text-[10px]">5 Cm</p>
+//                   <Input />
+//                 </div>
+//                 <div className="grid col-span-2">
+//                 <div className="flex gap-2 items-center ml-[10px]">
+//                     <p className="text-[10px]">25 Cm</p>
+//                     <Input />
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="grid sm:col-span-3 xl:col-span-2">
+//               <div className="grid grid-cols-3">
+//                 <div className="flex gap-2 items-center">
+//                   <p className="text-[10px]">10 Cm</p>
+//                   <Input />
+//                 </div>
+//                 <div className="grid col-span-2">
+//                 <div className="flex gap-2 items-center ml-[10px]">
+//                     <p className="text-[10px]">30 Cm</p>
+//                     <Input />
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//       <div className="grid grid-cols-5 gap-4 mt-5">
+//   {/* Foot Type - Column 1 */}
+//   <div className="col-span-1">
+//     <SelectBox
+//       options={FORM_OPTIONS['foot_type'] ?? []}
+//       label="Foot Type"
+//       required={false}
+//       value={values.foot_type}
+//       onValueChange={handleChange('foot_type')}
+//       className="w-full"
+//     />
+//   </div>
+
+//   {/* Shoe Size - Column 2 */}
+//   <div className="col-span-1">
+//     <Input
+//       placeholder="0"
+//       label="Shoe Size (cm)"
+//       value={values.shoe_size}
+//       onChange={handleChange('shoe_size')}
+//       inVaild={shouldShowError('shoe_size')}
+//       error={errors.shoe_size}
+//       className="w-full placeholder:text-[12px]"
+//     />
+//   </div>
+
+//   {/* Flexion Angle - Column 3 */}
+//   <div className="col-span-1">
+//     <Input
+//       label="Flexion Angle (Deg)"
+//       placeholder="(Deg)"
+//       value={values.flexion_angle}
+//       onChange={handleChange('flexion_angle')}
+//       inVaild={shouldShowError('flexion_angle')}
+//       error={errors.flexion_angle}
+//       className="w-full placeholder:text-[12px]"
+//     />
+//   </div>
+
+//   {/* Add/Abd Angle - Column 4 */}
+//   <div className="col-span-1">
+//     <Input
+//       label="Add/Abd Angle (Deg)"
+//       placeholder="(Deg)"
+//       value={values.abductionadduction_angle}
+//       onChange={handleChange('abductionadduction_angle')}
+//       inVaild={shouldShowError('abductionadduction_angle')}
+//       error={errors.abductionadduction_angle}
+//       className="w-full placeholder:text-[12px]"
+//     />
+//   </div>
+
+//   {/* Stump Type - Column 5 */}
+//   <div className="col-span-1">
+//     <SelectBox
+//       options={FORM_OPTIONS['stump_type'] ?? []}
+//       label="Stump Type"
+//       value={values.stump_type}
+//       onValueChange={handleChange('stump_type')}
+//       className="w-full"
+//     />
+//   </div>
+// </div>
+
+//       <h3 className="font-semibold text-lg">Stump Condition</h3>
+//       <div className="grid grid-cols-3 gap-4 items-center ml-1">
+//         <div>
+//           <Image
+//             src={'/assets/order-forms/bk-order/stumpcondtion.png'}
+//             alt="measurements"
+//             width={300}
+//             height={250}
+//             className="object-cover"
+//           />
+//         </div>
+//         <div className="grid col-span-2">
+//           <Textarea
+//             label="Stump Condition (please describe any specific condition of the stump example bony prominence etc.)"
+//             className="h-[200px] "
+//             value={values.stump_condition}
+//             onChange={handleChange('stump_condition')}
+//           />
+//         </div>
+//       </div>
+//       <div className="grid grid-cols-1 gap-4">
+//         <Textarea
+//           label="Previous Prosthetic Experience (Please describe any previous experience of Prosthetics used, Make, Model,
+//                  Type, Issues with it and expectation from the new Prosthetic socket)"
+//           className="h-[100px] "
+//           value={values.previous_prosthetic_experience}
+//           onChange={handleChange('previous_prosthetic_experience')}
+//         />
+//       </div>
+//     </div>
+//   );
+// };
 
 //----------------it is working properly------------------------
 //================= when submit click then open order conform 
