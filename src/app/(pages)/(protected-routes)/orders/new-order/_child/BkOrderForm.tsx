@@ -89,7 +89,7 @@ const step2Validation = Yup.object().shape({
 });
 const step4Validation = Yup.object().shape({
   global_volume_reduction: Yup.string()
-    .nullable() 
+    .nullable()
     .test(
       'is-valid-percentage',
       'Must be a percentage between 0% and 5% (e.g. 2%)',
@@ -102,7 +102,21 @@ const step4Validation = Yup.object().shape({
         const num = parseInt(value.replace('%', ''));
         return num >= 0 && num <= 5;
       }
-    )
+    ),
+    socket_design_details: Yup.array().of(
+      Yup.object().shape({
+        cpo_input_mm: Yup.string()
+          .test(
+            'is-valid-number',
+            'Must be a number between -20 and +20',
+            (value) => {
+              if (!value || value.trim() === '') return true; // Allow empty
+              if (!/^-?\d+$/.test(value)) return false;
+              const num = parseInt(value, 10);
+              return num >= -20 && num <= 20;
+            }
+          )   })
+        )
 });
 
 const step3Validation = Yup.object().shape({
@@ -688,7 +702,7 @@ const Step1 = ({
             </div>
           </div>
           <div className="">
-            <p className='text-xs'>Value <strong>C</strong> - Circumfrence of Stmp at 5 cm gap (cm)</p>
+            <p className='text-xs'>Value <strong>C</strong> - Circumference of Stump at 5 cm gap (cm)</p>
           </div>
           <div className="grid grid-cols-2 gap-3 ">
             <div className="grid sm:col-span-4 xl:col-span-2 gap-0">
@@ -1015,11 +1029,22 @@ const Step2 = ({
 
 const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    if (!values[fieldName]) {
+    // Handle nested fields like socket_design_details[0].cpo_input_mm
+    const fieldValue = fieldName.includes('.') 
+      ? fieldName.split('.').reduce((obj, key) => 
+          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+      : values[fieldName];
+  
+    if (!fieldValue) {
       if (!isRequired) return false;
       return formSubmitted || touched[fieldName];
     }
-    return !!errors[fieldName] && (touched[fieldName] || formSubmitted);
+    const fieldError = fieldName.includes('.')
+      ? fieldName.split('.').reduce((obj, key) => 
+          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+      : errors[fieldName];
+      
+    return !!fieldError && (touched[fieldName] || formSubmitted);
   };
   return (
     <div>
@@ -1037,7 +1062,7 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
           width={520}
           height={400}
           className="object-cover"
-        />
+          />
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div className="mb-6">
@@ -1054,24 +1079,42 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
           value={values.global_volume_reduction || ''}
           inVaild={shouldShowError('global_volume_reduction')}
           error={errors.global_volume_reduction || ''}
-        />
+          />
       </div>
       <div className="grid grid-cols-3 gap-10">
-        {values.socket_design_details?.map((item: any, index: number) => (
-          <div key={index} className="flex items-start gap-4 w-full">
-            <p className="font-semibold">{item?.area}. </p>
-            <div className="flex-1">
-              <Input
-                placeholder={'Default Value ' + item?.default_mm}
-                label={item?.area_name + ' ' + ' (mm)'}
-                value={item?.cpo_input_mm}
-                name={`socket_design_details[${index}].cpo_input_mm`}
-                onChange={handleChange}
-                className="placeholder:text-[12px]"
-              />
-            </div>
-          </div>
-        ))}
+      {values.socket_design_details?.map((item: any, index: number) => {  
+  return (
+    <div key={index} className="flex items-start gap-4 w-full">
+      <p className="font-semibold">{item?.area}. </p>
+      <div className="flex-1">
+        <Input
+          placeholder={'Default Value ' + item?.default_mm}
+          label={item?.area_name + ' (mm)'}
+          value={item?.cpo_input_mm || ''}
+          name={`socket_design_details[${index}].cpo_input_mm`}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === '' || value === '-' || /^-?\d+$/.test(value)) {
+              if (value === '' || value === '-') {
+                handleChange(e);
+                return;
+              }
+              const num = Number(value);
+              if (num >= -20 && num <= 20) {
+                if (!(value.startsWith('-') && num === 0)) {
+                  handleChange(e);
+                }
+              }
+            }
+          }}
+          className="placeholder:text-[12px]"
+          inVaild={shouldShowError(`socket_design_details[${index}].cpo_input_mm`)}
+          error={errors?.socket_design_details?.[index]?.cpo_input_mm }
+        />
+      </div>
+    </div>
+  );
+})}
       </div>
     </div>
   );
