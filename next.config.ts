@@ -5,7 +5,9 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://147.93.96.6/api/:path*'
+        // destination: 'http://147.93.96.6/api/:path*'
+        destination: 'https://erp.addiwise.com/api/:path*'
+
       }
     ];
   },
