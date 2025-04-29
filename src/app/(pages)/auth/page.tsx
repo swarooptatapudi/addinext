@@ -53,7 +53,7 @@ export default function SignIn(): React.JSX.Element {
                     value={values.pwd}
                     onChange={handleChange('pwd')}
                   />
-                  <Button type="submit" disabled={isLoading}>
+                  <Button type="submit">
                     Sign In
                   </Button>
                 </div>
