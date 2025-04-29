@@ -10,8 +10,7 @@ import { useRouter } from 'next/navigation';
 export default function SignIn(): React.JSX.Element {
   const [login, { isSuccess, isLoading, error }] = useLoginMutation();
   const router = useRouter();
-  
-  useEffect(() => {
+useEffect(() => {
     if (isSuccess) {
       router.push('/dashboard');
       // Force a full page reload to ensure all state is reset
