@@ -1102,7 +1102,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
     data: null
   });
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
 
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
@@ -1188,6 +1188,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   };
 
   const nextStep = async (values: any, setErrors: any) => {
+    
     setFormSubmitted(true);
     const errors = await validateCurrentStep(values);
     if (Object.keys(errors).length === 0) {
@@ -1395,7 +1396,6 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
               />
             )}
 
-            {/* Navigation buttons */}
             <div className="sticky bottom-4 left-0 flex justify-between bg-white p-2 rounded-lg shadow-md">
               <div>
                 {currentStep > 1 && (
