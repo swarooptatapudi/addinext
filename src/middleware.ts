@@ -1,34 +1,23 @@
-import type { NextRequest } from 'next/server';
+// middleware.ts
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { ROUTES } from './uttils/Routes';
 
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-  const isLogin = request.cookies.get('sid')?.value && request.cookies.get('sid')?.value !== 'Guest';
-  const isProtected = ROUTES.some((value) => url.pathname.startsWith(value.path));
+  const sid = request.cookies.get('sid')?.value;
+  const isLoggedIn = sid && sid !== 'Guest';
+
+  // If trying to access a protected route without auth
+  const isProtectedRoute = ROUTES.some((route) => url.pathname.startsWith(route.path));
   
-  // If not logged in and trying to access protected route
-  if (!isLogin && isProtected) {
-    url.pathname = '/auth';
-    return NextResponse.redirect(url);
-  }
-  
-  // If logged in and trying to access auth page
-  if (isLogin && (url.pathname === '/auth' || url.pathname === '/')) {
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+  if (!isLoggedIn && isProtectedRoute) {
+    return NextResponse.redirect(new URL('/auth', request.url));
   }
 
-  // If logged in but doesn't have role access
-  const userRole = 'admin'; // This should come from cookies or session
-  const hasRoleAccess = ROUTES.some((value) => 
-    value.path === url.pathname && 
-    (!value.roles || value.roles.includes(userRole))
-  );
-  
-  if (isLogin && !hasRoleAccess && isProtected) {
-    url.pathname = '/unauthorized';
-    return NextResponse.redirect(url);
+  // If logged in but trying to access /auth or /
+  if (isLoggedIn && (url.pathname === '/auth' || url.pathname === '/')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return NextResponse.next();

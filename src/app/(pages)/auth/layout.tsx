@@ -1,6 +1,6 @@
 
 import React from 'react';
-import ErrorBoundary from '@/components/app/common/ErrorBoundary';
+// import ErrorBoundary from '@/components/app/common/ErrorBoundary';
 
 export default function AuthLayout({
   children
@@ -8,7 +8,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ErrorBoundary>
+    // <ErrorBoundary>
     <div className="flex w-full h-screen">
       <div className="flex flex-col items-center justify-center min-w-[60%] bg-gray-100 text-primary min-h-full">
         <h1 className="text-5xl font-bold ">ADDINxT</h1>
@@ -16,6 +16,6 @@ export default function AuthLayout({
       </div>
       {children}
     </div>
-    </ErrorBoundary>
+    // </ErrorBoundary>
   );
 }
