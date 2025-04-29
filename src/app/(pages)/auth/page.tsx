@@ -10,13 +10,23 @@ import { useRouter } from 'next/navigation';
 export default function SignIn(): React.JSX.Element {
   const [login, { isSuccess, isLoading, error }] = useLoginMutation();
   const router = useRouter();
-
+  
   useEffect(() => {
     if (isSuccess) {
       router.push('/dashboard');
+      // Force a full page reload to ensure all state is reset
+      setTimeout(() => window.location.reload(), 100);
       toast.success('Login successful');
     }
   }, [isSuccess, router]);
+  // useEffect(() => {
+  //   if (isSuccess) {
+  //     // router.push('/dashboard');
+  //     window.location.href = '/dashboard';
+  //     toast.success('Login successful');
+      
+  //   }
+  // }, [isSuccess, router]);
 
   useEffect(() => {
     if (error) {
