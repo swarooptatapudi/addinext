@@ -1,4 +1,3 @@
-// AkOrderForm
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -35,9 +34,9 @@ import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
 import { BK_FORM_TYPE, USER } from '@/uttils/Types';
 import { getFormOptionsObject } from '@/uttils/UttilFuncations';
 import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
-import { AKB_FORM_INITIAL_VALUES } from './constants';
-import { Step5 } from '@/components/form/bkForm/Step5Finishing';
-import CustomTable from '@/components/app/common/CustomTable';
+import { AKINSOLES_FORM_INITIAL_VALUES } from './constants';
+import { Step5 } from '@/components/form/insolesForm/Step5Finishing';
+import { CheckboxGroup }  from '@/components/app/common/foot-complaints-form';
 
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
@@ -45,8 +44,7 @@ const step1Validation = Yup.object().shape({
     .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
     .required(FORMIK_ERRORS.REQUIRED),
   socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
-  design_variation: Yup.string().required(FORMIK_ERRORS.REQUIRED),
-  model_name: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  insole_model:Yup.string().required(FORMIK_ERRORS.REQUIRED),
   activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   height: Yup.string()
     .matches(/^\d+(\.\d{1,2})?$/, {
@@ -68,12 +66,70 @@ const step1Validation = Yup.object().shape({
   //   .matches(/^\d+$/, 'Must contain only numbers')
   //   .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
   shoe_size: Yup.string()
-    .matches(/^\d+(\.\d{1,2})?$/, {
-      message: 'Must be a number (e.g. 92.57 or 95)',
-      excludeEmptyString: true,
-    })
-    .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
-    .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 200.0),
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+$/, 'Must contain only digits')
+    .test(
+      'min-value',
+      'Size must be at least 0',
+      (value) => parseInt(value) >= 0
+    )
+    .test(
+      'max-value',
+      'Size must be no more than 60',
+      (value) => parseInt(value) <= 60
+    ),
+    foot_length: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+$/, 'Must contain only digits')
+    .test(
+      'min-value',
+      'foot length must be at least 0',
+      (value) => parseInt(value) >= 0
+    )
+    .test(
+      'max-value',
+      'foot length must be no more than 50',
+      (value) => parseInt(value) <= 50
+    ),
+    metatarsal_length: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+$/, 'Must contain only digits')
+    .test(
+      'min-value',
+      'metatarsal length must be at least 0',
+      (value) => parseInt(value) >= 0
+    )
+    .test(
+      'max-value',
+      'metatarsal length must be no more than 50',
+      (value) => parseInt(value) <= 50
+    ),
+    metatarsal_width: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+$/, 'Must contain only digits')
+    .test(
+      'min-value',
+      'metatarsal width must be at least 0',
+      (value) => parseInt(value) >= 0
+    )
+    .test(
+      'max-value',
+      'metatarsal width must be no more than 50',
+      (value) => parseInt(value) <= 50
+    ),  
+    shoe_width: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+$/, 'Must contain only digits')
+    .test(
+      'min-value',
+      'Size must be at least 0',
+      (value) => parseInt(value) >= 0
+    )
+    .test(
+      'max-value',
+      'Size must be no more than 25',
+      (value) => parseInt(value) <= 25
+    ), 
   flexion_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
@@ -118,23 +174,7 @@ const step4Validation = Yup.object().shape({
               return num >= -20 && num <= 20;
             }
           )   })
-        ),
-        table_zbib: Yup.array().of(
-          Yup.object().shape({
-            pressure_mm: Yup.string()
-              .nullable()
-              .test(
-                'is-valid-number',
-                'Must be a number between 0 and 10',
-                (value) => {
-                  if (!value || value.trim() === '') return true; // Allow empty
-                  if (!/^\d+$/.test(value)) return false; // Only positive numbers
-                  const num = parseInt(value, 10);
-                  return num >= 0 && num <= 10;
-                }
-              )
-          })
-        ),
+        )
 });
 
 const step3Validation = Yup.object().shape({
@@ -146,7 +186,8 @@ const step5Validation = Yup.object().shape({
   delivery_date: Yup.string(),
 });
 
-const initialValues = AKB_FORM_INITIAL_VALUES;
+const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
+
 const SocketTypeDialog = ({ 
   open, 
   onOpenChange, 
@@ -209,7 +250,7 @@ const SocketTypeDialog = ({
   );
 };
 
-const DesignVariationDialog = ({
+const InsolesDialog = ({
   open,
   onOpenChange,
   options,
@@ -223,52 +264,58 @@ const DesignVariationDialog = ({
   socketType: string;
 }) => {
   const getDynamicContent = (variation: string) => {
-    
-    const normalizedVariation = variation.trim().toLowerCase();
+    // Trim and normalize the variation text
+    const normalizedVariation = variation.trim();
     
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
-      'standard (sx)': {
-        title: 'Standard (SX)',
-        description: 'Premium Definitive Sockets Printed on HP-MJF',
-        image: '/assets/order-forms/bk-order/foot-type/SX.png'
+      'AddiSole': {
+        title: 'AddiSole',
+        description: 'Premium Insole printed on HP-MJF',
+        image: '/assets/order-forms/insoles/AddiSole.png'
       },
-      'adjustable (ax)': {
-        title: 'Adjustable (AX)',
-        description: 'Adjustable Socket for varying residual limb conditions',
-        image: '/assets/order-forms/bk-order/foot-type/AX.png'
+      'AddiEco': {
+        title: 'AddiEco',
+        description: 'Standard Insoles printed on FDM Printer',
+        image: '/assets/order-forms/insoles/AddiSoleEco.png'
       },
     };
-
-    // Try exact match first
+  
     if (contentMap[normalizedVariation]) {
       return contentMap[normalizedVariation];
     }
-
-    // Try partial match (without parentheses)
-    const baseVariation = normalizedVariation.split(' (')[0];
-    const partialMatch = Object.entries(contentMap).find(([key]) => 
-      key.startsWith(baseVariation)
+  
+    const lowerCaseVariation = normalizedVariation.toLowerCase();
+    const caseInsensitiveMatch = Object.entries(contentMap).find(([key]) => 
+      key.toLowerCase() === lowerCaseVariation
     );
-
+  
+    if (caseInsensitiveMatch) {
+      return caseInsensitiveMatch[1];
+    }
+  
+    const baseVariation = normalizedVariation.split(' (')[0].trim();
+    const partialMatch = Object.entries(contentMap).find(([key]) => 
+      key === baseVariation
+    );
+  
     if (partialMatch) {
       return partialMatch[1];
     }
-
-    // Default fallback
+  
     return {
-      title: variation.trim(),
+      title: normalizedVariation,
       description: 'No description available',
       image: '/assets/design-variations/default.jpg'
     };
   };
-
+ 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Select Design Variation</DialogTitle>
+          <DialogTitle>Select Insoles Model</DialogTitle>
           <DialogDescription>
-            Choose your preferred design variation from the options below
+            Choose your preferred Insoles Model from the options below
           </DialogDescription>
         </DialogHeader>
         
@@ -451,10 +498,12 @@ const Step1 = ({
   setSocketTypeDialog  
 }: any) => {
   
-  const [designVariationDialog, setDesignVariationDialog] = useState({
-    open: false,
-    options: []
-  });
+    const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  
+  const [insoleDialog, setInsoleDialog] = useState({
+      open: false,
+      options: []
+    });
   
   const [modelDialog, setModelDialog] = useState({
     open: false,
@@ -475,24 +524,26 @@ const Step1 = ({
     }));
   }, [FORM_OPTIONS?.socket_type]);
   
-  // Enhanced design variation options
-  const designVariationOptions = useMemo(() => {
-    if (!values.socket_type) return [];
-    const baseOptions = FORM_OPTIONS[values.socket_type + '_design_variation'] || [];
+
+const designVariationOptions = useMemo(() => {
+  return FORM_OPTIONS['insole_model'] || [];
+}, [FORM_OPTIONS]);
+
+useEffect(() => {
+  console.log("Available insole models:", FORM_OPTIONS['insole_model']);
+  console.log("Current insole model value:", values.insole_model);
+}, [FORM_OPTIONS, values.insole_model]);
     
-    return baseOptions.map((option: { value: string; label: string }) => ({
-      ...option,
-    }));
-  }, [values.socket_type, FORM_OPTIONS]);
 
   const modelOptions = useMemo(() => {
     if (!values.socket_type || !values.design_variation) return [];
-    const baseOptions  = FORM_OPTIONS[values.socket_type + '_' + values.design_variation +'_'+'model_name'] || [];
+    const baseOptions  = FORM_OPTIONS[values.socket_type + '_' + values.design_variation +'_'+'_design_variation'] || [];
     
     return baseOptions.map((option: { value: string; label: string }) => ({
       ...option,
     }));
   }, [values.socket_type, values.design_variation, FORM_OPTIONS]);
+
   return (
     <div className="flex flex-col gap-6">
       <h3 className="font-semibold text-lg">Basic Details</h3>
@@ -571,25 +622,49 @@ const Step1 = ({
       <div className="divider"></div>
 
       <div className="grid grid-cols-4 gap-4">
-        <Input
-          placeholder="Patient Name"
-          label="Amputation Date"
-          type="date"
-          value={values.amputation_date}
-          onChange={handleChange('amputation_date')}
-        />
-        <SelectBox
-          options={FORM_OPTIONS?.amputated_leg || []}
-          label="Amputation Leg"
-          value={values.amputated_leg}
-          onValueChange={handleChange('amputated_leg')}
-        />
-        <SelectBox
-          options={FORM_OPTIONS?.reason_for_amputation || []}
-          label="Reason of Amputation"
-          value={values.reason_for_amputation}
-          onValueChange={handleChange('reason_for_amputation')}
-        />
+              <Input
+                label='Shoe Size (European) '
+                placeholder="10"
+                value={values.shoe_size}
+                onChange={handleChange('shoe_size')}
+                required
+                inVaild={shouldShowError('shoe_size', true)}
+                error={errors.shoe_size}
+              />
+        
+             <Input
+              label="Shoe Width (cm)"
+              placeholder="10"
+              value={values.shoe_width}
+              onChange={handleChange('shoe_width')}
+              required
+              inVaild={shouldShowError('shoe_width', true)}
+              error={errors.shoe_width}
+              />
+              <div className="flex flex-col">
+          <label className="block text-xs font-medium text-black mb-1">
+            Insoles Model <span className="text-red-500">*</span>
+          </label>
+          <div>
+
+          <Button
+  variant="outline"
+  className="w-full text-left justify-start h-10"
+  onClick={() => setInsoleDialog({
+    open: true,
+    options: designVariationOptions
+  })}
+>
+  {values.insole_model 
+    ? designVariationOptions.find((opt: { value: string }) => opt.value === values.insole_model)?.label
+    : "Select Insole Model"}
+</Button>
+                        {shouldShowError('insole_model', true) && (
+                          <p className="text-xs text-red-500 mt-1">{errors.insole_model}</p>
+                        )}
+                        </div>
+          
+        </div>
         <SelectBox
           options={FORM_OPTIONS?.activity_level || []}
           label="Activity Level"
@@ -601,8 +676,7 @@ const Step1 = ({
         />
       </div>
 
-      <div className="divider"></div>
-      <div className="grid grid-cols-3 gap-4">
+      {/* <div className="grid grid-cols-3 gap-4">
         <SelectBox
           options={socketTypeOptions}
           label="Socket Type"
@@ -673,162 +747,119 @@ const Step1 = ({
             />
           )}
         </div>
-      </div>
-
-      <div className="divider"></div>
+      </div> */}
 
       <h3 className="font-semibold text-lg ">Measurements</h3>
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
-        <div>
-           <Image
-                            src="/assets/order-forms/ak-order/AK1.png"
-                            alt="measurements"
-                            width={400}
-                            height={400}
+        <div className='ml-5' >
+          <Image
+            src={'/assets/order-forms/bk-order/insoles_foot.png'}
+            alt="measurements"
+            width={400}
+            height={100}
             className="object-cover"
             loading="lazy"
             priority={false}
             unoptimized={true}
-                          />
+          />
         </div>
-        <div className='ml-12'  style={{ width: '601px' }}>
-                          <div>
-                            <b className='pag-4'>Circumference of Stump at 5 cm level</b>
-                            </div>
-                          <CustomTable
-  columns={[
-    // { header: 'S.No.', accessorKey: 's_no' },
-    { header: 'Circumference (cm)', accessorKey: 'circumference_at_cm' },
-    { header: 'Measurement (cm)', accessorKey: 'measurement_cm' }, // New input field
-    { header: 'Standard Reduction (%)', accessorKey: 'standard_reduction_' },
-    { header: 'Desired Reduction (%)', accessorKey: 'desired_reduction_' }
-  ]}
-  data={values?.ak_socket_measurements?.map((item: { circumference_at_cm: any; measurement_cm: any; standard_reduction_: any; desired_reduction_: any; }, index: number) => ({
-    id: index,
-    // s_no: index + 1,
-    circumference_at_cm: item?.circumference_at_cm,
-    measurement_cm: ( // Input for measurement
-      <Input
-        name={`ak_socket_measurements[${index}].measurement_cm`}
-        value={item?.measurement_cm || ''}
-        onChange={handleChange}
-        style={{ height: '35px', width: '150px' }}
-        type="text" // Ensures only numbers are entered
-        placeholder='(cm)'
-        className="w-full placeholder:text-[12px]"
-      />
-    ),
-    standard_reduction_: item?.standard_reduction_,
-    desired_reduction_: ( // Input for desired reduction
-      <Input
-        name={`ak_socket_measurements[${index}].desired_reduction_`}
-        value={item?.desired_reduction_ || ''}
-        onChange={handleChange}
-        style={{ height: '35px', width: '150px' }}
-        placeholder='(%)'
-        className="w-full placeholder:text-[12px]"
-      />
-    )
-  }))}
+        <div className="flex flex-col col-span-2 gap-4 ml-20">
+          <div className="grid grid-cols-2 gap-4 ">
+            <div className="mb-2">
+              <label className="block text-xs font-medium text-black">
+                <strong>A</strong> - Foot Length (cm) <span className="text-red-500">*</span>
+              </label>
+              <div className='mt-1'>
+
+              <Input
+                placeholder="10"
+                value={values.foot_length}
+                onChange={handleChange('foot_length')}
+                required
+                inVaild={shouldShowError('foot_length', true)}
+                error={errors.foot_length}
+                />
+                </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 ">
+            <div className="mb-0 ">
+              <label className="block text-xs font-medium text-black">
+                <strong>B</strong> - Metatarsal to heel length (cm) <span className="text-red-500">*</span>
+              </label>
+              <div className='mt-1'>
+
+              <Input
+                placeholder="10"
+                value={values.metatarsal_length }
+                onChange={handleChange('metatarsal_length')}
+                required
+                inVaild={shouldShowError('metatarsal_length', true)}
+                error={errors.metatarsal_length}
+                />
+                </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 ">
+            <div className="mb-2">
+              <label className="block text-xs font-medium text-black">
+                <strong>C</strong> - Metatarsal width (cm) <span className="text-red-500">*</span>
+              </label>
+              <div className='mt-1'>
+              <Input
+                placeholder="10"
+                value={values.metatarsal_width}
+                onChange={handleChange('metatarsal_width')}
+                required
+                inVaild={shouldShowError('metatarsal_width', true)}
+                error={errors.metatarsal_width}
+              />
+            </div>
+              
+            </div>
+          </div>
+      
+        </div>
+      </div>
+      <div className="ml-1 space-y-4">
+      <h6 className="text-2xl font-bold text-[16px] ml-5 text-black">FOOT COMPLAINTS/ PROBLEMS</h6>
+  <div className="grid grid-cols-2 gap-4 mr-40 mb-5">
+    <CheckboxGroup
+      options={[
+        { id: 'plantar-fascitis', label: 'Plantar Fascitis', group: 'Heel Pain' },
+        { id: 'heel-spur', label: 'Heel Spur', group: 'Heel Pain' },
+        { id: 'flat-feet', label: 'Flat Feet', group: 'Arch Pain' },
+        { id: 'pronation', label: 'Pronation', group: 'Arch Pain' },
+        { id: 'metatarsalgia', label: 'Metatarsalgia', group: 'Metatarsal Pain' },
+        { id: 'mortons-neuroma', label: 'Mortons Neuroma', group: 'Metatarsal Pain' },
+        { id: 'heel-deformity', label: 'Heel Deformity', group: 'Ankle Pain' },
+        { id: 'ankle-pain', label: 'Ankle Pain', group: 'Ankle Pain' },
+        { id: 'osteoarthritis', label: 'Osteoarthritis', group: 'Knee Pain' },
+        { id: 'corn', label: 'Corn', group: 'Skin Issues' },
+        { id: 'calluses', label: 'Calluses', group: 'Skin Issues' },
+        { id: 'achiles-tendonitis', label: 'Achilles Tendonitis', group: 'Ach Tend.' },
+        { id: 'neuroma', label: 'Neuroma', group: 'Diabetic' },
+        { id: 'shin-pain', label: 'Shin Pain', group: 'Shin Splint' },
+        { id: 'high-arches', label: 'High Arches', group: 'Lateral Foot Pain' },
+      ]}
+      selectedOptions={selectedOptions}
+      onChange={(newSelectedOptions) => {
+        setSelectedOptions(newSelectedOptions);
+        setFieldValue('selected_foot_conditions', newSelectedOptions);
+      }}
+    />
+  </div>
+</div>
+
+      <InsolesDialog
+  open={insoleDialog.open}
+  onOpenChange={(open) => setInsoleDialog(prev => ({...prev, open}))}
+  options={designVariationOptions}
+  onSelect={(value) => {
+    setFieldValue('insole_model', value); 
+  }}
+  socketType={values.socket_type}
 />
-                        </div>
-      </div>
-      <div className="grid grid-cols-5 gap-4 mt-5">
-        <div className="col-span-1">
-          <SelectBox
-            options={FORM_OPTIONS['foot_type'] ?? []}
-            label="Foot Type"
-            required={false}
-            value={values.foot_type}
-            onValueChange={handleChange('foot_type')}
-            className="w-full"
-          />
-        </div>
-
-        <div className="col-span-1">
-          <Input
-            placeholder="0"
-            label="Shoe Size (cm)"
-            value={values.shoe_size}
-            onChange={handleChange('shoe_size')}
-            inVaild={shouldShowError('shoe_size')}
-            error={errors.shoe_size}
-            className="w-full placeholder:text-[12px]"
-          />
-        </div>
-
-        <div className="col-span-1">
-          <Input
-            label="Flexion Angle (Deg)"
-            placeholder="(Deg)"
-            value={values.flexion_angle}
-            onChange={handleChange('flexion_angle')}
-            inVaild={shouldShowError('flexion_angle')}
-            error={errors.flexion_angle}
-            className="w-full placeholder:text-[12px]"
-          />
-        </div>
-
-        <div className="col-span-1">
-          <Input
-            label="Add/Abd Angle (Deg)"
-            placeholder="(Deg)"
-            value={values.abductionadduction_angle}
-            onChange={handleChange('abductionadduction_angle')}
-            inVaild={shouldShowError('abductionadduction_angle')}
-            error={errors.abductionadduction_angle}
-            className="w-full placeholder:text-[12px]"
-          />
-        </div>
-
-        <div className="col-span-1">
-          <SelectBox
-            options={FORM_OPTIONS['stump_type'] ?? []}
-            label="Stump Type"
-            value={values.stump_type}
-            onValueChange={handleChange('stump_type')}
-            className="w-full"
-          />
-        </div>
-      </div>
-
-      <h3 className="font-semibold text-lg">Stump Condition</h3>
-      <div className="grid grid-cols-3 gap-4 items-center ml-1">
-        <div>
-          <Image
-            src={'/assets/order-forms/bk-order/stumpcondtion.png'}
-            alt="measurements"
-            width={300}
-            height={250}
-            className="object-cover"
-          />
-        </div>
-        <div className="grid col-span-2">
-          <Textarea
-            label="Stump Condition (please describe any specific condition of the stump example bony prominence etc.)"
-            className="h-[200px] "
-            value={values.stump_condition}
-            onChange={handleChange('stump_condition')}
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-4">
-        <Textarea
-          label="Previous Prosthetic Experience (Please describe any previous experience of Prosthetics used, Make, Model,
-                 Type, Issues with it and expectation from the new Prosthetic socket)"
-          className="h-[100px] "
-          value={values.previous_prosthetic_experience}
-          onChange={handleChange('previous_prosthetic_experience')}
-        />
-      </div>
-
-      <DesignVariationDialog
-        open={designVariationDialog.open}
-        onOpenChange={(open) => setDesignVariationDialog(prev => ({...prev, open}))}
-        options={designVariationOptions}
-        onSelect={(value) => setFieldValue('design_variation', value)}
-        socketType={values.socket_type}
-      />
 
       <ModelDialog
         open={modelDialog.open}
@@ -998,29 +1029,33 @@ const Step2 = ({
 
 const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    const fieldValue = fieldName.includes('[') 
-    ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
-        obj && obj[key], values)
-    : values[fieldName];
-
-  if (!fieldValue) {
-    if (!isRequired) return false;
-    return formSubmitted || touched[fieldName];
-  }
-  const fieldError = fieldName.includes('[')
-  ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
-      obj && obj[key], errors)
-  : errors[fieldName];
+    // Handle nested fields like socket_design_details[0].cpo_input_mm
+    const fieldValue = fieldName.includes('.') 
+      ? fieldName.split('.').reduce((obj, key) => 
+          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+      : values[fieldName];
   
-return !!fieldError && (touched[fieldName] || formSubmitted);
-};
+    if (!fieldValue) {
+      if (!isRequired) return false;
+      return formSubmitted || touched[fieldName];
+    }
+    const fieldError = fieldName.includes('.')
+      ? fieldName.split('.').reduce((obj, key) => 
+          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+      : errors[fieldName];
+      
+    return !!fieldError && (touched[fieldName] || formSubmitted);
+  };
   return (
     <div>
+      {/* <h3 className="font-semibold text-lg">Stump Condition</h3> */}
       <p className="text-xs mt-2">
-      Please mark the below points on the stump along with the Trimline before the Scan. Please also mention extra pressure /
-      relief (in mm) at below points. (- for pressure and + for relief)
+        Please specify the design considerations for each point from A to N. Use "-" to
+        indicate Apply pressure (Reduction) and "+" to indicate Relief at the particular
+        area. All values should be in millimetres (mm). For eg for applying reduction of 6 mm
+        at Patela Tendon, please specify -6
       </p>
-      <div className="grid grid-cols-3 gap-4 mt-4">
+      <div className="grid grid-cols-3 gap-4 mt-8">
         <div className="mb-6">
           <p className="text-xs">
             {' '}
@@ -1038,53 +1073,19 @@ return !!fieldError && (touched[fieldName] || formSubmitted);
           />
       </div>
       <div className="flex justify-center p-2 mr-20">
-                    <div className='mt-30'>
-
         <Image
-          src={'/assets/order-forms/ak-order/AK2.png'}
+          src={'/assets/order-forms/bk-order/SocketDesign-BK.jpg'}
           alt="Design Modications"
           width={520}
           height={400}
           className="object-cover"
           />
-          </div>
-          <div>
-             <div className='mt-10 ml-10'>
-
-             <CustomTable
-            
-  columns={[
-    { header: 'S NO.', accessorKey: 's_no' },
-    { header: 'Point', accessorKey: 'point_name' },
-    { header: 'Pressure (mm)', accessorKey: 'pressure_mm' }
-  ]}
-  data={values?.table_zbib?.map((item: any, index: number) => ({
-    id: index,
-    s_no: index + 1,
-    point_name: item?.point_name,
-    pressure_mm: (
-      <Input
-        name={`table_zbib[${index}].pressure_mm`}
-        value={item?.pressure_mm || ''}
-        onChange={handleChange}
-        style={{ height: '35px', width: '200px' }}
-        type="text"
-        placeholder='(cm)'
-        className="w-full placeholder:text-[12px]"
-        inVaild={shouldShowError(`table_zbib[${index}].pressure_mm`)}
-        error={errors?.table_zbib?.[index]?.pressure_mm || ''}
-      />
-    ),
-  }))}
-/>
-                            </div>
-          </div>
       </div>
     </div>
   );
 };
 
-export default function AkOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
+export default function InsolesOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
   const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
@@ -1101,6 +1102,8 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
     data: null
   });
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
     if (data) {
@@ -1111,7 +1114,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
 
   const handleConfirmOrder = () => {
     const payload: any = {};
-    payload.item_type = 'AK';
+    payload.item_type = 'BK';
     payload.customer = user?.customer_id;
     payload.order_details = formValues;
     payload.item_code = selectedItem;
@@ -1122,7 +1125,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
   const OnSubmit = async (values: BK_FORM_TYPE) => {
     setFormValues(values);
     const payload = {
-      item_type: 'AK',
+      item_type: 'BK',
       socket_type: values.socket_type,
       design_variation: values.design_variation,
       activity_level: values.activity_level,
@@ -1135,7 +1138,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
     
     // Submit the final form
     const orderPayload = {
-      item_type: 'AK',
+      item_type: 'BK',
       customer: user?.customer_id,
       order_details: values,
       item_code: itemCode,
@@ -1192,7 +1195,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
         // Show confirmation dialog after Step 1
         setFormValues(values);
         const itemPayload = {
-          item_type: 'AK',
+          item_type: 'BK',
           socket_type: values.socket_type,
           design_variation: values.design_variation,
           activity_level: values.activity_level,
@@ -1378,6 +1381,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
               />
             )}
             {currentStep === 5 && (
+
               <Step5 
                 values={values}
                 handleChange={handleChange}
@@ -1386,6 +1390,8 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
                 setFieldValue={setFieldValue}
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
+                setSelectedOptions={setSelectedOptions}
+                selectedOptions={selectedOptions}
               />
             )}
 
@@ -1464,496 +1470,3 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
     </div>
   );
 }
-//----this is AK form ---------------------------------------------------
-//-----------------------------------------------------------------------
-//-----------------------------------------------------------------------
-
-// 'use client';
-// import StlFilePicker from '@/components/app/common/StlPreviewer';
-// import { Button } from '@/components/ui/button';
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogFooter,
-//   DialogHeader,
-//   DialogTitle
-// } from '@/components/ui/dialog';
-// import { Input } from '@/components/ui/input';
-// import { SelectBox } from '@/components/ui/selectbox';
-// import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
-// import { useCreateOrderMutation } from '@/rtk-query/apis/orders';
-// import { USER } from '@/uttils/Types';
-// import { getFormOptionsObject } from '@/uttils/UttilFuncations';
-// import { Formik } from 'formik';
-// import Image from 'next/image';
-// import React, { useEffect, useMemo, useState } from 'react';
-// import { useSelector } from 'react-redux';
-// import * as Yup from 'yup';
-// import { AK_FORM_INITIAL_VALUES } from './constants';
-// import CustomTable from '@/components/app/common/CustomTable';
-// import PatientPicker from '@/components/app/common/PatientPicker';
-// import { Textarea } from '@/components/ui/textarea';
-// import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
-// import { toast } from 'react-toastify';
-// import { useRouter } from 'next/navigation';
-
-// const validationSchema = Yup.object().shape({
-//   patient_name: Yup.string()
-//     .min(2, 'Too Short!')
-//     .max(50, 'Too Long!')
-//     .required('Patient Name is required'),
-//   socket_type: Yup.string().required('This field is required'),
-//   design_variation: Yup.string().required('This field is required'),
-//   model_name: Yup.string().required('This field is required'),
-//   activity_level: Yup.string().required('This field is required'),
-//   stump_length: Yup.string().required('This field is required'),
-//   weight: Yup.string().required('This field is required'),
-//   date_of_birth: Yup.string().required('This field is required')
-// });
-
-// const initialValues = AK_FORM_INITIAL_VALUES;
-
-// export default function AkOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
-//   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
-//   const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
-//   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
-  
-//   const [selectedItem, setSelectedItem] = React.useState<string>('');
-//   const [getItem, { isLoading: isItemFetching }] = useGetItemNameByDetailsMutation();
-//   const [formValues, setFormValues] = useState<any>(initialValues);
-//   console.log("$$$$$$$>>",formValues);
-//   const [modelOpen, setModelOpen] = useState(false);
-//   const router = useRouter();
-
-//   const FORM_OPTIONS = useMemo(() => {
-//     if (isFormOptionsLoading) return {};
-//     if (data) {
-//       return getFormOptionsObject(data?.order_from_details);
-//     }
-//     return {};
-//   }, [data, isFormOptionsLoading]);
-//   const handleConfirmOrder = () => {
-//     const payload: any = {};
-//     payload.item_type = 'AK';
-//     payload.customer = user?.customer_id;
-//     payload.order_details = formValues;
-//     payload.item_code = selectedItem;
-
-//     createOrder(payload);
-//   };
-
-//   const OnSubmit = async (values: any) => {
-//     setFormValues(values);
-//     setModelOpen(true);
-
-//     const itemPayload = {
-//       item_type: 'AK',
-//       socket_type: values.socket_type,
-//       design_variation: values.design_variation,
-//       activity_level: values.activity_level,
-//       model_name: values.model_name,
-//       stump_length: values.stump_length,
-//       weight: values.weight
-//     };
-//     const itemCode = await getItemCodeByValues(itemPayload);
-//     setSelectedItem(itemCode);
-//   };
-
-//   const getItemCodeByValues = async (payload: any) => {
-//     const res: any = await getItem(payload);
-//     return res?.data?.item_code;
-//   };
-
-//   // after order success
-//   useEffect(() => {
-//     if (isSuccess) {
-//       toast.success('Order created successfully');
-//       setSelectedItem('');
-//       setFormValues(initialValues);
-//       router.push('/orders');
-//     }
-//   }, [isOrderCreating, isSuccess]);
-
-//   return (
-//     <div className="pb-16 relative">
-//       <Formik initialValues={initialValues} onSubmit={OnSubmit} validationSchema={validationSchema}>
-//         {({ values, handleChange, handleSubmit, errors, touched, setFieldValue }) => (
-//           <div className="flex flex-col gap-6">
-//             <h3 className="font-semibold text-lg">Basic Details</h3>
-//             {/* line 1 */}
-//             <div className="grid grid-cols-3 gap-4">
-//               <div className="grid grid-cols-3 gap-2 col-span-2">
-//                 <PatientPicker
-//                   value={values.patient_name}
-//                   onChange={handleChange('patient_name')}
-//                   setFieldValue={setFieldValue}
-//                   required
-//                   inVaild={!!errors.patient_name && !!touched.patient_name}
-//                   error={errors.patient_name}
-//                 />
-//                 <Input
-//                   placeholder="65"
-//                   label="Height (feet)"
-//                   value={values.height}
-//                   onChange={handleChange('height')}
-//                 />
-//                 <Input
-//                   placeholder="50"
-//                   label="Weight (kg)"
-//                   value={values.weight}
-//                   onChange={handleChange('weight')}
-//                   required
-//                   inVaild={!!errors.weight && !!touched.weight}
-//                   error={errors.weight}
-//                 />
-//               </div>
-//               <Input
-//                 placeholder="10 digit phone number"
-//                 label="Mobile Number"
-//                 value={values.mobile_no}
-//                 onChange={handleChange('mobile_no')}
-//               />
-//               <Input
-//                 placeholder="Email"
-//                 label="Email"
-//                 value={values.email}
-//                 onChange={handleChange('email')}
-//               />
-//               <SelectBox
-//                 options={[
-//                   { value: 'Male', label: 'Male' },
-//                   { value: 'Female', label: 'Female' }
-//                 ]}
-//                 label="Gender"
-//                 required={true}
-//                 value={values.gender}
-//                 onValueChange={handleChange('gender')}
-//                 inVaild={!!errors.gender && !!touched.gender}
-//                 error={errors.gender}
-//               />
-//             </div>
-//             <div className="divider"></div>
-
-//             {/* line 2 */}
-//             <div className="grid grid-cols-4 gap-4">
-//               <Input
-//                 placeholder="Patient Name"
-//                 label="Amputation Date"
-//                 type="date"
-//                 value={values.amputation_date}
-//                 onChange={handleChange('amputation_date')}
-//               />
-//               <SelectBox
-//                 options={FORM_OPTIONS?.amputated_leg || []}
-//                 label="Amputation Leg"
-//                 value={values.amputated_leg}
-//                 onValueChange={handleChange('amputated_leg')}
-//               />
-//               <SelectBox
-//                 options={FORM_OPTIONS?.reason_for_amputation || []}
-//                 label="Reason of Amputation"
-//                 value={values.reason_for_amputation}
-//                 onValueChange={handleChange('reason_for_amputation')}
-//               />
-//               <SelectBox
-//                 options={FORM_OPTIONS?.activity_level || []}
-//                 label="Activity Level"
-//                 value={values.activity_level}
-//                 onValueChange={handleChange('activity_level')}
-//                 required
-//                 inVaild={!!errors.activity_level && !!touched.activity_level}
-//                 error={errors.activity_level}
-//               />
-//             </div>
-
-//             <div className="divider"></div>
-
-//             {/* line 3 */}
-//             <div className="grid grid-cols-2 gap-4">
-//               <SelectBox
-//                 options={FORM_OPTIONS?.socket_type || []}
-//                 label="Socket Type"
-//                 value={values.socket_type}
-//                 onValueChange={handleChange('socket_type')}
-//                 inVaild={!!errors.socket_type && !!touched.socket_type}
-//                 required
-//               />
-
-//               <div className="grid grid-cols-2 gap-4">
-//                 <SelectBox
-//                   options={FORM_OPTIONS[values.socket_type + '_' + 'design_variation'] || []}
-//                   label="Design Variation"
-//                   value={values.design_variation}
-//                   onValueChange={handleChange('design_variation')}
-//                   inVaild={!!errors.design_variation && !!touched.design_variation}
-//                   required
-//                 />
-//                 <SelectBox
-//                   options={FORM_OPTIONS[values.socket_type + '_' + 'model_name'] || []}
-//                   label="Model"
-//                   value={values.model_name}
-//                   onValueChange={handleChange('model_name')}
-//                   inVaild={!!errors.model_name && !!touched.model_name}
-//                   required
-//                 />
-//               </div>
-//             </div>
-
-//             <div className="divider"></div>
-//             <div>
-//               <p className="font-semibold my-4">Measurements</p>
-//               <div className="grid grid-cols-2 gap-4">
-//                 <Image
-//                   src="/assets/order-forms/ak-order/AK1.png"
-//                   alt="measurements"
-//                   width={400}
-//                   height={400}
-//                 />
-//                 <div>
-//                   <b>A</b>
-//                   <CustomTable
-//                     columns={[
-//                       { header: 'Circumference at (cm)', accessorKey: 'circumference_at_cm' },
-//                       { header: 'Standard Reduction (%)', accessorKey: 'standard_reduction_' },
-//                       { header: 'Desired Reduction (%)', accessorKey: 'desired_reduction_' }
-//                     ]}
-//                     data={values?.ak_socket_measurements?.map((item, index) => ({
-//                       id: index,
-//                       circumference_at_cm: item?.circumference_at_cm,
-//                       standard_reduction_: item?.standard_reduction_,
-//                       desired_reduction_: (
-//                         <Input
-//                           name={`ak_socket_measurements[${index}].desired_reduction_`}
-//                           value={item?.desired_reduction_}
-//                           onChange={handleChange}
-//                           placeholder="5cm"
-//                         />
-//                       )
-//                     }))}
-//                   />
-//                 </div>
-
-//                 <div className="grid grid-cols-2 gap-4 col-span-2 mt-6">
-//                   <div className="grid grid-cols-2 gap-4 h-fit">
-//                     <Input
-//                       label="Stump Length (cm)"
-//                       boldKey="B"
-//                       value={values?.stump_length}
-//                       onChange={handleChange('stump_length')}
-//                       required
-//                       inVaild={!!errors.stump_length && !!touched.stump_length}
-//                       error={errors.stump_length}
-//                     />
-//                     <Input label="IT to MPT distance (cm)" boldKey="C" />
-//                     <Input label="MPT to floor distance (cm)" boldKey="D" />
-//                     <Input label="Waist Circumference (cm)" boldKey="E" />
-//                     <Input label="Foot Length (cm)" boldKey="F" />
-//                   </div>
-//                   <div className="grid grid-cols-2 gap-4 h-fit">
-//                     <Input
-//                       label="Flexion Angle (°)"
-//                       value={values?.flexion_angle}
-//                       onChange={handleChange('flexion_angle')}
-//                     />
-//                     <Input
-//                       label="Abduction Angle (°)"
-//                       value={values?.abduction_angle}
-//                       onChange={handleChange('abduction_angle')}
-//                     />
-//                     <Input
-//                       label="Adduction Angle (°)"
-//                       value={values?.adduction_angle}
-//                       onChange={handleChange('adduction_angle')}
-//                     />
-//                     <Input
-//                       label="M-L (Vernier)"
-//                       value={values?.ml_vernier}
-//                       onChange={handleChange('ml_vernier')}
-//                     />
-//                     <Input
-//                       label="A-P (Vernier)"
-//                       value={values?.ap_vernier}
-//                       onChange={handleChange('ap_vernier')}
-//                     />
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-
-//             <div className="divider"></div>
-//             <div className="w-fit">
-//               <p className="mb-1 text-xs ">Upload Scan</p>
-
-//               <StlFilePicker />
-//             </div>
-//             <div className="divider"></div>
-
-//             <div className="grid grid-cols-2 gap-4">
-//               <SelectBox
-//                 options={FORM_OPTIONS?.reason_for_amputation || []}
-//                 label="Reason of Amputation"
-//                 value={values.reason_for_amputation}
-//                 onValueChange={handleChange('reason_for_amputation')}
-//               />
-//               <SelectBox
-//                 options={FORM_OPTIONS?.medical_history || []}
-//                 label="Medical History"
-//                 value={values.medical_history}
-//                 onValueChange={handleChange('medical_history')}
-//               />
-//             </div>
-//             <div className="divider"></div>
-//             <div className="grid grid-cols-2 gap-4">
-//               <SelectBox
-//                 options={FORM_OPTIONS?.reason_for_amputation || []}
-//                 label="Residual Limb Condition (Shape)"
-//                 value={values.shape}
-//                 onValueChange={handleChange('shape')}
-//               />
-//               <SelectBox
-//                 options={FORM_OPTIONS?.skin_condition || []}
-//                 label="Skin Condition"
-//                 value={values.skin_condition}
-//                 onValueChange={handleChange('skin_condition')}
-//               />
-//             </div>
-//             <div className="grid grid-cols-2 gap-4">
-//               <SelectBox
-//                 options={FORM_OPTIONS?.locking_system || []}
-//                 label="Locking System Proposed"
-//                 value={values.locking_system}
-//                 onValueChange={handleChange('locking_system')}
-//               />
-//               <SelectBox
-//                 options={FORM_OPTIONS?.adapter_type || []}
-//                 label="Adapter"
-//                 value={values.adapter_type}
-//                 onValueChange={handleChange('adapter_type')}
-//               />
-//             </div>
-//             <div className="divider"></div>
-//             <div>
-//               <p className="font-semibold my-4">Scan Condition</p>
-//               <div className="grid grid-cols-4 gap-4">
-//                 <SelectBox
-//                   options={[{ value: 'Yes' }, { value: 'No' }]}
-//                   label="Direct Body"
-//                   required={true}
-//                 />
-//                 <Input label="With Liner (mm)" placeholder="3" />
-//                 <SelectBox
-//                   options={FORM_OPTIONS?.liner_type || []}
-//                   label="Liner Type"
-//                   value={values.liner_type}
-//                   onValueChange={handleChange('liner_type')}
-//                   required={true}
-//                 />
-//                 <Input
-//                   label="Marking Sock (mm)"
-//                   placeholder="2"
-//                   value={values?.marking_sock_thickness}
-//                   onChange={handleChange('marking_sock_thickness')}
-//                 />
-//               </div>
-//             </div>
-
-//             <div className="divider"></div>
-//             <div>
-//               <p className="font-semibold my-4">Socket Details</p>
-//               <div className="grid grid-cols-2 gap-4">
-//                 <div className="flex flex-col gap-6">
-//                   <Image
-//                     src="/assets/order-forms/ak-order/AK2.png"
-//                     alt="measurements"
-//                     width={500}
-//                     height={500}
-//                   />
-//                   <div>
-//                     <Textarea
-//                       label="Other Customization Requirements"
-//                       value={values?.other_customization_requirements}
-//                       onChange={handleChange('other_customization_requirements')}
-//                       className="min-h-[300px]"
-//                       placeholder="Start writing here"
-//                     />
-//                   </div>
-//                 </div>
-//                 <div>
-//                   <CustomTable
-//                     columns={[
-//                       { header: 'S NO.', accessorKey: 's_no' },
-//                       { header: 'Point', accessorKey: 'point_name' },
-//                       { header: 'Pressure (mm)', accessorKey: 'pressure_mm' }
-//                     ]}
-//                     data={values?.table_zbib?.map((item, index) => ({
-//                       id: index,
-//                       s_no: index + 1,
-//                       point_name: item?.point_name,
-//                       pressure_mm: (
-//                         <Input
-//                           name={`ak_socket_measurements[${index}].pressure_mm`}
-//                           value={item?.pressure_mm}
-//                           onChange={handleChange}
-//                         />
-//                       )
-//                     }))}
-//                   />
-//                 </div>
-//               </div>
-//             </div>
-//             <div className="divider"></div>
-
-//             <div className="sticky bottom-4 left-0 flex justify-end ">
-//               <Button className="shadow-2xl" type="button" onClick={() => handleSubmit()}>
-//                 Submit
-//               </Button>
-//             </div>
-//           </div>
-//         )}
-//       </Formik>
-
-//       <Dialog open={modelOpen} onOpenChange={setModelOpen}>
-//         <DialogContent>
-//           <DialogHeader>
-//             <DialogTitle>Confirm Order</DialogTitle>
-//           </DialogHeader>
-
-//           <div className="text-xs">
-//             <div className="flex justify-between items-center border-t p-2">
-//               <span>Socket Type</span>
-//               <span>{formValues.socket_type}</span>
-//             </div>
-//             <div className="flex justify-between items-center border-t p-2">
-//               <span>Design Variation</span>
-//               <span>{formValues.design_variation}</span>
-//             </div>
-//             <div className="flex justify-between items-center border-t p-2">
-//               <span>Modal</span>
-//               <span>{formValues.model_name}</span>
-//             </div>
-//             <div className="flex justify-between items-center border-y p-2">
-//               <span>Activity Level</span>
-//               <span>{formValues.activity_level}</span>
-//             </div>
-//             <div className="flex justify-between items-center border-b p-2 font-semibold">
-//               <span>Item Code</span>
-//               {isItemFetching ? <span className="loader"></span> : <span>{selectedItem}</span>}
-//             </div>
-//           </div>
-
-//           <DialogFooter>
-//             <Button onClick={() => setModelOpen(false)} variant={'outline'}>
-//               Cancel
-//             </Button>
-//             <Button
-//               onClick={handleConfirmOrder}
-//               disabled={isItemFetching || isOrderCreating || !selectedItem}
-//             >
-//               Confirm
-//             </Button>
-//           </DialogFooter>
-//         </DialogContent>
-//       </Dialog>
-//     </div>
-//   );
-// }

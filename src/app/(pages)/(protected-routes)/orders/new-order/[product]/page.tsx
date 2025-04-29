@@ -2,6 +2,7 @@
 import React from 'react';
 import BkOrderForm from '../_child/BkOrderForm';
 import AkOrderForm from '../_child/AkOrderForm';
+import InsolesOrderForm from '../_child/InsolesOrderForm';
 
 export default function NewOrderController({
   params
@@ -14,6 +15,10 @@ export default function NewOrderController({
     return <BkOrderForm item_type={product} />;
   } else if (product?.toLowerCase()?.includes('ak')) {
     return <AkOrderForm item_type={product} />
+
+  }
+  else if (product?.toLowerCase()?.includes('insoles')) {
+    return <InsolesOrderForm item_type={product}/>
 
   }
   else {
