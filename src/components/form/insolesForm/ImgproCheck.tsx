@@ -82,7 +82,7 @@ export function ImageCheckbox({
   );
 }
 
-//----------multiple seelct ----------------------------------
+//----------multiple seelct in future ----------------------------------
 // import * as React from 'react';
 // import Image from 'next/image';
 
