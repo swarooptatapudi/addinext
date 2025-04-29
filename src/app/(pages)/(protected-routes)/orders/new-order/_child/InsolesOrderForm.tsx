@@ -44,8 +44,7 @@ const step1Validation = Yup.object().shape({
     .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
     .required(FORMIK_ERRORS.REQUIRED),
   socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
-  // design_variation: Yup.string().required(FORMIK_ERRORS.REQUIRED),
-  // model_name: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  insole_model:Yup.string().required(FORMIK_ERRORS.REQUIRED),
   activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   height: Yup.string()
     .matches(/^\d+(\.\d{1,2})?$/, {
@@ -272,12 +271,12 @@ const InsolesDialog = ({
       'AddiSole': {
         title: 'AddiSole',
         description: 'Premium Insole printed on HP-MJF',
-        image: '/assets/order-forms/insoles/AddiSoleEco.png'
+        image: '/assets/order-forms/insoles/AddiSole.png'
       },
       'AddiEco': {
         title: 'AddiEco',
         description: 'Standard Insoles printed on FDM Printer',
-        image: '/assets/order-forms/insoles/AddiSole.png'
+        image: '/assets/order-forms/insoles/AddiSoleEco.png'
       },
     };
   

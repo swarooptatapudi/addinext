@@ -118,7 +118,23 @@ const step4Validation = Yup.object().shape({
               return num >= -20 && num <= 20;
             }
           )   })
-        )
+        ),
+        table_zbib: Yup.array().of(
+          Yup.object().shape({
+            pressure_mm: Yup.string()
+              .nullable()
+              .test(
+                'is-valid-number',
+                'Must be a number between 0 and 10',
+                (value) => {
+                  if (!value || value.trim() === '') return true; // Allow empty
+                  if (!/^\d+$/.test(value)) return false; // Only positive numbers
+                  const num = parseInt(value, 10);
+                  return num >= 0 && num <= 10;
+                }
+              )
+          })
+        ),
 });
 
 const step3Validation = Yup.object().shape({
@@ -982,67 +998,29 @@ const Step2 = ({
 
 const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    // Handle nested fields like socket_design_details[0].cpo_input_mm
-    const fieldValue = fieldName.includes('.') 
-      ? fieldName.split('.').reduce((obj, key) => 
-          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
-      : values[fieldName];
+    const fieldValue = fieldName.includes('[') 
+    ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
+        obj && obj[key], values)
+    : values[fieldName];
+
+  if (!fieldValue) {
+    if (!isRequired) return false;
+    return formSubmitted || touched[fieldName];
+  }
+  const fieldError = fieldName.includes('[')
+  ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
+      obj && obj[key], errors)
+  : errors[fieldName];
   
-    if (!fieldValue) {
-      if (!isRequired) return false;
-      return formSubmitted || touched[fieldName];
-    }
-    const fieldError = fieldName.includes('.')
-      ? fieldName.split('.').reduce((obj, key) => 
-          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
-      : errors[fieldName];
-      
-    return !!fieldError && (touched[fieldName] || formSubmitted);
-  };
+return !!fieldError && (touched[fieldName] || formSubmitted);
+};
   return (
     <div>
-      {/* <h3 className="font-semibold text-lg">Stump Condition</h3> */}
       <p className="text-xs mt-2">
       Please mark the below points on the stump along with the Trimline before the Scan. Please also mention extra pressure /
       relief (in mm) at below points. (- for pressure and + for relief)
       </p>
-      <div className="flex justify-center p-2 mr-20">
-                    <div className='mt-30'>
-
-        <Image
-          src={'/assets/order-forms/ak-order/AK2.png'}
-          alt="Design Modications"
-          width={520}
-          height={400}
-          className="object-cover"
-          />
-          </div>
-          <div>
-             <div className='mt-10 ml-10'>
-                              <CustomTable
-                                columns={[
-                                  { header: 'S NO.', accessorKey: 's_no' },
-                                  { header: 'Point', accessorKey: 'point_name' },
-                                  { header: 'Pressure (mm)', accessorKey: 'pressure_mm' }
-                                ]}
-                                data={values?.table_zbib?.map((item: { point_name: any; pressure_mm: string | number | readonly string[] | undefined; }, index: number) => ({
-                                  id: index,
-                                  s_no: index + 1,
-                                  point_name: item?.point_name,
-                                  pressure_mm: (
-                                    <Input
-                                      name={`ak_socket_measurements[${index}].pressure_mm`}
-                                      value={item?.pressure_mm}
-                                      onChange={handleChange}
-                                      style={{ height: '30px', padding: '2px 5px' }}
-                                    />
-                                  )
-                                }))}
-                              />
-                            </div>
-          </div>
-      </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4 mt-4">
         <div className="mb-6">
           <p className="text-xs">
             {' '}
@@ -1059,40 +1037,48 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
           error={errors.global_volume_reduction || ''}
           />
       </div>
-      <div className="grid grid-cols-3 gap-10">
-      {values.socket_design_details?.map((item: any, index: number) => {  
-  return (
-    <div key={index} className="flex items-start gap-4 w-full">
-      <p className="font-semibold">{item?.area}. </p>
-      <div className="flex-1">
-        <Input
-          placeholder={'Default Value ' + item?.default_mm}
-          label={item?.area_name + ' (mm)'}
-          value={item?.cpo_input_mm || ''}
-          name={`socket_design_details[${index}].cpo_input_mm`}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === '' || value === '-' || /^-?\d+$/.test(value)) {
-              if (value === '' || value === '-') {
-                handleChange(e);
-                return;
-              }
-              const num = Number(value);
-              if (num >= -20 && num <= 20) {
-                if (!(value.startsWith('-') && num === 0)) {
-                  handleChange(e);
-                }
-              }
-            }
-          }}
-          className="placeholder:text-[12px]"
-          inVaild={shouldShowError(`socket_design_details[${index}].cpo_input_mm`)}
-          error={errors?.socket_design_details?.[index]?.cpo_input_mm }
-        />
-      </div>
-    </div>
-  );
-})}
+      <div className="flex justify-center p-2 mr-20">
+                    <div className='mt-30'>
+
+        <Image
+          src={'/assets/order-forms/ak-order/AK2.png'}
+          alt="Design Modications"
+          width={520}
+          height={400}
+          className="object-cover"
+          />
+          </div>
+          <div>
+             <div className='mt-10 ml-10'>
+
+             <CustomTable
+            
+  columns={[
+    { header: 'S NO.', accessorKey: 's_no' },
+    { header: 'Point', accessorKey: 'point_name' },
+    { header: 'Pressure (mm)', accessorKey: 'pressure_mm' }
+  ]}
+  data={values?.table_zbib?.map((item: any, index: number) => ({
+    id: index,
+    s_no: index + 1,
+    point_name: item?.point_name,
+    pressure_mm: (
+      <Input
+        name={`table_zbib[${index}].pressure_mm`}
+        value={item?.pressure_mm || ''}
+        onChange={handleChange}
+        style={{ height: '35px', width: '200px' }}
+        type="text"
+        placeholder='(cm)'
+        className="w-full placeholder:text-[12px]"
+        inVaild={shouldShowError(`table_zbib[${index}].pressure_mm`)}
+        error={errors?.table_zbib?.[index]?.pressure_mm || ''}
+      />
+    ),
+  }))}
+/>
+                            </div>
+          </div>
       </div>
     </div>
   );
