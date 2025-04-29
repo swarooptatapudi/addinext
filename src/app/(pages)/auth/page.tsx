@@ -13,13 +13,20 @@ export default function SignIn(): React.JSX.Element {
   console.log("#####",isSuccess,isLoading);
    
   useEffect(() => {
-    console.log("Login status changed", { isSuccess, isLoading });
     if (isSuccess) {
       console.log("Redirecting to dashboard");
-      router.push('/dashboard');
+      router.replace('/dashboard');  // <-- Changed from push to replace
       toast.success('Login successful');
     }
-  }, [isSuccess,router]);
+  }, [isSuccess, router]);
+  // useEffect(() => {
+  //   console.log("Login status changed", { isSuccess, isLoading });
+  //   if (isSuccess) {
+  //     console.log("Redirecting to dashboard");
+  //     router.push('/dashboard');
+  //     toast.success('Login successful');
+  //   }
+  // }, [isSuccess,router]);
 
   // useEffect(() => {
   //   if (isSuccess) {
