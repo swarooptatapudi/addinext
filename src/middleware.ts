@@ -6,8 +6,13 @@ export function middleware(request: NextRequest) {
   // const PROTECTED_ROUTES = ['/dashboard', '/orders', '/organization', '/products', '/subscription'];
   const url = request.nextUrl.clone();
   //   const role = request.cookies.get('role')?.value;
-  const isLogin =
-    request.cookies.get('sid')?.value && request.cookies.get('sid')?.value !== 'Guest';
+  const isLogin = request.cookies.get('sid')?.value && request.cookies.get('sid')?.value !== 'Guest';
+  console.log(`Middleware: isLogin=${isLogin}, path=${url.pathname}`);
+
+  if (!isLogin && url.pathname.startsWith('/dashboard')) {
+    url.pathname = '/auth';
+    return NextResponse.redirect(url);
+  }
 
   const isProtected = ROUTES.some((value) => url.pathname.includes(value.path));
   // const refreshToken = request.cookies.get("refresh_token")?.value;
@@ -29,12 +34,17 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
   }
-  if (isLogin) {
-    if (url.pathname === '/auth' || url.pathname === '/') {
-      url.pathname = '/dashboard';
-      return NextResponse.redirect(url);
-    }
+
+  if (isLogin && (url.pathname === '/auth' || url.pathname === '/')) {
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
   }
+  // if (isLogin) {
+  //   if (url.pathname === '/auth' || url.pathname === '/') {
+  //     url.pathname = '/dashboard';
+  //     return NextResponse.redirect(url);
+  //   }
+  // }
   if (!isLogin) {
     if (isProtected || url.pathname == '/') {
       //   url.searchParams.set('from', url.pathname);

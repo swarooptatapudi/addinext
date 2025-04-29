@@ -11,14 +11,22 @@ export default function SignIn(): React.JSX.Element {
   const [login, { isSuccess, isLoading }] = useLoginMutation();
   const router = useRouter();
   console.log("#####",isSuccess,isLoading);
-  
-
+   
   useEffect(() => {
+    console.log("Login status changed", { isSuccess, isLoading });
     if (isSuccess) {
+      console.log("Redirecting to dashboard");
       router.push('/dashboard');
       toast.success('Login successful');
     }
-  }, [isSuccess]);
+  }, [isSuccess,router]);
+
+  // useEffect(() => {
+  //   if (isSuccess) {
+  //     router.push('/dashboard');
+  //     toast.success('Login successful');
+  //   }
+  // }, [isSuccess]);
 
   return (
     <div className="h-full p-4 flex flex-col items-center justify-center w-full">
