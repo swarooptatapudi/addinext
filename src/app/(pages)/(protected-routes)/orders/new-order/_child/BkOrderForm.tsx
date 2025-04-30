@@ -713,20 +713,6 @@ const Step1 = ({
                 </div>
                 <div className="grid col-span-2">
                   <div className="flex gap-2 items-center ml-[10px]">
-                    <p className="text-[10px]">15 Cm</p>
-                    <Input />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="grid sm:col-span-3 xl:col-span-2">
-              <div className="grid grid-cols-3">
-                <div className="flex gap-2 items-center">
-                  <p className="text-[10px]">0 Cm</p>
-                  <Input />
-                </div>
-                <div className="grid col-span-2">
-                  <div className="flex gap-2 items-center ml-[10px]">
                     <p className="text-[10px]">20 Cm</p>
                     <Input />
                   </div>
@@ -740,7 +726,7 @@ const Step1 = ({
                   <Input />
                 </div>
                 <div className="grid col-span-2">
-                <div className="flex gap-2 items-center ml-[10px]">
+                  <div className="flex gap-2 items-center ml-[10px]">
                     <p className="text-[10px]">25 Cm</p>
                     <Input />
                   </div>
@@ -755,7 +741,21 @@ const Step1 = ({
                 </div>
                 <div className="grid col-span-2">
                 <div className="flex gap-2 items-center ml-[10px]">
-                    <p className="text-[10px]">30 Cm</p>
+                    <p className="text-[10px]">20 Cm</p>
+                    <Input />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="grid sm:col-span-3 xl:col-span-2">
+              <div className="grid grid-cols-3">
+                <div className="flex gap-2 items-center">
+                  <p className="text-[10px]">15 Cm</p>
+                  <Input />
+                </div>
+                <div className="grid col-span-2">
+                <div className="flex gap-2 items-center ml-[10px]">
+                    <p className="text-[10px]">35 Cm</p>
                     <Input />
                   </div>
                 </div>

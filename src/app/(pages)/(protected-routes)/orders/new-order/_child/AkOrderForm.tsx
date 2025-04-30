@@ -63,17 +63,47 @@ const step1Validation = Yup.object().shape({
     })
     .test('min-weight', 'Minimum weight is 10kg', (value) => parseFloat(value) >= 10)
     .test('max-weight', 'Maximum weight is 180kg', (value) => parseFloat(value) <= 180),
-  // stump_length: Yup.string()
-  //   .required(FORMIK_ERRORS.REQUIRED)
-  //   .matches(/^\d+$/, 'Must contain only numbers')
-  //   .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
-  shoe_size: Yup.string()
+  stump_length: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+$/, 'Must contain only numbers')
+    .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
+    shoe_size: Yup.string()
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 92.57 or 95)',
       excludeEmptyString: true,
     })
     .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
     .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 200.0),
+    mpt_distance: Yup.string()
+    .matches(/^\d+(\.\d{1,2})?$/, {
+      message: 'Must be a number (e.g. 92.57 or 95)',
+      excludeEmptyString: true,
+    })
+    .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
+    .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 150.0),
+    floor_distance: Yup.string()
+    .matches(/^\d+(\.\d{1,2})?$/, {
+      message: 'Must be a number (e.g. 92.57 or 95)',
+      excludeEmptyString: true,
+    })
+    .test('min-floor', 'Minimum floor distance is 1cm', (value) => !value || parseFloat(value) >= 1)
+    .test('max-floor', 'Maximum floor distance is 150cm', (value) => !value || parseFloat(value) <= 150.0),
+    
+  waist_circumference: Yup.string()
+    .matches(/^\d+(\.\d{1,2})?$/, {
+      message: 'Must be a number (e.g. 92.57 or 95)',
+      excludeEmptyString: true,
+    })
+    .test('min-waist', 'Minimum waist circumference is 1cm', (value) => !value || parseFloat(value) >= 1)
+    .test('max-waist', 'Maximum waist circumference is 150cm', (value) => !value || parseFloat(value) <= 150.0),
+    
+  Foot_length: Yup.string()
+    .matches(/^\d+(\.\d{1,2})?$/, {
+      message: 'Must be a number (e.g. 92.57 or 95)',
+      excludeEmptyString: true,
+    })
+    .test('min-foot', 'Minimum foot length is 1cm', (value) => !value || parseFloat(value) >= 1)
+    .test('max-foot', 'Maximum foot length is 150cm', (value) => !value || parseFloat(value) <= 150.0),
   flexion_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
@@ -81,6 +111,33 @@ const step1Validation = Yup.object().shape({
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
   date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  ak_socket_measurements: Yup.array().of(
+    Yup.object().shape({
+      measurement_cm: Yup.string()
+        .required('Measurement is required')
+        .matches(/^\d+(\.\d{1,2})?$/, {
+          message: 'Must be a number (e.g. 10.5 or 12)',
+          excludeEmptyString: false,
+        })
+        .test('min-measurement', 'Minimum measurement is 0cm', (value) => parseFloat(value) >= 0)
+        .test('max-measurement', 'Maximum measurement is 150cm', (value) => parseFloat(value) <= 150),
+        desired_reduction_: Yup.string()
+        .required('Reduction % is required')
+        .matches(
+          /^-?\d+(\.\d+)?%$/,
+          'Must be a number followed by % (e.g., 5%, -1%, 7.5%)'
+        )
+        .test(
+          'valid-percentage-range',
+          'Must be between -1% and 10%',
+          (value) => {
+            if (!value) return false;
+            const numericValue = parseFloat(value.replace('%', ''));
+            return numericValue >= -1 && numericValue <= 10;
+          }
+        ),
+    })
+  ),
 });
 
 const step2Validation = Yup.object().shape({
@@ -462,12 +519,22 @@ const Step1 = ({
   });
 
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    if (!values[fieldName]) {
-      if (!isRequired) return false;
-      return formSubmitted || touched[fieldName];
-    }
-    return !!errors[fieldName] && (touched[fieldName] || formSubmitted);
-  };
+    const fieldValue = fieldName.includes('[') 
+    ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
+        obj && obj[key], values)
+    : values[fieldName];
+
+  if (!fieldValue) {
+    if (!isRequired) return false;
+    return formSubmitted || touched[fieldName];
+  }
+  const fieldError = fieldName.includes('[')
+  ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
+      obj && obj[key], errors)
+  : errors[fieldName];
+  
+return !!fieldError && (touched[fieldName] || formSubmitted);
+};
 
   const socketTypeOptions = useMemo(() => {
     return (FORM_OPTIONS?.socket_type || []).map((option: { value: any }) => ({
@@ -691,15 +758,15 @@ const Step1 = ({
             unoptimized={true}
                           />
         </div>
-        <div className='ml-12'  style={{ width: '601px' }}>
+        <div className='ml-8'  style={{ width: '651px' }}>
                           <div>
-                            <b className='pag-4'>Circumference of Stump at 5 cm level</b>
+                            <b className='pag-4'>A - Circumference of Stump at 5 cm level</b>
                             </div>
                           <CustomTable
   columns={[
     // { header: 'S.No.', accessorKey: 's_no' },
     { header: 'Circumference (cm)', accessorKey: 'circumference_at_cm' },
-    { header: 'Measurement (cm)', accessorKey: 'measurement_cm' }, // New input field
+    { header: 'Measurement (cm)', accessorKey: 'measurement_cm' }, 
     { header: 'Standard Reduction (%)', accessorKey: 'standard_reduction_' },
     { header: 'Desired Reduction (%)', accessorKey: 'desired_reduction_' }
   ]}
@@ -707,32 +774,79 @@ const Step1 = ({
     id: index,
     // s_no: index + 1,
     circumference_at_cm: item?.circumference_at_cm,
-    measurement_cm: ( // Input for measurement
+    measurement_cm: (
       <Input
         name={`ak_socket_measurements[${index}].measurement_cm`}
         value={item?.measurement_cm || ''}
         onChange={handleChange}
-        style={{ height: '35px', width: '150px' }}
-        type="text" // Ensures only numbers are entered
+        style={{ height: '35px', width: '190px' }}
+        type="text"
         placeholder='(cm)'
         className="w-full placeholder:text-[12px]"
+        inVaild={shouldShowError(`ak_socket_measurements[${index}].measurement_cm`)}
+        error={errors?.ak_socket_measurements?.[index]?.measurement_cm }
       />
     ),
     standard_reduction_: item?.standard_reduction_,
-    desired_reduction_: ( // Input for desired reduction
+    desired_reduction_: (
       <Input
         name={`ak_socket_measurements[${index}].desired_reduction_`}
         value={item?.desired_reduction_ || ''}
         onChange={handleChange}
-        style={{ height: '35px', width: '150px' }}
+        style={{ height: '35px', width: '190px' }}
         placeholder='(%)'
         className="w-full placeholder:text-[12px]"
+        inVaild={shouldShowError(`ak_socket_measurements[${index}].desired_reduction_`)}
+        error={errors?.ak_socket_measurements?.[index]?.desired_reduction_ }
       />
     )
   }))}
 />
                         </div>
       </div>
+                        <div className="grid grid-cols-5 gap-4 h-fit">
+                    <Input
+                      label="- Stump Length (cm)"
+                      boldKey="B"
+                      value={values?.stump_length}
+                      onChange={handleChange('stump_length')}
+                      required
+                      inVaild={shouldShowError('stump_length', true)}
+                      error={errors.stump_length}
+                    />
+                    <Input
+                      label="- IT to MPT distance (cm)" 
+                      boldKey="C"
+                      value={values?.mpt_distance}
+                      onChange={handleChange('mpt_distance')}
+                      inVaild={shouldShowError('mpt_distance', false)}
+                      error={errors.mpt_distance}
+                    />
+                    <Input
+                      label="- MPT to floor distance (cm)" 
+                      boldKey="D"
+                      value={values?.floor_distance}
+                      onChange={handleChange('floor_distance')}
+                      inVaild={shouldShowError('floor_distance', false)}
+                      error={errors.floor_distance}
+                    />
+                    <Input
+                      label="- Waist Circumference (cm)" 
+                      boldKey="E" 
+                      value={values?.waist_circumference}
+                      onChange={handleChange('waist_circumference')}
+                      inVaild={shouldShowError('waist_circumference', false)}
+                      error={errors.waist_circumference}
+                    />
+                    <Input
+                      label="- Foot Length (cm)" 
+                      boldKey="F"  
+                      value={values?.Foot_length}
+                      onChange={handleChange('Foot_length')}
+                      inVaild={shouldShowError('Foot_length', false)}
+                      error={errors.Foot_length}
+                    />
+                  </div>
       <div className="grid grid-cols-5 gap-4 mt-5">
         <div className="col-span-1">
           <SelectBox
