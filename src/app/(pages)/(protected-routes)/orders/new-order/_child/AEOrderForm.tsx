@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 import { Formik, useFormikContext } from 'formik';
 import * as Yup from 'yup';
 
-// Components
 import StlFilePicker from '@/components/app/common/StlPreviewer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
