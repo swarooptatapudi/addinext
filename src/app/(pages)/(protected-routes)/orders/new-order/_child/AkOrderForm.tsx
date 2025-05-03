@@ -114,26 +114,30 @@ const step1Validation = Yup.object().shape({
   ak_socket_measurements: Yup.array().of(
     Yup.object().shape({
       measurement_cm: Yup.string()
-        .required('Measurement is required')
-        .matches(/^\d+(\.\d{1,2})?$/, {
-          message: 'Must be a number (e.g. 10.5 or 12)',
-          excludeEmptyString: false,
-        })
-        .test('min-measurement', 'Minimum measurement is 0cm', (value) => parseFloat(value) >= 0)
-        .test('max-measurement', 'Maximum measurement is 150cm', (value) => parseFloat(value) <= 150),
-        desired_reduction_: Yup.string()
-        .required('Reduction % is required')
-        .matches(
-          /^-?\d+(\.\d+)?%$/,
-          'Must be a number followed by % (e.g., 5%, -1%, 7.5%)'
+        .nullable()
+        .transform(value => value === '' ? null : value)
+        .matches(/^\d+(\.\d{1,2})?$/, 'Must be a number (e.g. 10.5 or 12)')
+        .test(
+          'min-measurement',
+          'Minimum measurement is 0cm',
+          (value) => !value || parseFloat(value) >= 0
         )
         .test(
-          'valid-percentage-range',
-          'Must be between -1% and 10%',
+          'max-measurement',
+          'Maximum measurement is 150cm',
+          (value) => !value || parseFloat(value) <= 150
+        ),
+      desired_reduction_: Yup.string()
+        .nullable()
+        .transform(value => value === '' ? null : value)
+        .test(
+          'is-valid-percentage',
+          'Must be a number between -10% and 10% (e.g., 5%, -1%, 7.5%)',
           (value) => {
-            if (!value) return false;
+            if (!value) return true; // Skip validation if empty
+            if (!/^-?\d+(\.\d+)?%$/.test(value)) return false;
             const numericValue = parseFloat(value.replace('%', ''));
-            return numericValue >= -1 && numericValue <= 10;
+            return numericValue >= -10 && numericValue <= 10;
           }
         ),
     })
@@ -286,12 +290,12 @@ const DesignVariationDialog = ({
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
       'standard (sx)': {
         title: 'Standard (SX)',
-        description: 'Premium Definitive Sockets Printed on HP-MJF',
+        description: 'Sockets with Core functionality and durability',
         image: '/assets/order-forms/bk-order/foot-type/SX.png'
       },
       'adjustable (ax)': {
         title: 'Adjustable (AX)',
-        description: 'Adjustable Socket for varying residual limb conditions',
+        description: 'Sockets with volume control for limb fluctuations',
         image: '/assets/order-forms/bk-order/foot-type/AX.png'
       },
     };
@@ -315,7 +319,7 @@ const DesignVariationDialog = ({
     return {
       title: variation.trim(),
       description: 'No description available',
-      image: '/assets/design-variations/default.jpg'
+      image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
     };
   };
 
@@ -390,23 +394,23 @@ const ModelDialog = ({
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
       'addieaseeco': {
         title: 'AddiEaseEco',
-        description: 'Economy Definitive & Check Sockets Printed on FDM Printer',
+        description: 'Standard Sockets printed on AddiPrint',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseEco.png'
       },
       'addiease': {
         title: 'AddiEase',
-        description: 'Premium Definitive Sockets Printed on HP-MJF',
+        description: 'Premium Sockets printed on MJF',
         image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
 
       },
       'addieasemould': {
         title: 'AddiEaseMould',
-        description: 'Moulds Printed on FDM Printe',
+        description: 'Standard Moulds printed on AddiPrint',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould.png'
       },
       'addieasemould-hr': {
         title: 'AddiEaseMould-HR',
-        description: 'Heat Resistant Moulds Printed on FDM Printer',
+        description: 'Heat Resistant Sockets printed on AddiPrint',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
 
       },
@@ -431,7 +435,7 @@ const ModelDialog = ({
     return {
       title: variation.trim(),
       description: 'No description available',
-      image: '/assets/design-variations/default.jpg'
+      image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
     };
   };
 

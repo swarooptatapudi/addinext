@@ -12,11 +12,10 @@ import StlFilePicker from '@/components/app/common/StlPreviewer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SelectBox } from '@/components/ui/selectbox';
-import { Textarea } from '@/components/ui/textarea';
 import PatientPicker from '@/components/app/common/PatientPicker';
 import { GenericFileViewer } from '@/components/app/common/GenericFileViewer';
 import { ConfirmOrderDialog } from '@/components/app/common/ConfirmOrderDialog';
-import { Step3 } from '@/components/form/bkForm/Step3LockingMechanism';
+import { Step3 } from '@/components/form/beForm/Step3LockingMechanism';
 import {
   Dialog,
   DialogContent,
@@ -34,8 +33,9 @@ import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
 import { BK_FORM_TYPE, USER } from '@/uttils/Types';
 import { getFormOptionsObject } from '@/uttils/UttilFuncations';
 import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
-import { BK_FORM_INITIAL_VALUES } from './constants';
-import { Step5 } from '@/components/form/bkForm/Step5Finishing';
+import { AE_FORM_INITIAL_VALUES } from './constants';
+import { Step5 } from '@/components/form/beForm/Step5Finishing';
+import CustomTable from '@/components/app/common/CustomTable';
 
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
@@ -61,10 +61,10 @@ const step1Validation = Yup.object().shape({
     })
     .test('min-weight', 'Minimum weight is 10kg', (value) => parseFloat(value) >= 10)
     .test('max-weight', 'Maximum weight is 180kg', (value) => parseFloat(value) <= 180),
-  stump_length: Yup.string()
-    .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, 'Must contain only numbers')
-    .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
+  // stump_length: Yup.string()
+    // .required(FORMIK_ERRORS.REQUIRED)
+    // .matches(/^\d+$/, 'Must contain only numbers')
+    // .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
   shoe_size: Yup.string()
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 92.57 or 95)',
@@ -128,7 +128,7 @@ const step5Validation = Yup.object().shape({
   delivery_date: Yup.string(),
 });
 
-const initialValues = BK_FORM_INITIAL_VALUES;
+const initialValues = AE_FORM_INITIAL_VALUES;
 const SocketTypeDialog = ({ 
   open, 
   onOpenChange, 
@@ -211,12 +211,12 @@ const DesignVariationDialog = ({
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
       'standard (sx)': {
         title: 'Standard (SX)',
-        description: 'Sockets with Core functionality and durability',
+        description: 'Premium Definitive Sockets Printed on HP-MJF',
         image: '/assets/order-forms/bk-order/foot-type/SX.png'
       },
       'adjustable (ax)': {
         title: 'Adjustable (AX)',
-        description: 'Sockets with volume control for limb fluctuations',
+        description: 'Adjustable Socket for varying residual limb conditions',
         image: '/assets/order-forms/bk-order/foot-type/AX.png'
       },
     };
@@ -315,23 +315,23 @@ const ModelDialog = ({
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
       'addieaseeco': {
         title: 'AddiEaseEco',
-        description: 'Standard Sockets printed on AddiPrint',
+        description: 'Economy Definitive & Check Sockets Printed on FDM Printer',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseEco.png'
       },
       'addiease': {
         title: 'AddiEase',
-        description: 'Premium Sockets printed on MJF',
+        description: 'Premium Definitive Sockets Printed on HP-MJF',
         image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
 
       },
       'addieasemould': {
         title: 'AddiEaseMould',
-        description: 'Standard Moulds printed on AddiPrint',
+        description: 'Moulds Printed on FDM Printe',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould.png'
       },
       'addieasemould-hr': {
         title: 'AddiEaseMould-HR',
-        description: 'Heat Resistant Sockets printed on AddiPrint',
+        description: 'Heat Resistant Moulds Printed on FDM Printer',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
 
       },
@@ -432,6 +432,8 @@ const Step1 = ({
   formSubmitted,
   setSocketTypeDialog  
 }: any) => {
+  console.log(":::>>",errors);
+  
   const [designVariationDialog, setDesignVariationDialog] = useState({
     open: false,
     options: []
@@ -449,6 +451,12 @@ const Step1 = ({
     }
     return !!errors[fieldName] && (touched[fieldName] || formSubmitted);
   };
+
+  const AmputationTypeOptions = useMemo(() => {
+    return (FORM_OPTIONS?.amputation_area || []).map((option: { value: any }) => ({
+      ...option,
+    }));
+  }, [FORM_OPTIONS?.socket_type]);
 
   const socketTypeOptions = useMemo(() => {
     return (FORM_OPTIONS?.socket_type || []).map((option: { value: any }) => ({
@@ -561,10 +569,10 @@ const Step1 = ({
           onChange={handleChange('amputation_date')}
         />
         <SelectBox
-          options={FORM_OPTIONS?.amputated_leg || []}
-          label="Amputation Leg"
-          value={values.amputated_leg}
-          onValueChange={handleChange('amputated_leg')}
+          options={FORM_OPTIONS?.amputated_hand|| []}
+          label="Amputation Hand"
+          value={values.amputated_hand}
+          onValueChange={handleChange('amputated_hand')}
         />
         <SelectBox
           options={FORM_OPTIONS?.reason_for_amputation || []}
@@ -584,7 +592,18 @@ const Step1 = ({
       </div>
 
       <div className="divider"></div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
+      <SelectBox
+          options={AmputationTypeOptions}
+          label="Amputation Area"
+          value={values.amputation_area}
+          onValueChange={(value) => {
+            handleChange('amputation_area')(value);
+          }}
+          inVaild={shouldShowError('amputation_area', true)}
+          error={errors.amputation_area}
+          required
+        />
         <SelectBox
           options={socketTypeOptions}
           label="Socket Type"
@@ -596,6 +615,7 @@ const Step1 = ({
           error={errors.socket_type}
           required
         />
+         
 
         <div className="flex flex-col">
           <label className="block text-xs font-medium text-black mb-1">
@@ -660,10 +680,14 @@ const Step1 = ({
       <div className="divider"></div>
 
       <h3 className="font-semibold text-lg ">Measurements</h3>
-      <div className="grid grid-cols-3 gap-4 items-center ml-1">
+      {/* <p>
+
+      Fig 1 - Sound Hand Measurements
+      </p> */}
+      <div className="grid grid-cols-3 gap-4 items-center ml-1 mt-[-40px]">
         <div>
           <Image
-            src={'/assets/order-forms/bk-order/stupm.png'}
+            src={'/assets/order-forms/below-elbow/7(1).png'}
             alt="measurements"
             width={300}
             height={300}
@@ -673,36 +697,164 @@ const Step1 = ({
             unoptimized={true}
           />
         </div>
-        <div className="flex flex-col col-span-2 gap-4">
-          <div className="grid grid-cols-2 gap-4 ">
+        <div className="flex flex-col col-span-2 gap-4 mt-[-90]">
+          <div className="grid grid-cols-2 gap-4 mt-[140]">
             <div className="mb-2">
               <label className="block text-xs font-medium text-black">
-                Value <strong>A</strong> Stump Size (cm) <span className="text-red-500">*</span>
+               <strong>A</strong> - Shoulder Joint to Epicondyl <span className="text-red-500">*</span>
               </label>
               <Input
                 placeholder="10"
-                value={values.stump_length}
-                onChange={handleChange('stump_length')}
+                value={values.shoulder_joint}
+                onChange={handleChange('shoulder_joint')}
                 required
-                inVaild={shouldShowError('stump_length', true)}
-                error={errors.stump_length}
+                inVaild={shouldShowError('shoulder_joint', true)}
+                error={errors.shoulder_joint}
+              />
+            </div>
+            
+          </div>
+          <div className="grid grid-cols-2 gap-4 ">
+            <div className="mb-2">
+              <label className="block text-xs font-medium text-black">
+                <strong>B</strong> - Axila to Epicondyl <span className="text-red-500">*</span>
+              </label>
+              <Input
+                placeholder="10"
+                value={values.axila}
+                onChange={handleChange('axila')}
+                required
+                inVaild={shouldShowError('axila', true)}
+                error={errors.axila}
+              />
+            </div>
+            
+          </div>
+          <div className="grid grid-cols-2 gap-4 ">
+            <div className="mb-2">
+              <label className="block text-xs font-medium text-black">
+                <strong>C</strong> - Epicondyl to Styloid <span className="text-red-500">*</span>
+              </label>
+              <Input
+                placeholder="10"
+                value={values.styloid}
+                onChange={handleChange('styloid')}
+                required
+                inVaild={shouldShowError('styloid', true)}
+                error={errors.styloid}
+              />
+            </div>
+            
+          </div>
+          <div className="grid grid-cols-2 gap-4 ">
+            <div className="mb-2">
+              <label className="block text-xs font-medium text-black">
+                <strong>D</strong> -Styloid to Thumb tip <span className="text-red-500">*</span>
+              </label>
+              <Input
+                placeholder="10"
+                value={values.thumb_tip}
+                onChange={handleChange('thumb_tip')}
+                // required
+                inVaild={shouldShowError('thumb_tip', false)}
+                error={errors.thumb_tip}
+              />
+            </div>
+            
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+        </div>
+
+        </div>
+      </div>
+
+      {/* <p>
+
+      Fig 2 - Amputed Hand Measurements
+
+      </p> */}
+      <div className="grid grid-cols-3 gap-4 items-center ml-1">
+        <div className='mt-[-200px]'>
+          <Image
+            src={'/assets/order-forms/below-elbow/8(2).png'}
+            alt="measurements"
+            width={300}
+            height={0}
+            className="object-cover"
+            loading="lazy"
+            priority={false}
+            unoptimized={true}
+          />
+          {/* Fig 2 - Amputed Hand Measurements */}
+
+        </div>
+        <div className="flex flex-col col-span-2 gap-2">
+            <div className="grid grid-cols-2 gap-4 ">
+            <div className="mb-2 mt-[15px]">
+              <label className="block text-xs font-medium text-black">
+                <strong>E</strong> - Shoulder Joint to Stump Distal end (cm)
+              </label>
+              <Input
+                placeholder="10"
+                value={values.stump_distal}
+                onChange={handleChange('stump_distal')}
+                required
+                inVaild={shouldShowError('stump_distal', true)}
+                error={errors.stump_distal}
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="mb-2">
               <label className="block text-xs font-medium text-black">
-                Value <strong>B</strong> Stump Size (cm)
+                <strong>F</strong> - Axila to Stump Distal end
               </label>
               <Input
-                placeholder="20"
-                value={values.stump_size}
-                onChange={handleChange('stump_size')}
+                placeholder="10"
+                value={values.axila_stump}
+                onChange={handleChange('axila_stump')}
+                required
+                inVaild={shouldShowError('axila_stump', true)}
+                error={errors.axila_stump}
               />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="mb-2">
+              <label className="block text-xs font-medium text-black">
+                <strong>G</strong> - ML at Shoulder Joint
+              </label>
+              <Input
+                placeholder="10"
+                value={values.ml_shoulder}
+                onChange={handleChange('ml_shoulder')}
+                required
+                inVaild={shouldShowError('ml_shoulder', true)}
+                error={errors.ml_shoulder}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="mb-2">
+              <label className="block text-xs font-medium text-black" style={{ color: '#1E3A8A' }}>
+                <strong>G1 </strong> -  ML at Shoulder Rib Cage
+                (required in case of Shoulder
+                  Disarticulatin)
+              </label>
+              <Input
+                placeholder="10"
+                value={values.rib_cage}
+                onChange={handleChange('rib_cage')}
+                required
+                inVaild={shouldShowError('rib_cage', true)}
+                error={errors.rib_cage}
+              />
+            </div>
+          </div>
+         
           <div className="">
-            <p className='text-xs'>Value <strong>C</strong> - Circumference of Stump at 5 cm gap (cm)</p>
+            <p className='text-xs'><strong>H</strong> - Stump Circumference every 5 cm
+            Please mark 0 on the stump before scan</p>
           </div>
           <div className="grid grid-cols-2 gap-3 ">
             <div className="grid sm:col-span-4 xl:col-span-2 gap-0">
@@ -763,94 +915,6 @@ const Step1 = ({
             </div>
           </div>
         </div>
-      </div>
-      <div className="grid grid-cols-5 gap-4 mt-5">
-        <div className="col-span-1">
-          <SelectBox
-            options={FORM_OPTIONS['foot_type'] ?? []}
-            label="Foot Type"
-            required={false}
-            value={values.foot_type}
-            onValueChange={handleChange('foot_type')}
-            className="w-full"
-          />
-        </div>
-
-        <div className="col-span-1">
-          <Input
-            placeholder="0"
-            label="Shoe Size (cm)"
-            value={values.shoe_size}
-            onChange={handleChange('shoe_size')}
-            inVaild={shouldShowError('shoe_size')}
-            error={errors.shoe_size}
-            className="w-full placeholder:text-[12px]"
-          />
-        </div>
-
-        <div className="col-span-1">
-          <Input
-            label="Flexion Angle (Deg)"
-            placeholder="(Deg)"
-            value={values.flexion_angle}
-            onChange={handleChange('flexion_angle')}
-            inVaild={shouldShowError('flexion_angle')}
-            error={errors.flexion_angle}
-            className="w-full placeholder:text-[12px]"
-          />
-        </div>
-
-        <div className="col-span-1">
-          <Input
-            label="Add/Abd Angle (Deg)"
-            placeholder="(Deg)"
-            value={values.abductionadduction_angle}
-            onChange={handleChange('abductionadduction_angle')}
-            inVaild={shouldShowError('abductionadduction_angle')}
-            error={errors.abductionadduction_angle}
-            className="w-full placeholder:text-[12px]"
-          />
-        </div>
-
-        <div className="col-span-1">
-          <SelectBox
-            options={FORM_OPTIONS['stump_type'] ?? []}
-            label="Stump Type"
-            value={values.stump_type}
-            onValueChange={handleChange('stump_type')}
-            className="w-full"
-          />
-        </div>
-      </div>
-
-      <h3 className="font-semibold text-lg">Stump Condition</h3>
-      <div className="grid grid-cols-3 gap-4 items-center ml-1">
-        <div>
-          <Image
-            src={'/assets/order-forms/bk-order/stumpcondtion.png'}
-            alt="measurements"
-            width={300}
-            height={250}
-            className="object-cover"
-          />
-        </div>
-        <div className="grid col-span-2">
-          <Textarea
-            label="Stump Condition (please describe any specific condition of the stump example bony prominence etc.)"
-            className="h-[200px] "
-            value={values.stump_condition}
-            onChange={handleChange('stump_condition')}
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-4">
-        <Textarea
-          label="Previous Prosthetic Experience (Please describe any previous experience of Prosthetics used, Make, Model,
-                 Type, Issues with it and expectation from the new Prosthetic socket)"
-          className="h-[100px] "
-          value={values.previous_prosthetic_experience}
-          onChange={handleChange('previous_prosthetic_experience')}
-        />
       </div>
 
       <DesignVariationDialog
@@ -950,8 +1014,8 @@ const Step2 = ({
             <div className="w-[150px] ml-8">
               <SelectBox
                 options={[
-                  { value: 'Left_Foot', label: 'Left Foot ' },
-                  { value: 'Right_Foot', label: 'Right Foot' },
+                  { value: 'Left_Hand', label: 'Left Hand' },
+                  { value: 'Right_Hand', label: 'Right Hand' },
                   { value: 'Both', label: 'Both' },
                 ]}
                 value={values.foot_Amputation}
@@ -960,21 +1024,21 @@ const Step2 = ({
             </div>
           </div>
         </div>
-        {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
+        {(values.foot_Amputation === 'Left_Hand' || values.foot_Amputation === 'Both') && (
           <div className="w-fit justify-center">
             <StlFilePicker
-              label="Upload STL file (left foot)"
-              buttonText="Left Foot"
+              label="Upload STL file (left Hand)"
+              buttonText="Left Hand"
               onFileSelect={(file) => console.log('Model A selected:', file?.name)}
             />
           </div>
         )}
 
-        {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
+        {(values.foot_Amputation === 'Right_Hand' || values.foot_Amputation === 'Both') && (
           <div className="w-fit ml-2">
             <StlFilePicker
-              label="Upload STL file (Rgiht foot)"
-              buttonText="Right Foot"
+              label="Upload STL file (Rgiht hand)"
+              buttonText="Right Hand"
               onFileSelect={(file) => console.log('Model A selected:', file?.name)}
             />
           </div>
@@ -1029,98 +1093,81 @@ const Step2 = ({
 
 const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    // Handle nested fields like socket_design_details[0].cpo_input_mm
-    const fieldValue = fieldName.includes('.') 
-      ? fieldName.split('.').reduce((obj, key) => 
-          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
-      : values[fieldName];
+    const fieldValue = fieldName.includes('[') 
+    ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
+        obj && obj[key], values)
+    : values[fieldName];
+
+  if (!fieldValue) {
+    if (!isRequired) return false;
+    return formSubmitted || touched[fieldName];
+  }
+  const fieldError = fieldName.includes('[')
+  ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
+      obj && obj[key], errors)
+  : errors[fieldName];
   
-    if (!fieldValue) {
-      if (!isRequired) return false;
-      return formSubmitted || touched[fieldName];
-    }
-    const fieldError = fieldName.includes('.')
-      ? fieldName.split('.').reduce((obj, key) => 
-          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
-      : errors[fieldName];
-      
-    return !!fieldError && (touched[fieldName] || formSubmitted);
-  };
+return !!fieldError && (touched[fieldName] || formSubmitted);
+};
   return (
+    <>
     <div>
-      {/* <h3 className="font-semibold text-lg">Stump Condition</h3> */}
-      <p className="text-xs mt-2">
-        Please specify the design considerations for each point from A to N. Use "-" to
-        indicate Apply pressure (Reduction) and "+" to indicate Relief at the particular
-        area. All values should be in millimetres (mm). For eg for applying reduction of 6 mm
-        at Patela Tendon, please specify -6
-      </p>
-      <div className="flex justify-center p-2 mr-20">
-        <Image
-          src={'/assets/order-forms/bk-order/SocketDesign-BK.jpg'}
-          alt="Design Modications"
-          width={520}
-          height={400}
-          className="object-cover"
-          />
-      </div>
-      <div className="grid grid-cols-3 gap-4">
-        <div className="mb-6">
-          <p className="text-xs">
-            {' '}
-            <span className="text-sm"> Global Volume Reduction </span>
-            <br /> (please specify the percentage reduction in Volume without reducing the
-            length of the socket)
+          <p className="text-xs mt-2">
+          Please mark the below points on the stump along with the Trimline before the Scan. Please also
+mention extra pressure / relief (in mm) at below points. (- for pressure and + for relief)
           </p>
-        </div>
-        <Input 
-          placeholder="Default Value:2%" 
-          onChange={handleChange('global_volume_reduction')}
-          value={values.global_volume_reduction || ''}
-          inVaild={shouldShowError('global_volume_reduction')}
-          error={errors.global_volume_reduction || ''}
+          <div className="flex justify-center p-2 mr-20">
+                        <div className='mt-1'>
+            <Image
+              src={'/assets/order-forms/below-elbow/52.png'}
+              alt="Design Modications"
+              width={620}
+              height={400}
+              className="object-cover"
+              />
+              </div>
+              <div>
+                
+                 <div className='mt-10 ml-10'>
+                 <CustomTable
+                  headerBgColor="#d6e3f0"
+                  lastColBgColor="#d6e3f0"
+      columns={[
+        { header: 'Area.', accessorKey: 'area' },
+        { header: 'Area Name', accessorKey: 'point_name' },
+        { header: 'Modifications ( mm)', accessorKey: 'pressure_mm' }
+      ]}
+      data={values?.table_zbib?.map((item: any, index: number) => ({
+        id: index,
+        area: item?.area,
+        // s_no: index + 1,
+        point_name: item?.point_name,
+        pressure_mm: (
+          <Input
+            name={`table_zbib[${index}].pressure_mm`}
+            // value={item?.pressure_mm !=='' ? item?.default_mm : ''}
+            value={item?.pressure_mm||'' }
+
+            onChange={handleChange}
+            style={{ height: '35px', width: '200px' }}
+            type="text"
+            placeholder={`Default ${item?.default_mm}`}
+            className="w-full placeholder:text-[12px]"
+            inVaild={shouldShowError(`table_zbib[${index}].pressure_mm`)}
+            error={errors?.table_zbib?.[index]?.pressure_mm || ''}
           />
-      </div>
-      <div className="grid grid-cols-3 gap-10">
-      {values.socket_design_details?.map((item: any, index: number) => {  
-  return (
-    <div key={index} className="flex items-start gap-4 w-full">
-      <p className="font-semibold">{item?.area}. </p>
-      <div className="flex-1">
-        <Input
-          placeholder={'Default Value ' + item?.default_mm}
-          label={item?.area_name + ' (mm)'}
-          value={item?.cpo_input_mm || ''}
-          name={`socket_design_details[${index}].cpo_input_mm`}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === '' || value === '-' || /^-?\d+$/.test(value)) {
-              if (value === '' || value === '-') {
-                handleChange(e);
-                return;
-              }
-              const num = Number(value);
-              if (num >= -20 && num <= 20) {
-                if (!(value.startsWith('-') && num === 0)) {
-                  handleChange(e);
-                }
-              }
-            }
-          }}
-          className="placeholder:text-[12px]"
-          inVaild={shouldShowError(`socket_design_details[${index}].cpo_input_mm`)}
-          error={errors?.socket_design_details?.[index]?.cpo_input_mm }
-        />
-      </div>
-    </div>
-  );
-})}
-      </div>
-    </div>
+        ),
+      }))}
+    />
+  </div>
+              </div>
+          </div>
+        </div>
+    </>
   );
 };
 
-export default function BkOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
+export default function AEOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
   const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);

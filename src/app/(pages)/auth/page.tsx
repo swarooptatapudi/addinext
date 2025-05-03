@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation';
 export default function SignIn(): React.JSX.Element {
   const [login, { isSuccess, isLoading }] = useLoginMutation();
   const router = useRouter();
-  console.log("#####",isSuccess,isLoading);
    
   useEffect(() => {
     if (isSuccess) {

@@ -273,8 +273,8 @@ const InsolesDialog = ({
         description: 'Premium Insole printed on HP-MJF',
         image: '/assets/order-forms/insoles/AddiSole.png'
       },
-      'AddiEco': {
-        title: 'AddiEco',
+      'AddiSoleEco': {
+        title: 'AddiSoleEco',
         description: 'Standard Insoles printed on FDM Printer',
         image: '/assets/order-forms/insoles/AddiSoleEco.png'
       },
@@ -305,7 +305,7 @@ const InsolesDialog = ({
     return {
       title: normalizedVariation,
       description: 'No description available',
-      image: '/assets/design-variations/default.jpg'
+      image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
     };
   };
  
@@ -421,7 +421,7 @@ const ModelDialog = ({
     return {
       title: variation.trim(),
       description: 'No description available',
-      image: '/assets/design-variations/default.jpg'
+      image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
     };
   };
 
