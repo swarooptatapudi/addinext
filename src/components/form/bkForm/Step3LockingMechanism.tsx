@@ -23,12 +23,15 @@ const LOCAL_FILE_MAPPINGS: Record<string, string[]> = {
     'Manual Suction': ['/assets/order-forms/bk-order/PDF/Manual_Suction_BK.pdf'],
     'Bull Dog': ['/assets/order-forms/bk-order/PDF/BullDog.pdf'],
     'Fit Kit Lock/Shuttle Lock': ['/assets/order-forms/bk-order/PDF/FitKit_Shuttle_Lock.pdf'],
-    'Auto Expulsion Suction': [
-        '/assets/order-forms/bk-order/PDF/AutoExplusionValve_Ossur1.pdf',
-        '/assets/order-forms/bk-order/PDF/AutoExpulsionValve_Ossur2.pdf',
-        '/assets/order-forms/bk-order/PDF/AutoExplusionValve_Endolite.pdf'
-    ],
-    'Provision for Dummy': ['/assets/order-forms/bk-order/PDF/BullDog.pdf']
+    // 'Auto Expulsion Suction': [
+    //     '/assets/order-forms/bk-order/PDF/AutoExplusionValve_Ossur1.pdf',
+    //     '/assets/order-forms/bk-order/PDF/AutoExpulsionValve_Ossur2.pdf',
+    //     '/assets/order-forms/bk-order/PDF/AutoExplusionValve_Endolite.pdf'
+    // ],
+    'Auto Expulsion Suction Ossur1':['/assets/order-forms/bk-order/PDF/AutoExplusionValve_Ossur1.pdf'],
+    'Auto Expulsion Suction Ossur2':['/assets/order-forms/bk-order/PDF/AutoExpulsionValve_Ossur2.pdf'],
+    'Auto Expulsion Suction Endolite':['/assets/order-forms/bk-order/PDF/AutoExplusionValve_Endolite.pdf'],
+    'Provision for Dummy': ['/assets/order-forms/bk-order/PDF/Dummy_Bull Dog.pdf']
 };
 
 const FOUR_HOLE_ADAPTER_PDF = '/assets/order-forms/bk-order/PDF/4 HoleAdapter.pdf';
@@ -173,14 +176,15 @@ export const Step3 = ({
                         <ul className="space-y-1">
                             {localFiles.locking_system.map((filePath, index) => {
                                 let displayName = values.locking_system;
-                                if (values.locking_system === 'Auto Expulsion Suction') {
-                                     const fileNames = [
-                                        'Auto Expulsion Suction Ossur1',
-                                        'Auto Expulsion Suction Ossur2',
-                                        'Auto Expulsion Suction Endolite'
-                                    ];
-                                    displayName = fileNames[index];
-                                } else if (localFiles.locking_system.length > 1) {
+                                // if (values.locking_system === 'Auto Expulsion Suction') {
+                                //      const fileNames = [
+                                //         'Auto Expulsion Suction Ossur1',
+                                //         'Auto Expulsion Suction Ossur2',
+                                //         'Auto Expulsion Suction Endolite'
+                                //     ];
+                                //     displayName = fileNames[index];
+                                // } else 
+                                if (localFiles.locking_system.length > 1) {
                                     displayName = `${values.locking_system} Part ${index + 1}`;
                                 }
                                 
@@ -250,7 +254,6 @@ export const Step3 = ({
 };
 
 //----------------------------------------------------------------------------------
-
 
 // import { SelectBox } from "@/components/ui/selectbox";
 // import { GenericFileViewer } from "@/components/app/common/GenericFileViewer";

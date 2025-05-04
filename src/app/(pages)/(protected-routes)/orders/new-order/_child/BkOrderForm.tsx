@@ -151,7 +151,7 @@ const SocketTypeDialog = ({
               <div>
                 <h4 className="font-medium text-lg">{data.label}</h4>
                 <p className="text-sm text-gray-600 mt-2">
-                  {data.description || 'No description available'}
+                  {data.description || ' '}
                 </p>
               </div>
               
@@ -239,7 +239,7 @@ const DesignVariationDialog = ({
     // Default fallback
     return {
       title: variation.trim(),
-      description: 'No description available',
+      description: ' ',
       image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
     };
   };
@@ -355,7 +355,7 @@ const ModelDialog = ({
     // Default fallback
     return {
       title: variation.trim(),
-      description: 'No description available',
+      description: '',
       image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
     };
   };
