@@ -15,12 +15,10 @@ export default function CustomTable({
   lastColBgColor?: string;
 }): React.JSX.Element {
   return (
-    //  className="table-auto border"
     <table className="table-auto border">
       <thead className="bg-accent border">
         <tr style={{ backgroundColor: headerBgColor }}>
           {columns.map((column) => (
-            // className="px-4 py-2 text-xs border border-gray-300"
             <th
               key={column.accessorKey}
               className="px-4 py-2 text-xs border border-gray-400"
@@ -50,52 +48,6 @@ export default function CustomTable({
 }
 
 //---------simple table for----------------------
-// import React from 'react';
-
-// export default function CustomTable({
-//   columns,
-//   data
-// }: {
-//   columns: Array<{
-//     header: string;
-//     accessorKey: string;
-//   }>;
-//   data: any;
-// }): React.JSX.Element {
-//   return (
-//     <table className="table-auto border border-black">
-//       <thead>
-//         <tr className="bg-[#d6e3f0]">
-//           {columns.map((column, idx) => (
-//             <th
-//               key={column.accessorKey}
-//               className={`px-4 py-2 text-xs border border-black text-left`}
-//             >
-//               {column.header}
-//             </th>
-//           ))}
-//         </tr>
-//       </thead>
-//       <tbody>
-//         {data.map((row: any) => (
-//           <tr key={row.id} className="border border-black">
-//             {columns.map((column, idx) => (
-//               <td
-//                 key={column.accessorKey}
-//                 className={`px-4 py-2 text-xs border border-black text-left ${
-//                   idx === columns.length - 1 ? 'bg-[#d6e3f0]' : ''
-//                 }`}
-//               >
-//                 {row[column.accessorKey] ?? '-'}
-//               </td>
-//             ))}
-//           </tr>
-//         ))}
-//       </tbody>
-//     </table>
-//   );
-// }
-
 // import React from 'react';
 // export default function CustomTable({
 //   columns,

@@ -127,7 +127,7 @@ export const Step3 = ({
             <div className="grid grid-cols-3 gap-4">
                 <SelectBox
                     options={FORM_OPTIONS['locking_system'] ?? []}
-                    label="Components/Suspension System"
+                    label="Components"
                     value={values.locking_system}
                     onValueChange={handleLockingSystemChange}
                     // error={shouldShowError('locking_system', true)}

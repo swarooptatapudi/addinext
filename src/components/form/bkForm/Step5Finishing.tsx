@@ -124,7 +124,7 @@ export const Step5 = ({
         </div>
       </div>
         ) : (
-          <div className="ml-26 text-gray-500">Not Applicable</div>
+          <div className="ml-26 text-gray-500"></div>
         )}
 
       {/* Information Section Footer for remove in feture use */}
