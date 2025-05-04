@@ -193,7 +193,6 @@ export const Step3 = ({
                     </div>
                 )}
                 
-                {/* Display uploaded files */}
                 {Object.keys(uploadedFiles).length > 0 ? (
                     <div>
                         <p className="text-sm font-medium text-gray-700 mb-1">Uploaded Files:</p>
