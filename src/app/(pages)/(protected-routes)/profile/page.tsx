@@ -1,10 +1,10 @@
 'use client';
+import React from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RootState } from '@/rtk-query/store';
 import { USER } from '@/uttils/Types';
-import React from 'react';
 import { useSelector } from 'react-redux';
 
 export default function Profile() {

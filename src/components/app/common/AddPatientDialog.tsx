@@ -7,6 +7,8 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 import { useCreatePatientMutation } from '@/rtk-query/apis/patient';
+import { RootState } from '@/rtk-query/store';
+import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
 
 interface AddPatientDialogProps {
@@ -89,6 +91,8 @@ const validationSchema = Yup.object().shape({
 
 export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDialogProps) {
     const [createPatient, { isLoading }] = useCreatePatientMutation();
+    const { user } = useSelector((state: RootState) => state.userReducer);
+    
 
     const formik = useFormik<PatientFormValues>({
         initialValues: {
@@ -100,7 +104,7 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
             mobile_no: '',
             email: '',
             gender: '',
-            clinic_name: ''
+            clinic_name: `${user.full_name}`
         },
         validationSchema,
         onSubmit: async (values, { resetForm }) => {
