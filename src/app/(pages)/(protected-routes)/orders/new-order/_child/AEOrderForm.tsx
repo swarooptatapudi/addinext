@@ -150,7 +150,7 @@ const SocketTypeDialog = ({
               <div>
                 <h4 className="font-medium text-lg">{data.label}</h4>
                 <p className="text-sm text-gray-600 mt-2">
-                  {data.description || 'No description available'}
+                  {data.description || ''}
                 </p>
               </div>
               
@@ -238,7 +238,7 @@ const DesignVariationDialog = ({
     // Default fallback
     return {
       title: variation.trim(),
-      description: 'No description available',
+      description: ' ',
       image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
     };
   };
@@ -354,7 +354,7 @@ const ModelDialog = ({
     // Default fallback
     return {
       title: variation.trim(),
-      description: 'No description available',
+      description: ' ',
       image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
     };
   };
@@ -1129,8 +1129,6 @@ mention extra pressure / relief (in mm) at below points. (- for pressure and + f
                 
                  <div className='mt-10 ml-10'>
                  <CustomTable
-                  headerBgColor="#d6e3f0"
-                  lastColBgColor="#d6e3f0"
       columns={[
         { header: 'Area.', accessorKey: 'area' },
         { header: 'Area Name', accessorKey: 'point_name' },
@@ -1144,9 +1142,7 @@ mention extra pressure / relief (in mm) at below points. (- for pressure and + f
         pressure_mm: (
           <Input
             name={`table_zbib[${index}].pressure_mm`}
-            // value={item?.pressure_mm !=='' ? item?.default_mm : ''}
             value={item?.pressure_mm||'' }
-
             onChange={handleChange}
             style={{ height: '35px', width: '200px' }}
             type="text"

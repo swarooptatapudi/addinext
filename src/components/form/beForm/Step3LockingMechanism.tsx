@@ -124,11 +124,10 @@ export const Step3 = ({
     return (
         <div className="flex flex-col gap-4">
             <h3 className="font-semibold text-lg">Components</h3>
-            
             <div className="grid grid-cols-3 gap-4">
                 <SelectBox
                     options={FORM_OPTIONS['locking_system'] ?? []}
-                    label="Components/Suspension System"
+                    label="Components"
                     value={values.locking_system}
                     onValueChange={handleLockingSystemChange}
                     // error={shouldShowError('locking_system', true)}
@@ -194,7 +193,6 @@ export const Step3 = ({
                     </div>
                 )}
                 
-                {/* Display uploaded files */}
                 {Object.keys(uploadedFiles).length > 0 ? (
                     <div>
                         <p className="text-sm font-medium text-gray-700 mb-1">Uploaded Files:</p>
