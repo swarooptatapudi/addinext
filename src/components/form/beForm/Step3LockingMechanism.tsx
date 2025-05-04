@@ -124,7 +124,6 @@ export const Step3 = ({
     return (
         <div className="flex flex-col gap-4">
             <h3 className="font-semibold text-lg">Components</h3>
-            
             <div className="grid grid-cols-3 gap-4">
                 <SelectBox
                     options={FORM_OPTIONS['locking_system'] ?? []}
