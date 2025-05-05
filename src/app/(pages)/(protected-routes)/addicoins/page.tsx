@@ -57,7 +57,6 @@ export default function Addicoins(): React.JSX.Element {
 
   const onPayNow = async () => {
     if (!validateQuantity(buyQuantity)) return;
-    // console.log("::>>",buyQuantity);
     const payload ={
         buy_coin:buyQuantity || 0,
         plan:data?.data?.user_rules[0]?.plan || "Basic",
