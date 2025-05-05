@@ -13,7 +13,7 @@ export default function Products(): React.JSX.Element {
           <div className="flex flex-wrap gap-x-6 gap-y-4">
             <div className="flex flex-col items-center w-20">
               {/* <Image    
-              alt="Premium AddiNxT Design Platform black silhouette" 
+              alt="Premium AddiNxT Design Platform black silhouette " 
               className="mb-1" 
               height={40} 
               width={40}
