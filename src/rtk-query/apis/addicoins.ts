@@ -8,10 +8,10 @@ export const addicoinsApi = createApi({
   endpoints: (builder) => ({
     getRateAndDiscounts: builder.query({
       query: () => ({
-        url: '/method/addiwise.apis.payment.addinxt_coins_purchase.get_coins_rate_and_discount_details',
+        url: '/method/addiwise.apis.addinxt_coin.get_user_plan_rule',
         method: 'GET'
       }),
-      transformResponse: (response: any) => response.message
+      transformResponse: (response: any) => response
     }),
     buyCoinsInitiatePayment: builder.mutation({
       query: (payload) => ({
@@ -28,12 +28,20 @@ export const addicoinsApi = createApi({
         body: { payload }
       }),
       transformResponse: (response: any) => response.message
-    })
+    }),
+    getTransactionHistory: builder.query({
+      query: () => ({
+        url: '/method/addiwise.apis.addinxt_coin.get_coin_transaction_history',
+        method: 'GET'
+      }),
+      transformResponse: (response: any) => response
+    }),
   })
 });
 
 export const {
   useGetRateAndDiscountsQuery,
   useBuyCoinsInitiatePaymentMutation,
-  useBuyCoinsAfterPaymentMutation
+  useBuyCoinsAfterPaymentMutation,
+  useGetTransactionHistoryQuery  
 } = addicoinsApi;
