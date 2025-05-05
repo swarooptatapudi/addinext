@@ -333,10 +333,10 @@ const ModelDialog = ({
     const normalizedVariation = variation.trim().toLowerCase();   
 
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
-      'addieaseeco': {
-        title: 'AddiEaseEco',
-        description: 'Economy Definitive & Check Sockets Printed on FDM Printer',
-        image: '/assets/order-forms/bk-order/foot-type/AddiEaseEco.png'
+      'addieasesoft': {
+        title: 'AddiEaseSoft',
+        description: 'Heat Resistant Moulds Printed on FDM Printer',
+        image: '/assets/order-forms/below-elbow/AddiEaseMouldHRforAEBG.png'
       },
       'addiease': {
         title: 'AddiEase',

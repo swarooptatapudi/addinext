@@ -5,26 +5,37 @@ export default function Products(): React.JSX.Element {
   return (
     <div className="p-4 max-w-full">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-12 gap-y-6">
-        {/* Prosthetics Lower Extremity */}
         <div>
           <p className="text-[11px] font-extrabold text-[#2e2a6f] mb-2">
             Prosthetics Lower Extremity
           </p>
           <div className="flex flex-wrap gap-x-6 gap-y-4">
             <div className="flex flex-col items-center w-20">
-              {/* <Image    
+              <Image    
               alt="Premium AddiNxT Design Platform black silhouette " 
-              className="mb-1" 
-              height={40} 
-              width={40}
-              src="https://storage.googleapis.com/a1aa/image/e0f9af33-b363-4feb-25af-3ce9dccb8ec7.jpg"
-            /> */}
+              height={90} 
+              width={90}
+              src="/assets/order-forms/products/BK.jpg"
+              className="object-contain rounded-r-lg rounded-l-lg mb-1"
+                loading="lazy"
+                priority={false}
+                unoptimized={true}
+            />
               <span className="text-[11px] text-black text-center">
                 Below Knee (BK)
               </span>
             </div>
             <div className="flex flex-col items-center w-20">
-              
+            <Image    
+              alt="Premium AddiNxT Design Platform black silhouette " 
+              height={90} 
+              width={90}
+              src="/assets/order-forms/products/AK.jpg"
+              className="object-contain rounded-r-lg rounded-l-lg mb-1"
+                loading="lazy"
+                priority={false}
+                unoptimized={true}
+            />
               <span className="text-[11px] text-black text-center">
                 Above Knee (AK)
               </span>
@@ -39,13 +50,31 @@ export default function Products(): React.JSX.Element {
           </p>
           <div className="flex flex-wrap gap-x-6 gap-y-4">
             <div className="flex flex-col items-center w-20">
-              
+            <Image    
+              alt="Premium AddiNxT Design Platform black silhouette " 
+              height={90} 
+              width={90}
+              src="/assets/order-forms/products/BE.jpg"
+              className="object-contain rounded-r-lg rounded-l-lg mb-1"
+                loading="lazy"
+                priority={false}
+                unoptimized={true}
+            />
               <span className="text-[11px] text-black text-center">
                 Below Elbow (BE)
               </span>
             </div>
             <div className="flex flex-col items-center w-20">
-              
+            <Image    
+              alt="Premium AddiNxT Design Platform black silhouette " 
+              height={90} 
+              width={90}
+              src="/assets/order-forms/products/AE.jpg"
+              className="object-contain rounded-r-lg rounded-l-lg mb-1"
+                loading="lazy"
+                priority={false}
+                unoptimized={true}
+            />
               <span className="text-[11px] text-black text-center">
                 Above Elbow (AE)
               </span>
@@ -82,13 +111,31 @@ export default function Products(): React.JSX.Element {
         </p>
         <div className="flex flex-wrap gap-x-6 gap-y-4">
           <div className="flex flex-col items-center w-20">
-            
+          <Image    
+              alt="Premium AddiNxT Design Platform black silhouette " 
+              height={90} 
+              width={90}
+              src="/assets/order-forms/products/IN.jpg"
+              className="object-contain rounded-r-lg rounded-l-lg mb-1"
+                loading="lazy"
+                priority={false}
+                unoptimized={true}
+            />
             <span className="text-[11px] text-black text-center">
               Insoles
             </span>
           </div>
           <div className="flex flex-col items-center w-20">
-            
+          <Image    
+              alt="Premium AddiNxT Design Platform black silhouette " 
+              height={90} 
+              width={90}
+              src="/assets/order-forms/products/AFO.jpg"
+              className="object-contain rounded-r-lg rounded-l-lg mb-1"
+                loading="lazy"
+                priority={false}
+                unoptimized={true}
+            />
             <span className="text-[11px] text-black text-center">
               AFO/SMO
             </span>
@@ -169,13 +216,31 @@ export default function Products(): React.JSX.Element {
         </p>
         <div className="flex flex-wrap gap-x-6 gap-y-4">
           <div className="flex flex-col items-center w-20">
-            
+          <Image    
+              alt="Premium AddiNxT Design Platform black silhouette " 
+              height={90} 
+              width={90}
+              src="/assets/order-forms/products/AddiSole.png"
+              className="object-contain rounded-r-lg rounded-l-lg mb-1"
+                loading="lazy"
+                priority={false}
+                unoptimized={true}
+            />
             <span className="text-[11px] text-black text-center">
               Standard
             </span>
           </div>
           <div className="flex flex-col items-center w-20">
-            
+          <Image    
+              alt="Premium AddiNxT Design Platform black silhouette " 
+              height={90} 
+              width={90}
+              src="/assets/order-forms/products/AddiSoleEco.png"
+              className="object-contain rounded-r-lg rounded-l-lg mb-1"
+                loading="lazy"
+                priority={false}
+                unoptimized={true}
+            />
             <span className="text-[11px] text-black text-center">
               Premium
             </span>
