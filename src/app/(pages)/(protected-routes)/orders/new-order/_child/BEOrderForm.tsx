@@ -232,7 +232,7 @@ const DesignVariationDialog = ({
       'standard (sx)': {
         title: 'Standard (SX)',
         description: 'Premium Definitive Sockets Printed on HP-MJF',
-        image: '/assets/order-forms/bk-order/foot-type/SX.png'
+        image: '/assets/order-forms/below-elbow/SXforAEBE.png'
       },
       'adjustable (ax)': {
         title: 'Adjustable (AX)',
@@ -341,18 +341,18 @@ const ModelDialog = ({
       'addiease': {
         title: 'AddiEase',
         description: 'Premium Definitive Sockets Printed on HP-MJF',
-        image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
+        image: '/assets/order-forms/below-elbow/AddiEaseforAEBE.png'
 
       },
       'addieasemould': {
         title: 'AddiEaseMould',
         description: 'Moulds Printed on FDM Printe',
-        image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould.png'
+        image: '/assets/order-forms/below-elbow/AddiEaseMouldforAEBE.png'
       },
       'addieasemould-hr': {
         title: 'AddiEaseMould-HR',
         description: 'Heat Resistant Moulds Printed on FDM Printer',
-        image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
+        image: '/assets/order-forms/below-elbow/AddiEaseMouldHRforAEBG.png'
 
       },
     };
@@ -685,7 +685,7 @@ const Step1 = ({
       <div className="grid grid-cols-3 gap-4 items-center ml-1 mt-[-20px]">
         <div>
           <Image
-            src={'/assets/order-forms/below-elbow/9(2).png'}
+            src={'/assets/order-forms/below-elbow/9(3).png'}
             alt="measurements"
             width={300}
             height={300}
@@ -724,7 +724,7 @@ const Step1 = ({
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
         <div>
           <Image
-            src={'/assets/order-forms/below-elbow/10.png'}
+            src={'/assets/order-forms/below-elbow/10(1).png'}
             alt="measurements"
             width={300}
             height={0}
@@ -1034,8 +1034,6 @@ mention extra pressure / relief (in mm) at below points. (- for pressure and + f
                 
                  <div className='mt-10 ml-10'>
                  <CustomTable
-                  headerBgColor="#d6e3f0"
-                  lastColBgColor="#d6e3f0"
       columns={[
         { header: 'Area.', accessorKey: 'area' },
         { header: 'Area Name', accessorKey: 'point_name' },
@@ -1242,7 +1240,7 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
                 {[
                  { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
                  { step: 2, name: 'Scan', icon: '📁' },
-                 { step: 3, name: 'Locking Mechanism', icon: '🔒' },
+                 { step: 3, name: 'Components', icon: '🔒' },
                  { step: 4, name: 'Modifications', icon: '✏️' },
                  { step: 5, name: 'Finishing', icon: '🎨' }
                  ].map(({step, name, icon}) => (

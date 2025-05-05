@@ -36,6 +36,17 @@ import { AE_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/beForm/Step5Finishing';
 import CustomTable from '@/components/app/common/CustomTable';
 
+
+
+  const measurementSchema = Yup.string()
+  .matches(/^\d+(\.\d{1,2})?$/, 'Must be a positive number')
+  .test('max-value', 'Must be ≤ 70', (value) => !value || parseFloat(value) <= 70)
+  .test('min-value', 'Must be positive', (value) => !value || parseFloat(value) > 0);
+
+// Reusable required measurement validation schema
+const requiredMeasurementSchema = measurementSchema
+  .required(FORMIK_ERRORS.REQUIRED);
+
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
     .min(FORMIK_ERRORS.MIN_2.VALUE, FORMIK_ERRORS.MIN_2.MESSAGE)
@@ -78,6 +89,13 @@ const step1Validation = Yup.object().shape({
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
   date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  shoulder_joint: measurementSchema,
+  axila: measurementSchema,
+  styloid: measurementSchema,
+  thumb_tip: measurementSchema,
+  stump_distal: measurementSchema,
+  axila_stump: requiredMeasurementSchema,
+  rib_cage: requiredMeasurementSchema,
 });
 
 const step2Validation = Yup.object().shape({
@@ -211,7 +229,7 @@ const DesignVariationDialog = ({
       'standard (sx)': {
         title: 'Standard (SX)',
         description: 'Premium Definitive Sockets Printed on HP-MJF',
-        image: '/assets/order-forms/bk-order/foot-type/SX.png'
+        image: '/assets/order-forms/below-elbow/SXforAEBE.png'
       },
       'adjustable (ax)': {
         title: 'Adjustable (AX)',
@@ -312,26 +330,21 @@ const ModelDialog = ({
     const normalizedVariation = variation.trim().toLowerCase();   
 
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
-      'addieaseeco': {
-        title: 'AddiEaseEco',
-        description: 'Economy Definitive & Check Sockets Printed on FDM Printer',
-        image: '/assets/order-forms/bk-order/foot-type/AddiEaseEco.png'
-      },
       'addiease': {
         title: 'AddiEase',
         description: 'Premium Definitive Sockets Printed on HP-MJF',
-        image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
+        image: '/assets/order-forms/below-elbow/AddiEaseforAEBE.png'
 
       },
       'addieasemould': {
         title: 'AddiEaseMould',
         description: 'Moulds Printed on FDM Printe',
-        image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould.png'
+        image: '/assets/order-forms/below-elbow/AddiEaseMouldforAEBE.png'
       },
       'addieasemould-hr': {
         title: 'AddiEaseMould-HR',
         description: 'Heat Resistant Moulds Printed on FDM Printer',
-        image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
+        image: '/assets/order-forms/below-elbow/AddiEaseMouldHRforAEBG.png'
 
       },
     };
@@ -686,7 +699,7 @@ const Step1 = ({
       <div className="grid grid-cols-3 gap-4 items-center ml-1 mt-[-40px]">
         <div>
           <Image
-            src={'/assets/order-forms/below-elbow/7(1).png'}
+            src={'/assets/order-forms/below-elbow/7(3).png'}
             alt="measurements"
             width={300}
             height={300}
@@ -710,8 +723,8 @@ const Step1 = ({
                 inVaild={shouldShowError('shoulder_joint', true)}
                 error={errors.shoulder_joint}
               />
-            </div>
-            
+            </div>  
+
           </div>
           <div className="grid grid-cols-2 gap-4 ">
             <div className="mb-2">
@@ -755,7 +768,7 @@ const Step1 = ({
                 value={values.thumb_tip}
                 onChange={handleChange('thumb_tip')}
                 // required
-                inVaild={shouldShowError('thumb_tip', false)}
+                inVaild={shouldShowError('thumb_tip',true)}
                 error={errors.thumb_tip}
               />
             </div>
@@ -775,7 +788,7 @@ const Step1 = ({
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
         <div className='mt-[-200px]'>
           <Image
-            src={'/assets/order-forms/below-elbow/8(2).png'}
+            src={'/assets/order-forms/below-elbow/8(3).png'}
             alt="measurements"
             width={300}
             height={0}
@@ -827,8 +840,8 @@ const Step1 = ({
                 placeholder="10"
                 value={values.ml_shoulder}
                 onChange={handleChange('ml_shoulder')}
-                required
-                inVaild={shouldShowError('ml_shoulder', true)}
+                // required
+                inVaild={shouldShowError('ml_shoulder', false)}
                 error={errors.ml_shoulder}
               />
             </div>
@@ -844,8 +857,8 @@ const Step1 = ({
                 placeholder="10"
                 value={values.rib_cage}
                 onChange={handleChange('rib_cage')}
-                required
-                inVaild={shouldShowError('rib_cage', true)}
+                // required
+                inVaild={shouldShowError('rib_cage', false)}
                 error={errors.rib_cage}
               />
             </div>
@@ -1116,9 +1129,9 @@ return !!fieldError && (touched[fieldName] || formSubmitted);
 mention extra pressure / relief (in mm) at below points. (- for pressure and + for relief)
           </p>
           <div className="flex justify-center p-2 mr-20">
-                        <div className='mt-1'>
+                        <div className='mt-10'>
             <Image
-              src={'/assets/order-forms/below-elbow/52.png'}
+              src={'/assets/order-forms/below-elbow/5(2).png'}
               alt="Design Modications"
               width={620}
               height={400}
@@ -1127,7 +1140,7 @@ mention extra pressure / relief (in mm) at below points. (- for pressure and + f
               </div>
               <div>
                 
-                 <div className='mt-10 ml-10'>
+                 <div className='mt-10 ml-15'>
                  <CustomTable
       columns={[
         { header: 'Area.', accessorKey: 'area' },
@@ -1335,7 +1348,7 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
                 {[
                  { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
                  { step: 2, name: 'Scan', icon: '📁' },
-                 { step: 3, name: 'Locking Mechanism', icon: '🔒' },
+                 { step: 3, name: 'Components', icon: '🔒' },
                  { step: 4, name: 'Modifications', icon: '✏️' },
                  { step: 5, name: 'Finishing', icon: '🎨' }
                  ].map(({step, name, icon}) => (

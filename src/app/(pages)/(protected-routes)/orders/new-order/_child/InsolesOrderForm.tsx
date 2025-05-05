@@ -753,7 +753,7 @@ useEffect(() => {
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
         <div className='ml-5' >
           <Image
-            src={'/assets/order-forms/bk-order/insoles_foot.png'}
+            src={'/assets/order-forms/bk-order/6(2).png'}
             alt="measurements"
             width={400}
             height={100}

@@ -20,9 +20,9 @@ type Step3Props = {
 };
 
 const LOCAL_FILE_MAPPINGS: Record<string, string[]> = {
-    'XX Kit': ['/assets/order-forms/bk-order/PDF/BullDog.pdf'],
-    'YY Kit': ['/assets/order-forms/bk-order/PDF/FitKit_Shuttle_Lock.pdf'],
-    'Other': ['/assets/order-forms/bk-order/PDF/Manual_Suction_BK.pdf'],
+    'XX Kit': ['/assets/order-forms/bk-order/PDF/Aether_Charger_Dummy Drawing v1 (2).pdf'],
+    'YY Kit': ['/assets/order-forms/bk-order/PDF/Aether_dummy_ESCDrawingv1(2).pdf'],
+    'Aether Biomedical Kit': ['/assets/order-forms/bk-order/PDF/Aether_wrist_dummy v1 (2).pdf'],
 };
 
 const FOUR_HOLE_ADAPTER_PDF = '/assets/order-forms/bk-order/PDF/4 HoleAdapter.pdf';
@@ -77,7 +77,7 @@ export const Step3 = ({
         }
     };
 
-    const showFileUpload = ['Aether Biomedical Kit'].includes(values.locking_system);
+    const showFileUpload = ['Other'].includes(values.locking_system);
 
     const handleFileSelect = (fieldName: string) => (file: File | null) => {
         if (file) {
