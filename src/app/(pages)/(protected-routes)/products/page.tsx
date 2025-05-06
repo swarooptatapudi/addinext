@@ -60,7 +60,7 @@ export default function Products(): React.JSX.Element {
           </p>
           <div className="flex flex-wrap gap-x-8 gap-y-6">
         <ProductItem src="/assets/order-forms/products/AddiPrime.jpg" label="AddiPrime" />
-        <ProductItem src="/assets/order-forms/products/AddiPrint.jpg" label="AddiPrint-P500" />
+        <ProductItem src="/assets/order-forms/products/AddIPrint.jpg" label="AddiPrint-P500" />
           </div>
         </div>
 
