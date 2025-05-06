@@ -40,7 +40,6 @@ export default function Products(): React.JSX.Element {
       </div>
 
       {/* Orthotics */}
-
       <div className='mt-5'>
           <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
           Orthotics
