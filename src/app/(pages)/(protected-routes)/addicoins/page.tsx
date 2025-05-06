@@ -173,8 +173,8 @@ export default function Addicoins(): React.JSX.Element {
         <Card className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <ShoppingCartIcon className="w-5 h-5 text-amber-600" />
+              <div className="p-2  bg-blue-100 rounded-lg">
+                <ShoppingCartIcon className="w-5 h-5 text-blue-600" />
               </div>
               <CardTitle className="text-xl font-semibold text-gray-800">Buy Coins</CardTitle>
             </div>
@@ -216,14 +216,14 @@ export default function Addicoins(): React.JSX.Element {
                 <CreditCardIcon className="w-5 h-5" />
                 <span className="font-medium">Total Amount:</span>
               </div>
-              <div className="text-xl font-bold text-amber-600">
+              <div className="text-xl font-bold text-blue-800">
                 ₹{(buyQuantity * applyRate)?.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
               </div>
             </div>
             
             {!payId ? (
               <Button
-                className="w-full py-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold shadow-md transition-all"
+                className="w-full py-6 blue-300 from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold shadow-md transition-all"
                 disabled={!!error || isLoading || !buyQuantity}
                 onClick={onPayNow}
               >
@@ -264,7 +264,12 @@ export default function Addicoins(): React.JSX.Element {
       <Card className="mt-6">
         <CardHeader className="border-b">
           <div className="flex items-center gap-3">
-            <CreditCardIcon className="w-5 h-5 text-gray-600" />
+          <div className="flex items-center gap-3">
+              <div className="p-2  bg-blue-100 rounded-lg">
+            <CreditCardIcon className="w-5 h-5 text-blue-600" />
+              </div>
+              <CardTitle className="text-xl font-semibold text-gray-800">Buy Coins</CardTitle>
+            </div>
             <CardTitle className="text-xl font-semibold">Transaction History</CardTitle>
           </div>
         </CardHeader> 
@@ -276,8 +281,8 @@ export default function Addicoins(): React.JSX.Element {
                 <TableHead className="font-medium text-gray-600">Name</TableHead>
                 <TableHead className="font-medium text-gray-600">Coins</TableHead>
                 <TableHead className="font-medium text-gray-600">Date</TableHead>
-                <TableHead className="font-medium text-gray-600">Type</TableHead>
-                <TableHead className="font-medium text-gray-600">Status</TableHead>
+                <TableHead className="font-medium text-gray-600">Transaction Type</TableHead>
+                <TableHead className="font-medium text-gray-600">Payment Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -293,7 +298,7 @@ export default function Addicoins(): React.JSX.Element {
                       <span className="text-gray-600">{transaction.name}</span>
                     </TableCell>
                     <TableCell>
-                      <span className="font-medium text-blue-600">
+                      <span className="font-medium text-gray-600">
                         {transaction.coins?.toLocaleString()}
                       </span>
                     </TableCell>
@@ -302,24 +307,28 @@ export default function Addicoins(): React.JSX.Element {
                       <span className="text-gray-600">{transaction.transaction_date}</span>
                     </TableCell>
                     <TableCell>
-                      <span
+                      {/* <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           transaction.transaction_type === 'Credit'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}
                       >
+                      </span> */}
+                      <span className="font-medium text-gray-600">
                         {transaction.transaction_type}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span
+                      {/* <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           transaction.payment_status === 'Paid'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-yellow-100 text-yellow-800'
                         }`}
                       >
+                      </span> */}
+                      <span className="font-medium text-gray-600">
                         {transaction.payment_status}
                       </span>
                     </TableCell>
