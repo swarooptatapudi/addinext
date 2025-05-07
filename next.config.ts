@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { env } from 'process';
 
 const nextConfig = {
   async rewrites() {
@@ -9,6 +10,10 @@ const nextConfig = {
         // destination: 'https://erp.addiwise.com/api/:path*'
       }
     ];
+  },
+  env:{
+    NEXT_PUBLIC_RAZORPAY_KEY_ID:'rzp_test_46JKVeIJoXgPra',
+    RAZORPAY_KEY_SECRET:'nyqmEQckDeosGzUua5uXnyzh'
   },
   webpack: (config: { optimization: any; }) => {
     config.optimization = {
