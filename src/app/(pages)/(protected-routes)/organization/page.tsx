@@ -20,6 +20,7 @@ interface Transaction {
     sales_order?:string;
     docstatus?:string;
     customer_name?:string;
+    device_type?:string;
   }
   
   interface RateAndDiscountData {
@@ -212,9 +213,9 @@ export default function Organization(): React.JSX.Element {
                     </CardHeader> 
                     <CardContent className="p-0 mt-[-25px]">
                       <Table>
-                        <TableHeader className="bg-gray-50">
+                        <TableHeader className="bg-gray-50 ">
                           <TableRow>
-                            <TableHead className="font-medium text-gray-600">Transaction ID</TableHead>
+                            <TableHead className="font-medium text-gray-600 p-2">Transaction ID</TableHead>
                             <TableHead className="font-medium text-gray-600">Date</TableHead>
                             <TableHead className="font-medium text-gray-600">Coins</TableHead>
                             <TableHead className="font-medium text-gray-600">Rate</TableHead>
@@ -230,7 +231,7 @@ export default function Organization(): React.JSX.Element {
                                 key={index} 
                                 className="hover:bg-gray-100"
                               >
-                                 <TableCell>
+                                 <TableCell className="p-2">
                                   <span className="text-gray-600">{transaction.name}</span>
                                 </TableCell>
                                
@@ -288,13 +289,11 @@ export default function Organization(): React.JSX.Element {
                       <Table>
                         <TableHeader className="bg-gray-50">
                           <TableRow>
-                            <TableHead className="font-medium text-gray-600">Sales Order ID</TableHead>
+                            <TableHead className="font-medium text-gray-600 ">Transaction ID </TableHead>
                             <TableHead className="font-medium text-gray-600">Date</TableHead>
                             <TableHead className="font-medium text-gray-600">Coins</TableHead>
-                            <TableHead className="font-medium text-gray-600">Rate</TableHead>
-                            <TableHead className="font-medium text-gray-600">Aomunt</TableHead>
-                            <TableHead className="font-medium text-gray-600">Payment ID</TableHead>
-                            <TableHead className="font-medium text-gray-600">Payment Status</TableHead>
+                            <TableHead className="font-medium text-gray-600">Sales Order ID</TableHead>
+                            <TableHead className="font-medium text-gray-600">Device Type</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -314,20 +313,11 @@ export default function Organization(): React.JSX.Element {
                                 <TableCell>
                                   <span className="text-gray-600">{transaction.coins?.toLocaleString()}</span>
                                 </TableCell>
-                                <TableCell>
-                                  <span className="text-gray-600">{transaction.rate}</span>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-gray-600">{transaction.total_amount}</span>
-                                </TableCell>
-            
                                 <TableCell className="font-medium">
-                                  <span className="text-gray-600">{transaction.payment_transaction_id}</span>
+                                  <span className="text-gray-600">{transaction.sales_order}</span>
                                 </TableCell>
-                               
-                           
                                 <TableCell>
-                                  <span className="text-gray-600">{transaction.payment_status}</span>
+                                  <span className="text-gray-600">{transaction.device_type}</span>
                                 </TableCell>
                               </TableRow>
                             ))
