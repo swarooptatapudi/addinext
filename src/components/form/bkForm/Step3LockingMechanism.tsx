@@ -59,7 +59,6 @@ export const Step3 = ({
         return !!(touched[fieldName] && errors[fieldName]);
     };
 
-    // Clean up object URLs when component unmounts
     useEffect(() => {
         return () => {
             Object.values(objectUrls).forEach(url => URL.revokeObjectURL(url));
