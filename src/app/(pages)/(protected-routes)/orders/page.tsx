@@ -25,48 +25,41 @@ export default function Orders(): React.JSX.Element {
   const handleView = (order: Order) => {
     router.push(`/orders/new-order/${order.order_id}`);
   };
-  
+
   const handleOrderIdClick = (orderId: string) => {
+    // Handle order ID click logic here
   };
+
   const columns: ColumnDef<Order>[] = [
     {
       accessorKey: 'order_id',
       header: 'Order ID',
       cell: ({ row }) => (
-        <span 
+        <span
           className="cursor-pointer hover:underline hover:text-blue-500"
           onClick={() => handleOrderIdClick(row.original.order_id)}
         >
           {row.original.order_id}
         </span>
-      )
-    },
-    {
-      accessorKey: 'custom_clinic_name',
-      header: 'Clinic Name',
-      cell: ({ row }) => row.original.clinic_name || '-'
+      ),
     },
     {
       accessorKey: 'patient_name',
       header: 'Patient Name',
-       cell: ({ row }) => row.original.patient_name || '-'
+       cell: ({ row }) => row.original.patient_name || '-',
     },
     {
       accessorKey: 'device_type',
-      header: 'Device Type'
+      header: 'Device Type',
     },
     {
       accessorKey: 'order_date',
-      header: 'Order Date'
-    },
-    {
-      accessorKey: 'delivery_date',
-      header: 'Estimate Delivery'
+      header: 'Order Date',
     },
     {
       accessorKey: 'order_value',
       header: 'Order Value',
-      cell: ({ row }) => `$${row.original.order_value.toFixed(2)}`
+      cell: ({ row }) => `${row.original.order_value.toFixed(2)}`,
     },
     {
       id: 'status',
@@ -74,15 +67,19 @@ export default function Orders(): React.JSX.Element {
       cell: ({ row }) => {
         const status = row.original.status;
         return (
-          <span className={`px-2 py-1 rounded-full text-xs ${
-            status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
-            status === 'Completed' ? 'bg-green-100 text-green-800' :
-            'bg-gray-100 text-gray-800'
-          }`}>
+          <span
+            className={`px-2 py-1 rounded-full text-xs ${
+              status === 'Draft'
+                ? 'bg-yellow-100 text-yellow-800'
+                : status === 'Completed'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-gray-100 text-gray-800'
+            }`}
+          >
             {status}
           </span>
         );
-      }
+      },
     },
     {
       id: 'actions',
@@ -90,25 +87,33 @@ export default function Orders(): React.JSX.Element {
       cell: ({ row }) => {
         const order = row.original;
         return (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleView(order)}
-          >
-            View
-          </Button>
+          <>
+            <Button
+              size="sm"
+              className="mr-2 bg-gradient-to-r bg-primary hover:bg-primary/90 text-white shadow-md transition-all"
+              onClick={() => handleView(order)}
+            >
+              Pay
+            </Button>
+            <Button
+              size="sm"
+              className="mr-2 bg-gradient-to-r bg-primary hover:bg-primary/90 text-white shadow-md transition-all"
+              onClick={() => handleView(order)}
+            >
+              Start Design
+            </Button>
+          </>
         );
       },
-    }
+    },
   ];
 
   return (
     <div className="p-4">
-      <DataTable 
-        columns={columns} 
-        data={data?.data?.sales_orders || []} 
+      <DataTable
+        columns={columns}
+        data={data?.data?.sales_orders || []}
       />
     </div>
   );
 }
-

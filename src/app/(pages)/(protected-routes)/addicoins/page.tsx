@@ -33,6 +33,7 @@ interface Transaction {
   transaction_date: string;
   transaction_type: string;
   payment_status: string;
+  base_rate?:string;
 }
 
 interface RateAndDiscountData {
@@ -44,6 +45,8 @@ interface RateAndDiscountData {
       plan: string;
       coin_rate: number;
       discount: number;
+      tax_value:number;
+      base_rate: number;
     }>;
   };
 }
@@ -252,9 +255,15 @@ export default function Addicoins(): React.JSX.Element {
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                 <div>
+                  <span className="font-medium text-gray-700">Basic Rate: </span>
+                  <span className="text-gray-600">₹{data?.data?.user_rules[0]?.base_rate}</span>
+                </div>
+              </li>
+              <li className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                <div>
                   <span className="font-medium text-gray-700">Tax Value: </span>
-                  {/* {tax_value} =  % */}
-                  {/* <span className="text-gray-600">{maxCoins === Infinity ? 'Unlimited' : maxCoins?.toLocaleString()}</span> */}
+                  <span className="text-gray-600">{data?.data?.user_rules[0]?.tax_value}%</span>
                 </div>
               </li>
               <li className="flex items-start gap-2">

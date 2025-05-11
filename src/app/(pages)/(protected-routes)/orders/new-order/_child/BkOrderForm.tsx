@@ -1132,6 +1132,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [estimateConform, setEstimateConform ] = useState(false);
   const [socketTypeDialog, setSocketTypeDialog] = useState({
     open: false,
     data: null
@@ -1422,6 +1423,10 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 setFieldValue={setFieldValue}
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
+                selectedItem={selectedItem}
+                currentStep={currentStep}
+                isActiveStep={currentStep === 5}
+                setEstimateConform={setEstimateConform}
               />
             )}
 
@@ -1454,6 +1459,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                     className="shadow-2xl" 
                     onClick={() => handleSubmit()}
                     type="submit"
+                    disabled={!estimateConform || isOrderCreating}
                   >
                     Submit
                   </Button>

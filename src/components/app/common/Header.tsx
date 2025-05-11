@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/menubar';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { AvatarImage } from '@radix-ui/react-avatar';
 
 export default function Header(): React.JSX.Element {
   const router = useRouter();
@@ -34,6 +35,14 @@ export default function Header(): React.JSX.Element {
       toast.error('Logout failed. Please try again.');
     }
   };
+  const formatProfilePictureUrl = (url: string | undefined) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('/')) return `https://deverp.addiwise.com${url}`;
+    return url;
+  };
+
+  const currentProfilePicture = formatProfilePictureUrl(user?.profile_picture);
 
   return (
     <header className="sticky top-0 z-50 h-16 bg-white px-4 shadow-md">
@@ -81,6 +90,22 @@ export default function Header(): React.JSX.Element {
                 className="rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
                 aria-label="User menu"
               >
+                {/* <Avatar className="border-1 border-gray-200">
+                                {currentProfilePicture ? (
+                                  <AvatarImage  
+                                    src={currentProfilePicture} 
+                                    alt="Profile"
+                                    className="object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.src = '';
+                                    }}
+                                  />
+                                ) : (
+                                  <AvatarFallback className="text-4xl bg-gray-100">
+                                    {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}
+                                  </AvatarFallback>
+                                )}
+                              </Avatar> */}
                 <Avatar>
                   <AvatarFallback className="bg-primary text-white">
                     {user?.first_name?.charAt(0).toUpperCase()}

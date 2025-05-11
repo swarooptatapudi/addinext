@@ -22,7 +22,7 @@ export const productsApi = createApi({
     }),
     getItemNameByDetails: builder.mutation({
       query: (payload) => ({
-        url: `/method/addiwise.apis.item_details.get_item_details`,
+        url: `/method/addiwise.apis.item_details.get_bk_item_details`,
         method: 'POST',
         body: payload
       }),

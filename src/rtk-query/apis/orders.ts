@@ -12,6 +12,7 @@ interface SalesOrder {
   order_value: number;
   status: string;
 }
+
 interface SalesOrdersResponse {
   message: string;
   data: {
@@ -19,6 +20,25 @@ interface SalesOrdersResponse {
     sales_orders: SalesOrder[];
   };
 }
+
+interface BKEstimateRequest {
+  item_code: string;
+  design_by: string;
+  print_by: string;
+  laticess: string;
+  finish: string;
+}
+
+interface BKEstimateResponse {
+  message: string;
+  data: {
+    item_price: number;
+    laticess: number;
+    finish: number;
+    estimate_price: number;
+  };
+}
+
 export const ordersApi = createApi({
   reducerPath: 'ordersApi',
   baseQuery: baseQueryWithReauth,
@@ -38,8 +58,20 @@ export const ordersApi = createApi({
         method: 'GET'
       }),
       transformResponse: (response: SalesOrdersResponse) => response
+    }),
+    getBKEstimate: builder.mutation<BKEstimateResponse, BKEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.item_details.get_bk_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: BKEstimateResponse) => response
     })
   })
 });
 
-export const { useCreateOrderMutation, useGetOrdersQuery } = ordersApi;
+export const { 
+  useCreateOrderMutation, 
+  useGetOrdersQuery,
+  useGetBKEstimateMutation 
+} = ordersApi;
