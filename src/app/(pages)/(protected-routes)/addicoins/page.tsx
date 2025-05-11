@@ -349,6 +349,8 @@ export default function Addicoins(): React.JSX.Element {
         </Card>
       </div>
 
+
+{/* //----------------------------------------------------------- */}
       {/* Transaction History */}
       {/* <Card className="mt-6">
         <CardHeader className="border-b">
