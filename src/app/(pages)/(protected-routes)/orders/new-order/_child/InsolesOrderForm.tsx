@@ -1091,7 +1091,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
   const [selectedItem, setSelectedItem] = React.useState<string>('');
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameByDetailsMutation();
-  const [formValues, setFormValues] = useState<BK_FORM_TYPE>(initialValues);
+  const [formValues, setFormValues] = useState(initialValues);
   const [modelOpen, setModelOpen] = useState(false);
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -1122,7 +1122,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
     createOrder(payload);
   };
 
-  const OnSubmit = async (values: BK_FORM_TYPE) => {
+  const OnSubmit = async (values: any) => {
     setFormValues(values);
     const payload = {
       item_type: 'BK',
