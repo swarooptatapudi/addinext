@@ -113,18 +113,23 @@ export default function Profile() {
           <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
             {/* Avatar Section */}
             <div className="relative group shrink-0">
-              <Avatar className="w-32 h-32 border-2 border-gray-200">
+              <Avatar className="w-33 h-33 border-2 border-gray-200">
                 {currentProfilePicture ? (
-                  <AvatarImage 
-                    src={currentProfilePicture} 
+                  <AvatarImage
+                    src={currentProfilePicture}
                     alt="Profile"
-                    className="object-cover"
+                    className="object-cover w-full h-full"
+                    style={{
+                      objectPosition: 'center',
+                      minWidth: '100%',
+                      minHeight: '100%'
+                    }}
                     onError={(e) => {
                       e.currentTarget.src = '';
                     }}
                   />
                 ) : (
-                  <AvatarFallback className="text-4xl bg-gray-100">
+                  <AvatarFallback className="text-4xl bg-gray-100 flex items-center justify-center w-full h-full">
                     {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}
                   </AvatarFallback>
                 )}
@@ -187,9 +192,7 @@ export default function Profile() {
                 Updating profile picture...
               </div>
             )}
-            {error && (
-              <div className="text-sm text-red-500">{error}</div>
-            )}
+            {error && <div className="text-sm text-red-500">{error}</div>}
             {success && (
               <div className="text-sm text-green-500">
                 Profile picture updated successfully!

@@ -81,12 +81,83 @@ const step1Validation = Yup.object().shape({
   date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
 });
 
+
+// const step2Validation = Yup.object().shape({
+//   images_link: Yup.string()
+//     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
+//     .nullable(),
+//   direct_body: Yup.string().required('Scan condition is required'),
+//   foot_Amputation: Yup.string().nullable(),
+// }).test(
+//   'either-scan-or-link',
+//   'Either upload scans or provide a photo link is required',
+//   function (value) {
+//     const { foot_Amputation, images_link } = value;
+    
+//     if (!foot_Amputation && !images_link) {
+//       return this.createError({
+//         path: 'images_link',
+//         message: 'Either upload scans or provide a photo link is required'
+//       });
+//     }
+    
+//     return true;
+//   }
+// );
+
+
 const step2Validation = Yup.object().shape({
   images_link: Yup.string()
     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
     .nullable(),
   direct_body: Yup.string().required('Scan condition is required'),
-});
+  foot_Amputation: Yup.string().nullable(),
+  liner_thickness: Yup.string().nullable(),
+  liner_type: Yup.string().nullable(),
+}).test(
+  'validate-liner-fields',
+  'Liner fields are required when "With Liner" is selected',
+  function (value) {
+    const { direct_body, liner_thickness, liner_type } = value as {
+      direct_body: string;
+      liner_thickness: string | null;
+      liner_type: string | null;
+    };
+
+    if (direct_body === 'With_Liner') {
+      if (!liner_thickness) {
+        return this.createError({
+          path: 'liner_thickness',
+          message: 'Liner thickness is required when "With Liner" is selected'
+        });
+      }
+      if (!liner_type) {
+        return this.createError({
+          path: 'liner_type',
+          message: 'Liner type is required when "With Liner" is selected'
+        });
+      }
+    }
+    return true;
+  }
+).test(
+  'either-scan-or-link',
+  'Either upload scans or provide a photo link is required',
+  function (value) {
+    const { foot_Amputation, images_link } = value as {
+      foot_Amputation: string | null;
+      images_link: string | null;
+    };
+
+    if (!foot_Amputation && !images_link) {
+      return this.createError({
+        path: 'images_link',
+        message: 'Either upload scans or provide a photo link is required'
+      });
+    }
+    return true;
+  }
+);
 const step4Validation = Yup.object().shape({
   global_volume_reduction: Yup.string()
     .nullable()
@@ -882,15 +953,119 @@ const Step2 = ({
   FORM_OPTIONS,
   formSubmitted 
 }: any) => {
+  console.log("ddd",errors);
+  
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    if (!isRequired && !values[fieldName]) {
-      return false;
-    }    
-    if (isRequired && (formSubmitted || touched[fieldName])) {
-      return !!errors[fieldName];
-    }    
-    return !!(touched[fieldName] && errors[fieldName]);
+    const fieldValue = fieldName.includes('.') 
+      ? fieldName.split('.').reduce((obj, key) => 
+          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+      : values[fieldName];
+  
+    const fieldError = fieldName.includes('.')
+      ? fieldName.split('.').reduce((obj, key) => 
+          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+      : errors[fieldName];
+    
+    if (fieldName === 'images_link' && 
+        fieldError === 'Either upload scans or provide a photo link is required') {
+      return true;
+    }
+
+    if (isRequired) {
+      return (!fieldValue && (formSubmitted || touched[fieldName])) || 
+             (!!fieldError && (touched[fieldName] || formSubmitted));
+    }
+    
+    return !!fieldError && (touched[fieldName] || formSubmitted);
   };
+
+  const showEitherOrError = formSubmitted && 
+                          !values.foot_Amputation && 
+                          !values.images_link && 
+                          errors.images_link === 'Either upload scans or provide a photo link is required';
+
+  // const shouldShowError = (fieldName: string, isRequired = false) => {
+  //   const fieldValue = fieldName.includes('.') 
+  //     ? fieldName.split('.').reduce((obj, key) => 
+  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+  //     : values[fieldName];
+  
+  //   const fieldError = fieldName.includes('.')
+  //     ? fieldName.split('.').reduce((obj, key) => 
+  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+  //     : errors[fieldName];
+    
+  //   // Special case for the either/or validation
+  //   if (fieldName === 'images_link' && 
+  //       fieldError === 'Either upload scans or provide a photo link is required') {
+  //     return true;
+  //   }
+
+  //   if (isRequired) {
+  //     return (!fieldValue && (formSubmitted || touched[fieldName])) || 
+  //            (!!fieldError && (touched[fieldName] || formSubmitted));
+  //   }
+    
+  //   return !!fieldError && (touched[fieldName] || formSubmitted);
+  // };
+
+  // const showEitherOrError = formSubmitted && 
+  //                         !values.foot_Amputation && 
+  //                         !values.images_link && 
+  //                         errors.images_link === 'Either upload scans or provide a photo link is required';
+
+  // const shouldShowError = (fieldName: string, isRequired = false) => {
+  //   const fieldValue = fieldName.includes('.') 
+  //     ? fieldName.split('.').reduce((obj, key) => 
+  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+  //     : values[fieldName];
+  
+  //   const fieldError = fieldName.includes('.')
+  //     ? fieldName.split('.').reduce((obj, key) => 
+  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+  //     : errors[fieldName];
+    
+  //   // Special case for the either/or validation
+  //   if (fieldName === 'images_link' && 
+  //       fieldError === 'Either upload scans or provide a photo link is required') {
+  //     return true;
+  //   }
+
+  //   if (isRequired) {
+  //     return (!fieldValue && (formSubmitted || touched[fieldName])) || 
+  //            (!!fieldError && (touched[fieldName] || formSubmitted));
+  //   }
+    
+  //   return !!fieldError && (touched[fieldName] || formSubmitted);
+  // };
+
+  // // Special handling for the either/or validation error
+  // const showEitherOrError = formSubmitted && 
+  //                         !values.foot_Amputation && 
+  //                         !values.images_link && 
+  //                         errors.images_link === 'Either upload scans or provide a photo link is required';
+
+  // const shouldShowError = (fieldName: string, isRequired = false) => {
+  //   // Handle nested fields like socket_design_details[0].cpo_input_mm
+  //   const fieldValue = fieldName.includes('.') 
+  //     ? fieldName.split('.').reduce((obj, key) => 
+  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+  //     : values[fieldName];
+  
+  //   if (!fieldValue) {
+  //     if (!isRequired) return false;
+  //     return formSubmitted || touched[fieldName];
+  //   }
+  //   const fieldError = fieldName.includes('.')
+  //     ? fieldName.split('.').reduce((obj, key) => 
+  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+  //     : errors[fieldName];
+      
+  //   return !!fieldError && (touched[fieldName] || formSubmitted);
+  // };
+  // const showEitherOrError = !values.foot_Amputation && !values.images_link && 
+  //                         (formSubmitted || touched.images_link || touched.foot_Amputation) && 
+  //                         errors.images_link === 'Either upload scans or provide a photo link is required';
 
   return (
     <div className="flex flex-col gap-4">
@@ -905,9 +1080,28 @@ const Step2 = ({
             label="Direct Body"
             required={true}
             value={values.direct_body}
-            onValueChange={handleChange('direct_body')}
+            onValueChange={(value) => {
+              handleChange('direct_body')(value);
+              // Reset dependent fields when changing
+              if (value !== 'With_Liner') {
+                setFieldValue('liner_thickness', '');
+                setFieldValue('liner_type', '');
+              }
+            }}
             inVaild={shouldShowError('direct_body', true)}
             error={errors.direct_body}
+
+            // onValueChange={handleChange('direct_body')}
+            // onValueChange={(value) => {
+            //   handleChange('direct_body')(value);
+            //   // Reset dependent fields when changing
+            //   if (value !== 'With_Liner') {
+            //     setFieldValue('liner_thickness', '');
+            //     setFieldValue('liner_type', '');
+            //   }
+            // }}
+            // inVaild={shouldShowError('direct_body', true)}
+            // error={errors.direct_body}
           />
           {values.direct_body === 'With_Liner' && (
             <div style={{ marginBottom: '55px' }}></div>
@@ -921,7 +1115,22 @@ const Step2 = ({
                   options={FORM_OPTIONS['liner_thickness'] ?? []}
                   label="Liner Thickness"
                   value={values.liner_thickness}
-                  onValueChange={handleChange('liner_thickness')}
+                  onValueChange={(value) => {
+                    handleChange('liner_thickness')(value);
+                    // Reset liner type when thickness changes
+                    setFieldValue('liner_type', '');
+                  }}
+                  // required={true}
+                  inVaild={shouldShowError('liner_thickness', true)}
+                  error={errors.liner_thickness}
+                  // onValueChange={handleChange('liner_thickness')}
+                  // onValueChange={(value) => {
+                  //   handleChange('liner_thickness')(value);
+                  //   setFieldValue('liner_type', '');
+                  // }}
+                  required={values.direct_body === 'With_Liner'}
+                  // inVaild={shouldShowError('liner_thickness', values.direct_body === 'With_Liner')}
+                  // error={errors.liner_thickness}
                 />
                 <div style={{ marginBottom: '55px' }}></div>
               </>
@@ -956,6 +1165,9 @@ const Step2 = ({
                 ]}
                 value={values.foot_Amputation}
                 onValueChange={handleChange('foot_Amputation')}
+                className={showEitherOrError ? 'border-red-500' : ''}
+                // inVaild={shouldShowError('foot_Amputation') && !values.images_link}
+                // error={errors.foot_Amputation}
               />
             </div>
           </div>
@@ -1015,13 +1227,21 @@ const Step2 = ({
         <div className="flex flex-col-6 gap-4">
           <Input
             placeholder="https://drive.google.com/..."
-            className="mt-3 min-w-max ml-0 w-[410px]"
+            className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''}`}
+            // className="mt-3 min-w-max ml-0 w-[410px]"
             value={values.images_link}
             onChange={handleChange('images_link')}
-            inVaild={shouldShowError('images_link')}
-            error={errors.images_link}
+            inVaild={shouldShowError('images_link',true)}
+            error={showEitherOrError ? 'Either upload scans or provide a photo link is required' : errors.images_link}
+            // inVaild={shouldShowError('images_link')}
+            // error={errors.images_link}
           />
         </div>
+        {/* {showEitherOrError && (
+        <div className="text-red-500 text-sm mt-1">
+          Either upload scans or provide a photo link is required
+        </div>
+      )} */}
       </div>
     </div>
   );
@@ -1152,7 +1372,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     payload.customer = user?.customer_id;
     payload.order_details = formValues;
     payload.item_code = selectedItem;
-
+    console.log("!!!!1111:>",payload);
+    
     createOrder(payload);
   };
 
@@ -1176,7 +1397,14 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       customer: user?.customer_id,
       order_details: values,
       item_code: itemCode,
+//       "design_by":"Addiwise",
+//  "print_by":"Addiwise",
+// "laticess":"Yes",
+
+// "finish":"Colour",
     };
+    console.log("@@@@222::>>",orderPayload);
+    
     createOrder(orderPayload);
   };
 
