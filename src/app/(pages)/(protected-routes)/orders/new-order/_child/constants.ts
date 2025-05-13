@@ -22,7 +22,7 @@ export const BK_FORM_INITIAL_VALUES = {
   foot_type: '',
   shoe_size: '',
   flexion_angle: '',
-  abductionadduction_angle: '',
+  add_abd_angle: '',
   liner_type: '',
   liner_thickness:'',
   direct_body: '',
@@ -121,7 +121,41 @@ export const BK_FORM_INITIAL_VALUES = {
       default_mm: '+1',
       cpo_input_mm: ''
     }
-  ]
+  ],
+  value_c_details: [
+    {
+        gap: "0 cm",
+        value: ""
+    },
+    {
+        gap: "5 cm",
+        value: ""
+    },
+    {
+        gap: "10 cm",
+        value: ""
+    },
+    {
+        gap: "15 cm",
+        "value": ""
+    },
+    {
+        gap: "20 cm",
+        "value": ""
+    },
+    {
+        gap: "25 cm",
+        value: ""
+    },
+    {
+        gap: "30 cm",
+        value: ""
+    },
+    {
+        gap: "35 cm",
+        value: ""
+    }
+]
 };
 
 // ak form

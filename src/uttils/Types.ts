@@ -83,7 +83,7 @@ export interface BK_FORM_TYPE {
   foot_type: string;
   shoe_size: string;
   flexion_angle: string;
-  abductionadduction_angle: string;
+  add_abd_angle: string;
   liner_type: string;
   activity_level: string;
   adapter_type: string;

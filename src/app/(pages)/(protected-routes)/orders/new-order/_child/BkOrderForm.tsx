@@ -53,14 +53,14 @@ const step1Validation = Yup.object().shape({
     })
     .test('min-height', 'Minimum height is 91cm', (value) => !value || parseFloat(value) >= 91)
     .test('max-height', 'Maximum height is 213.00cm', (value) => !value || parseFloat(value) <= 213.0),
-  weight: Yup.string()
-    .required('Weight is required')
-    .matches(/^\d+(\.\d{1,2})?$/, {
-      message: 'Must be a number (e.g. 65.5 or 70)',
-      excludeEmptyString: false,
-    })
-    .test('min-weight', 'Minimum weight is 10kg', (value) => parseFloat(value) >= 10)
-    .test('max-weight', 'Maximum weight is 180kg', (value) => parseFloat(value) <= 180),
+  // weight: Yup.string()
+  //   .required('Weight is required')
+  //   .matches(/^\d+(\.\d{1,2})?$/, {
+  //     message: 'Must be a number (e.g. 65.5 or 70)',
+  //     excludeEmptyString: false,
+  //   })
+  //   .test('min-weight', 'Minimum weight is 10kg', (value) => parseFloat(value) >= 10)
+  //   .test('max-weight', 'Maximum weight is 180kg', (value) => parseFloat(value) <= 180),
   stump_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only numbers')
@@ -75,10 +75,41 @@ const step1Validation = Yup.object().shape({
   flexion_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
-  abductionadduction_angle: Yup.string()
+  add_abd_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
-  date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  value_c_detailss: Yup.array()
+  .of(
+    Yup.object().shape({
+      value: Yup.string()
+        .nullable()
+        .notRequired()
+        .matches(/^\d+(\.\d{1,2})?$/, 'Must be a number (e.g. 12 or 12.5)')
+        .test('min-value', 'Minimum value is 1', (value) => 
+          !value || parseFloat(value) >= 1
+        )
+        .test('max-value', 'Maximum value is 100', (value) => 
+          !value || parseFloat(value) <= 100
+        )
+    })
+  )
+  .notRequired(),
+  // value_c_details: Yup.array().of(
+  //   Yup.object().shape({
+  //     value: Yup.string()
+  //       .matches(/^\d+(\.\d{1,2})?$/, 'Must be a number (e.g. 12 or 12.5)')
+  //       .test(
+  //         'is-valid-number',
+  //         'Must be a number between 0 and 100',
+  //         (value) => {
+  //           if (!value || value.trim() === '') return true;
+  //           if (!/^-?\d+$/.test(value)) return false;
+  //           const num = parseInt(value, 10);
+  //           return num >= 1 && num <= 100;
+  //         }
+  //       )   })
+  //     )
+  
 });
 
 
@@ -503,6 +534,7 @@ const Step1 = ({
   formSubmitted,
   setSocketTypeDialog  
 }: any) => {
+  
   const [designVariationDialog, setDesignVariationDialog] = useState({
     open: false,
     options: []
@@ -512,13 +544,29 @@ const Step1 = ({
     open: false,
     options: []
   });
-
+  
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    if (!values[fieldName]) {
-      if (!isRequired) return false;
-      return formSubmitted || touched[fieldName];
+    const fieldValue = fieldName.includes('.') 
+      ? fieldName.split('.').reduce((obj, key) => 
+          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+      : values[fieldName];
+  
+    const fieldError = fieldName.includes('.')
+      ? fieldName.split('.').reduce((obj, key) => 
+          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+      : errors[fieldName];
+    
+    if (fieldName === 'images_link' && 
+        fieldError === 'Either upload scans or provide a photo link is required') {
+      return true;
     }
-    return !!errors[fieldName] && (touched[fieldName] || formSubmitted);
+
+    if (isRequired) {
+      return (!fieldValue && (formSubmitted || touched[fieldName])) || 
+             (!!fieldError && (touched[fieldName] || formSubmitted));
+    }
+    
+    return !!fieldError && (touched[fieldName] || formSubmitted);
   };
 
   const socketTypeOptions = useMemo(() => {
@@ -566,8 +614,8 @@ const Step1 = ({
             type="date"
             value={values.date_of_birth || ''}
             onChange={handleChange('date_of_birth')}
-            required
-            inVaild={shouldShowError('date_of_birth', true)}
+            // required
+            inVaild={shouldShowError('date_of_birth', false)}
             error={errors.date_of_birth}
             disabled={true}
           />
@@ -583,10 +631,10 @@ const Step1 = ({
           <Input
             placeholder="50"
             label="Weight (kgs)"
-            required
+            // required
             value={values.weight}
             onChange={handleChange('weight')}
-            inVaild={shouldShowError('weight', true)}
+            inVaild={shouldShowError('weight',false)}
             error={errors.weight}
             disabled={true}
           />
@@ -615,8 +663,8 @@ const Step1 = ({
           label="Gender"
           value={values.gender}
           onValueChange={handleChange('gender')}
-          inVaild={shouldShowError('gender', true)}
-          required
+          inVaild={shouldShowError('gender', false)}
+          // required
           error={errors.gender}
           disabled={true}
         />
@@ -772,67 +820,59 @@ const Step1 = ({
               />
             </div>
           </div>
-          <div className="">
-            <p className='text-xs'>Value <strong>C</strong> - Circumference of Stump at 5 cm gap (cm)</p>
-          </div>
-          <div className="grid grid-cols-2 gap-3 ">
-            <div className="grid sm:col-span-4 xl:col-span-2 gap-0">
-              <div className="grid grid-cols-3">
-                <div className="flex gap-2 items-center">
-                  <p className="text-[10px]">0 Cm</p>
-                  <Input />
-                </div>
-                <div className="grid col-span-2">
-                  <div className="flex gap-2 items-center ml-[10px]">
-                    <p className="text-[10px]">20 Cm</p>
-                    <Input />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="grid sm:col-span-3 xl:col-span-2">
-              <div className="grid grid-cols-3">
-                <div className="flex gap-2 items-center">
-                  <p className="text-[10px]">5 Cm</p>
-                  <Input />
-                </div>
-                <div className="grid col-span-2">
-                  <div className="flex gap-2 items-center ml-[10px]">
-                    <p className="text-[10px]">25 Cm</p>
-                    <Input />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="grid sm:col-span-3 xl:col-span-2">
-              <div className="grid grid-cols-3">
-                <div className="flex gap-2 items-center">
-                  <p className="text-[10px]">10 Cm</p>
-                  <Input />
-                </div>
-                <div className="grid col-span-2">
-                <div className="flex gap-2 items-center ml-[10px]">
-                    <p className="text-[10px]">20 Cm</p>
-                    <Input />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="grid sm:col-span-3 xl:col-span-2">
-              <div className="grid grid-cols-3">
-                <div className="flex gap-2 items-center">
-                  <p className="text-[10px]">15 Cm</p>
-                  <Input />
-                </div>
-                <div className="grid col-span-2">
-                <div className="flex gap-2 items-center ml-[10px]">
-                    <p className="text-[10px]">35 Cm</p>
-                    <Input />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* // Update the measurements section in Step1 component */}
+<div className="">
+  <p className='text-xs'>Value <strong>C</strong> - Circumference of Stump at 5 cm gap (cm)</p>
+</div>
+<div className="grid grid-cols-2 gap-x-5 gap-y-4 w-[500px]">
+  {values.value_c_details?.map((item: any, index: number) => (
+  <div key={index} className="flex items-center gap-1 w-full">
+    <p className="text-[10px] whitespace-nowrap">{item.gap}</p>
+    <div className="flex-1">
+      <Input
+        value={item?.value || ''}
+        name={`value_c_details[${index}].value`}
+        onChange={(e) => {
+          const inputValue = e.target.value;
+          if (inputValue === '' || /^[0-9]*\.?[0-9]*$/.test(inputValue)) {
+            const numValue = parseFloat(inputValue);
+            if (inputValue === '' || 
+                (numValue >= 0 && 
+                 numValue <= 100 && 
+                 (inputValue.match(/\./g) || []).length <= 1)) {
+              const newValueCDetails = [...values.value_c_details];
+              newValueCDetails[index].value = inputValue;
+              setFieldValue('value_c_details', newValueCDetails);
+            }
+          }
+        }}
+        onBlur={(e) => {
+          const inputValue = e.target.value;
+          if (inputValue === '') {
+            const newValueCDetails = [...values.value_c_details];
+            newValueCDetails[index].value = '0';
+            setFieldValue('value_c_details', newValueCDetails);
+          } else if (inputValue.endsWith('.')) {
+            const newValueCDetails = [...values.value_c_details];
+            newValueCDetails[index].value = inputValue.slice(0, -1);
+            setFieldValue('value_c_details', newValueCDetails);
+          } else if (inputValue.startsWith('.')) {
+            const newValueCDetails = [...values.value_c_details];
+            newValueCDetails[index].value = '0' + inputValue;
+            setFieldValue('value_c_details', newValueCDetails);
+          }
+        }}
+        placeholder="cm"
+        inVaild={shouldShowError(`value_c_details.[${index}].value`)}
+        error={errors?.value_c_details?.[index]?.value}
+        step="any"
+        min="0"
+        max="100"
+      />
+    </div>
+  </div>
+))}
+</div>
         </div>
       </div>
       <div className="grid grid-cols-5 gap-4 mt-5">
@@ -875,10 +915,10 @@ const Step1 = ({
           <Input
             label="Add/Abd Angle (Deg)"
             placeholder="(Deg)"
-            value={values.abductionadduction_angle}
-            onChange={handleChange('abductionadduction_angle')}
-            inVaild={shouldShowError('abductionadduction_angle')}
-            error={errors.abductionadduction_angle}
+            value={values.add_abd_angle}
+            onChange={handleChange('add_abd_angle')}
+            inVaild={shouldShowError('add_abd_angle')}
+            error={errors.add_abd_angle}
             className="w-full placeholder:text-[12px]"
           />
         </div>
@@ -953,7 +993,6 @@ const Step2 = ({
   FORM_OPTIONS,
   formSubmitted 
 }: any) => {
-  console.log("ddd",errors);
   
   const shouldShowError = (fieldName: string, isRequired = false) => {
     const fieldValue = fieldName.includes('.') 
@@ -1275,8 +1314,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     payload.customer = user?.customer_id;
     payload.order_details = formValues;
     payload.item_code = selectedItem;
-    console.log("!!!!1111:>",payload);
-    
     createOrder(payload);
   };
 
@@ -1300,14 +1337,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       customer: user?.customer_id,
       order_details: values,
       item_code: itemCode,
-//       "design_by":"Addiwise",
-//  "print_by":"Addiwise",
-// "laticess":"Yes",
-
-// "finish":"Colour",
     };
-    console.log("@@@@222::>>",orderPayload);
-    
     createOrder(orderPayload);
   };
 
