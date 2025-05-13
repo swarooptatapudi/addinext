@@ -984,89 +984,6 @@ const Step2 = ({
                           !values.images_link && 
                           errors.images_link === 'Either upload scans or provide a photo link is required';
 
-  // const shouldShowError = (fieldName: string, isRequired = false) => {
-  //   const fieldValue = fieldName.includes('.') 
-  //     ? fieldName.split('.').reduce((obj, key) => 
-  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
-  //     : values[fieldName];
-  
-  //   const fieldError = fieldName.includes('.')
-  //     ? fieldName.split('.').reduce((obj, key) => 
-  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
-  //     : errors[fieldName];
-    
-  //   // Special case for the either/or validation
-  //   if (fieldName === 'images_link' && 
-  //       fieldError === 'Either upload scans or provide a photo link is required') {
-  //     return true;
-  //   }
-
-  //   if (isRequired) {
-  //     return (!fieldValue && (formSubmitted || touched[fieldName])) || 
-  //            (!!fieldError && (touched[fieldName] || formSubmitted));
-  //   }
-    
-  //   return !!fieldError && (touched[fieldName] || formSubmitted);
-  // };
-
-  // const showEitherOrError = formSubmitted && 
-  //                         !values.foot_Amputation && 
-  //                         !values.images_link && 
-  //                         errors.images_link === 'Either upload scans or provide a photo link is required';
-
-  // const shouldShowError = (fieldName: string, isRequired = false) => {
-  //   const fieldValue = fieldName.includes('.') 
-  //     ? fieldName.split('.').reduce((obj, key) => 
-  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
-  //     : values[fieldName];
-  
-  //   const fieldError = fieldName.includes('.')
-  //     ? fieldName.split('.').reduce((obj, key) => 
-  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
-  //     : errors[fieldName];
-    
-  //   // Special case for the either/or validation
-  //   if (fieldName === 'images_link' && 
-  //       fieldError === 'Either upload scans or provide a photo link is required') {
-  //     return true;
-  //   }
-
-  //   if (isRequired) {
-  //     return (!fieldValue && (formSubmitted || touched[fieldName])) || 
-  //            (!!fieldError && (touched[fieldName] || formSubmitted));
-  //   }
-    
-  //   return !!fieldError && (touched[fieldName] || formSubmitted);
-  // };
-
-  // // Special handling for the either/or validation error
-  // const showEitherOrError = formSubmitted && 
-  //                         !values.foot_Amputation && 
-  //                         !values.images_link && 
-  //                         errors.images_link === 'Either upload scans or provide a photo link is required';
-
-  // const shouldShowError = (fieldName: string, isRequired = false) => {
-  //   // Handle nested fields like socket_design_details[0].cpo_input_mm
-  //   const fieldValue = fieldName.includes('.') 
-  //     ? fieldName.split('.').reduce((obj, key) => 
-  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
-  //     : values[fieldName];
-  
-  //   if (!fieldValue) {
-  //     if (!isRequired) return false;
-  //     return formSubmitted || touched[fieldName];
-  //   }
-  //   const fieldError = fieldName.includes('.')
-  //     ? fieldName.split('.').reduce((obj, key) => 
-  //         obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
-  //     : errors[fieldName];
-      
-  //   return !!fieldError && (touched[fieldName] || formSubmitted);
-  // };
-  // const showEitherOrError = !values.foot_Amputation && !values.images_link && 
-  //                         (formSubmitted || touched.images_link || touched.foot_Amputation) && 
-  //                         errors.images_link === 'Either upload scans or provide a photo link is required';
-
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-4 items-end">
@@ -1082,7 +999,6 @@ const Step2 = ({
             value={values.direct_body}
             onValueChange={(value) => {
               handleChange('direct_body')(value);
-              // Reset dependent fields when changing
               if (value !== 'With_Liner') {
                 setFieldValue('liner_thickness', '');
                 setFieldValue('liner_type', '');
@@ -1090,18 +1006,6 @@ const Step2 = ({
             }}
             inVaild={shouldShowError('direct_body', true)}
             error={errors.direct_body}
-
-            // onValueChange={handleChange('direct_body')}
-            // onValueChange={(value) => {
-            //   handleChange('direct_body')(value);
-            //   // Reset dependent fields when changing
-            //   if (value !== 'With_Liner') {
-            //     setFieldValue('liner_thickness', '');
-            //     setFieldValue('liner_type', '');
-            //   }
-            // }}
-            // inVaild={shouldShowError('direct_body', true)}
-            // error={errors.direct_body}
           />
           {values.direct_body === 'With_Liner' && (
             <div style={{ marginBottom: '55px' }}></div>
