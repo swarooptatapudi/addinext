@@ -23,6 +23,7 @@ export type Order = {
   delivery_date: string;
   order_value: number;
   status: string;
+  symbol?:string;
 };
 
 export default function Orders(): React.JSX.Element {
@@ -188,7 +189,7 @@ export default function Orders(): React.JSX.Element {
     {
       accessorKey: 'order_value',
       header: 'Order Value',
-      cell: ({ row }) => `$${row.original.order_value.toFixed(2)}`,
+      cell: ({ row }) => `${row.original.symbol}${row.original.order_value.toFixed(2)}`,
     },
     {
       id: 'status',
@@ -271,7 +272,6 @@ export default function Orders(): React.JSX.Element {
   return (
     <div className="p-4">
       <div className="mb-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Orders</h1>
         {!razorpayKey && (
           <div className="text-red-500 text-sm bg-red-50 p-2 rounded">
             Warning: Payment gateway is not properly configured

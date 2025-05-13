@@ -75,7 +75,7 @@ export interface BK_FORM_TYPE {
   stump_length: string;
   amputated_leg: string;
   stump_size: string;
-  previous_prosthetic_experience: string;
+  previous_prosthetic_experience?: string;
   stump_type: string;
   locking_system: string;
   scan_condition: string;

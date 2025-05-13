@@ -1174,10 +1174,10 @@ const Step2 = ({
             // className="mt-3 min-w-max ml-0 w-[410px]"
             value={values.images_link}
             onChange={handleChange('images_link')}
-            inVaild={shouldShowError('images_link',true)}
-            error={showEitherOrError ? 'Either upload scans or provide a photo link is required' : errors.images_link}
+            inVaild={shouldShowError('images_link',false)}
+            // error={showEitherOrError ? 'Either upload scans or provide a photo link is required' : errors.images_link}
             // inVaild={shouldShowError('images_link')}
-            // error={errors.images_link}
+            error={errors.images_link}
           />
         </div>
         {/* {showEitherOrError && (
@@ -1288,7 +1288,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
   const [selectedItem, setSelectedItem] = React.useState<string>('');
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameByDetailsMutation();
-  const [formValues, setFormValues] = useState<BK_FORM_TYPE>(initialValues);
+  const [formValues, setFormValues] = useState(initialValues);
   const [modelOpen, setModelOpen] = useState(false);
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -1317,7 +1317,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     createOrder(payload);
   };
 
-  const OnSubmit = async (values: BK_FORM_TYPE) => {
+  const OnSubmit = async (values: any) => {
     setFormValues(values);
     const payload = {
       item_type: 'BK',
