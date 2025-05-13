@@ -1249,7 +1249,6 @@ const Step2 = ({
 
 const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    // Handle nested fields like socket_design_details[0].cpo_input_mm
     const fieldValue = fieldName.includes('.') 
       ? fieldName.split('.').reduce((obj, key) => 
           obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
