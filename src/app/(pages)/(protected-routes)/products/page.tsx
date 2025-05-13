@@ -6,7 +6,6 @@ export default function Products(): React.JSX.Element {
   return (
     <div className="p-6 max-w-full">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
-        {/* Prosthetics Lower Extremity */}
         <div>
           <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
             Prosthetics Lower Extremity
