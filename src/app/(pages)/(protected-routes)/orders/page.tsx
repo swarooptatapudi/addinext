@@ -223,11 +223,11 @@ export default function Orders(): React.JSX.Element {
         const isDisabled = order.status === 'Completed' || order.status === 'Paid';
         
         return (
-          <div className="flex space-x-2">
+          <div className="flex space-x-">
             <Button
               size="sm"
               disabled={isDisabled || isPaymentLoading || !razorpayKey}
-              className="bg-primary hover:bg-primary/90 text-white shadow-md"
+              className="bg-primary hover:bg-primary/90 text-white shadow-md "
               onClick={() => handleView(order)}
             >
               {isPaymentLoading ? 'Processing...' : 'Pay'}
@@ -235,6 +235,7 @@ export default function Orders(): React.JSX.Element {
             <Button
               size="sm"
               variant="outline"
+              className='ml-2'
               disabled={order.status !== 'Paid'}
               onClick={() => {
                 router.push(`/orders/design/${order.order_id}`);
