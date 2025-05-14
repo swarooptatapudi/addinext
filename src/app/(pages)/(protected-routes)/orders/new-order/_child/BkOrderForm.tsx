@@ -1060,7 +1060,6 @@ const Step2 = ({
         value={values.liner_thickness || ''}
         onValueChange={(value) => {
           handleChange('liner_thickness')(value);
-          // Reset liner type when thickness changes
           setFieldValue('liner_type', '');
         }}
         required={values.direct_body === 'With_Liner'}
