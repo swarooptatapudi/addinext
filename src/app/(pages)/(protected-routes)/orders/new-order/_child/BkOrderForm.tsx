@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useRouter } from 'next/navigation';
+import { useRouter,useSearchParams  } from 'next/navigation';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { Formik, useFormikContext } from 'formik';
@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dialog';
 // API Hooks
 import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
-import { useCreateOrderMutation } from '@/rtk-query/apis/orders';
+import { useCreateOrderMutation,useGetOrderDetailIdsMutation } from '@/rtk-query/apis/orders';
 import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
 
 // Constants & Utils
@@ -70,7 +70,7 @@ const step1Validation = Yup.object().shape({
       message: 'Must be a number (e.g. 92.57 or 95)',
       excludeEmptyString: true,
     })
-    .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
+    .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 0)
     .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 200.0),
   flexion_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
@@ -114,7 +114,7 @@ const step1Validation = Yup.object().shape({
 
 
 // const step2Validation = Yup.object().shape({
-//   images_link: Yup.string()
+//   upload_link: Yup.string()
 //     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
 //     .nullable(),
 //   direct_body: Yup.string().required('Scan condition is required'),
@@ -123,11 +123,11 @@ const step1Validation = Yup.object().shape({
 //   'either-scan-or-link',
 //   'Either upload scans or provide a photo link is required',
 //   function (value) {
-//     const { foot_Amputation, images_link } = value;
+//     const { foot_Amputation, upload_link } = value;
     
-//     if (!foot_Amputation && !images_link) {
+//     if (!foot_Amputation && !upload_link) {
 //       return this.createError({
-//         path: 'images_link',
+//         path: 'upload_link',
 //         message: 'Either upload scans or provide a photo link is required'
 //       });
 //     }
@@ -138,7 +138,7 @@ const step1Validation = Yup.object().shape({
 
 
 const step2Validation = Yup.object().shape({
-  images_link: Yup.string()
+  upload_link: Yup.string()
     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
     .nullable(),
   direct_body: Yup.string().required('Scan condition is required'),
@@ -175,14 +175,14 @@ const step2Validation = Yup.object().shape({
   'either-scan-or-link',
   'Either upload scans or provide a photo link is required',
   function (value) {
-    const { foot_Amputation, images_link } = value as {
+    const { foot_Amputation, upload_link } = value as {
       foot_Amputation: string | null;
-      images_link: string | null;
+      upload_link: string | null;
     };
 
-    if (!foot_Amputation && !images_link) {
+    if (!foot_Amputation && !upload_link) {
       return this.createError({
-        path: 'images_link',
+        path: 'upload_link',
         message: 'Either upload scans or provide a photo link is required'
       });
     }
@@ -556,7 +556,7 @@ const Step1 = ({
           obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
       : errors[fieldName];
     
-    if (fieldName === 'images_link' && 
+    if (fieldName === 'upload_link' && 
         fieldError === 'Either upload scans or provide a photo link is required') {
       return true;
     }
@@ -601,7 +601,7 @@ const Step1 = ({
         <PatientPicker
           label="Patient Name"
           placeholder="Patient Name"
-          value={values.patient_name}
+          value={values.patient_name  || ''}
           onChange={handleChange('patient_name')}
           setFieldValue={setFieldValue}
           required
@@ -623,7 +623,7 @@ const Step1 = ({
             placeholder="65"
             label="Height (cm)"
             onChange={handleChange('height')}
-            value={values.height}
+            value={values.height || ''}
             inVaild={shouldShowError('height')}
             error={errors.height}
             disabled={true}
@@ -632,7 +632,7 @@ const Step1 = ({
             placeholder="50"
             label="Weight (kgs)"
             // required
-            value={values.weight}
+            value={values.weight  || ''}
             onChange={handleChange('weight')}
             inVaild={shouldShowError('weight',false)}
             error={errors.weight}
@@ -643,14 +643,14 @@ const Step1 = ({
           placeholder="10 digit phone number"
           label="Mobile Number"
           onChange={handleChange('mobile_no')}
-          value={values.mobile_no}
+          value={values.mobile_no  || ''}
           error={errors.mobile_no}
           disabled={true}
         />
         <Input
           placeholder="Email"
           label="Email"
-          value={values.email}
+          value={values.email  || ''}
           onChange={handleChange('email')}
           error={errors.email}
           disabled={true}
@@ -661,7 +661,7 @@ const Step1 = ({
             { value: 'Female', label: 'Female' },
           ]}
           label="Gender"
-          value={values.gender}
+          value={values.gender  || ''}
           onValueChange={handleChange('gender')}
           inVaild={shouldShowError('gender', false)}
           // required
@@ -676,25 +676,25 @@ const Step1 = ({
           placeholder="Patient Name"
           label="Amputation Date"
           type="date"
-          value={values.amputation_date}
+          value={values.amputation_date  || ''}
           onChange={handleChange('amputation_date')}
         />
         <SelectBox
           options={FORM_OPTIONS?.amputated_leg || []}
           label="Amputation Leg"
-          value={values.amputated_leg}
+          value={values.amputated_leg || ''}
           onValueChange={handleChange('amputated_leg')}
         />
         <SelectBox
           options={FORM_OPTIONS?.reason_for_amputation || []}
           label="Reason of Amputation"
-          value={values.reason_for_amputation}
+          value={values.reason_for_amputation || ''}
           onValueChange={handleChange('reason_for_amputation')}
         />
         <SelectBox
           options={FORM_OPTIONS?.activity_level || []}
           label="Activity Level"
-          value={values.activity_level}
+          value={values.activity_level || ''}
           onValueChange={handleChange('activity_level')}
           required
           inVaild={shouldShowError('activity_level', true)}
@@ -707,7 +707,7 @@ const Step1 = ({
         <SelectBox
           options={socketTypeOptions}
           label="Socket Type"
-          value={values.socket_type}
+          value={values.socket_type || ''}
           onValueChange={(value) => {
             handleChange('socket_type')(value);
           }}
@@ -800,7 +800,7 @@ const Step1 = ({
               </label>
               <Input
                 placeholder="10"
-                value={values.stump_length}
+                value={values.stump_length || ''}
                 onChange={handleChange('stump_length')}
                 required
                 inVaild={shouldShowError('stump_length', true)}
@@ -815,7 +815,7 @@ const Step1 = ({
               </label>
               <Input
                 placeholder="20"
-                value={values.stump_size}
+                value={values.stump_size || ''}
                 onChange={handleChange('stump_size')}
               />
             </div>
@@ -881,7 +881,7 @@ const Step1 = ({
             options={FORM_OPTIONS['foot_type'] ?? []}
             label="Foot Type"
             required={false}
-            value={values.foot_type}
+            value={values.foot_type || ''}
             onValueChange={handleChange('foot_type')}
             className="w-full"
           />
@@ -891,7 +891,7 @@ const Step1 = ({
           <Input
             placeholder="0"
             label="Shoe Size (cm)"
-            value={values.shoe_size}
+            value={values.shoe_size || ''}
             onChange={handleChange('shoe_size')}
             inVaild={shouldShowError('shoe_size')}
             error={errors.shoe_size}
@@ -903,7 +903,7 @@ const Step1 = ({
           <Input
             label="Flexion Angle (Deg)"
             placeholder="(Deg)"
-            value={values.flexion_angle}
+            value={values.flexion_angle || ''}
             onChange={handleChange('flexion_angle')}
             inVaild={shouldShowError('flexion_angle')}
             error={errors.flexion_angle}
@@ -915,7 +915,7 @@ const Step1 = ({
           <Input
             label="Add/Abd Angle (Deg)"
             placeholder="(Deg)"
-            value={values.add_abd_angle}
+            value={values.add_abd_angle || ''}
             onChange={handleChange('add_abd_angle')}
             inVaild={shouldShowError('add_abd_angle')}
             error={errors.add_abd_angle}
@@ -927,7 +927,7 @@ const Step1 = ({
           <SelectBox
             options={FORM_OPTIONS['stump_type'] ?? []}
             label="Stump Type"
-            value={values.stump_type}
+            value={values.stump_type || ''}
             onValueChange={handleChange('stump_type')}
             className="w-full"
           />
@@ -949,7 +949,7 @@ const Step1 = ({
           <Textarea
             label="Stump Condition (please describe any specific condition of the stump example bony prominence etc.)"
             className="h-[200px] "
-            value={values.stump_condition}
+            value={values.stump_condition || ''}
             onChange={handleChange('stump_condition')}
           />
         </div>
@@ -959,7 +959,7 @@ const Step1 = ({
           label="Previous Prosthetic Experience (Please describe any previous experience of Prosthetics used, Make, Model,
                  Type, Issues with it and expectation from the new Prosthetic socket)"
           className="h-[100px] "
-          value={values.previous_prosthetic_experience}
+          value={values.previous_prosthetic_experience || ''}
           onChange={handleChange('previous_prosthetic_experience')}
         />
       </div>
@@ -1005,7 +1005,7 @@ const Step2 = ({
           obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
       : errors[fieldName];
     
-    if (fieldName === 'images_link' && 
+    if (fieldName === 'upload_link' && 
         fieldError === 'Either upload scans or provide a photo link is required') {
       return true;
     }
@@ -1020,8 +1020,8 @@ const Step2 = ({
 
   const showEitherOrError = formSubmitted && 
                           !values.foot_Amputation && 
-                          !values.images_link && 
-                          errors.images_link === 'Either upload scans or provide a photo link is required';
+                          !values.upload_link && 
+                          errors.upload_link === 'Either upload scans or provide a photo link is required';
 
   return (
     <div className="flex flex-col gap-4">
@@ -1035,7 +1035,7 @@ const Step2 = ({
             ]}
             label="Direct Body"
             required={true}
-            value={values.direct_body}
+            value={values.direct_body || ''}
             onValueChange={(value) => {
               handleChange('direct_body')(value);
               if (value !== 'With_Liner') {
@@ -1051,13 +1051,34 @@ const Step2 = ({
           )}
         </div>
         <div>
-          <div className="grid grid-cols gap-4">
+        <div className="grid grid-cols gap-4">
+  {values.direct_body === 'With_Liner' && (
+    <div className="relative"> {/* Added a wrapper div with relative positioning */}
+      <SelectBox
+        options={FORM_OPTIONS['liner_thickness'] ?? []}
+        label="Liner Thickness"
+        value={values.liner_thickness || ''}
+        onValueChange={(value) => {
+          handleChange('liner_thickness')(value);
+          // Reset liner type when thickness changes
+          setFieldValue('liner_type', '');
+        }}
+        required={values.direct_body === 'With_Liner'}
+        inVaild={shouldShowError('liner_thickness', values.direct_body === 'With_Liner')}
+        error={errors.liner_thickness}
+      />
+       <div style={{ marginBottom: '70px' }}></div>
+      {/* Removed the fixed margin div - this was causing layout issues */}
+    </div>
+  )}
+</div>
+          {/* <div className="grid grid-cols gap-4">
             {values.direct_body === 'With_Liner' && (
               <>
                 <SelectBox
                   options={FORM_OPTIONS['liner_thickness'] ?? []}
                   label="Liner Thickness"
-                  value={values.liner_thickness}
+                  value={values.liner_thickness || ''}
                   onValueChange={(value) => {
                     handleChange('liner_thickness')(value);
                     // Reset liner type when thickness changes
@@ -1078,7 +1099,7 @@ const Step2 = ({
                 <div style={{ marginBottom: '55px' }}></div>
               </>
             )}
-          </div>
+          </div> */}
         </div>
         <div className="grid grid-cols gap-4">
           {values.direct_body === 'With_Liner' && (
@@ -1086,7 +1107,7 @@ const Step2 = ({
               <SelectBox
                 options={FORM_OPTIONS[values.liner_thickness + '_' + 'variation'] || []}
                 label="Liner Type"
-                value={values.liner_type}
+                value={values.liner_type || ''}
                 onValueChange={handleChange('liner_type')}
               />
               <div style={{ marginBottom: '55px' }}></div>
@@ -1106,10 +1127,10 @@ const Step2 = ({
                   { value: 'Right_Foot', label: 'Right Foot' },
                   { value: 'Both', label: 'Both' },
                 ]}
-                value={values.foot_Amputation}
+                value={values.foot_Amputation || ''}
                 onValueChange={handleChange('foot_Amputation')}
                 className={showEitherOrError ? 'border-red-500' : ''}
-                // inVaild={shouldShowError('foot_Amputation') && !values.images_link}
+                // inVaild={shouldShowError('foot_Amputation') && !values.upload_link}
                 // error={errors.foot_Amputation}
               />
             </div>
@@ -1172,12 +1193,12 @@ const Step2 = ({
             placeholder="https://drive.google.com/..."
             className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''}`}
             // className="mt-3 min-w-max ml-0 w-[410px]"
-            value={values.images_link}
-            onChange={handleChange('images_link')}
-            inVaild={shouldShowError('images_link',false)}
+            value={values.upload_link || ''}
+            onChange={handleChange('upload_link')}
+            inVaild={shouldShowError('upload_link',false)}
             // error={showEitherOrError ? 'Either upload scans or provide a photo link is required' : errors.images_link}
-            // inVaild={shouldShowError('images_link')}
-            error={errors.images_link}
+            // inVaild={shouldShowError('upload_link')}
+            error={errors.upload_link}
           />
         </div>
         {/* {showEitherOrError && (
@@ -1190,7 +1211,7 @@ const Step2 = ({
   );
 };
 
-const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
+const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => { 
   const shouldShowError = (fieldName: string, isRequired = false) => {
     const fieldValue = fieldName.includes('.') 
       ? fieldName.split('.').reduce((obj, key) => 
@@ -1285,12 +1306,15 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
 export default function BkOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
   const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
+  const [getOrderDetails, { data: orderDetails, isLoading: isOrderDetailsLoading }] = useGetOrderDetailIdsMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
   const [selectedItem, setSelectedItem] = React.useState<string>('');
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameByDetailsMutation();
   const [formValues, setFormValues] = useState(initialValues);
   const [modelOpen, setModelOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -1300,6 +1324,52 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     data: null
   });
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
+  const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
+
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('orderId');
+  const deviceTypeId = searchParams.get('deviceType');
+  
+  useEffect(() => {
+    if (orderId && deviceTypeId) {
+      getOrderDetails({
+        order_type: deviceTypeId,
+        order_id: orderId
+      }).unwrap().then((response) => {
+        
+        const transformedData = {
+          ...initialValues,
+          ...response.data,
+          
+          value_c_details: response.data?.value_c_details?.map((item: { gap: any; value: any; }) => ({
+            gap: item.gap || '',
+            value: item.value || ''
+          })) || initialValues.value_c_details,
+          
+          socket_design_details: response.data?.socket_design_details?.map((item: { area: any; area_name: any; default_mm: any; cpo_input_mm: any; }) => ({
+            area: item.area || '',
+            area_name: item.area_name || '',
+            default_mm: item.default_mm || '',
+            cpo_input_mm: item.cpo_input_mm || ''
+          })) || initialValues.socket_design_details
+        };
+        setFormValues(transformedData);
+        if (response.data.item_code) {
+          setSelectedItem(response.data.item_code);
+        }
+      });
+    }
+  }, [orderId, deviceTypeId]);
+
+  useEffect(() => {
+    if (orderDetails?.data) {
+      setFormValues({
+        ...initialValues,
+        ...orderDetails.data 
+      });
+    }
+  }, [orderDetails]);
+
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
     if (data) {
@@ -1422,11 +1492,15 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     setCurrentStep(2);
     setFormSubmitted(false);
   };
-
+  useEffect(() => {
+  }, [formValues]);
+  if (orderId && !orderDetails?.data) {
+    return <div className="flex justify-center p-8">Loading order data...</div>;
+  }
   return (
     <div className="pb-16 relative">
       <Formik 
-        initialValues={initialValues} 
+        initialValues={formValues} 
         onSubmit={OnSubmit} 
         validationSchema={
           currentStep === 1 ? step1Validation : 
@@ -1438,7 +1512,9 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
         }
         validateOnChange={true}
         validateOnBlur={true}
-        enableReinitialize
+        // enableReinitialize
+        enableReinitialize={true} 
+
       >
         {({ values, handleChange, handleSubmit, errors, touched, setFieldValue, setErrors, isValid }) => (
           <div className="flex flex-col gap-6">
@@ -1588,6 +1664,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 currentStep={currentStep}
                 isActiveStep={currentStep === 5}
                 setEstimateConform={setEstimateConform}
+                orderId={orderId}
+                deviceTypeId={deviceTypeId}
               />
             )}
 
@@ -1612,6 +1690,11 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                       await nextStep(values, setErrors);
                     }}
                     type="button"
+                    disabled={
+                      isOrderCreating || 
+                      (orderId && !isInitialDataLoaded) ||
+                      (formSubmitted && Object.keys(errors).length > 0)
+                    }
                   >
                     Next
                   </Button>

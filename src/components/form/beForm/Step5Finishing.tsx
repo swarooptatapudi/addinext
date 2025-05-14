@@ -36,7 +36,7 @@ export const Step5 = ({
           <div className="w-[250px]">
             <SelectBox
               options={FORM_OPTIONS.Design_by || []}
-              value={values.Design_by}
+              value={values.Design_by || ''}
               onValueChange={(value) => setFieldValue('Design_by', value)}
               inVaild={!!errors.Design_by && !!touched.Design_by}
               required
@@ -55,7 +55,7 @@ export const Step5 = ({
           <div className="w-[250px]">
             <SelectBox
               options={FORM_OPTIONS.Print_by || []}
-              value={values.Print_by}
+              value={values.Print_by || ''}
               onValueChange={(value) => setFieldValue('Print_by', value)}
               inVaild={!!errors.Print_by && !!touched.Print_by}
               required

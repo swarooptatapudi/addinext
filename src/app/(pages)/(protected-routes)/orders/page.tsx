@@ -25,6 +25,10 @@ export type Order = {
   status: string;
   symbol?:string;
 };
+interface OrderParams {
+  orderId: string;
+  deviceType: string;
+}
 
 export default function Orders(): React.JSX.Element {
   const { data, isLoading, error } = useGetOrdersQuery('');
@@ -155,8 +159,26 @@ export default function Orders(): React.JSX.Element {
     }
   };
 
-  const handleOrderIdClick = (orderId: string) => {
-    router.push(`/orders/${orderId}`);
+  const handleOrderIdClick = (order:Order) => {
+    const payload = {
+      order_id: order.order_id,
+      order_type: order.device_type
+    };
+
+    if (order.device_type === 'BK Orders') {
+      router.push(`/orders/new-order/BK?${new URLSearchParams({
+        orderId: order.order_id,
+        deviceType: order.device_type
+      }).toString()}`);
+      router.push(`/orders/new-order/BK?${new URLSearchParams({
+        orderId: order.order_id,
+        deviceType: order.device_type
+      }).toString()}`);
+    }if (order.device_type === 'AK Orders') {
+    }
+    else {
+      console.log('Unknown device type:',order.device_type);
+    }
   };
 
   const columns: ColumnDef<Order>[] = [
@@ -166,7 +188,7 @@ export default function Orders(): React.JSX.Element {
       cell: ({ row }) => (
         <span
           className="cursor-pointer hover:underline hover:text-blue-500"
-          onClick={() => handleOrderIdClick(row.original.order_id)}
+          onClick={() => handleOrderIdClick(row.original)}
         >
           {row.original.order_id}
         </span>

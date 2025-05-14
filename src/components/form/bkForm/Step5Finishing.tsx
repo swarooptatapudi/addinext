@@ -24,7 +24,9 @@ export const Step5 = ({
   handleSubmit,
   currentStep, 
   isActiveStep,
-  setEstimateConform
+  setEstimateConform,
+  orderId,
+  deviceTypeId
 }: any) => {
   const [showEstimateCard, setShowEstimateCard] = useState(false);
   const [estimateData, setEstimateData] = useState<any>(null);
@@ -44,7 +46,10 @@ export const Step5 = ({
   const isAddiEase = values.model_name === 'AddiEase';
   const isAddiEaseEco = values.model_name === 'AddiEaseEco';
   const showFinishOptions = isAddiEase || isAddiEaseEco || 'AddiEaseMould'||'AddiEaseMould-HR';
-
+  const showFinishOptionsMould = isAddiEase || isAddiEaseEco;
+  const isDesignSelf = values.Design_by === 'Self';
+  const isPrintSelf = values.Print_by === 'Self';
+  
   // Debounced coupon validation
   const debouncedCouponValidation = useCallback(() => {
     if (couponTimeout) {
@@ -87,15 +92,20 @@ export const Step5 = ({
   }, [isActiveStep]);
 
   useEffect(() => {
-    if (showFinishOptions && !values.finish_type || initialLoad) {
-      if (isAddiEase) {
-        setFieldValue('finish_type', 'Bead Blast');
-      } else if (isAddiEaseEco) {
-        setFieldValue('finish_type', 'Bead Blast');
+    setShowLaticesField(isAddiEase && !isDesignSelf);
+    if(orderId && deviceTypeId){
+      setFieldValue('finish_type', values.finish_type);
+    }else{
+      if (showFinishOptions && !values.finish_type || initialLoad) {
+        if (isAddiEase) {
+          setFieldValue('finish_type', 'Bead Blast');
+        } else if (isAddiEaseEco) {
+          setFieldValue('finish_type', 'Bead Blast');
+        }
       }
+      setShowLaticesField(isAddiEase); 
     }
-    setShowLaticesField(isAddiEase);
-  }, [values.model_name, showFinishOptions, isAddiEase, isAddiEaseEco, setFieldValue, initialLoad]);
+  }, [isDesignSelf,values.model_name, showFinishOptions, isAddiEase, isAddiEaseEco, setFieldValue, initialLoad,orderId,deviceTypeId]);
 
   useEffect(() => {
     if (showEstimateCard && !initialLoad) {
@@ -138,6 +148,11 @@ export const Step5 = ({
   };
 
   const handleEstimateClick = async () => {
+    const designByRes = values.Design_by || '';
+    const printByRes = values.Print_by || '';
+    const isDesignSelfRes = designByRes === 'Self';
+      const isPrintSelfRes = printByRes === 'Self';
+
     const getBasePriceLabel = () => {
       const designBy = values.Design_by || '';
       const printBy = values.Print_by || '';
@@ -179,8 +194,8 @@ export const Step5 = ({
       item_code: selectedItem,
       design_by: values.Design_by,
       print_by: values.Print_by,
-      laticess: isAddiEase ? values.Latices : 'No',
-      finish: values.finish_type || '',
+      laticess: isAddiEase && !isDesignSelf ? values.Latices : 'No',
+      finish: !isPrintSelf ? values.finish_type : '0', 
       discount_per: couponData?.discount_percentage || 0,
       discount_amt: couponData?.discount_amount || 0
     };
@@ -192,7 +207,11 @@ export const Step5 = ({
         ...estimatePayload,
         apiResponse: response.data
       });
-      
+      setFieldValue('gst_5', response.data.gst_5 || 0.0);
+      setFieldValue('gst_18', response.data.gst_18 || 0.0);
+      setFieldValue('item_discount', response.data.item_discount || 0.0);
+      setFieldValue('additional_discount', response.data.additional_discount || 0.0);
+  
       setShowEstimateCard(true);
       setIsEstimateStale(false);
       setIsEstimateAccepted(false);
@@ -256,7 +275,7 @@ export const Step5 = ({
             <div className="w-[300px] min-w-[200px]">
               <SelectBox
                 options={FORM_OPTIONS.Design_by || []}
-                value={values.Design_by}
+                value={values.Design_by || ''}
                 onValueChange={(value) => setFieldValue('Design_by', value)}
                 inVaild={!!errors.Design_by && !!touched.Design_by}
                 required
@@ -274,7 +293,7 @@ export const Step5 = ({
             <div className="w-[300px] min-w-[200px]">
               <SelectBox
                 options={FORM_OPTIONS.Print_by || []}
-                value={values.Print_by}
+                value={values.Print_by || ''}
                 onValueChange={(value) => setFieldValue('Print_by', value)}
                 inVaild={!!errors.Print_by && !!touched.Print_by}
                 required
@@ -304,6 +323,7 @@ export const Step5 = ({
         {showFinishOptions && (
           <div className="space-y-4 mt-5">
             <label className="font-medium text-sm">{ isAddiEase || isAddiEaseEco ?'Finish':''} </label>
+            {showFinishOptionsMould && (
             <div className="ml-10 mb-5">
               <div className="flex items-center gap-10 -mt-7 ml-8">
                 {finishOptions.map((option) => (
@@ -311,7 +331,7 @@ export const Step5 = ({
                     <input
                       type="radio"
                       name="finish_type"
-                      value={option.value}
+                      value={option.value || '' }
                       checked={values.finish_type === option.value}
                       onChange={() => setFieldValue('finish_type', option.value)}
                       className="sr-only peer"
@@ -331,6 +351,7 @@ export const Step5 = ({
                 <p className="text-red-500 text-xs mt-1">{errors.finish_type}</p>
               )}
             </div>
+            )}
 
             {/* Coupon Code Section */}
             <div className="space-y-2 mt-0">
@@ -371,6 +392,7 @@ export const Step5 = ({
                 </div>
               )}
             </div>
+            { !orderId && !deviceTypeId &&(
             <Button 
               className="w-[380px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
               onClick={handleEstimateClick}
@@ -379,6 +401,8 @@ export const Step5 = ({
               {isEstimating ? 'Estimating...' : 
                isEstimateStale ? 'Update Estimate' : 'Estimate Now'}
             </Button>
+              )
+            }
           </div>
         )}
       </div>
@@ -409,7 +433,8 @@ export const Step5 = ({
       <ul className="text-sm space-y-2.5">
         <div className="space-y-3 text-sm">
           {/* Design Cost - Only show if not Self and there's a design cost */}
-          {estimateData.apiResponse.design > 0 && (
+          {/* {estimateData?.apiResponse?.design > 0 && ( */}
+          {parseFloat(estimateData.apiResponse.design.replace(/,/g, '')) > 0 && (
             <li className="flex items-start gap-2">
             <div
               className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 ${
@@ -419,13 +444,14 @@ export const Step5 = ({
             
             <div className="flex justify-between w-full">
               <span className="font-medium text-gray-700">Design </span>
-              <span className="text-gray-700">₹{estimateData.apiResponse.design}</span>
+              {/* estimateData?.apiResponse.design */}
+              <span className="text-gray-700">₹{estimateData?.apiResponse?.design}</span>
             </div>
           </li>
           )}
 
           {/* Print Cost - Only show if not Self and there's a print cost */}
-          {estimateData.apiResponse.print > 0  && (
+          {parseFloat(estimateData.apiResponse.print.replace(/,/g, '')) > 0 && (
                 <li className="flex items-start gap-2">
                 <div
                   className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 ${
@@ -439,8 +465,8 @@ export const Step5 = ({
                 </div>
               </li>
           )}
-
-          {isAddiEase && estimateData.laticess === 'Yes' && showLaticesField && estimateData.apiResponse.laticess > 0 && (
+{(isAddiEase && estimateData.laticess === 'Yes' && showLaticesField) && parseFloat(estimateData.apiResponse.laticess.replace(/,/g, '')) > 0 && (
+          // {isAddiEase && estimateData.laticess === 'Yes' && showLaticesField && estimateData.apiResponse.laticess > 0 && (
             <li className="flex items-start gap-2">
             <div
               className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 ${
@@ -456,7 +482,8 @@ export const Step5 = ({
           )}
 
           {/* Finish Cost - Only show if applicable */}
-          {estimateData.finish && estimateData.apiResponse.finish > 0 && (
+          {/* {estimateData.finish && estimateData.apiResponse.finish > 0 && ( */}
+          {values.finish_type && parseFloat(estimateData.apiResponse.finish.replace(/,/g, '')) > 0 && (
             <li className="flex items-start gap-2">
             <div
               className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 ${
@@ -502,7 +529,8 @@ export const Step5 = ({
           )} */}
 
 {/* Discounted Price - Only show if different from estimate price */}
-      {estimateData.apiResponse.discounted_price !== estimateData.apiResponse.estimate_price && (
+      {/* {estimateData.apiResponse.discounted_price !== estimateData.apiResponse.estimate_price && ( */}
+      {parseFloat(estimateData.apiResponse.item_discount.replace(/,/g, '')) > 0 && (
             <li className="flex items-start gap-2 ">
             <div
               className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 ${
@@ -512,11 +540,12 @@ export const Step5 = ({
             
             <div className="flex justify-between w-full">
               <span className="font-medium text-gray-700">Special Discount </span>
-              <span className="text-gray-700">₹{estimateData.apiResponse.item_discount}</span>
+              <span className="text-gray-700">(-)₹{estimateData.apiResponse.item_discount}</span>
             </div>
           </li>
           )}
-          {estimateData.apiResponse.additional_discount > 0 && (
+          {/* {estimateData.apiResponse.additional_discount > 0 && ( */}
+          {parseFloat(estimateData.apiResponse.additional_discount.replace(/,/g, '')) > 0 && (
              <li className="flex items-start gap-2 ">
             <div
               className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 ${
@@ -531,7 +560,8 @@ export const Step5 = ({
           </li>
           )}
           {/* GST */}
-          {estimateData.apiResponse.gst > 0 && (
+          {/* {estimateData.apiResponse.gst > 0 && ( */}
+          {parseFloat(estimateData.apiResponse.gst_18.replace(/,/g, '')) > 0 && (
             <li className="flex items-start gap-2 ">
             <div
               className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 ${
@@ -540,8 +570,23 @@ export const Step5 = ({
             ></div>
             
             <div className="flex justify-between w-full">
-              <span className="font-medium text-gray-700">GST </span>
-              <span className="text-gray-700">₹{estimateData.apiResponse.gst}</span>
+              <span className="font-medium text-gray-700">GST (18%) </span>
+              <span className="text-gray-700">₹{estimateData.apiResponse.gst_18}</span>
+            </div>
+          </li>
+          )}
+
+         {parseFloat(estimateData.apiResponse.gst_5.replace(/,/g, '')) > 0 && (
+            <li className="flex items-start gap-2 ">
+            <div
+              className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 ${
+                isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+              }`}
+            ></div>
+            
+            <div className="flex justify-between w-full">
+              <span className="font-medium text-gray-700">GST (5%) </span>
+              <span className="text-gray-700">₹{estimateData.apiResponse.gst_5}</span>
             </div>
           </li>
           )}
@@ -571,12 +616,17 @@ export const Step5 = ({
            
      <Label htmlFor="enable-submitss" className="text-sm font-medium leading-none ml-2">
         I agree to the{' '}
-        <span 
+        {/* laticess: isAddiEase && !isDesignSelf ? values.Latices : 'No', */}
+        {/* finish: !isPrintSelf ? values.finish_type : '0',  */}
+        {(!isDesignSelf || !isPrintSelf) &&(
+
+          <span 
           className="text-primary hover:underline cursor-pointer"
           onClick={() => window.open('/terms', '_blank')}
-        >
+          >
           terms and conditions
         </span>
+        ) }
       </Label>
           </div>
         </div>

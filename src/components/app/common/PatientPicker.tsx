@@ -60,7 +60,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
         <div className="relative" ref={wrapperRef}>
             <Input
                 label="Patient Name"
-                value={value}
+                value={value || ''}
                 onChange={(e) => {
                     setSearch(e.target.value);
                     if (onChange) onChange(e);

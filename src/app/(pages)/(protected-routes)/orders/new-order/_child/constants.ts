@@ -12,6 +12,7 @@ export const BK_FORM_INITIAL_VALUES = {
   reason_for_amputation: '',
   stump_condition: '',
   stump_length: '',
+  file_dimensions:'',
   amputated_leg: '',
   stump_size: '',
   previous_prosthetic_experience: '',
@@ -33,8 +34,12 @@ export const BK_FORM_INITIAL_VALUES = {
   model_name: '',
   additional_customization_requirements: '',
   foot_Amputation :'Both',
-  images_link:'',
+  upload_link:'',
   global_volume_reduction: '',
+  gst_5: 0.0,
+  gst_18: 0.0,
+  item_discount: 0.0,
+  additional_discount: 0.0,
   socket_design_details: [
     {
       area: 'A',
@@ -124,11 +129,11 @@ export const BK_FORM_INITIAL_VALUES = {
   ],
   value_c_details: [
     {
-        gap: "0 cm",
+        gap: "00 cm",
         value: ""
     },
     {
-        gap: "5 cm",
+        gap: "05 cm",
         value: ""
     },
     {
@@ -137,11 +142,11 @@ export const BK_FORM_INITIAL_VALUES = {
     },
     {
         gap: "15 cm",
-        "value": ""
+        value: ""
     },
     {
         gap: "20 cm",
-        "value": ""
+        value: ""
     },
     {
         gap: "25 cm",
