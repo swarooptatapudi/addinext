@@ -62,16 +62,31 @@ const step1Validation = Yup.object().shape({
   //   .test('min-weight', 'Minimum weight is 10kg', (value) => parseFloat(value) >= 10)
   //   .test('max-weight', 'Maximum weight is 180kg', (value) => parseFloat(value) <= 180),
   stump_length: Yup.string()
-    .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, 'Must contain only numbers')
-    .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
+  .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+(\.\d{1,2})?$/, {
+      message: 'Must be a number (e.g. 92.57 or 95)',
+      excludeEmptyString: true,
+    })
+    .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
+    .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 100.0),
+    stump_size: Yup.string()
+    .matches(/^\d+(\.\d{1,2})?$/, {
+      message: 'Must be a number (e.g. 92.57 or 95)',
+      excludeEmptyString: true,
+    })
+    .test('min-value', 'Minimum value is 1cm', (value) => 
+      !value || parseFloat(value) >= 1
+    )
+    .test('max-value', 'Maximum value is 100cm', (value) => 
+      !value || parseFloat(value) <= 100
+    ),
   shoe_size: Yup.string()
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 92.57 or 95)',
       excludeEmptyString: true,
     })
     .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 0)
-    .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 200.0),
+    .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 100.0),
   flexion_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
@@ -802,8 +817,7 @@ const Step1 = ({
                 placeholder="10"
                 value={values.stump_length || ''}
                 onChange={handleChange('stump_length')}
-                required
-                inVaild={shouldShowError('stump_length', true)}
+                inVaild={shouldShowError('stump_length', false)}
                 error={errors.stump_length}
               />
             </div>
@@ -817,6 +831,9 @@ const Step1 = ({
                 placeholder="20"
                 value={values.stump_size || ''}
                 onChange={handleChange('stump_size')}
+                required
+                inVaild={shouldShowError('stump_size')}
+                error={errors.stump_size}
               />
             </div>
           </div>
