@@ -1277,17 +1277,17 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
 
   const validateCurrentStep = async (values: any) => {
     try {
-      if (currentStep === 1) {
-        await step1Validation.validate(values, { abortEarly: false });
-      } else if (currentStep === 2) {
-        await step2Validation.validate(values, { abortEarly: false });
-      } else if (currentStep === 3) {
-        await step3Validation.validate(values, { abortEarly: false });
-      } else if (currentStep === 4) {
-        await step4Validation.validate(values, { abortEarly: false });
-      } else if (currentStep === 5) {
-        await step5Validation.validate(values, { abortEarly: false });
-      }
+      // if (currentStep === 1) {
+      //   await step1Validation.validate(values, { abortEarly: false });
+      // } else if (currentStep === 2) {
+      //   await step2Validation.validate(values, { abortEarly: false });
+      // } else if (currentStep === 3) {
+      //   await step3Validation.validate(values, { abortEarly: false });
+      // } else if (currentStep === 4) {
+      //   await step4Validation.validate(values, { abortEarly: false });
+      // } else if (currentStep === 5) {
+      //   await step5Validation.validate(values, { abortEarly: false });
+      // }
       return {};
     } catch (errors) {
       if (errors instanceof Yup.ValidationError) {
@@ -1528,6 +1528,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
                       await nextStep(values, setErrors);
                     }}
                     type="button"
+                    disabled
                   >
                     Next
                   </Button>

@@ -424,7 +424,7 @@ export const Step5 = ({
           <p className={`text-sm font-semibold ${
             isEstimateStale ? 'text-gray-700' : 'text-gray-700'
           }`}>
-            ESTIMATE SUMMARY {isEstimateStale && ''}
+            PRICE SUMMARY {isEstimateStale && ''}
           </p>
         </div>
       </CardTitle>
@@ -604,6 +604,9 @@ export const Step5 = ({
           </div>
         </div>
       </ul>
+      {(!isDesignSelf || !isPrintSelf) &&(
+        <>
+       
       {!isEstimateStale && (
         <div className="mt-4 space-y-3">
           <div className="flex items-center space-x-2">
@@ -614,11 +617,11 @@ export const Step5 = ({
               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100"
             />
            
+       
      <Label htmlFor="enable-submitss" className="text-sm font-medium leading-none ml-2">
         I agree to the{' '}
         {/* laticess: isAddiEase && !isDesignSelf ? values.Latices : 'No', */}
         {/* finish: !isPrintSelf ? values.finish_type : '0',  */}
-        {(!isDesignSelf || !isPrintSelf) &&(
 
           <span 
           className="text-primary hover:underline cursor-pointer"
@@ -626,11 +629,13 @@ export const Step5 = ({
           >
           terms and conditions
         </span>
-        ) }
       </Label>
           </div>
         </div>
       )}
+       </>
+        ) }
+
     </CardContent>
   </Card>
 )}

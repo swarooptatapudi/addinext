@@ -29,10 +29,11 @@ export default function TermsAndConditions() {
 
               {/* Section 1 */}
               <section>
-                <h2 className="text-xl font-bold text-gray-700 mb-2 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">1</span>
+                <h6 className="text-xl font-bold text-gray-700 mb-2 flex items-center">
+                  <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">1</span>
                   Introduction
-                </h2>
+
+                </h6>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
                   <li>
                     Addiwise Technologies specializes in delivering customized, durable, and lightweight orthotics and prosthetics. 
@@ -46,7 +47,7 @@ export default function TermsAndConditions() {
               {/* Section 2 */}
               <section>
                 <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">2</span>
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">2</span>
                   Definitions
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
@@ -60,7 +61,7 @@ export default function TermsAndConditions() {
               {/* Section 3 */}
               <section>
                 <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">3</span>
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">3</span>
                   Acceptance of Terms
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
@@ -71,7 +72,7 @@ export default function TermsAndConditions() {
               {/* Section 4 */}
               <section>
                 <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">4</span>
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">4</span>
                   Modification of Terms
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
@@ -82,7 +83,7 @@ export default function TermsAndConditions() {
               {/* Section 5 */}
               <section>
                 <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">5</span>
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">5</span>
                   Account Registration
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
@@ -93,7 +94,7 @@ export default function TermsAndConditions() {
               {/* Section 6 */}
               <section>
                 <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">6</span>
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">6</span>
                   Ordering and Payment
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
@@ -106,7 +107,7 @@ export default function TermsAndConditions() {
               {/* Section 7 */}
               <section>
                 <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">7</span>
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">7</span>
                   Shipping and Delivery
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
@@ -118,7 +119,7 @@ export default function TermsAndConditions() {
               {/* Section 8 */}
               <section>
                 <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">8</span>
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">8</span>
                   Returns and Refunds
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
@@ -129,7 +130,7 @@ export default function TermsAndConditions() {
               {/* Section 9 */}
               <section>
                 <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">9</span>
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">9</span>
                   Product Descriptions
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
@@ -142,7 +143,7 @@ export default function TermsAndConditions() {
               {/* Section 10 */}
               <section>
                 <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">10</span>
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">10</span>
                   Intellectual Property
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
@@ -154,7 +155,7 @@ export default function TermsAndConditions() {
               {/* Section 11 */}
               <section>
                 <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">11</span>
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">11</span>
                   Limitation of Liability
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
