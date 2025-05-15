@@ -36,6 +36,7 @@ import { getFormOptionsObject } from '@/uttils/UttilFuncations';
 import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 import { BK_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/bkForm/Step5Finishing';
+import { PatientPortalDialog}  from '@/components/app/common/ResidualLimbForm';
 
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
@@ -547,7 +548,9 @@ const Step1 = ({
   isPatientSelected, 
   FORM_OPTIONS, 
   formSubmitted,
-  setSocketTypeDialog  
+  setSocketTypeDialog , 
+  deviceTypeId,
+  orderId
 }: any) => {
   
   const [designVariationDialog, setDesignVariationDialog] = useState({
@@ -611,6 +614,7 @@ const Step1 = ({
 
   return (
     <div className="flex flex-col gap-6">
+      { deviceTypeId && orderId ?<> <PatientPortalDialog/></>:""}
       <h3 className="font-semibold text-lg">Basic Details</h3>
       <div className="grid grid-cols-3 gap-4"> 
         <PatientPicker
@@ -1632,6 +1636,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
                 setSocketTypeDialog={setSocketTypeDialog}
+                deviceTypeId={deviceTypeId}
+                orderId={orderId}
               />
             )}
             {currentStep === 2 && (
