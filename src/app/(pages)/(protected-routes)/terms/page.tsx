@@ -172,10 +172,11 @@ export default function TermsAndConditions() {
 
               {/* Section 12 */}
               <section>
-                <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">12</span>
-                  Governing Law
+              <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">11</span>
+                    Governing Law
                 </h2>
+                
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
                   <li>Any arbitration or jurisdiction and laws that govern the terms and conditions will be governed by Court of Hyderabad, India only.</li>
                 </ul>
@@ -183,9 +184,9 @@ export default function TermsAndConditions() {
 
               {/* Section 13 */}
               <section>
-                <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
-                  <span className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">13</span>
-                  Contact Information
+              <h2 className="text-xl font-bold text-gray-700 mb-2 mt-5 flex items-center">
+                    <span className="bg-gray-200 text-gray-700 rounded-full w-7 h-7 flex items-center justify-center mr-3">11</span>
+                    Contact Information
                 </h2>
                 <ul className="list-disc pl-10 space-y-2 text-gray-700">
                   <li>For customer service or inquiries related to the terms please write to <a href="mailto:sales@addiwise.com" className="text-blue-600 hover:underline">sales@addiwise.com</a>.</li>
