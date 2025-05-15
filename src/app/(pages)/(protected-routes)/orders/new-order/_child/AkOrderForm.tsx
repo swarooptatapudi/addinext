@@ -1277,6 +1277,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
 
   const validateCurrentStep = async (values: any) => {
     try {
+      //--- comment remove 
       // if (currentStep === 1) {
       //   await step1Validation.validate(values, { abortEarly: false });
       // } else if (currentStep === 2) {
