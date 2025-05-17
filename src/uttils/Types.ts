@@ -1,5 +1,4 @@
 export interface USER {
-  email: string;
   user_id: string;
   full_name: string;
   first_name: string;
@@ -13,18 +12,6 @@ export interface USER {
   customer_available_coins: number;
   active_plan: string;
   plan_expiration_date: string;
-  clinic_name?:string;
-}
-export interface PatientFormValuesData {
-  first_name: string;
-  last_name:string,
-  date_of_birth: string;
-  height: string;
-  weight: string;
-  mobile_no: string;
-  email: string;
-  gender: string;
-  clinic_name:string;
 }
 
 export interface SUBSCRIPTION_PLAN {
@@ -59,7 +46,6 @@ export interface COINS_RULES {
 //bk form type
 
 export interface BK_FORM_TYPE {
-  clinic_name?:string;
   patient_name: string;
   gender: string;
   date_of_birth: string;
@@ -75,7 +61,7 @@ export interface BK_FORM_TYPE {
   stump_length: string;
   amputated_leg: string;
   stump_size: string;
-  previous_prosthetic_experience?: string;
+  previous_prosthetic_experience: string;
   stump_type: string;
   locking_system: string;
   scan_condition: string;
@@ -83,7 +69,7 @@ export interface BK_FORM_TYPE {
   foot_type: string;
   shoe_size: string;
   flexion_angle: string;
-  add_abd_angle: string;
+  abductionadduction_angle: string;
   liner_type: string;
   activity_level: string;
   adapter_type: string;
@@ -92,7 +78,6 @@ export interface BK_FORM_TYPE {
   design_variation: string;
   model_name: string;
   additional_customization_requirements: string;
-  global_volume_reduction: string,
   socket_design_details: Array<{
     area: string;
     area_name: string;

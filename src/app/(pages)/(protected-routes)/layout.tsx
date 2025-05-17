@@ -24,6 +24,7 @@ export default function MainLayout({
         {/* <Button
           onClick={async () => {
             await logout('');
+            window.location.href = '/auth';
           }}
           disabled={logoutLoading}
           variant={'destructive'}
