@@ -13,10 +13,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/rtk-query/store';
 import { USER } from '@/uttils/Types';
 import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
 
 export default function BuyPlan({ params }: { params: Promise<{ plan_id: string }> }) {
-  const router = useRouter();
   const { plan_id } = React.use(params);
   const { data, isLoading } = useGetSubscriptionPlanQuery(plan_id);
   const [initPayment, { isLoading: paymentLoading }] = usePaymentInitMutation();
@@ -36,18 +34,14 @@ export default function BuyPlan({ params }: { params: Promise<{ plan_id: string 
   };
 
   const onSubscribe = async () => {
-    try {
-      const res = await subscribePlan({
-        status: 'Success',
-        customer_subscription_id: paymentId
-      }).unwrap();
-      
-      toast.success('Subscription activated successfully');
-      router.push('/profile');
-      router.refresh(); 
-    } catch (err) {
-      toast.error('Failed to activate subscription');
-      console.error('Subscription error:', err);
+    const res = await subscribePlan({
+      status: 'Success',
+      customer_subscription_id: paymentId
+    });
+
+    if (res?.data) {
+      toast.success('Payment Success');
+      window.location.href = '/profile';
     }
   };
 

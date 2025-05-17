@@ -1,24 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import baseQueryWithReauth from '../base/baseQueryReAuth';
 
-interface SalesOrder {
-  order_id: string;
-  customer: string;
-  clinic_name: null | string;
-  patient_name: string;
-  device_type: string;
-  order_date: string;
-  delivery_date: string;
-  order_value: number;
-  status: string;
-}
-interface SalesOrdersResponse {
-  message: string;
-  data: {
-    time: string;
-    sales_orders: SalesOrder[];
-  };
-}
 export const ordersApi = createApi({
   reducerPath: 'ordersApi',
   baseQuery: baseQueryWithReauth,
@@ -30,14 +12,14 @@ export const ordersApi = createApi({
         method: 'POST',
         body: data
       }),
-      transformResponse: (response: SalesOrdersResponse) => response
+      transformResponse: (response: any) => response.message
     }),
     getOrders: builder.query({
       query: () => ({
-        url: `/method/addiwise.apis.order.get_sales_order`,
+        url: `/method/addiwise.apis.sales_order_details.get_sales_order_details`,
         method: 'GET'
       }),
-      transformResponse: (response: SalesOrdersResponse) => response
+      transformResponse: (response: any) => response.message
     })
   })
 });
