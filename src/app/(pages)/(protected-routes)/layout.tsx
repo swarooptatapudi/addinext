@@ -2,9 +2,9 @@
 import Header from '@/components/app/common/Header';
 import PageNavigationBreadcrumb from '@/components/app/common/PageNavigationBreadcrumb';
 import Sidebar from '@/components/app/common/Sidebar';
-// import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import useUser from '@/hooks/useUser';
-// import { useLazyLogoutQuery } from '@/rtk-query/apis/auth';
+import { useLazyLogoutQuery } from '@/rtk-query/apis/auth';
 import React from 'react';
 
 export default function MainLayout({
@@ -13,7 +13,7 @@ export default function MainLayout({
   children: React.ReactNode;
 }>) {
   const { user, isLoading } = useUser();
-  // const [logout, { isLoading: logoutLoading }] = useLazyLogoutQuery();
+  const [logout, { isLoading: logoutLoading }] = useLazyLogoutQuery();
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-screen w-full">Loading...</div>;
@@ -21,7 +21,7 @@ export default function MainLayout({
   if (!user && !isLoading) {
     return (
       <div className="flex items-center justify-center h-screen w-full">
-        {/* <Button
+        <Button
           onClick={async () => {
             await logout('');
           }}
@@ -29,7 +29,7 @@ export default function MainLayout({
           variant={'destructive'}
         >
           Logout
-        </Button> */}
+        </Button>
       </div>
     );
   }

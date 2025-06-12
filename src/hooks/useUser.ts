@@ -10,16 +10,30 @@ const useUser = () => {
   const [getUser, { data, isLoading, isSuccess }] = useLazyGetUserDetailsQuery();
   const { user } = useSelector((state: RootState) => state.userReducer);
   const dispatch = useDispatch();
+
+  
+
+
+  console.log('useUser', user, isLoading, isSuccess);
+
+
   useEffect(() => {
-    if (!user) {
-      getUser('');
-    }
-  }, []);
+  if (!user) {
+    getUser('');
+  }
+}, [user, getUser]); // Add `user` as a dependency
+
   useEffect(() => {
-    if (isSuccess && !isLoading) {
-      dispatch(updateUser(data?.data));
-    }
-  }, [isSuccess, isLoading]);
+  if (isSuccess && !isLoading) {
+    dispatch(updateUser(data?.message?.data)); // Access the nested `data` field
+  }
+}, [isSuccess, isLoading , data, dispatch]);
+  
+  // useEffect(() => {
+  //   if (isSuccess && !isLoading) {
+  //     dispatch(updateUser(data?.data));
+  //   }
+  // }, [isSuccess, isLoading]);
 
   return { user, isLoading, getUser };
 };

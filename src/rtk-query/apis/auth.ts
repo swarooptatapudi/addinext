@@ -3,9 +3,15 @@ import { USER } from '@/uttils/Types';
 import baseQueryWithReauth from '../base/baseQueryReAuth';
 
 interface LOGIN_RESPONSE {
-  message: string;
-  data: USER;
+//   message: string;
+//   data: USER;
+// }
+message: {
+    status: string;
+    data: USER;
+  };
 }
+
 
 interface FILE_UPLOAD_RESPONSE {
   message: {

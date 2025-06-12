@@ -73,7 +73,6 @@ export default function Dashboard(): React.JSX.Element {
         <CardContent>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart
-            
             data={data}
             syncId="anyId"
             margin={{
