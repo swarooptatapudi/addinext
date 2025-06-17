@@ -58,7 +58,7 @@ export default function BuyPlan({ params }: { params: Promise<{ plan_id: string 
       </div>
       <div>
         <Card>
-          <CardHeader>
+          <CardHeader>  
             <CardTitle>Payment Details</CardTitle>
           </CardHeader>
           <CardContent>
