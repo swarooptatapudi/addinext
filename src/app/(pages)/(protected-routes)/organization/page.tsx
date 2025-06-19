@@ -55,7 +55,7 @@ export default function Organization(): React.JSX.Element {
       
 
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
            {/* Clinic Card */}
            <Card className="shadow-sm">
              <CardHeader className="border-b">

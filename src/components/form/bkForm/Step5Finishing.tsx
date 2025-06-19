@@ -49,6 +49,8 @@ export const Step5 = ({
   const showFinishOptionsMould = isAddiEase || isAddiEaseEco;
   const isDesignSelf = values.Design_by === 'Self';
   const isPrintSelf = values.Print_by === 'Self';
+
+  console.log("FORM_OPTIONS", FORM_OPTIONS)
   
   // Debounced coupon validation
   const debouncedCouponValidation = useCallback(() => {
@@ -274,7 +276,7 @@ export const Step5 = ({
             <label className="font-sm min-w-[100px] text-sm">Design by</label>
             <div className="w-[300px] min-w-[200px]">
               <SelectBox
-                options={FORM_OPTIONS.Design_by || []}
+                options={FORM_OPTIONS.design_by || []}
                 value={values.Design_by || ''}
                 onValueChange={(value) => setFieldValue('Design_by', value)}
                 inVaild={!!errors.Design_by && !!touched.Design_by}
@@ -292,7 +294,7 @@ export const Step5 = ({
             <label className="font-medium min-w-[100px] text-sm">Print by</label>
             <div className="w-[300px] min-w-[200px]">
               <SelectBox
-                options={FORM_OPTIONS.Print_by || []}
+                options={FORM_OPTIONS.print_by || []}
                 value={values.Print_by || ''}
                 onValueChange={(value) => setFieldValue('Print_by', value)}
                 inVaild={!!errors.Print_by && !!touched.Print_by}
