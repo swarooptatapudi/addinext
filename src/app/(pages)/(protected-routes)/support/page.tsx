@@ -21,32 +21,8 @@ type Message = {
 const MAX_TEXT_LENGTH = 500;
 const MAX_INPUT_LENGTH = 50;
 
-export function PatientPortalDialog() {
-  const [isOpen, setIsOpen] = useState(false);
 
-  return (
-    <div className={`fixed ${isOpen ?'bottom-[-25]':'bottom-2'} right-6 z-50 right-4 z-50 transition-all duration-300`}>
-    {/* <div className={`fixed ${isOpen ? 'bottom-0' : 'bottom-4'} right-4 z-50 transition-all duration-300`}> */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`p-3 text-white rounded-full shadow-lg transition-all duration-300 ${
-          isOpen ? '' : 'bg-primary/90 hover:bg-primary/100'
-        }`}
-        aria-label={isOpen ? 'Close support' : 'Open support'}
-      >
-        {isOpen ? '' : '👤'}
-      </button>
-
-      {isOpen && (
-        <div className="absolute bottom-full right-0 mb-2 w-[350px] animate-fade-in-up shadow-xl">
-          <PatientPortal onClose={() => setIsOpen(false)} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function PatientPortal({ onClose }: { onClose: () => void }) {
+function PatientPortal () {
   const [activeTab, setActiveTab] = useState<'form' | 'chat'>('form');
   const [formData, setFormData] = useState<FormData>({
     supportType: '',
@@ -154,17 +130,6 @@ function PatientPortal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
-      <div className="flex justify-between items-center p-1 bg-primary/90 text-white">
-        <p className="font-medium ml-2">Customer Support</p>
-        <button
-          onClick={onClose}
-          className="p-1 rounded-full hover:bg-primary/100 transition-colors"
-          aria-label="Close"
-        >
-          ✕
-        </button>
-      </div>
-
       <div className="w-full">
         <div className="bg-white">
           <nav className="flex border-b">
@@ -392,3 +357,4 @@ function PatientPortal({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
+export default PatientPortal;

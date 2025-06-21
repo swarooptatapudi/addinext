@@ -99,6 +99,7 @@ export default function Orders(): React.JSX.Element {
       };
 
       const response = await getOrderDetails(payload).unwrap();
+      console.log('Order details response:', response);
 
       if (!response?.data?.order_id) {
         throw new Error('Invalid order details received');
@@ -310,6 +311,7 @@ export default function Orders(): React.JSX.Element {
   );
 }
 
+// ======================================================================
 // 'use client';
 // import React from 'react';
 // import { ColumnDef } from '@tanstack/react-table';
