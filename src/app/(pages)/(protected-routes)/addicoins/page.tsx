@@ -209,7 +209,7 @@ export default function Addicoins(): React.JSX.Element {
                 <CoinsIcon className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <span className="text-sm font-semibold text-gray-700">Available Coins</span>
+                <span className="text-sm font-semibold text-primary">Available Coins</span>
                 <CardTitle className="text-2xl font-bold text-blue-800 mt-1">
                   {user?.customer_available_coins?.toLocaleString() || 0}
                 </CardTitle>
@@ -220,7 +220,7 @@ export default function Addicoins(): React.JSX.Element {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 mb-3">
               <BookmarkIcon className="w-4 h-4 text-gray-500" />
-              <p className="text-sm font-semibold text-gray-700">Rules</p>
+              <p className="text-sm font-semibold text-primary">Rules</p>
             </div>
             
             <ul className="text-sm space-y-2.5">
@@ -284,7 +284,7 @@ export default function Addicoins(): React.JSX.Element {
               <div className="p-2 bg-blue-100 rounded-lg">
                 <ShoppingCartIcon className="w-5 h-5 text-blue-600" />
               </div>
-              <CardTitle className="text-xl font-semibold text-gray-800">Buy Coins</CardTitle>
+              <CardTitle className="text-xl font-semibold text-primary">Buy Coins</CardTitle>
             </div>
           </CardHeader>
           

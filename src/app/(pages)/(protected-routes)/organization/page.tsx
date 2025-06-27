@@ -63,7 +63,7 @@ export default function Organization(): React.JSX.Element {
                  <div className="p-2 bg-blue-100 rounded-lg">
                    <BookmarkIcon className="w-5 h-5 text-blue-600" />
                  </div>
-                 <CardTitle className="text-xl font-semibold">Clinic Details</CardTitle>
+                 <CardTitle className="text-xl text-primary font-semibold">Clinic Details</CardTitle>
                </div>
              </CardHeader>
              <CardContent className="pt-4 grid grid-cols-1 gap-4">
@@ -85,7 +85,7 @@ export default function Organization(): React.JSX.Element {
                  <div className="p-2 bg-purple-100 rounded-lg">
                    <InfoIcon className="w-5 h-5 text-purple-600" />
                  </div>
-                 <CardTitle className="text-xl font-semibold">Organization User</CardTitle>
+                 <CardTitle className="text-xl font-semibold text-primary">Organization User</CardTitle>
                </div>
              </CardHeader>
              <CardContent className="pt-4 grid grid-cols-1 gap-4">
@@ -208,7 +208,7 @@ export default function Organization(): React.JSX.Element {
                         <div className="p-2 bg-blue-100 rounded-lg">
                           <CreditCardIcon className="w-5 h-5 text-blue-600" />
                         </div>
-                        <CardTitle className="text-xl font-semibold">Buy Coins Transaction History</CardTitle>
+                        <CardTitle className="text-xl font-semibold text-primary">Buy Coins Transaction History</CardTitle>
                       </div>
                     </CardHeader> 
                     <CardContent className="p-0 mt-[-25px]">
@@ -282,7 +282,7 @@ export default function Organization(): React.JSX.Element {
                       <div className="p-2 bg-blue-100 rounded-lg">
                         <HistoryIcon className="w-5 h-5 text-blue-600" />
                       </div>
-                        <CardTitle className="text-xl font-semibold">Sales Coins Transaction History</CardTitle>
+                        <CardTitle className="text-xl font-semibold text-primary ">Sales Coins Transaction History</CardTitle>
                       </div>
                     </CardHeader> 
                     <CardContent className="p-0 mt-[-25px]">

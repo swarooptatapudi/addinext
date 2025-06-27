@@ -429,7 +429,7 @@ const ModelDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Select Design Variation</DialogTitle>
+          <DialogTitle className="text-primary">Select Design Variation</DialogTitle>
           <DialogDescription>
             Choose your preferred design variation from the options below
           </DialogDescription>
@@ -546,7 +546,7 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col gap-6">
-      <h3 className="font-semibold text-lg">Basic Details</h3>
+      <h3 className="font-semibold text-lg text-primary">Basic Details</h3>
       <div className="grid grid-cols-3 gap-4"> 
         <PatientPicker
           label="Patient Name"
@@ -749,7 +749,7 @@ useEffect(() => {
         </div>
       </div> */}
 
-      <h3 className="font-semibold text-lg ">Measurements</h3>
+      <h3 className="font-semibold text-lg  text-primary">Measurements</h3>
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
         <div className='ml-5' >
           <Image
@@ -896,7 +896,7 @@ const Step2 = ({
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-4 items-end">
         <div className="grid grid-cols-1 gap-4 ">
-          <h3 className="font-semibold text-lg ">Scan Condition</h3>
+          <h3 className="font-semibold text-lg text-primary ">Scan Condition</h3>
           <SelectBox
             options={[
               { label: 'Direct Body', value: 'Direct_Body ' },
@@ -942,7 +942,7 @@ const Step2 = ({
           )}
         </div>
       </div>
-      <h3 className="font-semibold text-lg">Scans Upload</h3>
+      <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
           <div className="grid grid-cols-2">
@@ -965,13 +965,14 @@ const Step2 = ({
             <StlFilePicker
               label="Upload STL file (left foot)"
               buttonText="Left Foot"
+               
               onFileSelect={(file) => console.log('Model A selected:', file?.name)}
             />
           </div>
         )}
 
         {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
-          <div className="w-fit ml-2">
+          <div className="w-fit">
             <StlFilePicker
               label="Upload STL file (Rgiht foot)"
               buttonText="Right Foot"
