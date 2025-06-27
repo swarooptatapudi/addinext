@@ -1353,7 +1353,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const deviceTypeId = searchParams.get('deviceType');
-  console.log("orderId", orderId, "deviceTypeId", deviceTypeId);
   
   useEffect(() => {
     if (orderId && deviceTypeId) {
