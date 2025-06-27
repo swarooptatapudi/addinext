@@ -540,7 +540,7 @@ const Step1 = ({
           required
           inVaild={shouldShowError('date_of_birth', true)}
           error={errors.date_of_birth}
-          disabled
+          
         />
 
         <Input

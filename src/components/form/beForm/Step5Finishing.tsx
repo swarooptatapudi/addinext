@@ -27,7 +27,7 @@ export const Step5 = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-lg font-semibold mt-5">Design & Printing</h3>
+      <h3 className="text-lg font-semibold mt-5 text-primary">Design & Printing</h3>
       
       {/* Design By Section */}
       <div className="grid md:grid-cols-2 gap-6 mt-5">

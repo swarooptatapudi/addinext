@@ -587,7 +587,7 @@ return !!fieldError && (touched[fieldName] || formSubmitted);
             required
             inVaild={shouldShowError('date_of_birth', true)}
             error={errors.date_of_birth}
-            disabled={true}
+            
           />
           <Input
             placeholder="65"
