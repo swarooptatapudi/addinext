@@ -8,7 +8,10 @@ module.exports = {
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
         sans: ['Gidugu', 'sans-serif']
-      }
+      },
+      colors: {
+        primary: 'oklch(44.6% 0.1584 291.12)',
+      },
     }
   },
   plugins: []

@@ -186,7 +186,7 @@ const step2Validation = Yup.object().shape({
       }
     }
     return true;
-  }
+  } 
 ).test(
   'either-scan-or-link',
   'Either upload scans or provide a photo link is required',
@@ -366,7 +366,7 @@ const DesignVariationDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Select Design Variation</DialogTitle>
+          <DialogTitle className="text-primary">Select Design Variation</DialogTitle>
           <DialogDescription>
             Choose your preferred design variation from the options below
           </DialogDescription>
@@ -482,7 +482,7 @@ const ModelDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Select Design Variation</DialogTitle>
+          <DialogTitle className="text-primary">Select Design Variation</DialogTitle>
           <DialogDescription>
             Choose your preferred design variation from the options below
           </DialogDescription>
@@ -613,84 +613,87 @@ const Step1 = ({
   }, [values.socket_type, values.design_variation, FORM_OPTIONS]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 px-3">
       { deviceTypeId && orderId ?<> <PatientPortalDialog/></>:""}
-      <h3 className="font-semibold text-lg">Basic Details</h3>
-      <div className="grid grid-cols-3 gap-4"> 
+      <h3 className="font-semibold text-lg text-primary">Basic Details</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> 
         <PatientPicker
-          label="Patient Name"
-          placeholder="Patient Name"
-          value={values.patient_name  || ''}
-          onChange={handleChange('patient_name')}
-          setFieldValue={setFieldValue}
-          required
-          inVaild={shouldShowError('patient_name', true)}
-          error={errors.patient_name}
-        />
-        <div className="grid grid-cols-3 gap-2 col-span-2">
-          <Input
-            label="Date of Birth"
-            type="date"
-            value={values.date_of_birth || ''}
-            onChange={handleChange('date_of_birth')}
-            // required
-            inVaild={shouldShowError('date_of_birth', false)}
-            error={errors.date_of_birth}
-            disabled={true}
-          />
-          <Input
-            placeholder="65"
-            label="Height (cm)"
-            onChange={handleChange('height')}
-            value={values.height || ''}
-            inVaild={shouldShowError('height')}
-            error={errors.height}
-            disabled={true}
-          />
-          <Input
-            placeholder="50"
-            label="Weight (kgs)"
-            // required
-            value={values.weight  || ''}
-            onChange={handleChange('weight')}
-            inVaild={shouldShowError('weight',false)}
-            error={errors.weight}
-            disabled={true}
-          />
-        </div>
-        <Input
-          placeholder="10 digit phone number"
-          label="Mobile Number"
-          onChange={handleChange('mobile_no')}
-          value={values.mobile_no  || ''}
-          error={errors.mobile_no}
-          disabled={true}
-        />
-        <Input
-          placeholder="Email"
-          label="Email"
-          value={values.email  || ''}
-          onChange={handleChange('email')}
-          error={errors.email}
-          disabled={true}
-        />
-        <SelectBox
-          options={[
-            { value: 'Male', label: 'Male' },
-            { value: 'Female', label: 'Female' },
-          ]}
-          label="Gender"
-          value={values.gender  || ''}
-          onValueChange={handleChange('gender')}
-          inVaild={shouldShowError('gender', false)}
-          // required
-          error={errors.gender}
-          disabled={true}
-        />
-      </div>
-      <div className="divider"></div>
+                  label="Patient Name"
+                  placeholder="Patient Name"
+                  value={values.patient_name}
+                  onChange={handleChange('patient_name')}
+                  setFieldValue={setFieldValue}
+                  required
+                  inVaild={shouldShowError('patient_name', true)}
+                  error={errors.patient_name}
+                />
+        
+                <Input
+                  label="Mobile Number"
+                  placeholder="10 digit phone number"
+                  value={values.mobile_no}
+                  onChange={handleChange('mobile_no')}
+                  error={errors.mobile_no}
+                  disabled
+                />
+        
+                <Input
+                  label="Email"
+                  placeholder="Email"
+                  value={values.email}
+                  onChange={handleChange('email')}
+                  error={errors.email}
+                  disabled
+                />
+        
+                <SelectBox
+                  options={[
+                    { value: 'Male', label: 'Male' },
+                    { value: 'Female', label: 'Female' }
+                  ]}
+                  label="Gender"
+                  value={values.gender}
+                  onValueChange={handleChange('gender')}
+                  inVaild={shouldShowError('gender', true)}
+                  required
+                  error={errors.gender}
+                  disabled
+                />
+        
+                <Input
+                  label="Date of Birth"
+                  type="date"
+                  value={values.date_of_birth || ''}
+                  onChange={handleChange('date_of_birth')}
+                  required
+                  inVaild={shouldShowError('date_of_birth', true)}
+                  error={errors.date_of_birth}
+                  disabled
+                />
+        
+                <Input
+                  label="Height (cm)"
+                  placeholder="65"
+                  onChange={handleChange('height')}
+                  value={values.height}
+                  inVaild={shouldShowError('height')}
+                  error={errors.height}
+                  disabled
+                />
+        
+                <Input
+                  label="Weight (kgs)"
+                  placeholder="50"
+                  value={values.weight}
+                  onChange={handleChange('weight')}
+                  inVaild={shouldShowError('weight', true)}
+                  error={errors.weight}
+                  disabled
+                />
+              </div>
+      
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Input
           placeholder="Patient Name"
           label="Amputation Date"
@@ -721,7 +724,7 @@ const Step1 = ({
         />
       </div>
 
-      <div className="divider"></div>
+     
       <div className="grid grid-cols-3 gap-4">
         <SelectBox
           options={socketTypeOptions}
@@ -797,7 +800,7 @@ const Step1 = ({
 
       <div className="divider"></div>
 
-      <h3 className="font-semibold text-lg ">Measurements</h3>
+      <h3 className="font-semibold text-lg text-primary">Measurements</h3>
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
         <div>
           <Image
@@ -955,7 +958,7 @@ const Step1 = ({
         </div>
       </div>
 
-      <h3 className="font-semibold text-lg">Stump Condition</h3>
+      <h3 className="font-semibold text-lg text-primary">Stump Condition</h3>
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
         <div>
           <Image
@@ -1048,7 +1051,7 @@ const Step2 = ({
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-4 items-end">
         <div className="grid grid-cols-1 gap-4 ">
-          <h3 className="font-semibold text-lg ">Scan Condition</h3>
+          <h3 className="font-semibold text-lg text-primary ">Scan Condition</h3>
           <SelectBox
             options={[
               { label: 'Direct Body', value: 'Direct_Body ' },
@@ -1135,7 +1138,7 @@ const Step2 = ({
           )}
         </div>
       </div>
-      <h3 className="font-semibold text-lg">Scans Upload</h3>
+      <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
           <div className="grid grid-cols-2">
@@ -1167,7 +1170,7 @@ const Step2 = ({
         )}
 
         {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
-          <div className="w-fit ml-2">
+          <div className="w-fit ">
             <StlFilePicker
               label="Upload STL file (Rgiht foot)"
               buttonText="Right Foot"
@@ -1203,7 +1206,7 @@ const Step2 = ({
       </div>
       <div className="flex flex-col-6 gap-4">
         <div className="col-span-3">
-          <p className="mb-1 text-[14px]  ">Upload Link with Photos</p>
+          <p className="mb-1 text-[14px]">Upload Link with Photos</p>
           <p className="mb-1 text-[12px] ">
             (Upload in Google /Cloud drive and give relevant permission)
           </p>

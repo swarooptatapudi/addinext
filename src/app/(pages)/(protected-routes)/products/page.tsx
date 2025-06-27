@@ -26,10 +26,10 @@ export default function Products(): React.JSX.Element {
 
         {/* Prosthetics Upper Extremity */}
         <div>
-          <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
+          <p className="text-xs  font-extrabold text-[#2e2a6f] mb-3 uppercase">
             Prosthetics Upper Extremity
           </p>
-          <div className="flex flex-wrap gap-x-8 gap-y-6 justify-center">
+          <div className="flex flex-wrap gap-x-8 gap-y-6 justify-start">
             <ProductItem 
               src="/assets/order-forms/products/BE.jpg" 
               label="Below Elbow (BE)" 
@@ -48,7 +48,7 @@ export default function Products(): React.JSX.Element {
           <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
             Off the Shelf
           </p>
-          <div className="flex flex-wrap gap-x-8 gap-y-6 flex flex-col">
+          <div className="flex flex-wrap gap-x-8 gap-y-6 flex flex-col justify-start">
             <ProductItem 
               src="/assets/order-forms/products/Addistud.jpg" 
               label="AddiStud" 

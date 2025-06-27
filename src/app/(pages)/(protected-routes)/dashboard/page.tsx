@@ -40,7 +40,7 @@ export default function Dashboard(): React.JSX.Element {
     <div className="grid grid-cols-2 gap-4">
       <Card>
         <CardHeader>
-          <CardTitle>Sales</CardTitle>
+          <CardTitle className='text-primary'>Sales</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
@@ -54,7 +54,7 @@ export default function Dashboard(): React.JSX.Element {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Orders</CardTitle>
+          <CardTitle  className='text-primary' >Orders</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
@@ -68,7 +68,7 @@ export default function Dashboard(): React.JSX.Element {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Orders</CardTitle>
+          <CardTitle className='text-primary'>Orders</CardTitle>
         </CardHeader>
         <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -93,7 +93,7 @@ export default function Dashboard(): React.JSX.Element {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Orders</CardTitle>
+          <CardTitle className='text-primary'>Orders</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width={'100%'} height={300}>

@@ -21,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogDescription,
+  DialogDescription
 } from '@/components/ui/dialog';
 // API Hooks
 import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
@@ -36,16 +36,13 @@ import { AE_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/beForm/Step5Finishing';
 import CustomTable from '@/components/app/common/CustomTable';
 
-
-
-  const measurementSchema = Yup.string()
+const measurementSchema = Yup.string()
   .matches(/^\d+(\.\d{1,2})?$/, 'Must be a positive number')
   .test('max-value', 'Must be ≤ 70', (value) => !value || parseFloat(value) <= 70)
   .test('min-value', 'Must be positive', (value) => !value || parseFloat(value) > 0);
 
 // Reusable required measurement validation schema
-const requiredMeasurementSchema = measurementSchema
-  .required(FORMIK_ERRORS.REQUIRED);
+const requiredMeasurementSchema = measurementSchema.required(FORMIK_ERRORS.REQUIRED);
 
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
@@ -59,26 +56,30 @@ const step1Validation = Yup.object().shape({
   height: Yup.string()
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 92.57 or 95)',
-      excludeEmptyString: true,
+      excludeEmptyString: true
     })
     .test('min-height', 'Minimum height is 91cm', (value) => !value || parseFloat(value) >= 91)
-    .test('max-height', 'Maximum height is 213.00cm', (value) => !value || parseFloat(value) <= 213.0),
+    .test(
+      'max-height',
+      'Maximum height is 213.00cm',
+      (value) => !value || parseFloat(value) <= 213.0
+    ),
   weight: Yup.string()
     .required('Weight is required')
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 65.5 or 70)',
-      excludeEmptyString: false,
+      excludeEmptyString: false
     })
     .test('min-weight', 'Minimum weight is 10kg', (value) => parseFloat(value) >= 10)
     .test('max-weight', 'Maximum weight is 180kg', (value) => parseFloat(value) <= 180),
   // stump_length: Yup.string()
-    // .required(FORMIK_ERRORS.REQUIRED)
-    // .matches(/^\d+$/, 'Must contain only numbers')
-    // .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
+  // .required(FORMIK_ERRORS.REQUIRED)
+  // .matches(/^\d+$/, 'Must contain only numbers')
+  // .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
   shoe_size: Yup.string()
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 92.57 or 95)',
-      excludeEmptyString: true,
+      excludeEmptyString: true
     })
     .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
     .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 200.0),
@@ -95,65 +96,61 @@ const step1Validation = Yup.object().shape({
   thumb_tip: measurementSchema,
   stump_distal: measurementSchema,
   axila_stump: requiredMeasurementSchema,
-  rib_cage: requiredMeasurementSchema,
+  rib_cage: requiredMeasurementSchema
 });
 
 const step2Validation = Yup.object().shape({
   images_link: Yup.string()
     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
     .nullable(),
-  direct_body: Yup.string().required('Scan condition is required'),
+  direct_body: Yup.string().required('Scan condition is required')
 });
 const step4Validation = Yup.object().shape({
   global_volume_reduction: Yup.string()
     .nullable()
-    .test(
-      'is-valid-percentage',
-      'Must be a percentage between 0% and 5% (e.g. 2%)',
-      (value) => {
-        if (!value) return true;
-        
-        const regex = /^\d{1,2}%$/;
-        if (!regex.test(value)) return false;
-        
-        const num = parseInt(value.replace('%', ''));
-        return num >= 0 && num <= 5;
-      }
-    ),
-    socket_design_details: Yup.array().of(
-      Yup.object().shape({
-        cpo_input_mm: Yup.string()
-          .test(
-            'is-valid-number',
-            'Must be a number between -20 and +20',
-            (value) => {
-              if (!value || value.trim() === '') return true; // Allow empty
-              if (!/^-?\d+$/.test(value)) return false;
-              const num = parseInt(value, 10);
-              return num >= -20 && num <= 20;
-            }
-          )   })
-        )
+    .test('is-valid-percentage', 'Must be a percentage between 0% and 5% (e.g. 2%)', (value) => {
+      if (!value) return true;
+
+      const regex = /^\d{1,2}%$/;
+      if (!regex.test(value)) return false;
+
+      const num = parseInt(value.replace('%', ''));
+      return num >= 0 && num <= 5;
+    }),
+  socket_design_details: Yup.array().of(
+    Yup.object().shape({
+      cpo_input_mm: Yup.string().test(
+        'is-valid-number',
+        'Must be a number between -20 and +20',
+        (value) => {
+          if (!value || value.trim() === '') return true; // Allow empty
+          if (!/^-?\d+$/.test(value)) return false;
+          const num = parseInt(value, 10);
+          return num >= -20 && num <= 20;
+        }
+      )
+    })
+  )
 });
 
 const step3Validation = Yup.object().shape({
-  locking_mechanism: Yup.string(),
+  locking_mechanism: Yup.string()
 });
 
 const step5Validation = Yup.object().shape({
   finishing_type: Yup.string(),
-  delivery_date: Yup.string(),
+  delivery_date: Yup.string()
 });
 
 const initialValues = AE_FORM_INITIAL_VALUES;
-const SocketTypeDialog = ({ 
-  open, 
-  onOpenChange, 
-  data 
-}: { 
-  open: boolean; 
-  onOpenChange: (open: boolean) => void; 
-  data: any 
+const SocketTypeDialog = ({
+  open,
+  onOpenChange,
+  data
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  data: any;
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -161,29 +158,27 @@ const SocketTypeDialog = ({
         <DialogHeader>
           <DialogTitle>Socket Type Information</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           {data && (
             <>
               <div>
                 <h4 className="font-medium text-lg">{data.label}</h4>
-                <p className="text-sm text-gray-600 mt-2">
-                  {data.description || ''}
-                </p>
+                <p className="text-sm text-gray-600 mt-2">{data.description || ''}</p>
               </div>
-              
+
               {data.image && (
                 <div className="mt-4">
-                  <Image 
-                    src={data.image} 
-                    alt={data.label} 
-                    width={500} 
+                  <Image
+                    src={data.image}
+                    alt={data.label}
+                    width={500}
                     height={300}
                     className="rounded-md border"
                   />
                 </div>
               )}
-              
+
               {data.features && (
                 <div className="mt-4">
                   <h5 className="font-medium mb-2">Key Features:</h5>
@@ -199,9 +194,7 @@ const SocketTypeDialog = ({
         </div>
 
         <DialogFooter>
-          <Button onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
+          <Button onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -222,9 +215,8 @@ const DesignVariationDialog = ({
   socketType: string;
 }) => {
   const getDynamicContent = (variation: string) => {
-    
     const normalizedVariation = variation.trim().toLowerCase();
-    
+
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
       'standard (sx)': {
         title: 'Standard (SX)',
@@ -235,7 +227,7 @@ const DesignVariationDialog = ({
         title: 'Adjustable (AX)',
         description: 'Adjustable Socket for varying residual limb conditions',
         image: '/assets/order-forms/bk-order/foot-type/AX.png'
-      },
+      }
     };
 
     // Try exact match first
@@ -245,9 +237,7 @@ const DesignVariationDialog = ({
 
     // Try partial match (without parentheses)
     const baseVariation = normalizedVariation.split(' (')[0];
-    const partialMatch = Object.entries(contentMap).find(([key]) => 
-      key.startsWith(baseVariation)
-    );
+    const partialMatch = Object.entries(contentMap).find(([key]) => key.startsWith(baseVariation));
 
     if (partialMatch) {
       return partialMatch[1];
@@ -265,19 +255,19 @@ const DesignVariationDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Select Design Variation</DialogTitle>
+          <DialogTitle className="text-primary">Select Design Variation</DialogTitle>
           <DialogDescription>
             Choose your preferred design variation from the options below
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {options.map((option) => {
             const variationText = option.label || option.value;
             const content = getDynamicContent(variationText);
-            
+
             return (
-              <div 
+              <div
                 key={option.value}
                 className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => {
@@ -288,9 +278,9 @@ const DesignVariationDialog = ({
                 <h4 className="font-sm text-lg">{content.title}</h4>
                 <p className="text-[12px] text-gray-700 mt-1">{content.description}</p>
                 <div className="mt-0">
-                  <Image 
-                    src={content.image} 
-                    alt={content.title} 
+                  <Image
+                    src={content.image}
+                    alt={content.title}
                     width={200}
                     height={150}
                     className="rounded-md border object-cover"
@@ -324,23 +314,21 @@ const ModelDialog = ({
   onSelect: (value: string) => void;
   socketType: string;
 }) => {
-
   const getDynamicContent = (variation: string) => {
+    const normalizedVariation = variation.trim().toLowerCase();
 
-    const normalizedVariation = variation.trim().toLowerCase();   
-
-    const contentMap: Record<string, { title: string; description: string; image: string }> = {   
-      'addiease': {
+    const contentMap: Record<string, { title: string; description: string; image: string }> = {
+      addiease: {
         title: 'AddiEase',
         description: 'Premium Definitive Sockets Printed on HP-MJF',
         image: '/assets/order-forms/below-elbow/AddiEaseforAEBE.png'
       },
-      'addieasesoft': {
+      addieasesoft: {
         title: 'AddiEaseSoft',
         description: 'Heat Resistant Moulds Printed on FDM Printer',
         image: '/assets/order-forms/below-elbow/AddiEaseMouldHRforAEBG.png'
       },
-      'addieasemould': {
+      addieasemould: {
         title: 'AddiEaseMould',
         description: 'Moulds Printed on FDM Printe',
         image: '/assets/order-forms/below-elbow/AddiEaseMouldforAEBE.png'
@@ -349,8 +337,7 @@ const ModelDialog = ({
         title: 'AddiEaseMould-HR',
         description: 'Heat Resistant Moulds Printed on FDM Printer',
         image: '/assets/order-forms/below-elbow/AddiEaseMouldHRforAEBG.png'
-
-      },
+      }
     };
 
     // Try exact match first
@@ -360,9 +347,7 @@ const ModelDialog = ({
 
     // Try partial match (without parentheses)
     const baseVariation = normalizedVariation.split(' (')[0];
-    const partialMatch = Object.entries(contentMap).find(([key]) => 
-      key.startsWith(baseVariation)
-    );
+    const partialMatch = Object.entries(contentMap).find(([key]) => key.startsWith(baseVariation));
 
     if (partialMatch) {
       return partialMatch[1];
@@ -380,19 +365,19 @@ const ModelDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Select Design Variation</DialogTitle>
+          <DialogTitle className="text-primary">Select Design Variation</DialogTitle>
           <DialogDescription>
             Choose your preferred design variation from the options below
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {options.map((option) => {
             const variationText = option.label || option.value;
             const content = getDynamicContent(variationText);
-            
+
             return (
-              <div 
+              <div
                 key={option.value}
                 className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => {
@@ -403,9 +388,9 @@ const ModelDialog = ({
                 <h4 className="font-sm text-lg">{content.title}</h4>
                 <p className="text-[12px] text-gray-700 mt-1">{content.description}</p>
                 <div className="mt-1">
-                  <Image 
-                    src={content.image} 
-                    alt={content.title} 
+                  <Image
+                    src={content.image}
+                    alt={content.title}
                     width={200}
                     height={150}
                     className="rounded-md border object-cover"
@@ -437,24 +422,24 @@ const WatchFieldReset = () => {
   return null;
 };
 
-const Step1 = ({ 
-  values, 
-  handleChange, 
-  errors, 
-  touched, 
-  setFieldValue, 
-  isPatientSelected, 
-  FORM_OPTIONS, 
+const Step1 = ({
+  values,
+  handleChange,
+  errors,
+  touched,
+  setFieldValue,
+  isPatientSelected,
+  FORM_OPTIONS,
   formSubmitted,
-  setSocketTypeDialog  
+  setSocketTypeDialog
 }: any) => {
-  console.log(":::>>",errors);
-  
+  console.log(':::>>', errors);
+
   const [designVariationDialog, setDesignVariationDialog] = useState({
     open: false,
     options: []
   });
-  
+
   const [modelDialog, setModelDialog] = useState({
     open: false,
     options: []
@@ -470,39 +455,40 @@ const Step1 = ({
 
   const AmputationTypeOptions = useMemo(() => {
     return (FORM_OPTIONS?.amputation_area || []).map((option: { value: any }) => ({
-      ...option,
+      ...option
     }));
   }, [FORM_OPTIONS?.socket_type]);
 
   const socketTypeOptions = useMemo(() => {
     return (FORM_OPTIONS?.socket_type || []).map((option: { value: any }) => ({
-      ...option,
+      ...option
     }));
   }, [FORM_OPTIONS?.socket_type]);
-  
+
   // Enhanced design variation options
   const designVariationOptions = useMemo(() => {
     if (!values.socket_type) return [];
     const baseOptions = FORM_OPTIONS[values.socket_type + '_design_variation'] || [];
-    
+
     return baseOptions.map((option: { value: string; label: string }) => ({
-      ...option,
+      ...option
     }));
   }, [values.socket_type, FORM_OPTIONS]);
 
   const modelOptions = useMemo(() => {
     if (!values.socket_type || !values.design_variation) return [];
-    const baseOptions  = FORM_OPTIONS[values.socket_type + '_' + values.design_variation +'_'+'model_name'] || [];
-    
+    const baseOptions =
+      FORM_OPTIONS[values.socket_type + '_' + values.design_variation + '_' + 'model_name'] || [];
+
     return baseOptions.map((option: { value: string; label: string }) => ({
-      ...option,
+      ...option
     }));
   }, [values.socket_type, values.design_variation, FORM_OPTIONS]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <h3 className="font-semibold text-lg">Basic Details</h3>
-      <div className="grid grid-cols-3 gap-4"> 
+    <div className="flex flex-col gap-6 px-3">
+      <h3 className="font-semibold text-lg text-primary">Basic Details</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <PatientPicker
           label="Patient Name"
           placeholder="Patient Name"
@@ -513,57 +499,29 @@ const Step1 = ({
           inVaild={shouldShowError('patient_name', true)}
           error={errors.patient_name}
         />
-        <div className="grid grid-cols-3 gap-2 col-span-2">
-          <Input
-            label="Date of Birth"
-            type="date"
-            value={values.date_of_birth || ''}
-            onChange={handleChange('date_of_birth')}
-            required
-            inVaild={shouldShowError('date_of_birth', true)}
-            error={errors.date_of_birth}
-            disabled={true}
-          />
-          <Input
-            placeholder="65"
-            label="Height (cm)"
-            onChange={handleChange('height')}
-            value={values.height}
-            inVaild={shouldShowError('height')}
-            error={errors.height}
-            disabled={true}
-          />
-          <Input
-            placeholder="50"
-            label="Weight (kgs)"
-            required
-            value={values.weight}
-            onChange={handleChange('weight')}
-            inVaild={shouldShowError('weight', true)}
-            error={errors.weight}
-            disabled={true}
-          />
-        </div>
+
         <Input
-          placeholder="10 digit phone number"
           label="Mobile Number"
-          onChange={handleChange('mobile_no')}
+          placeholder="10 digit phone number"
           value={values.mobile_no}
+          onChange={handleChange('mobile_no')}
           error={errors.mobile_no}
-          disabled={true}
+          disabled
         />
+
         <Input
-          placeholder="Email"
           label="Email"
+          placeholder="Email"
           value={values.email}
           onChange={handleChange('email')}
           error={errors.email}
-          disabled={true}
+          disabled
         />
+
         <SelectBox
           options={[
             { value: 'Male', label: 'Male' },
-            { value: 'Female', label: 'Female' },
+            { value: 'Female', label: 'Female' }
           ]}
           label="Gender"
           value={values.gender}
@@ -571,12 +529,41 @@ const Step1 = ({
           inVaild={shouldShowError('gender', true)}
           required
           error={errors.gender}
-          disabled={true}
+          disabled
+        />
+
+        <Input
+          label="Date of Birth"
+          type="date"
+          value={values.date_of_birth || ''}
+          onChange={handleChange('date_of_birth')}
+          required
+          inVaild={shouldShowError('date_of_birth', true)}
+          error={errors.date_of_birth}
+          disabled
+        />
+
+        <Input
+          label="Height (cm)"
+          placeholder="65"
+          onChange={handleChange('height')}
+          value={values.height}
+          inVaild={shouldShowError('height')}
+          error={errors.height}
+          disabled
+        />
+
+        <Input
+          label="Weight (kgs)"
+          placeholder="50"
+          value={values.weight}
+          onChange={handleChange('weight')}
+          inVaild={shouldShowError('weight', true)}
+          error={errors.weight}
+          disabled
         />
       </div>
-      <div className="divider"></div>
-
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Input
           placeholder="Patient Name"
           label="Amputation Date"
@@ -585,7 +572,7 @@ const Step1 = ({
           onChange={handleChange('amputation_date')}
         />
         <SelectBox
-          options={FORM_OPTIONS?.amputated_hand|| []}
+          options={FORM_OPTIONS?.amputated_hand || []}
           label="Amputation Hand"
           value={values.amputated_hand}
           onValueChange={handleChange('amputated_hand')}
@@ -607,9 +594,8 @@ const Step1 = ({
         />
       </div>
 
-      <div className="divider"></div>
-      <div className="grid grid-cols-4 gap-4">
-      <SelectBox
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <SelectBox
           options={AmputationTypeOptions}
           label="Amputation Area"
           value={values.amputation_area}
@@ -631,7 +617,6 @@ const Step1 = ({
           error={errors.socket_type}
           required
         />
-         
 
         <div className="flex flex-col">
           <label className="block text-xs font-medium text-black mb-1">
@@ -642,24 +627,25 @@ const Step1 = ({
               <Button
                 variant="outline"
                 className="w-full text-left justify-start h-10"
-                onClick={() => setDesignVariationDialog({
-                  open: true,
-                  options: designVariationOptions
-                })}
+                onClick={() =>
+                  setDesignVariationDialog({
+                    open: true,
+                    options: designVariationOptions
+                  })
+                }
               >
-                {values.design_variation 
-                  ? designVariationOptions.find((opt: { value: string }) => opt.value === values.design_variation)?.label
-                  : "Select Design Variation"}
+                {values.design_variation
+                  ? designVariationOptions.find(
+                      (opt: { value: string }) => opt.value === values.design_variation
+                    )?.label
+                  : 'Select Design Variation'}
               </Button>
               {shouldShowError('design_variation', true) && (
                 <p className="text-xs text-red-500 mt-1">{errors.design_variation}</p>
               )}
             </>
           ) : (
-            <Input
-              placeholder="Select socket type first"
-              disabled
-            />
+            <Input placeholder="Select socket type first" disabled />
           )}
         </div>
         <div className="flex flex-col">
@@ -671,14 +657,17 @@ const Step1 = ({
               <Button
                 variant="outline"
                 className="w-full text-left justify-start h-10"
-                onClick={() => setModelDialog({
-                  open: true,
-                  options: modelOptions
-                })}
+                onClick={() =>
+                  setModelDialog({
+                    open: true,
+                    options: modelOptions
+                  })
+                }
               >
-                {values.model_name 
-                  ? modelOptions.find((opt: { value: string }) => opt.value === values.model_name)?.label
-                  : "Select Model"}
+                {values.model_name
+                  ? modelOptions.find((opt: { value: string }) => opt.value === values.model_name)
+                      ?.label
+                  : 'Select Model'}
               </Button>
               {shouldShowError('model_name', true) && (
                 <p className="text-xs text-red-500 mt-1">{errors.model_name}</p>
@@ -686,7 +675,9 @@ const Step1 = ({
             </>
           ) : (
             <Input
-              placeholder={!values.socket_type ? "Select socket type first" : "Select design variation first"}
+              placeholder={
+                !values.socket_type ? 'Select socket type first' : 'Select design variation first'
+              }
               disabled
             />
           )}
@@ -695,17 +686,17 @@ const Step1 = ({
 
       <div className="divider"></div>
 
-      <h3 className="font-semibold text-lg ">Measurements</h3>
+      <h3 className="font-semibold text-lg text-primary ">Measurements</h3>
       {/* <p>
 
       Fig 1 - Sound Hand Measurements
       </p> */}
-      <div className="grid grid-cols-3 gap-4 items-center ml-1 mt-[-40px]">
+      <div className="grid grid-cols-3 gap-4 items-center ml-1 mt-[50px]">
         <div>
           <Image
             src={'/assets/order-forms/below-elbow/7(3).png'}
             alt="measurements"
-            width={300}
+            width={550}
             height={300}
             className="object-cover"
             loading="lazy"
@@ -713,11 +704,12 @@ const Step1 = ({
             unoptimized={true}
           />
         </div>
-        <div className="flex flex-col col-span-2 gap-4 mt-[-90]">
-          <div className="grid grid-cols-2 gap-4 mt-[140]">
+        <div className="flex flex-col col-span-2 gap-4 ml-5 mt-[-90]">
+          <div className="grid grid-cols-2 gap-4 mt-[50]">
             <div className="mb-2">
               <label className="block text-xs font-medium text-black">
-               <strong>A</strong> - Shoulder Joint to Epicondyl <span className="text-red-500">*</span>
+                <strong>A</strong> - Shoulder Joint to Epicondyl
+                <span className="text-red-500">*</span>
               </label>
               <Input
                 placeholder="10"
@@ -727,8 +719,7 @@ const Step1 = ({
                 inVaild={shouldShowError('shoulder_joint', true)}
                 error={errors.shoulder_joint}
               />
-            </div>  
-
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4 ">
             <div className="mb-2">
@@ -744,7 +735,6 @@ const Step1 = ({
                 error={errors.axila}
               />
             </div>
-            
           </div>
           <div className="grid grid-cols-2 gap-4 ">
             <div className="mb-2">
@@ -760,7 +750,6 @@ const Step1 = ({
                 error={errors.styloid}
               />
             </div>
-            
           </div>
           <div className="grid grid-cols-2 gap-4 ">
             <div className="mb-2">
@@ -772,15 +761,12 @@ const Step1 = ({
                 value={values.thumb_tip}
                 onChange={handleChange('thumb_tip')}
                 // required
-                inVaild={shouldShowError('thumb_tip',true)}
+                inVaild={shouldShowError('thumb_tip', true)}
                 error={errors.thumb_tip}
               />
             </div>
-            
           </div>
-          <div className="grid grid-cols-2 gap-4">
-        </div>
-
+          <div className="grid grid-cols-2 gap-4"></div>
         </div>
       </div>
 
@@ -790,11 +776,11 @@ const Step1 = ({
 
       </p> */}
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
-        <div className='mt-[-200px]'>
+        <div className="mt-[-10px]">
           <Image
             src={'/assets/order-forms/below-elbow/8(3).png'}
             alt="measurements"
-            width={300}
+            width={500}
             height={0}
             className="object-cover"
             loading="lazy"
@@ -802,10 +788,9 @@ const Step1 = ({
             unoptimized={true}
           />
           {/* Fig 2 - Amputed Hand Measurements */}
-
         </div>
-        <div className="flex flex-col col-span-2 gap-2">
-            <div className="grid grid-cols-2 gap-4 ">
+        <div className="col-span-2 flex flex-col gap-2 mt-10 ml-5">
+          <div className="grid grid-cols-2 gap-4   ">
             <div className="mb-2 mt-[15px]">
               <label className="block text-xs font-medium text-black">
                 <strong>E</strong> - Shoulder Joint to Stump Distal end (cm)
@@ -853,9 +838,8 @@ const Step1 = ({
           <div className="grid grid-cols-2 gap-2">
             <div className="mb-2">
               <label className="block text-xs font-medium text-black" style={{ color: '#1E3A8A' }}>
-                <strong>G1 </strong> -  ML at Shoulder Rib Cage
-                (required in case of Shoulder
-                  Disarticulatin)
+                <strong>G1 </strong> - ML at Shoulder Rib Cage (required in case of Shoulder
+                Disarticulatin)
               </label>
               <Input
                 placeholder="10"
@@ -867,10 +851,12 @@ const Step1 = ({
               />
             </div>
           </div>
-         
+
           <div className="">
-            <p className='text-xs'><strong>H</strong> - Stump Circumference every 5 cm
-            Please mark 0 on the stump before scan</p>
+            <p className="text-xs">
+              <strong>H</strong> - Stump Circumference every 5 cm Please mark 0 on the stump before
+              scan
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-3 ">
             <div className="grid sm:col-span-4 xl:col-span-2 gap-0">
@@ -908,7 +894,7 @@ const Step1 = ({
                   <Input />
                 </div>
                 <div className="grid col-span-2">
-                <div className="flex gap-2 items-center ml-[10px]">
+                  <div className="flex gap-2 items-center ml-[10px]">
                     <p className="text-[10px]">20 Cm</p>
                     <Input />
                   </div>
@@ -922,7 +908,7 @@ const Step1 = ({
                   <Input />
                 </div>
                 <div className="grid col-span-2">
-                <div className="flex gap-2 items-center ml-[10px]">
+                  <div className="flex gap-2 items-center ml-[10px]">
                     <p className="text-[10px]">35 Cm</p>
                     <Input />
                   </div>
@@ -935,7 +921,7 @@ const Step1 = ({
 
       <DesignVariationDialog
         open={designVariationDialog.open}
-        onOpenChange={(open) => setDesignVariationDialog(prev => ({...prev, open}))}
+        onOpenChange={(open) => setDesignVariationDialog((prev) => ({ ...prev, open }))}
         options={designVariationOptions}
         onSelect={(value) => setFieldValue('design_variation', value)}
         socketType={values.socket_type}
@@ -943,7 +929,7 @@ const Step1 = ({
 
       <ModelDialog
         open={modelDialog.open}
-        onOpenChange={(open) => setModelDialog(prev => ({...prev, open}))}
+        onOpenChange={(open) => setModelDialog((prev) => ({ ...prev, open }))}
         options={modelOptions}
         onSelect={(value) => setFieldValue('model_name', value)}
         socketType={values.socket_type}
@@ -953,22 +939,22 @@ const Step1 = ({
   );
 };
 
-const Step2 = ({ 
-  values, 
-  handleChange, 
-  errors, 
-  touched, 
-  setFieldValue, 
+const Step2 = ({
+  values,
+  handleChange,
+  errors,
+  touched,
+  setFieldValue,
   FORM_OPTIONS,
-  formSubmitted 
+  formSubmitted
 }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
     if (!isRequired && !values[fieldName]) {
       return false;
-    }    
+    }
     if (isRequired && (formSubmitted || touched[fieldName])) {
       return !!errors[fieldName];
-    }    
+    }
     return !!(touched[fieldName] && errors[fieldName]);
   };
 
@@ -976,11 +962,11 @@ const Step2 = ({
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-4 items-end">
         <div className="grid grid-cols-1 gap-4 ">
-          <h3 className="font-semibold text-lg ">Scan Condition</h3>
+          <h3 className="font-semibold text-lg text-primary">Scan Condition</h3>
           <SelectBox
             options={[
               { label: 'Direct Body', value: 'Direct_Body ' },
-              { label: 'With Liner', value: 'With_Liner' },
+              { label: 'With Liner', value: 'With_Liner' }
             ]}
             label="Direct Body"
             required={true}
@@ -989,9 +975,7 @@ const Step2 = ({
             inVaild={shouldShowError('direct_body', true)}
             error={errors.direct_body}
           />
-          {values.direct_body === 'With_Liner' && (
-            <div style={{ marginBottom: '55px' }}></div>
-          )}
+          {values.direct_body === 'With_Liner' && <div style={{ marginBottom: '55px' }}></div>}
         </div>
         <div>
           <div className="grid grid-cols gap-4">
@@ -1032,7 +1016,7 @@ const Step2 = ({
                 options={[
                   { value: 'Left_Hand', label: 'Left Hand' },
                   { value: 'Right_Hand', label: 'Right Hand' },
-                  { value: 'Both', label: 'Both' },
+                  { value: 'Both', label: 'Both' }
                 ]}
                 value={values.foot_Amputation}
                 onValueChange={handleChange('foot_Amputation')}
@@ -1109,72 +1093,70 @@ const Step2 = ({
 
 const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    const fieldValue = fieldName.includes('[') 
-    ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
-        obj && obj[key], values)
-    : values[fieldName];
+    const fieldValue = fieldName.includes('[')
+      ? fieldName.split(/[\[\].]+/).reduce((obj, key) => obj && obj[key], values)
+      : values[fieldName];
 
-  if (!fieldValue) {
-    if (!isRequired) return false;
-    return formSubmitted || touched[fieldName];
-  }
-  const fieldError = fieldName.includes('[')
-  ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
-      obj && obj[key], errors)
-  : errors[fieldName];
-  
-return !!fieldError && (touched[fieldName] || formSubmitted);
-};
+    if (!fieldValue) {
+      if (!isRequired) return false;
+      return formSubmitted || touched[fieldName];
+    }
+    const fieldError = fieldName.includes('[')
+      ? fieldName.split(/[\[\].]+/).reduce((obj, key) => obj && obj[key], errors)
+      : errors[fieldName];
+
+    return !!fieldError && (touched[fieldName] || formSubmitted);
+  };
   return (
     <>
-    <div>
-          <p className="text-xs mt-2">
-          Please mark the below points on the stump along with the Trimline before the Scan. Please also
-mention extra pressure / relief (in mm) at below points. (- for pressure and + for relief)
-          </p>
-          <div className="flex justify-center p-2 mr-20">
-                        <div className='mt-10'>
+      <div>
+        <p className="text-xs mt-2">
+          Please mark the below points on the stump along with the Trimline before the Scan. Please
+          also mention extra pressure / relief (in mm) at below points. (- for pressure and + for
+          relief)
+        </p>
+        <div className="flex justify-center p-2 mr-20">
+          <div className="mt-10">
             <Image
               src={'/assets/order-forms/below-elbow/5(2).png'}
               alt="Design Modications"
               width={620}
               height={400}
               className="object-cover"
+            />
+          </div>
+          <div>
+            <div className="mt-10 ml-15">
+              <CustomTable
+                columns={[
+                  { header: 'Area.', accessorKey: 'area' },
+                  { header: 'Area Name', accessorKey: 'point_name' },
+                  { header: 'Modifications ( mm)', accessorKey: 'pressure_mm' }
+                ]}
+                data={values?.table_zbib?.map((item: any, index: number) => ({
+                  id: index,
+                  area: item?.area,
+                  // s_no: index + 1,
+                  point_name: item?.point_name,
+                  pressure_mm: (
+                    <Input
+                      name={`table_zbib[${index}].pressure_mm`}
+                      value={item?.pressure_mm || ''}
+                      onChange={handleChange}
+                      style={{ height: '35px', width: '200px' }}
+                      type="text"
+                      placeholder={`Default ${item?.default_mm}`}
+                      className="w-full placeholder:text-[12px]"
+                      inVaild={shouldShowError(`table_zbib[${index}].pressure_mm`)}
+                      error={errors?.table_zbib?.[index]?.pressure_mm || ''}
+                    />
+                  )
+                }))}
               />
-              </div>
-              <div>
-                
-                 <div className='mt-10 ml-15'>
-                 <CustomTable
-      columns={[
-        { header: 'Area.', accessorKey: 'area' },
-        { header: 'Area Name', accessorKey: 'point_name' },
-        { header: 'Modifications ( mm)', accessorKey: 'pressure_mm' }
-      ]}
-      data={values?.table_zbib?.map((item: any, index: number) => ({
-        id: index,
-        area: item?.area,
-        // s_no: index + 1,
-        point_name: item?.point_name,
-        pressure_mm: (
-          <Input
-            name={`table_zbib[${index}].pressure_mm`}
-            value={item?.pressure_mm||'' }
-            onChange={handleChange}
-            style={{ height: '35px', width: '200px' }}
-            type="text"
-            placeholder={`Default ${item?.default_mm}`}
-            className="w-full placeholder:text-[12px]"
-            inVaild={shouldShowError(`table_zbib[${index}].pressure_mm`)}
-            error={errors?.table_zbib?.[index]?.pressure_mm || ''}
-          />
-        ),
-      }))}
-    />
-  </div>
-              </div>
+            </div>
           </div>
         </div>
+      </div>
     </>
   );
 };
@@ -1223,17 +1205,17 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
       activity_level: values.activity_level,
       model_name: values.model_name,
       stump_length: values.stump_length,
-      weight: values.weight,
+      weight: values.weight
     };
     const itemCode = await getItemCodeByValues(payload);
     setSelectedItem(itemCode);
-    
+
     // Submit the final form
     const orderPayload = {
       item_type: 'BK',
       customer: user?.customer_id,
       order_details: values,
-      item_code: itemCode,
+      item_code: itemCode
     };
     createOrder(orderPayload);
   };
@@ -1271,7 +1253,7 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
         return errors.inner.reduce((acc, error) => {
           return {
             ...acc,
-            [error.path || '']: error.message,
+            [error.path || '']: error.message
           };
         }, {});
       }
@@ -1293,7 +1275,7 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
           activity_level: values.activity_level,
           model_name: values.model_name,
           stump_length: values.stump_length,
-          weight: values.weight,
+          weight: values.weight
         };
         const itemCode = await getItemCodeByValues(itemPayload);
         setSelectedItem(itemCode);
@@ -1322,40 +1304,54 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
 
   return (
     <div className="pb-16 relative">
-      <Formik 
-        initialValues={initialValues} 
-        onSubmit={OnSubmit} 
+      <Formik
+        initialValues={initialValues}
+        onSubmit={OnSubmit}
         validationSchema={
-          currentStep === 1 ? step1Validation : 
-          currentStep === 2 ? step2Validation : 
-          currentStep === 3 ? step3Validation :
-          currentStep === 4 ? step4Validation :
-          currentStep === 5 ? step5Validation : 
-          null
+          currentStep === 1
+            ? step1Validation
+            : currentStep === 2
+              ? step2Validation
+              : currentStep === 3
+                ? step3Validation
+                : currentStep === 4
+                  ? step4Validation
+                  : currentStep === 5
+                    ? step5Validation
+                    : null
         }
         validateOnChange={true}
         validateOnBlur={true}
         enableReinitialize
       >
-        {({ values, handleChange, handleSubmit, errors, touched, setFieldValue, setErrors, isValid }) => (
+        {({
+          values,
+          handleChange,
+          handleSubmit,
+          errors,
+          touched,
+          setFieldValue,
+          setErrors,
+          isValid
+        }) => (
           <div className="flex flex-col gap-6">
             <WatchFieldReset />
-             {/* Socket Type Dialog */}
-             <SocketTypeDialog
+            {/* Socket Type Dialog */}
+            <SocketTypeDialog
               open={socketTypeDialog.open}
-              onOpenChange={(open) => setSocketTypeDialog(prev => ({...prev, open}))}
+              onOpenChange={(open) => setSocketTypeDialog((prev) => ({ ...prev, open }))}
               data={socketTypeDialog.data}
             />
             {/* Step indicator */}
             <div className="flex justify-center mb-8">
               <div className="flex items-center gap-2">
                 {[
-                 { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
-                 { step: 2, name: 'Scan', icon: '📁' },
-                 { step: 3, name: 'Components', icon: '🔒' },
-                 { step: 4, name: 'Modifications', icon: '✏️' },
-                 { step: 5, name: 'Finishing', icon: '🎨' }
-                 ].map(({step, name, icon}) => (
+                  { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
+                  { step: 2, name: 'Scan', icon: '📁' },
+                  { step: 3, name: 'Components', icon: '🔒' },
+                  { step: 4, name: 'Modifications', icon: '✏️' },
+                  { step: 5, name: 'Finishing', icon: '🎨' }
+                ].map(({ step, name, icon }) => (
                   <React.Fragment key={step}>
                     <button
                       type="button"
@@ -1374,16 +1370,14 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
                       <div
                         className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${
                           currentStep === step
-                            ? "bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4"
+                            ? 'bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4'
                             : completedSteps.includes(step)
-                            ? "bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4"
-                            : "bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4"
+                              ? 'bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4'
+                              : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4'
                         } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       >
                         <span className="flex items-center gap-2">
-                          {currentStep === step && (
-                            <></>
-                          )}
+                          {currentStep === step && <></>}
                           {completedSteps.includes(step) && !(currentStep === step) && (
                             <svg
                               className="w-3 h-3 text-gray-500 flex-shrink-0"
@@ -1414,9 +1408,7 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             className={`transition-all duration-500 ${
-                              completedSteps.includes(step) 
-                                ? 'stroke-primary' 
-                                : 'stroke-gray-300'
+                              completedSteps.includes(step) ? 'stroke-primary' : 'stroke-gray-300'
                             }`}
                           />
                         </svg>
@@ -1452,17 +1444,17 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
             )}
             {currentStep === 3 && (
               <Step3
-              values={values}
-              handleChange={handleChange}
-              errors={errors}
-              touched={touched}
-              setFieldValue={setFieldValue}
-              FORM_OPTIONS={FORM_OPTIONS}
-              formSubmitted={formSubmitted}
+                values={values}
+                handleChange={handleChange}
+                errors={errors}
+                touched={touched}
+                setFieldValue={setFieldValue}
+                FORM_OPTIONS={FORM_OPTIONS}
+                formSubmitted={formSubmitted}
               />
             )}
             {currentStep === 4 && (
-              <Step4 
+              <Step4
                 values={values}
                 handleChange={handleChange}
                 errors={errors}
@@ -1473,7 +1465,7 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
               />
             )}
             {currentStep === 5 && (
-              <Step5 
+              <Step5
                 values={values}
                 handleChange={handleChange}
                 errors={errors}
@@ -1488,19 +1480,15 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
             <div className="sticky bottom-4 left-0 flex justify-between bg-white p-2 rounded-lg shadow-md">
               <div>
                 {currentStep > 1 && (
-                  <Button 
-                    variant="outline" 
-                    onClick={prevStep}
-                    type="button"
-                  >
+                  <Button variant="outline" onClick={prevStep} type="button">
                     Back
                   </Button>
                 )}
               </div>
               <div>
                 {currentStep < 5 ? (
-                  <Button 
-                    className="shadow-2xl" 
+                  <Button
+                    className="shadow-2xl"
                     onClick={async () => {
                       await nextStep(values, setErrors);
                     }}
@@ -1509,11 +1497,7 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
                     Next
                   </Button>
                 ) : (
-                  <Button 
-                    className="shadow-2xl" 
-                    onClick={() => handleSubmit()}
-                    type="submit"
-                  >
+                  <Button className="shadow-2xl" onClick={() => handleSubmit()} type="submit">
                     Submit
                   </Button>
                 )}
@@ -1522,16 +1506,16 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
           </div>
         )}
       </Formik>
-      
+
       {/* Confirmation dialog after Step 1 */}
-      <ConfirmOrderDialog 
+      <ConfirmOrderDialog
         open={showStep1Confirmation}
         onOpenChange={setShowStep1Confirmation}
         formValues={{
           socket_type: formValues.socket_type,
           design_variation: formValues.design_variation,
           model_name: formValues.model_name,
-          activity_level: formValues.activity_level,
+          activity_level: formValues.activity_level
         }}
         selectedItem={selectedItem}
         isItemFetching={isItemFetching}
@@ -1539,16 +1523,16 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
         onConfirm={handleStep1Confirmation}
         showContinueButton={true}
       />
-      
+
       {/* Final submission dialog (hidden in this case since we're submitting directly) */}
-      <ConfirmOrderDialog 
+      <ConfirmOrderDialog
         open={modelOpen}
         onOpenChange={setModelOpen}
         formValues={{
           socket_type: formValues.socket_type,
           design_variation: formValues.design_variation,
           model_name: formValues.model_name,
-          activity_level: formValues.activity_level,
+          activity_level: formValues.activity_level
         }}
         selectedItem={selectedItem}
         isItemFetching={isItemFetching}

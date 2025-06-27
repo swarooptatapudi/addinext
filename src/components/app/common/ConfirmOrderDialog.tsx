@@ -39,7 +39,7 @@ export const ConfirmOrderDialog = ({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Confirm Order</DialogTitle>
+                    <DialogTitle className='text-primary'>Confirm Order</DialogTitle>
                 </DialogHeader>
 
                 <div className="text-xs">

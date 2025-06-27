@@ -268,7 +268,7 @@ const DesignVariationDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Select Design Variation</DialogTitle>
+          <DialogTitle className="text-primary">Select Design Variation</DialogTitle>
           <DialogDescription>
             Choose your preferred design variation from the options below
           </DialogDescription>
@@ -384,7 +384,7 @@ const ModelDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Select Design Variation</DialogTitle>
+          <DialogTitle className="text-primary">Select Design Variation</DialogTitle>
           <DialogDescription>
             Choose your preferred design variation from the options below
           </DialogDescription>
@@ -497,7 +497,7 @@ const Step1 = ({
 
   return (
     <div className="flex flex-col gap-6">
-      <h3 className="font-semibold text-lg">Basic Details</h3>
+      <h3 className="font-semibold text-lg  text-primary">Basic Details</h3>
       <div className="grid grid-cols-3 gap-4"> 
         <PatientPicker
           label="Patient Name"
@@ -679,7 +679,7 @@ const Step1 = ({
 
       <div className="divider"></div>
 
-      <h3 className="font-semibold text-lg ">Measurements</h3>
+      <h3 className="font-semibold text-lg text-primary">Measurements</h3>
       <p></p>
         Fig 1 - Sound Hand Measurements
       <div className="grid grid-cols-3 gap-4 items-center ml-1 mt-[-20px]">
@@ -862,7 +862,7 @@ const Step2 = ({
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-4 items-end">
         <div className="grid grid-cols-1 gap-4 ">
-          <h3 className="font-semibold text-lg ">Scan Condition</h3>
+          <h3 className="font-semibold text-lg text-primary">Scan Condition</h3>
           <SelectBox
             options={[
               { label: 'Direct Body', value: 'Direct_Body ' },
@@ -908,7 +908,7 @@ const Step2 = ({
           )}
         </div>
       </div>
-      <h3 className="font-semibold text-lg">Scans Upload</h3>
+      <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
           <div className="grid grid-cols-2">
@@ -941,6 +941,7 @@ const Step2 = ({
             <StlFilePicker
               label="Upload STL file (Rgiht hand)"
               buttonText="Right Hand"
+              
               onFileSelect={(file) => console.log('Model A selected:', file?.name)}
             />
           </div>

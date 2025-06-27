@@ -68,7 +68,7 @@ export default function NewOrder(): React.JSX.Element {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Select Products</h3>
+          <h3 className="text-lg font-semibold text-primary mb-4">Select Products</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="h-full rounded-xl overflow-hidden border border-gray-200">
@@ -103,7 +103,7 @@ export default function NewOrder(): React.JSX.Element {
       </div>
 
       <div className="bg-white rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Select Products </h3>
+        <h3 className="text-lg font-semibold text-primary mb-4">Select Products </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {products.map((product: { name: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; id: React.Key | null | undefined; image: string | StaticImport; description: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }) => (
             <Link href={`/orders/new-order/${product.name}`} key={product.id}>

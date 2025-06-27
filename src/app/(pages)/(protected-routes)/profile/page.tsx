@@ -85,7 +85,7 @@ export default function Profile() {
       <div className="mr-80">
         <Card className="max-w-3xl mx-auto shadow-sm">
           <CardHeader className="border-b">
-            <CardTitle className="text-2x1 font-semibold">Profile Information</CardTitle>
+            <CardTitle className="text-2x1 font-semibold ">Profile Information</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
@@ -107,7 +107,7 @@ export default function Profile() {
     <div className="mr-80">
       <Card className="max-w-3xl mx-auto shadow-sm">
         <CardHeader className="border-b">
-          <CardTitle className="text-2x1 font-semibold">Profile Information</CardTitle>
+          <CardTitle className="text-2x1 font-semibold text-primary">Profile Information</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
