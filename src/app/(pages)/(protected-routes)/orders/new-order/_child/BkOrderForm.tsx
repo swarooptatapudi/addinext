@@ -613,7 +613,7 @@ const Step1 = ({
   }, [values.socket_type, values.design_variation, FORM_OPTIONS]);
 
   return (
-    <div className="flex flex-col gap-6 px-3">
+    <div className="flex flex-col gap-6 px-5">
       { deviceTypeId && orderId ?<> <PatientPortalDialog/></>:""}
       <h3 className="font-semibold text-lg text-primary">Basic Details</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> 
@@ -628,6 +628,34 @@ const Step1 = ({
                   error={errors.patient_name}
                 />
         
+         <Input
+                  label="Date of Birth"
+                  type="date"
+                  value={values.date_of_birth || ''}
+                  onChange={handleChange('date_of_birth')}
+                  required
+                  inVaild={shouldShowError('date_of_birth', true)}
+                  error={errors.date_of_birth}
+                  disabled
+                />
+                 <Input
+                  label="Height (cm)"
+                  placeholder="65"
+                  onChange={handleChange('height')}
+                  value={values.height}
+                  inVaild={shouldShowError('height')}
+                  error={errors.height}
+                  disabled
+                />
+                <Input
+                  label="Weight (kgs)"
+                  placeholder="50"
+                  value={values.weight}
+                  onChange={handleChange('weight')}
+                  inVaild={shouldShowError('weight', true)}
+                  error={errors.weight}
+                  disabled
+                />
                 <Input
                   label="Mobile Number"
                   placeholder="10 digit phone number"
@@ -660,36 +688,9 @@ const Step1 = ({
                   disabled
                 />
         
-                <Input
-                  label="Date of Birth"
-                  type="date"
-                  value={values.date_of_birth || ''}
-                  onChange={handleChange('date_of_birth')}
-                  required
-                  inVaild={shouldShowError('date_of_birth', true)}
-                  error={errors.date_of_birth}
-                  disabled
-                />
+               
         
-                <Input
-                  label="Height (cm)"
-                  placeholder="65"
-                  onChange={handleChange('height')}
-                  value={values.height}
-                  inVaild={shouldShowError('height')}
-                  error={errors.height}
-                  disabled
-                />
-        
-                <Input
-                  label="Weight (kgs)"
-                  placeholder="50"
-                  value={values.weight}
-                  onChange={handleChange('weight')}
-                  inVaild={shouldShowError('weight', true)}
-                  error={errors.weight}
-                  disabled
-                />
+               
               </div>
       
 
@@ -806,7 +807,7 @@ const Step1 = ({
           <Image
             src={'/assets/order-forms/bk-order/stupm.png'}
             alt="measurements"
-            width={300}
+            width={500}
             height={300}
             className="object-cover"
             loading="lazy"
@@ -814,7 +815,7 @@ const Step1 = ({
             unoptimized={true}
           />
         </div>
-        <div className="flex flex-col col-span-2 gap-4">
+        <div className="flex flex-col col-span-2 gap-4 ml-5">
           <div className="grid grid-cols-2 gap-4 ">
             <div className="mb-2">
               <label className="block text-xs font-medium text-black">

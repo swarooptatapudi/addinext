@@ -270,7 +270,7 @@ export const Step5 = ({
   return (
     <div className="flex flex-col md:flex-row gap-6">
       <div className="flex-1 p-2 ml-5">
-        <h3 className="text-lg font-semibold">Design & Printing</h3>
+        <h3 className="text-lg font-semibold text-primary">Design & Printing</h3>
         <div className="grid md:grid-cols-2 gap-6 mt-5">
           <div className="flex items-center gap-4">
             <label className="font-sm min-w-[100px] text-sm">Design by</label>
