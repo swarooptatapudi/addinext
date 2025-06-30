@@ -910,7 +910,7 @@ return !!fieldError && (touched[fieldName] || formSubmitted);
         </div>
       </div>
 
-      <h3 className="font-semibold text-lg ">Stump Condition</h3>
+      <h3 className="font-semibold text-lg text-primary ">Stump Condition</h3>
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
         <div>
           <Image

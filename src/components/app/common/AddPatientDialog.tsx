@@ -10,6 +10,7 @@ import { useCreatePatientMutation } from '@/rtk-query/apis/patient';
 import { RootState } from '@/rtk-query/store';
 import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 interface AddPatientDialogProps {
     open: boolean;
@@ -113,6 +114,7 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
                 onConfirm?.(values); // Pass the form values back to parent
                 resetForm();
                 onOpenChange(false);
+                toast.success('Patient created successfully');
             } catch (err) {
                 console.error('Error creating patient:', err);
             }
@@ -122,6 +124,7 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
     useEffect(() => {
         if (!open) {
             formik.resetForm();
+             
         }
     }, [open]);
 

@@ -822,7 +822,7 @@ useEffect(() => {
         </div>
       </div>
       <div className="ml-1 space-y-4">
-      <h6 className="text-2xl font-bold text-[16px] ml-5 text-black">FOOT COMPLAINTS/ PROBLEMS</h6>
+      <h6 className="text-2xl font-bold text-[16px] ml-5 text-primary">FOOT COMPLAINTS/ PROBLEMS</h6>
   <div className="grid grid-cols-2 gap-4 mr-40 mb-5">
     <CheckboxGroup
       options={[

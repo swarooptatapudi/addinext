@@ -197,8 +197,6 @@ export default function Organization(): React.JSX.Element {
           </div>
         </div>
         </div> */}
-
-
         {/* Coin History */}
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
