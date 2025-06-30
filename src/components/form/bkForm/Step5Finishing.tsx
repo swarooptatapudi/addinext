@@ -200,11 +200,25 @@ export const Step5 = ({
       finish: !isPrintSelf ? values.finish_type : '0', 
       discount_per: couponData?.discount_percentage || 0,
       discount_amt: couponData?.discount_amount || 0
+
+        // "item_code": "BK-CS-SX-T1-AEE-M",
+        // "design_by": "Addiwise",
+        // "print_by": "Self",
+        // "laticess": "No",
+        // "finish": "0",
+        // "discount_per": 0,
+        // "discount_amt": 0
     };
+
+
+
+    console.log('Estimate Payload:', estimatePayload);
 
     try {
       const response = await getBKEstimate(estimatePayload).unwrap();
-      
+      console.log('Estimate Response:', response);
+      console.log('Estimate Response:', response.data); // Log response
+
       setEstimateData({
         ...estimatePayload,
         apiResponse: response.data
@@ -237,12 +251,17 @@ export const Step5 = ({
     }
 
     setIsValidatingCoupon(true);
+    const payload = { coupon_code: couponCode }; // Explicit payload for clarity
+    console.log('Coupon Validation Payload:', payload); // Log payload
     try {
       const response = await validateCoupon({ coupon_code: couponCode }).unwrap();
       setCouponData(response.data);
+      console.log('Coupon Data:', response);
+      console.log('Coupon Data:', response.data);
       // toast.success(response.message);
     } catch (error: any) {
       setCouponData(null);
+      console.error('Coupon Validation Error:', error); // Log error
       toast.error(error.data?.message || 'Invalid coupon code');
     } finally {
       setIsValidatingCoupon(false);
@@ -532,7 +551,7 @@ export const Step5 = ({
 
 {/* Discounted Price - Only show if different from estimate price */}
       {/* {estimateData.apiResponse.discounted_price !== estimateData.apiResponse.estimate_price && ( */}
-      {parseFloat(estimateData.apiResponse.item_discount.replace(/,/g, '')) > 0 && (
+      {couponData && parseFloat(estimateData.apiResponse.item_discount.replace(/,/g, '')) > 0 && (
             <li className="flex items-start gap-2 ">
             <div
               className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 ${

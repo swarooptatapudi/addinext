@@ -983,7 +983,7 @@ const Step1 = ({
         <Textarea
           label="Previous Prosthetic Experience (Please describe any previous experience of Prosthetics used, Make, Model,
                  Type, Issues with it and expectation from the new Prosthetic socket)"
-          className="h-[100px] "
+          className="h-[100px]"
           value={values.previous_prosthetic_experience || ''}
           onChange={handleChange('previous_prosthetic_experience')}
         />
@@ -1015,6 +1015,7 @@ const Step2 = ({
   errors, 
   touched, 
   setFieldValue, 
+  setErrors,
   FORM_OPTIONS,
   formSubmitted 
 }: any) => {
@@ -1029,6 +1030,10 @@ const Step2 = ({
       ? fieldName.split('.').reduce((obj, key) => 
           obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
       : errors[fieldName];
+
+    if (fieldName === 'direct_body' && fieldValue && fieldError) {
+    return false;
+  }
     
     if (fieldName === 'upload_link' && 
         fieldError === 'Either upload scans or provide a photo link is required') {
@@ -1061,14 +1066,18 @@ const Step2 = ({
             label="Direct Body"
             required={true}
             value={values.direct_body || ''}
-            onValueChange={(value) => {
-              handleChange('direct_body')(value);
-              if (value !== 'With_Liner') {
-                setFieldValue('liner_thickness', '');
-                setFieldValue('liner_type', '');
-              }
-            }}
-            inVaild={shouldShowError('direct_body', true)}
+             onValueChange={(value) => {
+            handleChange('direct_body')(value);
+            // Clear any existing errors when a value is selected
+            if (value && errors.direct_body) {
+              setErrors({ ...errors, direct_body: undefined });
+            }
+            if (value !== 'With_Liner') {
+              setFieldValue('liner_thickness', '');
+              setFieldValue('liner_type', '');
+            }
+          }}
+            inVaild={!!errors.direct_body && (touched.direct_body || formSubmitted)}
             error={errors.direct_body}
           />
           {values.direct_body === 'With_Liner' && (
@@ -1381,7 +1390,11 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
         if (response.data.item_code) {
           setSelectedItem(response.data.item_code);
         }
-      });
+        setIsInitialDataLoaded(true); // Set to true after data is loaded
+      }).catch((error) => {
+      console.error('Failed to load order details:', error);
+      setIsInitialDataLoaded(false); // Ensure it’s false on failure
+    });
     }
   }, [orderId, deviceTypeId]);
 
@@ -1451,7 +1464,19 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
 
   const validateCurrentStep = async (values: any) => {
     try {
-      if (currentStep === 1) {
+      if (currentStep === 1 && orderId) {
+      // For prefilled orders, check only critical fields
+      const minimalValidation = Yup.object().shape({
+        patient_name: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+        socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+        design_variation: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+        model_name: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+        activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+      });
+      await minimalValidation.validate(values, { abortEarly: false });
+      return {};
+    }  
+      else if (currentStep === 1) {
         await step1Validation.validate(values, { abortEarly: false });
       } else if (currentStep === 2) {
         await step2Validation.validate(values, { abortEarly: false });
@@ -1518,9 +1543,19 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   };
   useEffect(() => {
   }, [formValues]);
+
+  useEffect(() => {
+  console.log('Form Values:', formValues);
+  console.log('Is Initial Data Loaded:', isInitialDataLoaded);
+  // console.log('Validation Errors:', errors);
+  console.log("isOrderCreating", isOrderCreating);
+  console.log("orderId && !isInitialDataLoaded",orderId,isInitialDataLoaded)
+}, [formValues, isInitialDataLoaded]);
+
   if (orderId && !orderDetails?.data) {
     return <div className="flex justify-center p-8">Loading order data...</div>;
   }
+
   return (
     <div className="pb-16 relative">
       <Formik 

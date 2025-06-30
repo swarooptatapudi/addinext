@@ -32,6 +32,7 @@ interface OrderParams {
 
 export default function Orders(): React.JSX.Element {
   const { data, isLoading, error } = useGetOrdersQuery('');
+  console.log('Orders Data:', data);
   const [getOrderDetails, { isLoading: isPaymentLoading }] = useGetOrderDetailsMutation();
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const router = useRouter();
@@ -44,6 +45,8 @@ export default function Orders(): React.JSX.Element {
 
   // Load Razorpay script on component mount
   useEffect(() => {
+    console.log('Orders API Data:', data);
+
     const loadRazorpayScript = async () => {
       if (window.Razorpay) {
         setIsRazorpayLoaded(true);
@@ -171,10 +174,10 @@ export default function Orders(): React.JSX.Element {
         orderId: order.order_id,
         deviceType: order.device_type
       }).toString()}`);
-      router.push(`/orders/new-order/BK?${new URLSearchParams({
-        orderId: order.order_id,
-        deviceType: order.device_type
-      }).toString()}`);
+      // router.push(`/orders/new-order/BK?${new URLSearchParams({
+      //   orderId: order.order_id,
+      //   deviceType: order.device_type
+      // }).toString()}`);
     }if (order.device_type === 'AK Orders') {
     }
     else {
@@ -203,6 +206,7 @@ export default function Orders(): React.JSX.Element {
     {
       accessorKey: 'device_type',
       header: 'Device Type',
+      cell: ({ row }) => row.original.device_type || '-',
     },
     {
       accessorKey: 'order_date',
@@ -304,9 +308,12 @@ export default function Orders(): React.JSX.Element {
       </div>
       
       <DataTable
-        columns={columns}
-        data={data?.data?.sales_orders || []}
-      />
+  columns={columns}
+  data={data?.data?.sales_orders.map((order: any) => ({
+    ...order,
+    device_type: order.custom_order_types || '-', // Map custom_order_types to device_type
+  })) || []}
+/>
     </div>
   );
 }
@@ -319,7 +326,7 @@ export default function Orders(): React.JSX.Element {
 // import { useGetOrdersQuery, useGetOrderDetailsMutation } from '@/rtk-query/apis/orders';
 // import { Button } from '@/components/ui/button';
 // import { useRouter } from 'next/navigation';
-// import { toast } from 'react-toastify';
+// import { toast } from 'react-toastify';  
 // import Razorpay from 'razorpay';
 
 // declare global {
