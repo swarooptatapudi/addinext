@@ -47,7 +47,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
         setFieldValue('patient_name', `${newPatient.first_name} ${newPatient.last_name}`);
         setFieldValue('first_name', newPatient.first_name);
         setFieldValue('last_name', newPatient.last_name);
-        setFieldValue('date_of_birth', newPatient.date_of_birth);
+        setFieldValue('dob', newPatient.dob);
         setFieldValue('height', newPatient.height);
         setFieldValue('weight', newPatient.weight);
         setFieldValue('mobile_no', newPatient.mobile_no);
@@ -78,7 +78,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
                                 setOpen(false);
                                 setFieldValue('patient_name', patient?.patient_name || '');
                                 setFieldValue('weight', patient?.weight);
-                                setFieldValue('date_of_birth', patient?.date_of_birth || '');
+                                setFieldValue('dob', patient?.dob || '');
                                 setFieldValue('height', patient?.height || '');
                                 setFieldValue('email', patient?.email || '');
                                 setFieldValue('mobile_no', patient?.mobile_no || '');
@@ -86,7 +86,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
                                 setFieldValue('clinic_name', patient?.clinic_name || '');
                             }}
                         >
-                            {patient.patient_name}({patient.date_of_birth})
+                            {patient.patient_name}({patient.dob})
                         </div>
                     ))
                 ) : (
@@ -179,7 +179,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
 //                 setOpen(false);
 //                 setFieldValue('patient_name', patient?.patient_name || '');
 //                 setFieldValue('weight', patient?.weight);
-//                 setFieldValue('date_of_birth', patient?.date_of_birth || '');
+//                 setFieldValue('dob', patient?.dob || '');
 //                 setFieldValue('height', patient?.height || '');
 //                 setFieldValue('email', patient?.email || '');
 //                 setFieldValue('mobile_no', patient?.mobile_no || '');
@@ -188,7 +188,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
 //                 // setIsPatientSelected(true);
 //               }}
 //             >
-//               {patient.patient_name}({patient.date_of_birth})
+//               {patient.patient_name}({patient.dob})
 //             </div>
 //           ))
 //         ) : (
@@ -283,7 +283,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
 //                 setOpen(false);
 //                 setFieldValue('patient_name', patient?.patient_name || '');
 //                 setFieldValue('weight', patient?.weight);
-//                 setFieldValue('date_of_birth', patient?.date_of_birth || '');
+//                 setFieldValue('dob', patient?.dob || '');
 //                 setFieldValue('height', patient?.height || '');
 //                 setFieldValue('email', patient?.email || '');
 //                 setFieldValue('mobile_no', patient?.mobile_no || '');
@@ -291,7 +291,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
 //                 setIsPatientSelected(true);
 //               }}
 //             >
-//               {patient.patient_name}({patient.date_of_birth})
+//               {patient.patient_name}({patient.dob})
 //             </div>
 //           ))
 //         ) : (

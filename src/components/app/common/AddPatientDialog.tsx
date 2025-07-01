@@ -124,7 +124,6 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
     useEffect(() => {
         if (!open) {
             formik.resetForm();
-             
         }
     }, [open]);
 

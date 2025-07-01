@@ -627,15 +627,14 @@ const Step1 = ({
                   inVaild={shouldShowError('patient_name', true)}
                   error={errors.patient_name}
                 />
-        
-         <Input
+                 <Input
                   label="Date of Birth"
                   type="date"
-                  value={values.date_of_birth || ''}
+                  value={values.dob || ''}
                   onChange={handleChange('date_of_birth')}
                   required
                   inVaild={shouldShowError('date_of_birth', true)}
-                  error={errors.date_of_birth}
+                  error={errors.dob}
                   disabled
                 />
                  <Input
