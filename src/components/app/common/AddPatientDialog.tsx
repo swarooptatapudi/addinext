@@ -45,9 +45,27 @@ const validationSchema = Yup.object().shape({
         .min(FORMIK_ERRORS.MIN_2.VALUE, FORMIK_ERRORS.MIN_2.MESSAGE)
         .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
         .required(FORMIK_ERRORS.REQUIRED),
-    dob: Yup.date()
-        .required(FORMIK_ERRORS.REQUIRED)
-        .max(new Date(), 'Date of birth cannot be in the future'),
+        
+    dob: Yup.string()
+  .required(FORMIK_ERRORS.REQUIRED)
+  .transform((value) => {
+    if (!value) return value;
+    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (match) {
+      const [_, dd, mm, yyyy] = match;
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    return value;
+  })
+  .test('valid-date', 'Invalid date', value => {
+    if (!value) return true;
+    return !isNaN(Date.parse(value));
+  })
+  .test('not-future', 'Date cannot be in the future', value => {
+    if (!value) return true;
+    return new Date(value) <= new Date();
+  })
+,
     height: Yup.string()
         .required(FORMIK_ERRORS.REQUIRED)
         .matches(/^\d+(\.\d{1,2})?$/, {

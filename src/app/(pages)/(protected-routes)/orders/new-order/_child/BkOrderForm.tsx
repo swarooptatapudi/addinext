@@ -272,7 +272,6 @@ const SocketTypeDialog = ({
                   {data.description || ' '}
                 </p>
               </div>
-              
               {data.image && (
                 <div className="mt-4">
                   <Image 
@@ -630,10 +629,11 @@ const Step1 = ({
                  <Input
                   label="Date of Birth"
                   type="date"
-                  value={values.dob || ''}
-                  onChange={handleChange('date_of_birth')}
+                  name='dob'
+                  value={values.dob || 'date'}
+                  onChange={handleChange('dob')}
                   required
-                  inVaild={shouldShowError('date_of_birth', true)}
+                  inVaild={shouldShowError('dob', true)}
                   error={errors.dob}
                   disabled
                 />
@@ -686,10 +686,6 @@ const Step1 = ({
                   error={errors.gender}
                   disabled
                 />
-        
-               
-        
-               
               </div>
       
 
