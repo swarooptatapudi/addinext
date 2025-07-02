@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/rtk-query/store';
 import { Skeleton } from '@/components/ui/skeleton';
 
+
 export default function NewOrder(): React.JSX.Element {
   const { data, isLoading, isSuccess } = useGetProductsQuery('');
   const [currentDate, setCurrentDate] = useState('');
@@ -84,7 +85,6 @@ export default function NewOrder(): React.JSX.Element {
       </div>
     );
   }
-
   return (
     <div className="container px-4 py-8 max-w-screen-xl">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">

@@ -75,10 +75,11 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
                             key={patient.name}
                             className="p-2 cursor-pointer hover:bg-primary/10 text-xs border-b last:border-b-0"
                             onClick={() => {
+                                console.log('Patient picked:', patient);
                                 setOpen(false);
                                 setFieldValue('patient_name', patient?.patient_name || '');
                                 setFieldValue('weight', patient?.weight);
-                                setFieldValue('dob', patient?.dob || '');
+                                setFieldValue('dob', patient?.dob || patient?.date_of_birth || '');
                                 setFieldValue('height', patient?.height || '');
                                 setFieldValue('email', patient?.email || '');
                                 setFieldValue('mobile_no', patient?.mobile_no || '');
@@ -86,7 +87,8 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
                                 setFieldValue('clinic_name', patient?.clinic_name || '');
                             }}
                         >
-                            {patient.patient_name}({patient.dob})
+                            {patient.patient_name} ({patient.dob || patient.date_of_birth || ' '})
+
                         </div>
                     ))
                 ) : (
