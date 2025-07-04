@@ -394,6 +394,7 @@ const ModelDialog = ({
         description: 'Moulds Printed on FDM Printe',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould.png'
       },
+      
       'addieasemould-hr': {
         title: 'AddiEaseMould-HR',
         description: 'Heat Resistant Moulds Printed on FDM Printer',

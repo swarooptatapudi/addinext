@@ -47,10 +47,10 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
         setFieldValue('patient_name', `${newPatient.first_name} ${newPatient.last_name}`);
         setFieldValue('first_name', newPatient.first_name);
         setFieldValue('last_name', newPatient.last_name);
-        setFieldValue('dob', newPatient.dob);
+        setFieldValue('date_of_birth', newPatient.date_of_birth);
         setFieldValue('height', newPatient.height);
         setFieldValue('weight', newPatient.weight);
-        setFieldValue('mobile_no', newPatient.mobile_no);
+        setFieldValue('mobile_no', newPatient.mobile_no );
         setFieldValue('email', newPatient.email);
         setFieldValue('gender', newPatient.gender);
         setFieldValue('clinic_name', newPatient.clinic_name);
@@ -75,19 +75,20 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
                             key={patient.name}
                             className="p-2 cursor-pointer hover:bg-primary/10 text-xs border-b last:border-b-0"
                             onClick={() => {
-                                console.log('Patient picked:', patient);
+                               
                                 setOpen(false);
                                 setFieldValue('patient_name', patient?.patient_name || '');
                                 setFieldValue('weight', patient?.weight);
-                                setFieldValue('dob', patient?.dob || patient?.date_of_birth || '');
+                                setFieldValue('date_of_birth', patient?.date_of_birth || patient?.date_of_birth || '');
                                 setFieldValue('height', patient?.height || '');
                                 setFieldValue('email', patient?.email || '');
-                                setFieldValue('mobile_no', patient?.mobile_no || '');
+                                setFieldValue('mobile_no',  patient?.mobile_no ||'');
                                 setFieldValue('gender', patient?.gender || '');
                                 setFieldValue('clinic_name', patient?.clinic_name || '');
+                                 console.log('Patient picked:', patient);
                             }}
                         >
-                            {patient.patient_name} ({patient.dob || patient.date_of_birth || ' '})
+                            {patient.patient_name} ({patient.date_of_birth || patient.date_of_birth || ' '})
 
                         </div>
                     ))
@@ -181,7 +182,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
 //                 setOpen(false);
 //                 setFieldValue('patient_name', patient?.patient_name || '');
 //                 setFieldValue('weight', patient?.weight);
-//                 setFieldValue('dob', patient?.dob || '');
+//                 setFieldValue('date_of_birth', patient?.date_of_birth || '');
 //                 setFieldValue('height', patient?.height || '');
 //                 setFieldValue('email', patient?.email || '');
 //                 setFieldValue('mobile_no', patient?.mobile_no || '');
@@ -190,7 +191,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
 //                 // setIsPatientSelected(true);
 //               }}
 //             >
-//               {patient.patient_name}({patient.dob})
+//               {patient.patient_name}({patient.date_of_birth})
 //             </div>
 //           ))
 //         ) : (
@@ -285,7 +286,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
 //                 setOpen(false);
 //                 setFieldValue('patient_name', patient?.patient_name || '');
 //                 setFieldValue('weight', patient?.weight);
-//                 setFieldValue('dob', patient?.dob || '');
+//                 setFieldValue('date_of_birth', patient?.date_of_birth || '');
 //                 setFieldValue('height', patient?.height || '');
 //                 setFieldValue('email', patient?.email || '');
 //                 setFieldValue('mobile_no', patient?.mobile_no || '');
@@ -293,7 +294,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
 //                 setIsPatientSelected(true);
 //               }}
 //             >
-//               {patient.patient_name}({patient.dob})
+//               {patient.patient_name}({patient.date_of_birth})
 //             </div>
 //           ))
 //         ) : (

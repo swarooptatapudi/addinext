@@ -349,12 +349,7 @@ const ModelDialog = ({
         description: 'Moulds Printed on FDM Printe',
         image: '/assets/order-forms/below-elbow/AddiEaseMouldforAEBE.png'
       },
-      'addieasemould-hr': {
-        title: 'AddiEaseMould-HR',
-        description: 'Heat Resistant Moulds Printed on FDM Printer',
-        image: '/assets/order-forms/below-elbow/AddiEaseMouldHRforAEBG.png'
-
-      },
+      
     };
 
     // Try exact match first

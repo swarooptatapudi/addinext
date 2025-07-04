@@ -21,7 +21,7 @@ interface AddPatientDialogProps {
 interface PatientFormValues {
     first_name: string;
     last_name: string;
-    dob: string;
+    date_of_birth: string;
     height: string;
     weight: string;
     mobile_no: string;
@@ -45,7 +45,7 @@ const validationSchema = Yup.object().shape({
         .min(FORMIK_ERRORS.MIN_2.VALUE, FORMIK_ERRORS.MIN_2.MESSAGE)
         .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
         .required(FORMIK_ERRORS.REQUIRED),
-    dob: Yup.date()
+    date_of_birth: Yup.date()
      .required(FORMIK_ERRORS.REQUIRED)
  .max(new Date(), 'Date of birth cannot be in the future'),
 
@@ -100,7 +100,7 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
         initialValues: {
             first_name: '',
             last_name: '',
-            dob: '',
+            date_of_birth: '',
             height: '',
             weight: '',
             mobile_no: '',
@@ -165,12 +165,12 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
                         <Input
                             label="Date of Birth"
                             type="date"
-                            name="dob"
-                            value={formik.values.dob}
+                            name="date_of_birth"
+                            value={formik.values.date_of_birth}
                             onChange={formik.handleChange}
                             required
-                            inVaild={formik.touched.dob && !!formik.errors.dob}
-                            error={formik.touched.dob ? formik.errors.dob : undefined}
+                            inVaild={formik.touched.date_of_birth && !!formik.errors.date_of_birth}
+                            error={formik.touched.date_of_birth ? formik.errors.date_of_birth : undefined}
                             onBlur={formik.handleBlur}
                             max={new Date().toISOString().split('T')[0]}
                         />
@@ -272,7 +272,7 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
 // interface PatientFormValues {
 //     first_name: string;
 //     last_name: string;
-//     dob: string;
+//     date_of_birth: string;
 //     height: string;
 //     weight: string;
 //     mobile_no: string;
@@ -296,7 +296,7 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
 //         .min(FORMIK_ERRORS.MIN_2.VALUE, FORMIK_ERRORS.MIN_2.MESSAGE)
 //         .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
 //         .required(FORMIK_ERRORS.REQUIRED),
-//     dob: Yup.date()
+//     date_of_birth: Yup.date()
 //         .required(FORMIK_ERRORS.REQUIRED)
 //         .max(new Date(), 'Date of birth cannot be in the future'),
 //     height: Yup.string()
@@ -348,7 +348,7 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
 //         initialValues: {
 //             first_name: '',
 //             last_name: '',
-//             dob: '',
+//             date_of_birth: '',
 //             height: '',
 //             weight: '',
 //             mobile_no: '',
@@ -411,12 +411,12 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
 //                         <Input
 //                             label="Date of Birth"
 //                             type="date"
-//                             name="dob"
-//                             value={formik.values.dob}
+//                             name="date_of_birth"
+//                             value={formik.values.date_of_birth}
 //                             onChange={formik.handleChange}
 //                             required
-//                             inVaild={formik.touched.dob && !!formik.errors.dob}
-//                             error={formik.touched.dob ? formik.errors.dob : undefined}
+//                             inVaild={formik.touched.date_of_birth && !!formik.errors.date_of_birth}
+//                             error={formik.touched.date_of_birth ? formik.errors.date_of_birth : undefined}
 //                             onBlur={formik.handleBlur}
 //                             max={new Date().toISOString().split('T')[0]}
 //                         />

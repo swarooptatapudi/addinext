@@ -110,7 +110,7 @@ export const ordersApi = createApi({
     createOrder: builder.mutation({
       query: (data) => ({
         url: '/method/addiwise.apis.order_types.bk_order.create_bk_order',
-        method: 'POST',
+        method: 'POST',  
         body: data
       }),
       transformResponse: (response: SalesOrdersResponse) => response
