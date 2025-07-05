@@ -85,7 +85,6 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
                                 setFieldValue('mobile_no',  patient?.mobile_no ||'');
                                 setFieldValue('gender', patient?.gender || '');
                                 setFieldValue('clinic_name', patient?.clinic_name || '');
-                                 console.log('Patient picked:', patient);
                             }}
                         >
                             {patient.patient_name} ({patient.date_of_birth || patient.date_of_birth || ' '})

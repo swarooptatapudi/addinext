@@ -46,7 +46,6 @@ export const Step5 = ({
   const isDesignSelf = values.Design_by === 'Self';
   const isPrintSelf = values.Print_by === 'Self';
 
-  console.log('FORM_OPTIONS', FORM_OPTIONS);
 
   // Debounced coupon validation
   const debouncedCouponValidation = useCallback(() => {
@@ -220,8 +219,6 @@ export const Step5 = ({
 
     try {
       const response = await getBKEstimate(estimatePayload).unwrap();
-      console.log('Estimate Response:', response);
-      console.log('Estimate Response:', response.data); // Log response
 
       setEstimateData({
         ...estimatePayload,
@@ -256,12 +253,10 @@ export const Step5 = ({
 
     setIsValidatingCoupon(true);
     const payload = { coupon_code: couponCode }; // Explicit payload for clarity
-    console.log('Coupon Validation Payload:', payload); // Log payload
     try {
       const response = await validateCoupon({ coupon_code: couponCode }).unwrap();
-      setCouponData(response.data);
-      console.log('Coupon Data:', response);
-      console.log('Coupon Data:', response.data);
+      console.log('Coupon Validation Response:', response);
+      setCouponData(response.message);
       // toast.success(response.message);
     } catch (error: any) {
       setCouponData(null);

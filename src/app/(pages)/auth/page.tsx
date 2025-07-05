@@ -13,7 +13,6 @@ export default function SignIn(): React.JSX.Element {
    
   useEffect(() => {
     if (isSuccess) {
-      console.log("Redirecting to dashboard");
       router.replace('/dashboard'); 
       window.location.reload(); 
       toast.success('Login successful');

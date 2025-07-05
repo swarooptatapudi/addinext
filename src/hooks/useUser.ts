@@ -11,12 +11,6 @@ const useUser = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
   const dispatch = useDispatch();
 
-  
-
-
-  console.log('useUser', user, isLoading, isSuccess);
-
-
   useEffect(() => {
   if (!user) {
     getUser('');
