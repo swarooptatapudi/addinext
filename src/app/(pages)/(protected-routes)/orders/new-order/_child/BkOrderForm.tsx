@@ -324,9 +324,6 @@ const DesignVariationDialog = ({
         image: '/assets/order-forms/bk-order/foot-type/AX.png'
       },
       
-      
-    
-      
     };
 
     // Try exact match first
@@ -425,7 +422,12 @@ const ModelDialog = ({
         image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
       },
      
-      addieasemould: {
+      addieasesls: {
+        title: 'AddiEaseSLS',
+        description: 'Standard  printed on AddiPrint',
+        image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
+      },
+       addieasemould: {
         title: 'AddiEaseMould',
         description: 'Standard Moulds printed on AddiPrint',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould.png'
@@ -710,16 +712,16 @@ const Step1 = ({
       </div>
       <div className="grid grid-cols-3 gap-4">
         <SelectBox
-          options={socketTypeOptions}
-          label="Socket Type"
-          value={values.socket_typecoupon_code || ''}
-          onValueChange={(value) => {
-            handleChange('socket_type')(value);
-          }}
-          inVaild={shouldShowError('socket_type', true)}
-          error={errors.socket_type}
-          required
-        />
+                  options={socketTypeOptions}
+                  label="Socket Type"
+                  value={values.socket_type}
+                  onValueChange={(value) => {
+                    handleChange('socket_type')(value);
+                  }}
+                  inVaild={shouldShowError('socket_type', true)}
+                  error={errors.socket_type}
+                  required
+                />
 
         <div className="flex flex-col">
           <label className="block text-xs font-medium text-black mb-1">
@@ -1255,7 +1257,7 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
       <div className="grid grid-cols-3 gap-4">
         <div className="mb-6">
           <p className="text-xs">
-            {' '}
+            
             <span className="text-sm"> Global Volume Reduction </span>
             <br /> (please specify the percentage reduction in Volume without reducing the length of
             the socket)
@@ -1410,6 +1412,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
 
   const OnSubmit = async (values: any) => {
     setFormValues(values);
+    
     const payload = {
       item_type: 'BK',
       socket_type: values.socket_type,
@@ -1418,8 +1421,9 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       model_name: values.model_name,
       stump_length: values.stump_length,
       weight: values.weight
-    };
+    };  
     const itemCode = await getItemCodeByValues(payload);
+   
     setSelectedItem(itemCode);
 
     // Submit the final form
@@ -1434,7 +1438,10 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   };
 
   const getItemCodeByValues = async (payload: any) => {
+    console.log(" Payload for item code:", payload); 
     const res: any = await getItem(payload);
+    console.log(" Generated item code:", res?.data?.item_code);
+    
     return res?.data?.item_code;
   };
 
