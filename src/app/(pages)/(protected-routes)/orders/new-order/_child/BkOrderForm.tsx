@@ -356,7 +356,7 @@ const DesignVariationDialog = ({
             Choose your preferred design variation from the options below
           </DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
           {options.map((option) => {
             const variationText = option.label || option.value;
             const content = getDynamicContent(variationText);
@@ -462,7 +462,7 @@ const ModelDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-[800px] w-full overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="text-primary">Select Design Variation</DialogTitle>
           <DialogDescription>
@@ -470,7 +470,8 @@ const ModelDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-2 justify-items-center ">
+
           {options.map((option) => {
             const variationText = option.label || option.value;
             const content = getDynamicContent(variationText);
@@ -478,7 +479,7 @@ const ModelDialog = ({
             return (
               <div
                 key={option.value}
-                className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="border rounded-lg p-2 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => {
                   onSelect(option.value);
                   onOpenChange(false);
@@ -486,7 +487,7 @@ const ModelDialog = ({
               >
                 <h4 className="font-sm text-lg">{content.title}</h4>
                 <p className="text-[12px] text-gray-700 mt-1">{content.description}</p>
-                <div className="mt-1">
+                <div className="mt-2">
                   <Image
                     src={content.image}
                     alt={content.title}
@@ -1439,7 +1440,13 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const getItemCodeByValues = async (payload: any) => {
     console.log(" Payload for item code:", payload); 
     const res: any = await getItem(payload);
-    console.log(" Generated item code:", res?.data?.item_code);
+  //    const itemCode = res?.data?.item_code;
+
+  //   if (itemCode) {
+  //   console.log(" Generated item code:", itemCode);
+  // } else {
+  //   console.warn(" Item code not found for given payload.");
+  // }
     
     return res?.data?.item_code;
   };
@@ -1580,6 +1587,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
           isValid
         }) => (
           <div className="flex flex-col gap-6">
+            
             <WatchFieldReset />
             {/* Socket Type Dialog */}
             <SocketTypeDialog
