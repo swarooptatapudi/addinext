@@ -1064,7 +1064,7 @@ const Step2 = ({
               { label: 'Direct Body', value: 'Direct_Body ' },
               { label: 'With Liner', value: 'With_Liner' }
             ]}
-            label="Direct Body"
+            label="Scan Type"
             required={true}
             value={values.direct_body || ''}
             onValueChange={(value) => {
@@ -1367,6 +1367,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 })
               ) || initialValues.socket_design_details
           };
+          // console.log('response:', response);
           setFormValues(transformedData);
           if (response.data.item_code) {
             setSelectedItem(response.data.item_code);
@@ -1515,6 +1516,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
           stump_length: values.stump_length,
           weight: values.weight
         };
+        console.log('Item Payload:', itemPayload);
         const itemCode = await getItemCodeByValues(itemPayload);
         setSelectedItem(itemCode);
         setShowStep1Confirmation(true);
@@ -1542,11 +1544,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   useEffect(() => {}, [formValues]);
 
   useEffect(() => {
-    console.log('Form Values:', formValues);
-    console.log('Is Initial Data Loaded:', isInitialDataLoaded);
-    // console.log('Validation Errors:', errors);
-    console.log('isOrderCreating', isOrderCreating);
-    console.log('orderId && !isInitialDataLoaded', orderId, isInitialDataLoaded);
   }, [formValues, isInitialDataLoaded]);
 
   if (orderId && !orderDetails?.data) {
