@@ -256,6 +256,12 @@ export const Step5 = ({
         return;
       }
 
+      if (isDesignSelf && !isPrintSelf && availableCoins < requiredCoins) {
+        setShowInsufficientCoinsModal(true);
+        setIsEstimating(false);
+        return;
+      }
+
       setEstimateData({
         ...estimatePayload,
         apiResponse: response.data
@@ -490,11 +496,11 @@ export const Step5 = ({
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-700">Available Addicoins</span>
-                  <span className="text-lg font-semibold text-gray-700">{availableAddicoins}</span>
+                  <span className="text-lg font-semibold text-gray-700">{availableAddicoins || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-700">Design will use</span>
-                  <span className="text-lg font-semibold text-gray-700">{requiredAddicoins}</span>
+                  <span className="text-lg font-semibold text-gray-700">{requiredAddicoins || 0}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-3">
                   <div className="flex justify-between items-center">
@@ -563,7 +569,9 @@ export const Step5 = ({
                           <span className="text-gray-700">{requiredAddicoins}</span>
                         </div>
                       </li>
-                      <li className="flex items-start gap-2">
+
+                      {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') - parseFloat(requiredAddicoins?.replace(/,/g, '') || '0')>0 ?(
+                        <li className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
                         <div className="flex justify-between w-full">
                           <span className="font-medium text-gray-700">Balance after design</span>
@@ -572,6 +580,9 @@ export const Step5 = ({
                           </span>
                         </div>
                       </li>
+                      ):(
+                        ""
+                      )}
                     </ul>
                   </CardContent>
                 </Card>

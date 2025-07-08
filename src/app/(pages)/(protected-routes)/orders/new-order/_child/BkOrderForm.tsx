@@ -1432,7 +1432,9 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       item_type: 'BK',
       customer: user?.customer_id,
       order_details: values,
-      item_code: itemCode
+      item_code: itemCode,
+      // @ts-ignore
+      addicoins: values.Design_by === "Self" ? 10 : 0
     };
 
     console.log("Create Order orderPayload:'", orderPayload)
