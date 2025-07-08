@@ -249,6 +249,12 @@ export const Step5 = ({
       const availableCoins = parseFloat(response.data.customer_available_coins.replace(/,/g, ''));
       // @ts-ignore
       const requiredCoins = parseFloat(response.data.design_coin_use.replace(/,/g, ''));
+      console.log('Available Coins , Required Coins:', availableCoins, requiredCoins);
+
+      // @ts-ignore
+      setAvailableAddicoins(response.data.customer_available_coins);
+      // @ts-ignore
+      setRequiredAddicoins(response.data.design_coin_use);
 
       if (isDesignSelf && isPrintSelf && availableCoins < requiredCoins) {
         setShowInsufficientCoinsModal(true);
@@ -270,10 +276,6 @@ export const Step5 = ({
       setFieldValue('gst_18', response.data.gst_18 || '0.00');
       setFieldValue('item_discount', response.data.item_discount || '0.00');
       setFieldValue('additional_discount', response.data.additional_discount || '0.00');
-      // @ts-ignore
-      setAvailableAddicoins(response.data.customer_available_coins);
-      // @ts-ignore
-      setRequiredAddicoins(response.data.design_coin_use);
 
       setShowEstimateCard(true);
       setIsEstimateStale(false);
