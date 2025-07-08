@@ -272,6 +272,9 @@ export const Step5 = ({
       setShowEstimateCard(true);
       setIsEstimateStale(false);
       setIsEstimateAccepted(false);
+      if(isDesignSelf && isPrintSelf){
+      setEstimateConform(true);
+      }
     } catch (error: any) {
       toast.error(error.data?.message || 'Failed to get estimate');
       console.error('Estimate error:', error);
@@ -335,7 +338,7 @@ export const Step5 = ({
               <SelectBox
                 options={FORM_OPTIONS.design_by || []}
                 value={values.Design_by || ''}
-                onValueChange={(value) => setFieldValue('Design_by', value)}
+                onValueChange={(value) => { setFieldValue('Design_by', value); setEstimateConform(false); }}
                 inVaild={!!errors.Design_by && !!touched.Design_by}
                 required
               />
@@ -353,7 +356,7 @@ export const Step5 = ({
               <SelectBox
                 options={FORM_OPTIONS.print_by || []}
                 value={values.Print_by || ''}
-                onValueChange={(value) => setFieldValue('Print_by', value)}
+                onValueChange={(value) => { setFieldValue('Print_by', value); setEstimateConform(false); }}
                 inVaild={!!errors.Print_by && !!touched.Print_by}
                 required
               />
@@ -486,7 +489,7 @@ export const Step5 = ({
             <div className="space-y-4">
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-700">Current Addicoins</span>
+                  <span className="text-sm font-medium text-gray-700">Available Addicoins</span>
                   <span className="text-lg font-semibold text-gray-700">{availableAddicoins}</span>
                 </div>
                 <div className="flex justify-between items-center">

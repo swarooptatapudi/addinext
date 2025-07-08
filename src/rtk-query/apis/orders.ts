@@ -113,7 +113,10 @@ export const ordersApi = createApi({
         method: 'POST',  
         body: data
       }),
-      transformResponse: (response: SalesOrdersResponse) => response
+      transformResponse: (response: SalesOrdersResponse) => {
+        console.log("create_bk_order", response);
+        return response;
+      }
     }),
     getOrders: builder.query({
       query: () => ({

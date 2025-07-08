@@ -1313,7 +1313,7 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
 
 export default function BkOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
-  const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
+  const [createOrder, { isLoading: isOrderCreating }] = useCreateOrderMutation();
   const [getOrderDetails, { data: orderDetails, isLoading: isOrderDetailsLoading }] =
     useGetOrderDetailIdsMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
@@ -1434,12 +1434,28 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       order_details: values,
       item_code: itemCode
     };
-    createOrder(orderPayload);
-    
+
+    console.log("Create Order orderPayload:'", orderPayload)
+
+    try {
+    const res = await createOrder(orderPayload).unwrap();
+      // @ts-ignore
+    if (res?.message?.status === "success") {
+      toast.success("Order created successfully");
+      setSelectedItem('');
+      setFormValues(initialValues);
+      router.push("/orders");
+    } else {
+      // @ts-ignore
+      toast.error(` ${res?.message?.message || "Order creation failed"}`);
+    }
+  } catch (err) {
+    console.error("Mutation error:", err);
+    toast.error("Server error. Please try again.");
+  }
   };
 
   const getItemCodeByValues = async (payload: any) => {
-    console.log(" Payload for item code:", payload); 
     const res: any = await getItem(payload);
   //    const itemCode = res?.data?.item_code;
 
@@ -1452,15 +1468,23 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     return res?.data?.item_code;
   };
 
-  useEffect(() => {
-    if (isSuccess) {
-      
-      toast.success('Order created successfully');
-      setSelectedItem('');
-      setFormValues(initialValues);
-      router.push('/orders');
-    }
-  }, [isOrderCreating, isSuccess]);
+//  useEffect(() => {
+//   if (isSuccess && data) {
+//     if (data.message?.status === 'success') {
+//       toast.success(data.message.message || 'Order created successfully');
+//       setSelectedItem('');
+//       setFormValues(initialValues);
+//       router.push('/orders');
+//     } else {
+//       const errorMessage = data.message?.message || 'Order creation failed due to an unknown error';
+//       toast.error(errorMessage);
+//     }
+//   } else if (error) {
+//     // @ts-ignore
+//     const errorMessage = error?.message || 'Failed to connect to the server';
+//     toast.error(errorMessage);
+//   }
+// }, [isOrderCreating, isSuccess, data, error]);
 
   const validateCurrentStep = async (values: any) => {
     try {

@@ -92,7 +92,15 @@ export default function Orders(): React.JSX.Element {
         currency: 'INR',
         name: 'Addiwise Company',
         description: `Payment for Order ${response.data.so_order_id || order.order_id}`,
-        handler: () => toast.success('Payment successful!'),
+        handler: function (response: any) {
+            console.log('Payment Success:', response);
+            // For example:
+            // response.razorpay_payment_id
+            // response.razorpay_order_id
+            // response.razorpay_signature
+            toast.success('Payment successful!');
+            // You should send this to your backend to verify the payment signature.
+          },
         prefill: {
           name: response.data.customer || '',
           email: response.data.email || '',
