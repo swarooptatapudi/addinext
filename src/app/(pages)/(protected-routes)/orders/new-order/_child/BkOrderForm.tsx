@@ -38,6 +38,25 @@ import { BK_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/bkForm/Step5Finishing';
 import { PatientPortalDialog } from '@/components/app/common/ResidualLimbForm';
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+export type Order = {
+  order_id: string;
+  customer: string;
+  clinic_name: string | null;
+  patient_name: string;
+  device_type: string;
+  order_date: string;
+  delivery_date: string;
+  order_value: number;
+  status: string;
+  symbol?: string;
+};
+
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
     .min(FORMIK_ERRORS.MIN_2.VALUE, FORMIK_ERRORS.MIN_2.MESSAGE)
@@ -154,8 +173,59 @@ const step2Validation = Yup.object()
     direct_body: Yup.string().required('Scan condition is required'),
     foot_Amputation: Yup.string().nullable(),
     liner_thickness: Yup.string().nullable(),
-    liner_type: Yup.string().nullable()
-  })
+    liner_type: Yup.string().nullable(),
+    leftFootFile: Yup.mixed().nullable(), // Allow File or null
+    rightFootFile: Yup.mixed().nullable() // Allow File or null
+  }).test(
+    'either-scan-or-link',
+    'Either upload scans or provide a photo link is required',
+    function (value) {
+      console.log('Validation Values:', value);
+      const { foot_Amputation, upload_link, leftFootFile, rightFootFile } = value as {
+        foot_Amputation: string | null;
+        upload_link: string | null;
+        leftFootFile: File | null;
+        rightFootFile: File | null;
+      };
+
+      console.log('Validation Values:', { foot_Amputation, upload_link, leftFootFile, rightFootFile });
+
+      // If upload_link is provided, no need for files
+      if (upload_link) {
+        return true;
+      }
+
+      // If foot_Amputation is not selected, require upload_link
+      if (!foot_Amputation) {
+        return this.createError({
+          path: 'upload_link',
+          message: 'Either upload scans or provide a photo link is required'
+        });
+      }
+
+      // If foot_Amputation is selected, require appropriate files
+      if (foot_Amputation === 'Left_Foot' && !leftFootFile) {
+        return this.createError({
+          path: 'leftFootFile',
+          message: 'file for Left Foot is required'
+        });
+      }
+      if (foot_Amputation === 'Right_Foot' && !rightFootFile) {
+        return this.createError({
+          path: 'rightFootFile',
+          message: 'file for Right Foot is required'
+        });
+      }
+      if (foot_Amputation === 'Both' && (!leftFootFile || !rightFootFile)) {
+        return this.createError({
+          path: !leftFootFile ? 'leftFootFile' : 'rightFootFile',
+          message: 'STL files for both feet are required'
+        });
+      }
+
+      return true;
+    }
+  )
   .test(
     'validate-liner-fields',
     'Liner fields are required when "With Liner" is selected',
@@ -201,6 +271,7 @@ const step2Validation = Yup.object()
       return true;
     }
   );
+
 const step4Validation = Yup.object().shape({
   global_volume_reduction: Yup.string()
     .nullable()
@@ -422,9 +493,9 @@ const ModelDialog = ({
         image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
       },
      
-      addieasesls: {
-        title: 'AddiEaseSLS',
-        description: 'Standard  printed on AddiPrint',
+      addieasel: {
+        title: 'AddiEaseL',
+        description: 'Sockets printed on SLS',
         image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
       },
        addieasemould: {
@@ -474,6 +545,7 @@ const ModelDialog = ({
 
           {options.map((option) => {
             const variationText = option.label || option.value;
+            console.log('variationText', variationText);
             const content = getDynamicContent(variationText);
 
             return (
@@ -1134,10 +1206,25 @@ const Step2 = ({
                   { value: 'Both', label: 'Both' }
                 ]}
                 value={values.foot_Amputation || ''}
-                onValueChange={handleChange('foot_Amputation')}
-                className={showEitherOrError ? 'border-red-500' : ''}
+                // onValueChange={handleChange('foot_Amputation')}
+                className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''}`}
                 // inVaild={shouldShowError('foot_Amputation') && !values.upload_link}
                 // error={errors.foot_Amputation}
+                onValueChange={(value) => {
+                  handleChange('foot_Amputation')(value);
+                  if (value) {
+                    setErrors({
+                      ...errors,
+                      upload_link: undefined,
+                      leftFootFile: undefined,
+                      rightFootFile: undefined
+                    });
+                    setFieldValue('leftFootFile', null);
+                    setFieldValue('rightFootFile', null);
+                  }
+                }}
+                inVaild={shouldShowError('upload_link')}
+                error={errors.upload_link}
               />
             </div>
           </div>
@@ -1147,18 +1234,41 @@ const Step2 = ({
             <StlFilePicker
               label="Upload STL file (left foot)"
               buttonText="Left Foot"
-              onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+              onFileSelect={(file) => {
+                setFieldValue('leftFootFile', file);
+                console.log('Left Foot STL selected:', file?.name);
+                if (file && errors.leftFootFile) {
+                  setErrors({ ...errors, leftFootFile: undefined, upload_link: undefined });
+                }
+              }}
+              // inVaild={shouldShowError('leftFootFile')}
+              // error={errors.leftFootFile}
             />
+            {shouldShowError('leftFootFile') && errors.leftFootFile && (
+              <span className="text-red-500 text-xs">{errors.leftFootFile}</span>
+            )}
+
           </div>
         )}
 
         {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
           <div className="w-fit ">
             <StlFilePicker
-              label="Upload STL file (Rgiht foot)"
+              label="Upload STL file (Right foot)"
               buttonText="Right Foot"
-              onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+              onFileSelect={(file) => {
+                setFieldValue('rightFootFile', file);
+                console.log('Right Foot STL selected:', file?.name);
+                if (file && errors.rightFootFile) {
+                  setErrors({ ...errors, rightFootFile: undefined, upload_link: undefined });
+                }
+              }}
+              // error={errors.rightFootFile}
+              // inValid={shouldShowError('rightFootFile')}
             />
+            {shouldShowError('rightFootFile') && errors.rightFootFile && (
+              <span className="text-red-500 text-xs">{errors.rightFootFile}</span>
+            )}
           </div>
         )}
       </div>
@@ -1200,19 +1310,32 @@ const Step2 = ({
             className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''}`}
             // className="mt-3 min-w-max ml-0 w-[410px]"
             value={values.upload_link || ''}
-            onChange={handleChange('upload_link')}
-            inVaild={shouldShowError('upload_link', false)}
-            // error={showEitherOrError ? 'Either upload scans or provide a photo link is required' : errors.images_link}
-            // inVaild={shouldShowError('upload_link')}
+            onChange={(value) => {
+              handleChange('upload_link')(value);
+              // Clear file-related errors if upload_link is provided
+              if (value && (errors.leftFootFile || errors.rightFootFile || errors.upload_link)) {
+                setErrors({
+                  ...errors,
+                  upload_link: undefined,
+                  leftFootFile: undefined,
+                  rightFootFile: undefined
+                });
+                setFieldValue('leftFootFile', null);
+                setFieldValue('rightFootFile', null);
+                setFieldValue('foot_Amputation', '');
+              }
+            }}
+            inVaild={shouldShowError('upload_link')}
             error={errors.upload_link}
           />
         </div>
-        {/* {showEitherOrError && (
-        <div className="text-red-500 text-sm mt-1">
-          Either upload scans or provide a photo link is required
-        </div>
-      )} */}
+        
       </div>
+      {showEitherOrError && (
+        <div className="text-red-500 text-[12px] mt-1">
+          <span>Either Upload scans or Upload Link with Photos is required</span>
+        </div>
+      )}
     </div>
   );
 };
@@ -1339,6 +1462,11 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const orderId = searchParams.get('orderId');
   const deviceTypeId = searchParams.get('deviceType');
 
+  // Add these state variables to your component
+const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
+const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
   useEffect(() => {
     if (orderId && deviceTypeId) {
       getOrderDetails({
@@ -1390,6 +1518,35 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     }
   }, [orderDetails]);
 
+  // Add this useEffect to load Razorpay script
+useEffect(() => {
+  const loadRazorpayScript = async () => {
+    if (window.Razorpay) {
+      setIsRazorpayLoaded(true);
+      return;
+    }
+
+    try {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+
+      script.onload = () => setIsRazorpayLoaded(true);
+      script.onerror = () => {
+        setIsRazorpayLoaded(false);
+        toast.error('Failed to load payment gateway. Please refresh the page.');
+      };
+
+      document.body.appendChild(script);
+    } catch (err) {
+      setIsRazorpayLoaded(false);
+    }
+  };
+
+  loadRazorpayScript();
+}, []);
+
+
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
     if (data) {
@@ -1400,7 +1557,123 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   
   }, [data, isFormOptionsLoading]);
 
+// Main function for Pay & Place Order
+const handlePayAndPlaceOrder = async (values: any) => {
+  if (!razorpayKey || !isRazorpayLoaded) {
+    toast.error('Payment gateway is not available. Please try again.');
+    return;
+  }
 
+  setIsPaymentProcessing(true);
+  setFormValues(values);
+
+  try {
+    // Prepare the order data (same as "Order Now, Pay Later")
+    const payload = {
+      item_type: 'BK',
+      socket_type: values.socket_type,
+      design_variation: values.design_variation,
+      activity_level: values.activity_level,
+      model_name: values.model_name,
+      stump_length: values.stump_length,
+      weight: values.weight
+    };
+
+    const itemCode = await getItemCodeByValues(payload);
+    setSelectedItem(itemCode);
+
+    // Create order payload
+    const orderPayload = {
+      item_type: 'BK',
+      customer: user?.customer_id,
+      order_details: values,
+      item_code: itemCode,
+      addicoins: values.Design_by === "Self" ? 10 : 0
+    };
+
+    // You'll need to create an API endpoint that calculates order amount
+    // This should return the order amount for payment
+    const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
+    
+    if (orderAmountResponse?.status !== "success") {
+      throw new Error(orderAmountResponse?.message || "Failed to calculate order amount");
+    }
+
+    const orderAmount = orderAmountResponse.data.order_amount;
+    const amountInPaise = Math.round(orderAmount * 100);
+
+    // Configure Razorpay options
+    const options = {
+      key: razorpayKey,
+      amount: amountInPaise.toString(),
+      currency: 'INR',
+      name: 'Addiwise Company',
+      description: `Payment for BK Order`,
+      handler: async function (response: any) {
+        console.log('Payment Success:', response);
+        
+        try {
+          // After successful payment, create the order with payment details
+          const finalOrderPayload = {
+            ...orderPayload,
+            payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            payment_status: 'paid'
+          };
+
+          const orderResponse = await createOrder(finalOrderPayload).unwrap();
+          
+          if (orderResponse?.message?.status === "success") {
+            toast.success("Payment successful! Order created successfully.");
+            setSelectedItem('');
+            setFormValues(initialValues);
+            setIsPaymentProcessing(false);
+            router.push("/orders");
+          } else {
+            throw new Error(orderResponse?.message?.message || "Order creation failed");
+          }
+          
+        } catch (orderError) {
+          console.error("Order creation error:", orderError);
+          toast.error("Payment successful but order creation failed. Please contact support with payment ID: " + response.razorpay_payment_id);
+          setIsPaymentProcessing(false);
+        }
+      },
+      // prefill: {
+      //   name: user?.name || '',
+      //   email: user?.email || '',
+      //   contact: user?.mobile || '',
+      // },
+      // notes: {
+      //   item_type: 'BK',
+      //   customer_id: user?.customer_id,
+      // },
+      theme: { color: '#3399cc' },
+      modal: {
+        ondismiss: function() {
+          setIsPaymentProcessing(false);
+          toast.info("Payment cancelled");
+        }
+      }
+    };
+
+    const rzp = new window.Razorpay(options);
+    
+    rzp.on('payment.failed', function (response: any) {
+      console.error('Payment failed:', response);
+      setIsPaymentProcessing(false);
+      toast.error(`Payment failed: ${response.error.description}`);
+    });
+
+    rzp.open();
+
+  } catch (error) {
+    console.error("Payment preparation error:", error);
+    setIsPaymentProcessing(false);
+    toast.error("Failed to prepare payment. Please try again.");
+  }
+};
 
   const handleConfirmOrder = () => {
     const payload: any = {};
@@ -1716,6 +1989,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 errors={errors}
                 touched={touched}
                 setFieldValue={setFieldValue}
+                setErrors={setErrors} // Add this line
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
               />
@@ -1786,14 +2060,23 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                     Next
                   </Button>
                 ) : (
+                  <div className='flex gap-2.5'>
+                    <Button
+                    className="shadow-2xl"
+                    onClick={() => handlePayAndPlaceOrder(formValues)}
+                    disabled={!estimateConform || isOrderCreating || isPaymentProcessing || !isRazorpayLoaded}
+                  >
+                    {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
+                  </Button>
                   <Button
                     className="shadow-2xl"
                     onClick={() => handleSubmit()}
                     type="submit"
-                    disabled={!estimateConform || isOrderCreating}
+                    disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
                   >
-                    Submit
+                    Order Now, Pay Later
                   </Button>
+                  </div>
                 )}
               </div>
             </div>

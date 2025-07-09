@@ -33,7 +33,9 @@ export const BK_FORM_INITIAL_VALUES = {
   design_variation: '',
   model_name: '',
   additional_customization_requirements: '',
-  foot_Amputation :'Both',
+  foot_Amputation :'',
+  leftFootFile: null, // Store Left Foot STL file
+  rightFootFile: null, // Store Right Foot STL file
   upload_link:'',
   global_volume_reduction: '',
   gst_5: 0.0,
