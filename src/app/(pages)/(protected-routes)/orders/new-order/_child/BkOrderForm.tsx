@@ -2109,6 +2109,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
                 setEstimateConform={setEstimateConform}
                 orderId={orderId}
                 deviceTypeId={deviceTypeId}
+                user={user}
               />
             )}
 

@@ -16,6 +16,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
+import OrderSummaryModal from './OrderSummaryModal'; // Import the modal
 // Define the API response type
 interface EstimateResponse {
   design: string;
@@ -47,7 +48,8 @@ export const Step5 = ({
   isActiveStep,
   setEstimateConform,
   orderId,
-  deviceTypeId
+  deviceTypeId,
+  user, // Add user prop to access customer_id
 }: any) => {
   const [showEstimateCard, setShowEstimateCard] = useState(false);
   const [estimateData, setEstimateData] = useState<any>(null);
@@ -70,6 +72,9 @@ export const Step5 = ({
   const [requiredAddicoins, setRequiredAddicoins] = useState<string | null>(null);
 
   const [showInsufficientCoinsModal, setShowInsufficientCoinsModal] = useState(false);
+  const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(false); // State for modal
+  const [showPreviwButton, setShowPreviwButton] = useState(false)
+  const [orderData , setOrderData] = useState({}) 
 
   const isAddiEase = values.model_name === 'AddiEase';
   const isAddiEaseEco = values.model_name === 'AddiEaseEco';
@@ -283,6 +288,15 @@ export const Step5 = ({
       if(isDesignSelf && isPrintSelf){
       setEstimateConform(true);
       }
+      // Construct and store orderPayload in local storage
+      const orderPayload = {
+        item_type: 'BK',
+        customer: user?.customer_id || 'Not specified', // Use user prop
+        order_details: values,
+      };
+      // @ts--ignore
+      setOrderData(orderPayload)
+      setShowPreviwButton(true)
     } catch (error: any) {
       toast.error(error.data?.message || 'Failed to get estimate');
       console.error('Estimate error:', error);
@@ -336,6 +350,7 @@ export const Step5 = ({
   const finishOptions = getFinishOptions();
 
   return (
+    <>
     <div className="flex flex-col md:flex-row gap-6">
       <div className="flex-1 p-2 ml-5">
         <h3 className="text-lg font-semibold text-primary">Design & Printing</h3>
@@ -476,6 +491,17 @@ export const Step5 = ({
                     : 'Estimate Now'}
               </Button>
             )}
+            { 
+              showPreviwButton &&(
+                <Button
+                className="w-[380px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+                onClick={() => setIsOrderSummaryOpen(true)}
+                disabled={isEstimating}
+              >
+                Show Order Summary
+              </Button>
+              )
+            }
           </div>
         )}
       </div>
@@ -787,7 +813,7 @@ export const Step5 = ({
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg font-semibold">
                         <div className="flex items-center gap-2">
-<div className="p-2 bg-blue-100 rounded-lg">
+                        <div className="p-2 bg-blue-100 rounded-lg">
                           <CoinsIcon className="w-4 h-4 text-blue-600" />
                         </div>
                           <p className="text-sm font-semibold text-gray-700">PAY WITH ADDICOINS</p>
@@ -1348,5 +1374,11 @@ export const Step5 = ({
         </div>
       )}
     </div>
+    <OrderSummaryModal
+        // open={isOrderSummaryOpen}
+        // onOpenChange={setIsOrderSummaryOpen}
+        // orderData={orderData}
+      />
+    </>
   );
 };
