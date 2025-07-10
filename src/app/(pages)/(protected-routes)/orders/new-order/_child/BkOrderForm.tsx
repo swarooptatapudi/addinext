@@ -174,13 +174,13 @@ const step2Validation = Yup.object()
     foot_Amputation: Yup.string().nullable(),
     liner_thickness: Yup.string().nullable(),
     liner_type: Yup.string().nullable(),
-    leftFootFile: Yup.mixed().nullable(), // Allow File or null
-    rightFootFile: Yup.mixed().nullable() // Allow File or null
-  }).test(
-    'either-scan-or-link',
-    'Either upload scans or provide a photo link is required',
+    leftFootFile: Yup.mixed().nullable(),
+    rightFootFile: Yup.mixed().nullable()
+  })
+  .test(
+    'file-upload-validation',
+    'File upload validation',
     function (value) {
-      console.log('Validation Values:', value);
       const { foot_Amputation, upload_link, leftFootFile, rightFootFile } = value as {
         foot_Amputation: string | null;
         upload_link: string | null;
@@ -190,8 +190,8 @@ const step2Validation = Yup.object()
 
       console.log('Validation Values:', { foot_Amputation, upload_link, leftFootFile, rightFootFile });
 
-      // If upload_link is provided, no need for files
-      if (upload_link) {
+      // If upload_link is provided, validation passes
+      if (upload_link && upload_link.trim()) {
         return true;
       }
 
@@ -203,24 +203,43 @@ const step2Validation = Yup.object()
         });
       }
 
-      // If foot_Amputation is selected, require appropriate files
+      // If foot_Amputation is selected, check for required files
       if (foot_Amputation === 'Left_Foot' && !leftFootFile) {
         return this.createError({
           path: 'leftFootFile',
-          message: 'file for Left Foot is required'
+          message: 'STL file for Left Foot is required'
         });
       }
+
       if (foot_Amputation === 'Right_Foot' && !rightFootFile) {
         return this.createError({
           path: 'rightFootFile',
-          message: 'file for Right Foot is required'
+          message: 'STL file for Right Foot is required'
         });
       }
-      if (foot_Amputation === 'Both' && (!leftFootFile || !rightFootFile)) {
-        return this.createError({
-          path: !leftFootFile ? 'leftFootFile' : 'rightFootFile',
-          message: 'STL files for both feet are required'
-        });
+
+      if (foot_Amputation === 'Both') {
+        if (!leftFootFile && !rightFootFile) {
+          // Create errors for both files
+          this.createError({
+            path: 'leftFootFile',
+            message: 'STL file for Left Foot is required'
+          });
+          return this.createError({
+            path: 'rightFootFile',
+            message: 'STL file for Right Foot is required'
+          });
+        } else if (!leftFootFile) {
+          return this.createError({
+            path: 'leftFootFile',
+            message: 'STL file for Left Foot is required'
+          });
+        } else if (!rightFootFile) {
+          return this.createError({
+            path: 'rightFootFile',
+            message: 'STL file for Right Foot is required'
+          });
+        }
       }
 
       return true;
@@ -232,8 +251,8 @@ const step2Validation = Yup.object()
     function (value) {
       const { direct_body, liner_thickness, liner_type } = value as {
         direct_body: string;
-        liner_thickness: string |null;
-        liner_type: string | null ;
+        liner_thickness: string | null;
+        liner_type: string | null;
       };
 
       if (direct_body === 'With_Liner') {
@@ -250,24 +269,7 @@ const step2Validation = Yup.object()
           });
         }
       }
-      return true;
-    }
-  )
-  .test(
-    'either-scan-or-link',
-    'Either upload scans or provide a photo link is required',
-    function (value) {
-      const { foot_Amputation, upload_link } = value as {
-        foot_Amputation: string | null;
-        upload_link: string | null;
-      };
 
-      if (!foot_Amputation && !upload_link) {
-        return this.createError({
-          path: 'upload_link',
-          message: 'Either upload scans or provide a photo link is required'
-        });
-      }
       return true;
     }
   );
@@ -1120,6 +1122,34 @@ const Step2 = ({
     return !!fieldError && (touched[fieldName] || formSubmitted);
   };
 
+  // Enhanced error checking for file fields
+  const shouldShowFileError = (fieldName: string) => {
+    const fieldError = errors[fieldName];
+    
+    // Show error if there's an error AND any of these conditions:
+    // 1. Form was submitted
+    // 2. Field was touched
+    // 3. foot_Amputation selection requires this file (auto-trigger validation)
+    const shouldShow = !!fieldError && (
+      formSubmitted || 
+      touched[fieldName] || 
+      (values.foot_Amputation && (
+        (fieldName === 'leftFootFile' && (values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both')) ||
+        (fieldName === 'rightFootFile' && (values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both'))
+      ))
+    );
+    
+    console.log(`shouldShowFileError for ${fieldName}:`, {
+      fieldError,
+      formSubmitted,
+      touched: touched[fieldName],
+      foot_Amputation: values.foot_Amputation,
+      shouldShow
+    });
+    
+    return shouldShow;
+  };
+
   const showEitherOrError =
     formSubmitted &&
     !values.foot_Amputation &&
@@ -1159,8 +1189,6 @@ const Step2 = ({
           <div className="grid grid-cols gap-4">
             {values.direct_body === 'With_Liner' && (
               <div className="relative">
-              
-                {/* Added a wrapper div with relative positioning */}
                 <SelectBox
                   options={FORM_OPTIONS['liner_thickness'] ?? []}
                   label="Liner Thickness"
@@ -1168,13 +1196,16 @@ const Step2 = ({
                   onValueChange={(value) => {
                     handleChange('liner_thickness')(value);
                     setFieldValue('liner_type', '');
+                    // Clear liner_thickness error when value is selected
+                    if (value && errors.liner_thickness) {
+                      setErrors({ ...errors, liner_thickness: undefined });
+                    }
                   }}
                   required={values.direct_body === 'With_Liner'}
                   inVaild={shouldShowError('liner_thickness', values.direct_body === 'With_Liner')}
                   error={errors.liner_thickness}
                 />
                 <div style={{ marginBottom: '70px' }}></div>
-                {/* Removed the fixed margin div - this was causing layout issues */}
               </div>
             )}
           </div>
@@ -1186,13 +1217,23 @@ const Step2 = ({
                 options={FORM_OPTIONS[values.liner_thickness + '_' + 'variation'] || []}
                 label="Liner Type"
                 value={values.liner_type || ''}
-                onValueChange={handleChange('liner_type')}
+                onValueChange={(value) => {
+                  handleChange('liner_type')(value);
+                  // Clear liner_type error when value is selected
+                  if (value && errors.liner_type) {
+                    setErrors({ ...errors, liner_type: undefined });
+                  }
+                }}
+                required={values.direct_body === 'With_Liner'}
+                inVaild={shouldShowError('liner_type', values.direct_body === 'With_Liner')}
+                error={errors.liner_type}
               />
               <div style={{ marginBottom: '55px' }}></div>
             </>
           )}
         </div>
       </div>
+      
       <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
@@ -1206,21 +1247,33 @@ const Step2 = ({
                   { value: 'Both', label: 'Both' }
                 ]}
                 value={values.foot_Amputation || ''}
-                // onValueChange={handleChange('foot_Amputation')}
                 className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''}`}
-                // inVaild={shouldShowError('foot_Amputation') && !values.upload_link}
-                // error={errors.foot_Amputation}
                 onValueChange={(value) => {
                   handleChange('foot_Amputation')(value);
+                  
+                  // When foot_Amputation is selected, mark relevant file fields as touched
+                  // This will trigger validation display for required files
                   if (value) {
+                    // Clear upload_link related errors
                     setErrors({
                       ...errors,
-                      upload_link: undefined,
-                      leftFootFile: undefined,
-                      rightFootFile: undefined
+                      upload_link: undefined
                     });
                     setFieldValue('leftFootFile', null);
                     setFieldValue('rightFootFile', null);
+                    setFieldValue('upload_link', '');
+                    
+                    // Mark file fields as touched to trigger validation display
+                    setTimeout(() => {
+                      if (value === 'Left_Foot' || value === 'Both') {
+                        // This will trigger the validation and error display for leftFootFile
+                        setFieldValue('leftFootFile', null);
+                      }
+                      if (value === 'Right_Foot' || value === 'Both') {
+                        // This will trigger the validation and error display for rightFootFile
+                        setFieldValue('rightFootFile', null);
+                      }
+                    }, 100);
                   }
                 }}
                 inVaild={shouldShowError('upload_link')}
@@ -1229,6 +1282,7 @@ const Step2 = ({
             </div>
           </div>
         </div>
+        
         {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
           <div className="w-fit justify-center">
             <StlFilePicker
@@ -1237,44 +1291,64 @@ const Step2 = ({
               onFileSelect={(file) => {
                 setFieldValue('leftFootFile', file);
                 console.log('Left Foot STL selected:', file?.name);
-                if (file && errors.leftFootFile) {
-                  setErrors({ ...errors, leftFootFile: undefined, upload_link: undefined });
+                
+                // Mark field as touched and clear errors when file is selected
+                if (file) {
+                  setErrors({ 
+                    ...errors, 
+                    leftFootFile: undefined, 
+                    upload_link: undefined 
+                  });
                 }
               }}
-              // inVaild={shouldShowError('leftFootFile')}
+              // inVaild={shouldShowFileError('leftFootFile')}
               // error={errors.leftFootFile}
             />
-            {shouldShowError('leftFootFile') && errors.leftFootFile && (
-              <span className="text-red-500 text-xs">{errors.leftFootFile}</span>
+            
+            {/* Custom error display for better control */}
+            {shouldShowFileError('leftFootFile') && errors.leftFootFile && (
+              <div className="text-red-500 text-xs mt-1">
+                {errors.leftFootFile}
+              </div>
             )}
-
           </div>
         )}
 
         {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
-          <div className="w-fit ">
+          <div className="w-fit">
             <StlFilePicker
               label="Upload STL file (Right foot)"
               buttonText="Right Foot"
               onFileSelect={(file) => {
                 setFieldValue('rightFootFile', file);
                 console.log('Right Foot STL selected:', file?.name);
-                if (file && errors.rightFootFile) {
-                  setErrors({ ...errors, rightFootFile: undefined, upload_link: undefined });
+                
+                // Mark field as touched and clear errors when file is selected
+                if (file) {
+                  setErrors({ 
+                    ...errors, 
+                    rightFootFile: undefined, 
+                    upload_link: undefined 
+                  });
                 }
               }}
+              // inVaild={shouldShowFileError('rightFootFile')}
               // error={errors.rightFootFile}
-              // inValid={shouldShowError('rightFootFile')}
             />
-            {shouldShowError('rightFootFile') && errors.rightFootFile && (
-              <span className="text-red-500 text-xs">{errors.rightFootFile}</span>
+            
+            {/* Custom error display for better control */}
+            {shouldShowFileError('rightFootFile') && errors.rightFootFile && (
+              <div className="text-red-500 text-xs mt-1">
+                {errors.rightFootFile}
+              </div>
             )}
           </div>
         )}
       </div>
+      
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
-          <p className="mb-0 text-[14px] ">Upload Addtional Files</p>
+          <p className="mb-0 text-[14px] ">Upload Additional Files</p>
           <span className="mb-1 text-[12px] ">(Design / Rough calculations etc.)</span>
         </div>
 
@@ -1284,7 +1358,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 1"
-            onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+            onFileSelect={(file) => console.log('File 1 selected:', file?.name)}
           />
         </div>
         <div className="w-fit ml-2">
@@ -1293,22 +1367,22 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 2"
-            onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+            onFileSelect={(file) => console.log('File 2 selected:', file?.name)}
           />
         </div>
       </div>
-      <div className="flex flex-col-6 gap-4">
+      
+      <div className="flex flex-col gap-4">
         <div className="col-span-3">
           <p className="mb-1 text-[14px]">Upload Link with Photos</p>
           <p className="mb-1 text-[12px] ">
             (Upload in Google /Cloud drive and give relevant permission)
           </p>
         </div>
-        <div className="flex flex-col-6 gap-4">
+        <div className="flex flex-col gap-4">
           <Input
             placeholder="https://drive.google.com/..."
             className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''}`}
-            // className="mt-3 min-w-max ml-0 w-[410px]"
             value={values.upload_link || ''}
             onChange={(value) => {
               handleChange('upload_link')(value);
@@ -1329,7 +1403,6 @@ const Step2 = ({
             error={errors.upload_link}
           />
         </div>
-        
       </div>
       {showEitherOrError && (
         <div className="text-red-500 text-[12px] mt-1">
@@ -1593,14 +1666,14 @@ const handlePayAndPlaceOrder = async (values: any) => {
 
     // You'll need to create an API endpoint that calculates order amount
     // This should return the order amount for payment
-    const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
+    // const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
     
-    if (orderAmountResponse?.status !== "success") {
-      throw new Error(orderAmountResponse?.message || "Failed to calculate order amount");
-    }
+    // if (orderAmountResponse?.status !== "success") {
+    //   throw new Error(orderAmountResponse?.message || "Failed to calculate order amount");
+    // }
 
-    const orderAmount = orderAmountResponse.data.order_amount;
-    const amountInPaise = Math.round(orderAmount * 100);
+    // const orderAmount = orderAmountResponse.data.order_amount;
+    const amountInPaise = 1212;
 
     // Configure Razorpay options
     const options = {
@@ -1623,7 +1696,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
           };
 
           const orderResponse = await createOrder(finalOrderPayload).unwrap();
-          
+          // @ts-ignore 
           if (orderResponse?.message?.status === "success") {
             toast.success("Payment successful! Order created successfully.");
             setSelectedItem('');
@@ -1631,6 +1704,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
             setIsPaymentProcessing(false);
             router.push("/orders");
           } else {
+            // @ts-ignore 
             throw new Error(orderResponse?.message?.message || "Order creation failed");
           }
           
