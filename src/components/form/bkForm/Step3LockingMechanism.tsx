@@ -51,6 +51,11 @@ export const Step3 = ({
     return !!(touched[fieldName] && errors[fieldName]);
   };
 
+  // Check if the form is valid (required fields are filled)
+  const isFormValid = () => {
+    return values.locking_system && values.locking_system.trim() !== '';
+  };
+
   useEffect(() => {
     return () => {
       Object.values(objectUrls).forEach(url => URL.revokeObjectURL(url));
@@ -129,8 +134,9 @@ export const Step3 = ({
           label="Locking/Suspension System"
           value={values.locking_system ?? ''}
           onValueChange={handleLockingSystemChange}
-        //   error={shouldShowError('locking_system', true)}
-        //   errorMessage={errors.locking_system}
+          // error={shouldShowError('locking_system', true)}
+          // errorMessage={errors.locking_system || 'This field is required'}
+          required={true}
         />
 
         {showFileUpload && (

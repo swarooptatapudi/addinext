@@ -207,37 +207,37 @@ const step2Validation = Yup.object()
       if (foot_Amputation === 'Left_Foot' && !leftFootFile) {
         return this.createError({
           path: 'leftFootFile',
-          message: 'STL file for Left Foot is required'
+          message: 'File for Left Foot is required'
         });
       }
 
       if (foot_Amputation === 'Right_Foot' && !rightFootFile) {
         return this.createError({
           path: 'rightFootFile',
-          message: 'STL file for Right Foot is required'
+          message: 'File for Right Foot is required'
         });
       }
 
       if (foot_Amputation === 'Both') {
         if (!leftFootFile && !rightFootFile) {
           // Create errors for both files
-          this.createError({
-            path: 'leftFootFile',
-            message: 'STL file for Left Foot is required'
-          });
+          // this.createError({
+          //   path: 'leftFootFile',
+          //   message: 'STL file for Left Foot is required'
+          // });
           return this.createError({
             path: 'rightFootFile',
-            message: 'STL file for Right Foot is required'
+            message: 'Both file for Right and Left Foot is required'
           });
         } else if (!leftFootFile) {
           return this.createError({
             path: 'leftFootFile',
-            message: 'STL file for Left Foot is required'
+            message: 'File for Left Foot is required'
           });
         } else if (!rightFootFile) {
           return this.createError({
             path: 'rightFootFile',
-            message: 'STL file for Right Foot is required'
+            message: 'File for Right Foot is required'
           });
         }
       }
@@ -1246,8 +1246,8 @@ const Step2 = ({
                   { value: 'Right_Foot', label: 'Right Foot' },
                   { value: 'Both', label: 'Both' }
                 ]}
-                value={values.foot_Amputation || ''}
                 className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''}`}
+                value={values.foot_Amputation || ''}
                 onValueChange={(value) => {
                   handleChange('foot_Amputation')(value);
                   
@@ -1277,7 +1277,7 @@ const Step2 = ({
                   }
                 }}
                 inVaild={shouldShowError('upload_link')}
-                error={errors.upload_link}
+                // error={errors.upload_link}
               />
             </div>
           </div>
@@ -1301,8 +1301,10 @@ const Step2 = ({
                   });
                 }
               }}
-              // inVaild={shouldShowFileError('leftFootFile')}
-              // error={errors.leftFootFile}
+              // @ts-ignore 
+              inVaild={shouldShowFileError('leftFootFile')}
+               // @ts-ignore 
+              error={errors.leftFootFile}
             />
             
             {/* Custom error display for better control */}
@@ -1332,8 +1334,10 @@ const Step2 = ({
                   });
                 }
               }}
-              // inVaild={shouldShowFileError('rightFootFile')}
-              // error={errors.rightFootFile}
+               // @ts-ignore 
+              inVaild={shouldShowFileError('rightFootFile')}
+               // @ts-ignore 
+              error={errors.rightFootFile}
             />
             
             {/* Custom error display for better control */}
@@ -1400,7 +1404,7 @@ const Step2 = ({
               }
             }}
             inVaild={shouldShowError('upload_link')}
-            error={errors.upload_link}
+            // error={errors.upload_link}
           />
         </div>
       </div>
@@ -1673,7 +1677,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
     // }
 
     // const orderAmount = orderAmountResponse.data.order_amount;
-    const amountInPaise = 1212;
+    const amountInPaise = 10000;
 
     // Configure Razorpay options
     const options = {

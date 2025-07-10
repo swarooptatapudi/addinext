@@ -320,13 +320,13 @@ export const Step5 = ({
   const getFinishOptions = () => {
     if (isAddiEase) {
       return [
-        { value: 'Bead Blast', label: 'Bead Blast', color: 'bg-gray-500 text-gray-700' },
+        // { value: 'Bead Blast', label: 'Bead Blast', color: 'bg-gray-500 text-gray-700' },
         { value: 'Dye', label: 'Black Dye', color: 'bg-black text-black' },
         { value: 'Colour', label: 'Colour', color: 'bg-neutral-500 text-neutral-100' }
       ];
     } else if (isAddiEaseEco) {
       return [
-        { value: 'Bead Blast', label: 'Bead Blast', color: 'bg-gray-500 text-gray-700' },
+        // { value: 'Bead Blast', label: 'Bead Blast', color: 'bg-gray-500 text-gray-700' },
         { value: 'Dye', label: 'Black Dye', color: 'bg-black text-black' },
         { value: 'Epoxy', label: 'Epoxy', color: 'bg-slate-500 text-slate-100' }
       ];
@@ -397,7 +397,7 @@ export const Step5 = ({
             </label>
             {showFinishOptionsMould && (
               <div className="ml-10 mb-5">
-                <div className="flex items-center gap-10 -mt-7 ml-8">
+                <div className="flex items-center gap-8 -mt-7 ml-12 ">
                   {finishOptions.map((option) => (
                     <label key={option.value} className="flex flex-col items-center cursor-pointer">
                       <input
