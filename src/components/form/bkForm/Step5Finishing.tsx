@@ -36,6 +36,12 @@ interface EstimateResponse {
   design_coin_use: string;
 }
 
+interface OrderSummaryModal {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  
+}
+
 export const Step5 = ({
   values,
   errors,
@@ -74,7 +80,7 @@ export const Step5 = ({
   const [showInsufficientCoinsModal, setShowInsufficientCoinsModal] = useState(false);
   const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(false); // State for modal
   const [showPreviwButton, setShowPreviwButton] = useState(false)
-  const [orderData , setOrderData] = useState({}) 
+  const [orderData , setOrderData] = useState<any | null>({}) 
 
   const isAddiEase = values.model_name === 'AddiEase';
   const isAddiEaseEco = values.model_name === 'AddiEaseEco';
@@ -295,6 +301,7 @@ export const Step5 = ({
         order_details: values,
       };
       // @ts--ignore
+      console.log("orderPayload MOdal", orderPayload)
       setOrderData(orderPayload)
       setShowPreviwButton(true)
     } catch (error: any) {
@@ -480,7 +487,7 @@ export const Step5 = ({
             </div>
             {!orderId && !deviceTypeId && (
               <Button
-                className="w-[380px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+                className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
                 onClick={handleEstimateClick}
                 disabled={isEstimating}
               >
@@ -494,7 +501,7 @@ export const Step5 = ({
             { 
               showPreviwButton &&(
                 <Button
-                className="w-[380px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+                className="w-[350px] mt-4 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
                 onClick={() => setIsOrderSummaryOpen(true)}
                 disabled={isEstimating}
               >
@@ -1374,11 +1381,16 @@ export const Step5 = ({
         </div>
       )}
     </div>
-    <OrderSummaryModal
-        // open={isOrderSummaryOpen}
-        // onOpenChange={setIsOrderSummaryOpen}
-        // orderData={orderData}
+    {console.log("orderData before send to modal ", orderData)}
+    {
+      isOrderSummaryOpen && (
+        <OrderSummaryModal
+        open={isOrderSummaryOpen}
+        onOpenChange={setIsOrderSummaryOpen}
+        orderData={orderData}
       />
+      )
+    }
     </>
   );
 };

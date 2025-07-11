@@ -497,7 +497,7 @@ const ModelDialog = ({
      
       addieasel: {
         title: 'AddiEaseL',
-        description: 'Sockets printed on SLS',
+        description: 'Premium Sockets printed on SLS',
         image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
       },
        addieasemould: {
@@ -1391,17 +1391,17 @@ const Step2 = ({
             onChange={(value) => {
               handleChange('upload_link')(value);
               // Clear file-related errors if upload_link is provided
-              if (value && (errors.leftFootFile || errors.rightFootFile || errors.upload_link)) {
-                setErrors({
-                  ...errors,
-                  upload_link: undefined,
-                  leftFootFile: undefined,
-                  rightFootFile: undefined
-                });
-                setFieldValue('leftFootFile', null);
-                setFieldValue('rightFootFile', null);
-                setFieldValue('foot_Amputation', '');
-              }
+              // if (value && (errors.leftFootFile || errors.rightFootFile || errors.upload_link)) {
+              //   setErrors({
+              //     ...errors,
+              //     upload_link: undefined,
+              //     leftFootFile: undefined,
+              //     rightFootFile: undefined
+              //   });
+              //   setFieldValue('leftFootFile', null);
+              //   setFieldValue('rightFootFile', null);
+              //   setFieldValue('foot_Amputation', '');
+              // }
             }}
             inVaild={shouldShowError('upload_link')}
             // error={errors.upload_link}
