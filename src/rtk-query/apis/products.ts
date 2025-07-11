@@ -27,12 +27,20 @@ export const productsApi = createApi({
         body: payload
       }),
       transformResponse: (response: any) => response.message
-    })
+    }),
+getProductColorStep5: builder.mutation({
+  query: (_unusedArg) => ({
+    url: '/method/addiwise.apis.color_api.get_colors',
+    method: 'GET',
+  }),
+  transformResponse: (response: any) => response.message.colors,
+})
   })
 });
 
 export const {
   useGetProductsQuery,
   useGetProductsByTempleteQuery,
-  useGetItemNameByDetailsMutation
+  useGetItemNameByDetailsMutation,
+  useGetProductColorStep5Mutation,
 } = productsApi;

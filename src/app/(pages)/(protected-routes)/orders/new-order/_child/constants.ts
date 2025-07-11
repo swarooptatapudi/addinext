@@ -22,6 +22,7 @@ export const BK_FORM_INITIAL_VALUES = {
   scan_markings: '',
   foot_type: '',
   shoe_size: '',
+  selectedColor: '',
   flexion_angle: '',
   add_abd_angle: '',
   liner_type: '',

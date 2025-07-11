@@ -218,29 +218,29 @@ const step2Validation = Yup.object()
         });
       }
 
-      if (foot_Amputation === 'Both') {
-        if (!leftFootFile && !rightFootFile) {
-          // Create errors for both files
-          // this.createError({
-          //   path: 'leftFootFile',
-          //   message: 'STL file for Left Foot is required'
-          // });
-          return this.createError({
-            path: 'rightFootFile',
-            message: 'Both file for Right and Left Foot is required'
-          });
-        } else if (!leftFootFile) {
-          return this.createError({
-            path: 'leftFootFile',
-            message: 'File for Left Foot is required'
-          });
-        } else if (!rightFootFile) {
-          return this.createError({
-            path: 'rightFootFile',
-            message: 'File for Right Foot is required'
-          });
-        }
-      }
+      // if (foot_Amputation === 'Both') {
+      //   if (!leftFootFile && !rightFootFile) {
+      //     // Create errors for both files
+      //     // this.createError({
+      //     //   path: 'leftFootFile',
+      //     //   message: 'STL file for Left Foot is required'
+      //     // });
+      //     return this.createError({
+      //       path: 'rightFootFile',
+      //       message: 'Both file for Right and Left Foot is required'
+      //     });
+      //   } else if (!leftFootFile) {
+      //     return this.createError({
+      //       path: 'leftFootFile',
+      //       message: 'File for Left Foot is required'
+      //     });
+      //   } else if (!rightFootFile) {
+      //     return this.createError({
+      //       path: 'rightFootFile',
+      //       message: 'File for Right Foot is required'
+      //     });
+      //   }
+      // }
 
       return true;
     }
@@ -303,7 +303,7 @@ const step4Validation = Yup.object().shape({
 });
 
 const step3Validation = Yup.object().shape({
-  locking_mechanism: Yup.string()
+  locking_system: Yup.string().required(FORMIK_ERRORS.REQUIRED)
 });
 
 const step5Validation = Yup.object().shape({
@@ -678,7 +678,6 @@ const Step1 = ({
     <div className="flex flex-col gap-6 px-5">
       {deviceTypeId && orderId ? (
         <>
-         
           <PatientPortalDialog />
         </>
       ) : (
@@ -1524,6 +1523,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
 
+
+
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -1812,6 +1813,10 @@ const handlePayAndPlaceOrder = async (values: any) => {
     const res: any = await getItem(payload);
   //    const itemCode = res?.data?.item_code;
 
+
+
+
+
   //   if (itemCode) {
   //   console.log(" Generated item code:", itemCode);
   // } else {
@@ -1892,6 +1897,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
           model_name: values.model_name,
           stump_length: values.stump_length,
           weight: values.weight
+
         };
         console.log('Item Payload:', itemPayload);
         const itemCode = await getItemCodeByValues(itemPayload);
