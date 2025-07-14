@@ -887,7 +887,7 @@ useEffect(() => {
                             ></div>
                             <div className="flex justify-between w-full">
                               <span className="font-medium text-gray-700">Additional Discount</span>
-                              <span className="text-gray-700">₹{estimateData.apiResponse.additional_discount}</span>
+                              <span className="text-gray-700">(-)₹{estimateData.apiResponse.additional_discount}</span>
                             </div>
                           </li>
                         )}

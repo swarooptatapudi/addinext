@@ -1693,10 +1693,10 @@ const handlePayAndPlaceOrder = async (values: any) => {
           // After successful payment, create the order with payment details
           const finalOrderPayload = {
             ...orderPayload,
-            payment_id: response.razorpay_payment_id,
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_signature: response.razorpay_signature,
-            payment_status: 'paid'
+            // payment_id: response.razorpay_payment_id,
+            // razorpay_order_id: response.razorpay_order_id,
+            // razorpay_signature: response.razorpay_signature,
+            // payment_status: 'paid'
           };
 
           console.log('Final Order Payload:', finalOrderPayload);
@@ -1789,7 +1789,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
       addicoins: parseInt(values.addicoins)
     };
 
-    // console.log("Create Order orderPayload:'", orderPayload)
+    console.log("Create Order orderPayload:'", orderPayload)
 
     try {
     const res = await createOrder(orderPayload).unwrap();
@@ -1812,11 +1812,6 @@ const handlePayAndPlaceOrder = async (values: any) => {
   const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
   //    const itemCode = res?.data?.item_code;
-
-
-
-
-
   //   if (itemCode) {
   //   console.log(" Generated item code:", itemCode);
   // } else {
