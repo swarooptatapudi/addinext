@@ -218,29 +218,29 @@ const step2Validation = Yup.object()
         });
       }
 
-      // if (foot_Amputation === 'Both') {
-      //   if (!leftFootFile && !rightFootFile) {
-      //     // Create errors for both files
-      //     // this.createError({
-      //     //   path: 'leftFootFile',
-      //     //   message: 'STL file for Left Foot is required'
-      //     // });
-      //     return this.createError({
-      //       path: 'rightFootFile',
-      //       message: 'Both file for Right and Left Foot is required'
-      //     });
-      //   } else if (!leftFootFile) {
-      //     return this.createError({
-      //       path: 'leftFootFile',
-      //       message: 'File for Left Foot is required'
-      //     });
-      //   } else if (!rightFootFile) {
-      //     return this.createError({
-      //       path: 'rightFootFile',
-      //       message: 'File for Right Foot is required'
-      //     });
-      //   }
-      // }
+      if (foot_Amputation === 'Both') {
+        if (!leftFootFile && !rightFootFile) {
+          // Create errors for both files
+          // this.createError({
+          //   path: 'leftFootFile',
+          //   message: 'STL file for Left Foot is required'
+          // });
+          return this.createError({
+            path: 'rightFootFile',
+            message: 'Both file for Right and Left Foot is required'
+          });
+        } else if (!leftFootFile) {
+          return this.createError({
+            path: 'leftFootFile',
+            message: 'File for Left Foot is required'
+          });
+        } else if (!rightFootFile) {
+          return this.createError({
+            path: 'rightFootFile',
+            message: 'File for Right Foot is required'
+          });
+        }
+      }
 
       return true;
     }
