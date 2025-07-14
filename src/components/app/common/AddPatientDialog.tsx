@@ -78,8 +78,8 @@ const validationSchema = Yup.object().shape({
         )
         .test(
             'max-weight',
-            'Maximum weight is 180kg',
-            (value) => parseFloat(value) <= 180
+            'Maximum weight is 150kg',
+            (value) => parseFloat(value) <= 150
         ),
     mobile_no: Yup.string()
         .matches(FORMIK_ERRORS.MOBILE_NUMBER.VALUE, FORMIK_ERRORS.MOBILE_NUMBER.MESSAGE),
@@ -115,9 +115,11 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
                 onConfirm?.(values); // Pass the form values back to parent
                 resetForm();
                 onOpenChange(false);
-                toast.success('Patient created successfully');
+                toast.success((result as any)?.message || 'Patient created successfully');
             } catch (err) {
                 console.error('Error creating patient:', err);
+                // @ts-ignore
+                toast.error(err?.data?.message?.message || 'Error creating patient');
             }
         }
     });

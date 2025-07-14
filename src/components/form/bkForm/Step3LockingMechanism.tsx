@@ -141,7 +141,7 @@ export const Step3 = ({
          error={errors.locking_system}
           // error={shouldShowError('locking_system', true)}
           // errorMessage={errors.locking_system || 'This field is required'}
-          // required={true}
+          required={true}
         />
 
         {showFileUpload && (

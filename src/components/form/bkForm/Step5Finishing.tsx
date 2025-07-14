@@ -39,6 +39,7 @@ interface EstimateResponse {
 interface OrderSummaryModal {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  selectedItem: string;
   
 }
 
@@ -253,14 +254,14 @@ export const Step5 = ({
 
     try {
       const response = await getBKEstimate(estimatePayload).unwrap();
-      console.log('Estimate Response:', response);
+      // console.log('Estimate Response:', response);
       // Parse coins to numbers for comparison
 
       // @ts-ignore
       const availableCoins = parseFloat(response.data.customer_available_coins.replace(/,/g, ''));
       // @ts-ignore
       const requiredCoins = parseFloat(response.data.design_coin_use.replace(/,/g, ''));
-      console.log('Available Coins , Required Coins:', availableCoins, requiredCoins);
+      // console.log('Available Coins , Required Coins:', availableCoins, requiredCoins);
 
       // @ts-ignore
       setAvailableAddicoins(response.data.customer_available_coins);
@@ -287,6 +288,8 @@ export const Step5 = ({
       setFieldValue('gst_18', response.data.gst_18 || '0.00');
       setFieldValue('item_discount', response.data.item_discount || '0.00');
       setFieldValue('additional_discount', response.data.additional_discount || '0.00');
+      // @ts-ignore
+      setFieldValue('addicoins', response.data.design_coin_use || '0.00');
 
       setShowEstimateCard(true);
       setIsEstimateStale(false);
@@ -1381,13 +1384,13 @@ export const Step5 = ({
         </div>
       )}
     </div>
-    {console.log("orderData before send to modal ", orderData)}
     {
       isOrderSummaryOpen && (
         <OrderSummaryModal
         open={isOrderSummaryOpen}
         onOpenChange={setIsOrderSummaryOpen}
         orderData={orderData}
+        selectedItem={selectedItem}
       />
       )
     }

@@ -80,9 +80,10 @@ interface OrderSummaryModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   orderData: OrderData;
+  selectedItem: string;
 }
 
-const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChange, orderData }) => {
+const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChange, orderData,selectedItem }) => {
   console.log("orderData:", orderData);
 
   const formatValue = (value: any): string => {
@@ -152,7 +153,7 @@ const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChang
               </div>
               <div>
                 <span className="text-sm font-medium text-gray-600">Item Code:</span>
-                <p className="text-lg font-semibold text-gray-900">{orderData.item_code}</p>
+                <p className="text-lg font-semibold text-gray-900">{selectedItem}</p>
               </div>
             </div>
           </div>
@@ -190,10 +191,14 @@ const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChang
           <Section title="Scan" stepNumber={2}>
             <div className="grid grid-cols-1 gap-0">
               <DataRow label="Direct Body" value={orderData.order_details.direct_body} />
-              <DataRow label="Liner Thickness" value={orderData.order_details.liner_thickness} />
-              <DataRow label="Liner Type" value={orderData.order_details.liner_type} />
-              <DataRow label="Foot Amputation" value={orderData.order_details.foot_Amputation} />
-              <DataRow label="Upload Link" value={orderData.order_details.upload_link} isLast={true} />
+              {orderData.order_details.liner_thickness &&
+              <DataRow label="Liner Thickness" value={orderData.order_details.liner_thickness} />}
+              {orderData.order_details.liner_type &&
+              <DataRow label="Liner Type" value={orderData.order_details.liner_type} />}
+              {orderData.order_details.foot_Amputation &&
+              <DataRow label="Foot Amputation" value={orderData.order_details.foot_Amputation} />}
+              {orderData.order_details.upload_link &&
+              <DataRow label="Upload Link" value={orderData.order_details.upload_link} isLast={true} />}
             </div>
           </Section>
 
@@ -236,12 +241,14 @@ const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChang
               <DataRow label="Model Name" value={orderData.order_details.model_name} />
               <DataRow label="Design By" value={orderData.order_details.Design_by} />
               <DataRow label="Print By" value={orderData.order_details.Print_by} />
-              <DataRow label="Latices" value={orderData.order_details.Latices} />
-              <DataRow label="Finish Type" value={orderData.order_details.finish_type} />
-              <DataRow label="GST 5%" value={orderData.order_details.gst_5 ? `₹${orderData.order_details.gst_5}` : ""} />
-              <DataRow label="GST 18%" value={orderData.order_details.gst_18 ? `₹${orderData.order_details.gst_18}` : ""} />
-              <DataRow label="Item Discount" value={orderData.order_details.item_discount ? `₹${orderData.order_details.item_discount}` : ""} />
-              <DataRow label="Additional Discount" value={orderData.order_details.additional_discount ? `₹${orderData.order_details.additional_discount}` : ""} isLast={true} />
+              {orderData.order_details.Latices && 
+              <DataRow label="Latices" value={orderData.order_details.Latices} />}
+              {orderData.order_details.finish_type  && 
+              <DataRow label="Finish Type" value={orderData.order_details.finish_type} />}
+              {/* <DataRow label="GST 5%" value={orderData.order_details.gst_5 ? `₹${orderData.order_details.gst_5}` : ""} /> */}
+              {/* <DataRow label="GST 18%" value={orderData.order_details.gst_18 ? `₹${orderData.order_details.gst_18}` : ""} /> */}
+              {/* <DataRow label="Item Discount" value={orderData.order_details.item_discount ? `₹${orderData.order_details.item_discount}` : ""} /> */}
+              {/* <DataRow label="Additional Discount" value={orderData.order_details.additional_discount ? `₹${orderData.order_details.additional_discount}` : ""} isLast={true} /> */}
             </div>
           </Section>
         </div>

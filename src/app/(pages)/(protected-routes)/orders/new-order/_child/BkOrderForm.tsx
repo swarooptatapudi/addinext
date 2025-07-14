@@ -547,7 +547,6 @@ const ModelDialog = ({
 
           {options.map((option) => {
             const variationText = option.label || option.value;
-            console.log('variationText', variationText);
             const content = getDynamicContent(variationText);
 
             return (
@@ -1289,7 +1288,7 @@ const Step2 = ({
               buttonText="Left Foot"
               onFileSelect={(file) => {
                 setFieldValue('leftFootFile', file);
-                console.log('Left Foot STL selected:', file?.name);
+                // console.log('Left Foot STL selected:', file?.name);
                 
                 // Mark field as touched and clear errors when file is selected
                 if (file) {
@@ -1666,7 +1665,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
       customer: user?.customer_id,
       order_details: values,
       item_code: itemCode,
-      addicoins: values.Design_by === "Self" ? 10 : 0
+      addicoins: parseInt(values.addicoins)
     };
 
     // You'll need to create an API endpoint that calculates order amount
@@ -1700,6 +1699,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
             payment_status: 'paid'
           };
 
+          console.log('Final Order Payload:', finalOrderPayload);
           const orderResponse = await createOrder(finalOrderPayload).unwrap();
           // @ts-ignore 
           if (orderResponse?.message?.status === "success") {
@@ -1786,10 +1786,10 @@ const handlePayAndPlaceOrder = async (values: any) => {
       order_details: values,
       item_code: itemCode,
       // @ts-ignore
-      addicoins: values.Design_by === "Self" ? 10 : 0
+      addicoins: parseInt(values.addicoins)
     };
 
-    console.log("Create Order orderPayload:'", orderPayload)
+    // console.log("Create Order orderPayload:'", orderPayload)
 
     try {
     const res = await createOrder(orderPayload).unwrap();
@@ -1899,7 +1899,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
           weight: values.weight
 
         };
-        console.log('Item Payload:', itemPayload);
+        // console.log('Item Payload:', itemPayload);
         const itemCode = await getItemCodeByValues(itemPayload);
         setSelectedItem(itemCode);
         setShowStep1Confirmation(true);
@@ -2145,23 +2145,38 @@ const handlePayAndPlaceOrder = async (values: any) => {
                     Next
                   </Button>
                 ) : (
-                  <div className='flex gap-2.5'>
-                    <Button
-                    className="shadow-2xl"
-                    onClick={() => handlePayAndPlaceOrder(formValues)}
-                    disabled={!estimateConform || isOrderCreating || isPaymentProcessing || !isRazorpayLoaded}
-                  >
-                    {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
-                  </Button>
-                  <Button
-                    className="shadow-2xl"
-                    onClick={() => handleSubmit()}
-                    type="submit"
-                    disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
-                  >
-                    Order Now, Pay Later
-                  </Button>
-                  </div>
+                  <>
+                    {/* @ts-ignore */}
+                    {values.Design_by === "Self" && values.Print_by === "Self" ? (
+                      <div className='flex gap-2.5'>
+                        <Button
+                          className="shadow-2xl"
+                          onClick={() => handleSubmit()}
+                          disabled={!estimateConform || isOrderCreating || isPaymentProcessing || !isRazorpayLoaded}
+                        >
+                          {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className='flex gap-2.5'>
+                        <Button
+                          className="shadow-2xl"
+                          onClick={() => handlePayAndPlaceOrder(formValues)}
+                          disabled={!estimateConform || isOrderCreating || isPaymentProcessing || !isRazorpayLoaded}
+                        >
+                          {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
+                        </Button>
+                        <Button
+                          className="shadow-2xl"
+                          onClick={() => handleSubmit()}
+                          type="submit"
+                          disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
+                        >
+                          Pay Later
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

@@ -43,6 +43,7 @@ export const BK_FORM_INITIAL_VALUES = {
   gst_18: 0.0,
   item_discount: 0.0,
   additional_discount: 0.0,
+  addicoins:0.0,
   socket_design_details: [
     {
       area: 'A',
