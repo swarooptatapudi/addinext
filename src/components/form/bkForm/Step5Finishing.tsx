@@ -365,7 +365,7 @@ useEffect(() => {
         order_details: values
       };
       // @ts--ignore
-      console.log('orderPayload MOdal', orderPayload);
+      // console.log('orderPayload MOdal', orderPayload);
       setOrderData(orderPayload);
       setShowPreviwButton(true);
     } catch (error: any) {

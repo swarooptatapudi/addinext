@@ -1572,7 +1572,6 @@ const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
                 })
               ) || initialValues.socket_design_details
           };
-          // console.log('response:', response);
           setFormValues(transformedData);
           if (response.data.item_code) {
             setSelectedItem(response.data.item_code);
@@ -1668,6 +1667,8 @@ const handlePayAndPlaceOrder = async (values: any) => {
       addicoins: parseInt(values.addicoins)
     };
 
+    // console.log("handlePayAndPlaceOrder", orderPayload)
+
     // You'll need to create an API endpoint that calculates order amount
     // This should return the order amount for payment
     // const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
@@ -1677,7 +1678,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
     // }
 
     // const orderAmount = orderAmountResponse.data.order_amount;
-    const amountInPaise = 10000;
+    const amountInPaise = 100000;
 
     // Configure Razorpay options
     const options = {
@@ -1693,7 +1694,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
           // After successful payment, create the order with payment details
           const finalOrderPayload = {
             ...orderPayload,
-            // payment_id: response.razorpay_payment_id,
+            custom_payment_reference_id: response.razorpay_payment_id,
             // razorpay_order_id: response.razorpay_order_id,
             // razorpay_signature: response.razorpay_signature,
             // payment_status: 'paid'
@@ -2156,7 +2157,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
                       <div className='flex gap-2.5'>
                         <Button
                           className="shadow-2xl"
-                          onClick={() => handlePayAndPlaceOrder(formValues)}
+                          onClick={() => handlePayAndPlaceOrder(values)}
                           disabled={!estimateConform || isOrderCreating || isPaymentProcessing || !isRazorpayLoaded}
                         >
                           {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
