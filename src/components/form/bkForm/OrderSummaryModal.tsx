@@ -29,7 +29,7 @@ interface OrderDetails {
   reason_for_amputation: string;
   stump_condition: string;
   stump_length: string;
-  file_dimensions: string;
+  // file_dimensions: string;
   amputated_leg: string;
   stump_size: string;
   previous_prosthetic_experience: string;
