@@ -205,7 +205,7 @@ const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChang
           {/* Step 3: Locking Mechanism */}
           <Section title="Locking Mechanism" stepNumber={3}>
             <div className="grid grid-cols-1 gap-0">
-              <DataRow label="Locking System" value={orderData.order_details.locking_system} />
+              <DataRow label="Locking System" value={orderData.order_details.locking_system} isLast={true}/>
               {/* <DataRow label="File Dimensions" value={orderData.order_details.file_dimensions} isLast={true} /> */}
             </div>
           </Section>
