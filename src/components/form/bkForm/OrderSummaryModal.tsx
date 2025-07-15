@@ -29,7 +29,7 @@ interface OrderDetails {
   reason_for_amputation: string;
   stump_condition: string;
   stump_length: string;
-  file_dimensions: string;
+  // file_dimensions: string;
   amputated_leg: string;
   stump_size: string;
   previous_prosthetic_experience: string;
@@ -206,7 +206,7 @@ const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChang
           <Section title="Locking Mechanism" stepNumber={3}>
             <div className="grid grid-cols-1 gap-0">
               <DataRow label="Locking System" value={orderData.order_details.locking_system} />
-              <DataRow label="File Dimensions" value={orderData.order_details.file_dimensions} isLast={true} />
+              {/* <DataRow label="File Dimensions" value={orderData.order_details.file_dimensions} isLast={true} /> */}
             </div>
           </Section>
 

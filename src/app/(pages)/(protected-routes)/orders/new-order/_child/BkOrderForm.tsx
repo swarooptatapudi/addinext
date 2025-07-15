@@ -1240,6 +1240,7 @@ const Step2 = ({
             <div className="w-[150px] ml-8">
               <SelectBox
                 options={[
+                  { value: 'Select', label: 'Select to Upload ' },
                   { value: 'Left_Foot', label: 'Left Foot ' },
                   { value: 'Right_Foot', label: 'Right Foot' },
                   { value: 'Both', label: 'Both' }
