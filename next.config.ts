@@ -6,21 +6,21 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://deverp.addiwise.com/api/:path*'
+        destination: 'https://prderp.addiwise.com/api/:path*'
         // destination: 'https://erp.addiwise.com/api/:path*'
       }
     ];
   },
-  env:{
-    NEXT_PUBLIC_RAZORPAY_KEY_ID:'rzp_test_46JKVeIJoXgPra',
-    RAZORPAY_KEY_SECRET:'nyqmEQckDeosGzUua5uXnyzh'
+  env: {
+    NEXT_PUBLIC_RAZORPAY_KEY_ID: 'rzp_test_46JKVeIJoXgPra',
+    RAZORPAY_KEY_SECRET: 'nyqmEQckDeosGzUua5uXnyzh'
   },
   webpack: (config: { optimization: any; }) => {
     config.optimization = {
       ...config.optimization,
       splitChunks: {
         chunks: 'all',
-        maxSize: 244 * 1024, 
+        maxSize: 244 * 1024,
       }
     };
     return config;
