@@ -6,8 +6,8 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
+        // destination: 'https://prderp.addiwise.com/api/:path*'
         destination: 'https://uaterp.addiwise.com/api/:path*'
-        // destination: 'https://uaterp.addiwise.com/api/:path*'
         // destination: 'https://erp.addiwise.com/api/:path*'
       }
     ];
