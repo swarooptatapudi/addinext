@@ -18,6 +18,8 @@ export default function NewOrder(): React.JSX.Element {
   const [currentDate, setCurrentDate] = useState('');
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
 
+  console.log("data", data); 
+
   useEffect(() => {
     setCurrentDate(format(new Date(), 'dd-MM-yyyy'));
   }, []);
@@ -41,15 +43,17 @@ export default function NewOrder(): React.JSX.Element {
   const products = useMemo(() => {
     if (isLoading) return [];
     if (isSuccess) {
-      return data?.map((product: any) => ({
-        id: product.name,
-        name: product.name,
-        image: getLocalImagePath(product.name),
-        description: getProductDescription(product.name),
-      }));
+      return data
+        ?.filter((product: any) => product.disabled === 0) // Filter out disabled items
+        ?.map((product: any) => ({
+          id: product.name,
+          name: product.name,
+          image: getLocalImagePath(product.name),
+          description: getProductDescription(product.name),
+        }));
     }
     return [];
-  }, [data, isLoading, isSuccess, getLocalImagePath, getProductDescription]);
+  }, [data, isLoading, isSuccess, getLocalImagePath, getProductDescription])
 
   if (!currentDate) {
     return (

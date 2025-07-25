@@ -1,6 +1,7 @@
 import { SelectBox } from "@/components/ui/selectbox";
 import { GenericFileViewer } from "@/components/app/common/GenericFileViewer";
 import { useState, useEffect } from 'react';
+import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 
 type FormOptions = {
   [key: string]: Array<{ value: string; label: string }>;
@@ -18,6 +19,7 @@ type Step3Props = {
   setFieldValue: (field: string, value: any) => void;
   FORM_OPTIONS: FormOptions;
   formSubmitted: boolean;
+  
 };
 
 const LOCAL_FILE_MAPPINGS: Record<string, string[]> = {
@@ -39,7 +41,8 @@ export const Step3 = ({
   touched,
   setFieldValue,
   FORM_OPTIONS,
-  formSubmitted
+  formSubmitted,
+  FORMIK_ERRORS
 }: any) => {
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
   const [objectUrls, setObjectUrls] = useState<Record<string, string>>({});
@@ -134,6 +137,8 @@ export const Step3 = ({
           label="Locking/Suspension System"
           value={values.locking_system ?? ''}
           onValueChange={handleLockingSystemChange}
+          inVaild={shouldShowError('locking_system',true)}
+         error={errors.locking_system}
           // error={shouldShowError('locking_system', true)}
           // errorMessage={errors.locking_system || 'This field is required'}
           required={true}

@@ -303,7 +303,7 @@ const step4Validation = Yup.object().shape({
 });
 
 const step3Validation = Yup.object().shape({
-  locking_mechanism: Yup.string()
+  locking_system: Yup.string().required(FORMIK_ERRORS.REQUIRED)
 });
 
 const step5Validation = Yup.object().shape({
@@ -497,7 +497,7 @@ const ModelDialog = ({
      
       addieasel: {
         title: 'AddiEaseL',
-        description: 'Sockets printed on SLS',
+        description: 'Premium Sockets printed on SLS',
         image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
       },
        addieasemould: {
@@ -547,7 +547,6 @@ const ModelDialog = ({
 
           {options.map((option) => {
             const variationText = option.label || option.value;
-            console.log('variationText', variationText);
             const content = getDynamicContent(variationText);
 
             return (
@@ -678,7 +677,6 @@ const Step1 = ({
     <div className="flex flex-col gap-6 px-5">
       {deviceTypeId && orderId ? (
         <>
-         
           <PatientPortalDialog />
         </>
       ) : (
@@ -1242,6 +1240,7 @@ const Step2 = ({
             <div className="w-[150px] ml-8">
               <SelectBox
                 options={[
+                  { value: 'Select', label: 'Select to Upload ' },
                   { value: 'Left_Foot', label: 'Left Foot ' },
                   { value: 'Right_Foot', label: 'Right Foot' },
                   { value: 'Both', label: 'Both' }
@@ -1290,7 +1289,7 @@ const Step2 = ({
               buttonText="Left Foot"
               onFileSelect={(file) => {
                 setFieldValue('leftFootFile', file);
-                console.log('Left Foot STL selected:', file?.name);
+                // console.log('Left Foot STL selected:', file?.name);
                 
                 // Mark field as touched and clear errors when file is selected
                 if (file) {
@@ -1391,17 +1390,17 @@ const Step2 = ({
             onChange={(value) => {
               handleChange('upload_link')(value);
               // Clear file-related errors if upload_link is provided
-              if (value && (errors.leftFootFile || errors.rightFootFile || errors.upload_link)) {
-                setErrors({
-                  ...errors,
-                  upload_link: undefined,
-                  leftFootFile: undefined,
-                  rightFootFile: undefined
-                });
-                setFieldValue('leftFootFile', null);
-                setFieldValue('rightFootFile', null);
-                setFieldValue('foot_Amputation', '');
-              }
+              // if (value && (errors.leftFootFile || errors.rightFootFile || errors.upload_link)) {
+              //   setErrors({
+              //     ...errors,
+              //     upload_link: undefined,
+              //     leftFootFile: undefined,
+              //     rightFootFile: undefined
+              //   });
+              //   setFieldValue('leftFootFile', null);
+              //   setFieldValue('rightFootFile', null);
+              //   setFieldValue('foot_Amputation', '');
+              // }
             }}
             inVaild={shouldShowError('upload_link')}
             // error={errors.upload_link}
@@ -1524,6 +1523,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
 
+
+
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -1572,7 +1573,6 @@ const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
                 })
               ) || initialValues.socket_design_details
           };
-          // console.log('response:', response);
           setFormValues(transformedData);
           if (response.data.item_code) {
             setSelectedItem(response.data.item_code);
@@ -1665,8 +1665,10 @@ const handlePayAndPlaceOrder = async (values: any) => {
       customer: user?.customer_id,
       order_details: values,
       item_code: itemCode,
-      addicoins: values.Design_by === "Self" ? 10 : 0
+      addicoins: parseInt(values.addicoins)
     };
+
+    // console.log("handlePayAndPlaceOrder", orderPayload)
 
     // You'll need to create an API endpoint that calculates order amount
     // This should return the order amount for payment
@@ -1677,7 +1679,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
     // }
 
     // const orderAmount = orderAmountResponse.data.order_amount;
-    const amountInPaise = 10000;
+    const amountInPaise = 100000;
 
     // Configure Razorpay options
     const options = {
@@ -1693,12 +1695,13 @@ const handlePayAndPlaceOrder = async (values: any) => {
           // After successful payment, create the order with payment details
           const finalOrderPayload = {
             ...orderPayload,
-            payment_id: response.razorpay_payment_id,
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_signature: response.razorpay_signature,
-            payment_status: 'paid'
+            custom_payment_reference_id: response.razorpay_payment_id,
+            // razorpay_order_id: response.razorpay_order_id,
+            // razorpay_signature: response.razorpay_signature,
+            // payment_status: 'paid'
           };
 
+          console.log('Final Order Payload:', finalOrderPayload);
           const orderResponse = await createOrder(finalOrderPayload).unwrap();
           // @ts-ignore 
           if (orderResponse?.message?.status === "success") {
@@ -1785,7 +1788,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
       order_details: values,
       item_code: itemCode,
       // @ts-ignore
-      addicoins: values.Design_by === "Self" ? 10 : 0
+      addicoins: parseInt(values.addicoins)
     };
 
     console.log("Create Order orderPayload:'", orderPayload)
@@ -1811,7 +1814,6 @@ const handlePayAndPlaceOrder = async (values: any) => {
   const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
   //    const itemCode = res?.data?.item_code;
-
   //   if (itemCode) {
   //   console.log(" Generated item code:", itemCode);
   // } else {
@@ -1892,8 +1894,9 @@ const handlePayAndPlaceOrder = async (values: any) => {
           model_name: values.model_name,
           stump_length: values.stump_length,
           weight: values.weight
+
         };
-        console.log('Item Payload:', itemPayload);
+        // console.log('Item Payload:', itemPayload);
         const itemCode = await getItemCodeByValues(itemPayload);
         setSelectedItem(itemCode);
         setShowStep1Confirmation(true);
@@ -2109,6 +2112,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
                 setEstimateConform={setEstimateConform}
                 orderId={orderId}
                 deviceTypeId={deviceTypeId}
+                user={user}
               />
             )}
 
@@ -2138,23 +2142,38 @@ const handlePayAndPlaceOrder = async (values: any) => {
                     Next
                   </Button>
                 ) : (
-                  <div className='flex gap-2.5'>
-                    <Button
-                    className="shadow-2xl"
-                    onClick={() => handlePayAndPlaceOrder(formValues)}
-                    disabled={!estimateConform || isOrderCreating || isPaymentProcessing || !isRazorpayLoaded}
-                  >
-                    {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
-                  </Button>
-                  <Button
-                    className="shadow-2xl"
-                    onClick={() => handleSubmit()}
-                    type="submit"
-                    disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
-                  >
-                    Order Now, Pay Later
-                  </Button>
-                  </div>
+                  <>
+                    {/* @ts-ignore */}
+                    {values.Design_by === "Self" && values.Print_by === "Self" ? (
+                      <div className='flex gap-2.5'>
+                        <Button
+                          className="shadow-2xl"
+                          onClick={() => handleSubmit()}
+                          disabled={!estimateConform || isOrderCreating || isPaymentProcessing || !isRazorpayLoaded}
+                        >
+                          {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className='flex gap-2.5'>
+                        <Button
+                          className="shadow-2xl"
+                          onClick={() => handlePayAndPlaceOrder(values)}
+                          disabled={!estimateConform || isOrderCreating || isPaymentProcessing || !isRazorpayLoaded}
+                        >
+                          {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
+                        </Button>
+                        <Button
+                          className="shadow-2xl"
+                          onClick={() => handleSubmit()}
+                          type="submit"
+                          disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
+                        >
+                          Pay Later
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

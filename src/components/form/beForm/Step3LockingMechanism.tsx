@@ -1,6 +1,7 @@
 import { SelectBox } from "@/components/ui/selectbox";
 import { GenericFileViewer } from "@/components/app/common/GenericFileViewer";
 import { useState, useEffect } from 'react';
+import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 
 type FormOptions = {
     [key: string]: Array<{ value: string; label: string }>;
@@ -34,7 +35,8 @@ export const Step3 = ({
     touched, 
     setFieldValue,
     FORM_OPTIONS,
-    formSubmitted 
+    formSubmitted ,
+    FORMIK_ERRORS
 }: any) => {
     const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
     const [objectUrls, setObjectUrls] = useState<Record<string, string>>({});
@@ -130,6 +132,7 @@ export const Step3 = ({
                     label="Components"
                     value={values.locking_system}
                     onValueChange={handleLockingSystemChange}
+                    
                     // error={shouldShowError('locking_system', true)}
                     // errorMessage={errors.locking_system}
                 />
