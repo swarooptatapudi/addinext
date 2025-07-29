@@ -1258,19 +1258,19 @@ const Step2 = ({
                       ...errors,
                       upload_link: undefined
                     });
-                    setFieldValue('leftFootFile', null);
-                    setFieldValue('rightFootFile', null);
-                    setFieldValue('upload_link', '');
+                    // setFieldValue('leftFootFile', null);
+                    // setFieldValue('rightFootFile', null);
+                    // setFieldValue('upload_link', '');
                     
                     // Mark file fields as touched to trigger validation display
                     setTimeout(() => {
                       if (value === 'Left_Foot' || value === 'Both') {
                         // This will trigger the validation and error display for leftFootFile
-                        setFieldValue('leftFootFile', null);
+                        // setFieldValue('leftFootFile', null);
                       }
                       if (value === 'Right_Foot' || value === 'Both') {
                         // This will trigger the validation and error display for rightFootFile
-                        setFieldValue('rightFootFile', null);
+                        // setFieldValue('rightFootFile', null);
                       }
                     }, 100);
                   }
@@ -1322,7 +1322,6 @@ const Step2 = ({
               buttonText="Right Foot"
               onFileSelect={(file) => {
                 setFieldValue('rightFootFile', file);
-                console.log('Right Foot STL selected:', file?.name);
                 
                 // Mark field as touched and clear errors when file is selected
                 if (file) {
