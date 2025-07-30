@@ -163,7 +163,7 @@ export const Step5 = ({
   }, [isActiveStep]);
 
   useEffect(() => {
-    setShowLaticesField(isAddiEase && isAddiEaseL && !isDesignSelf);
+    setShowLaticesField(isAddiEase || isAddiEaseL && !isDesignSelf);
     if (orderId && deviceTypeId) {
       setFieldValue('finish_type', values.finish_type);
     } else {
