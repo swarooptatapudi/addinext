@@ -51,6 +51,11 @@ interface RateAndDiscountData {
   };
 }
 
+// Static values as per requirements
+const COIN_BASE_PRICE = 200; // 1 Addicoins: ₹200
+const DISCOUNT_PERCENTAGE = 50; // Additional Discount: 50%
+const TAX_PERCENTAGE = 18; // Tax Value: 18%
+
 export default function Addicoins(): React.JSX.Element {
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
   const { data }: { data?: RateAndDiscountData } = useGetRateAndDiscountsQuery({
@@ -119,7 +124,7 @@ export default function Addicoins(): React.JSX.Element {
       // Set up Razorpay options
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
-        amount:(buyQuantity * applyRate *100).toString(), 
+        amount:(finalRate * 100).toString(),
         currency: 'INR',
         name: 'addiwise company',
         description: `Purchase of ${buyQuantity} coins`,
@@ -134,11 +139,11 @@ export default function Addicoins(): React.JSX.Element {
               buy_coin: buyQuantity,
               plan: currentPlan,
               payment_id: response.razorpay_payment_id,
-              amount:(buyQuantity * applyRate).toString()
-
+              amount: finalRate.toString()
             };
             
             const result = await buyAddiNxtCoin(payload).unwrap();
+            console.log('Payment result:', result);
             toast.success('Coins purchased successfully!');
             refetchTransactions(); 
             // if (result.success) {
@@ -200,6 +205,25 @@ export default function Addicoins(): React.JSX.Element {
     }
   };
 
+  // Calculate basic rate based on coins entered
+const calculateBasicRate = (coins: number): number => {
+  if (!coins || coins === 0) return 0;
+  const baseAmount = coins * COIN_BASE_PRICE;
+  const discountAmount = baseAmount * (DISCOUNT_PERCENTAGE / 100);
+  return baseAmount - discountAmount; // ₹200 - 50% = ₹100 per coin
+};
+
+// Calculate final rate (after tax)
+const calculateFinalRate = (basicRate: number): number => {
+  if (!basicRate) return 0;
+  const taxAmount = basicRate * (TAX_PERCENTAGE / 100);
+  return basicRate + taxAmount;
+};
+
+// Calculate values based on buyQuantity
+const basicRate = calculateBasicRate(buyQuantity);
+const finalRate = calculateFinalRate(basicRate);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -230,14 +254,16 @@ export default function Addicoins(): React.JSX.Element {
                 <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                 <div>
                   <span className="font-medium text-gray-700">1 Addicoins: </span>
-                  <span className="text-gray-600">₹{data?.data?.user_rules[0]?.coin_rate}</span>
+                  {/* <span className="text-gray-600">₹{data?.data?.user_rules[0]?.coin_rate}</span> */}
+                  <span className="text-gray-600">₹200</span>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                 <div>
                   <span className="font-medium text-gray-700">Additional Discount: </span>
-                  <span className="text-gray-600">{data?.data?.user_rules[0]?.discount}%</span>
+                  {/* <span className="text-gray-600">{data?.data?.user_rules[0]?.discount}%</span> */}
+                  <span className="text-gray-600">50%</span>
                 </div>
               </li>
               <li className="flex items-start gap-2">
@@ -258,21 +284,25 @@ export default function Addicoins(): React.JSX.Element {
                 <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                 <div>
                   <span className="font-medium text-gray-700">Basic Rate: </span>
-                  <span className="text-gray-600">₹{data?.data?.user_rules[0]?.base_rate}</span>
+                  {/* <span className="text-gray-600">₹100</span> */}
+                  <span className="text-gray-600">₹{basicRate.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                 <div>
                   <span className="font-medium text-gray-700">Tax Value: </span>
-                  <span className="text-gray-600">{data?.data?.user_rules[0]?.tax_value}%</span>
+                  {/* <span className="text-gray-600">{data?.data?.user_rules[0]?.tax_value}%</span> */}
+                  <span className="text-gray-600">18%</span>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                 <div>
                   <span className="font-medium text-gray-700">Final Rate: </span>
-                  <span className="text-gray-600">₹{applyRate}</span>
+                  {/* <span className="text-gray-600">₹{applyRate}</span> */}
+                  <span className="text-gray-600">₹{finalRate.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                 </div>
               </li>
             </ul>
@@ -327,7 +357,7 @@ export default function Addicoins(): React.JSX.Element {
                 <span className="font-medium">Total Amount:</span>
               </div>
               <div className="text-xl font-bold text-blue-800">
-                ₹{(buyQuantity * applyRate)?.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                ₹{finalRate?.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
               </div>
             </div>
             
