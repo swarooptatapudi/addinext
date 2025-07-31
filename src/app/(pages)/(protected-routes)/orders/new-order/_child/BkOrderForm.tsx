@@ -116,17 +116,18 @@ const step1Validation = Yup.object().shape({
   add_abd_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
-  value_c_detailss: Yup.array()
+  value_c_details: Yup.array()
     .of(
       Yup.object().shape({
         value: Yup.string()
+        .notRequired()
           .nullable()
           .matches(/^\d+(\.\d{1,2})?$/, 'Must be a number (e.g. 12 or 12.5)')
           .test('min-value', 'Minimum value is 1', (value) => !value || parseFloat(value) >= 1)
           .test('max-value', 'Maximum value is 100', (value) => !value || parseFloat(value) <= 100)
       })
-    )
-    .required(FORMIK_ERRORS.REQUIRED)
+    ).notRequired()
+   
   // value_c_details: Yup.array().of(
   //   Yup.object().shape({
   //     value: Yup.string()
@@ -901,7 +902,7 @@ const Step1 = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="mb-2">
               <label className="block text-xs font-medium text-black">
-                Value <strong>B</strong> Stump Size (cm)
+                Value <strong>B</strong> Stump Size (cm)<span className="text-red-500">*</span>
               </label>
               <Input
                 placeholder="20"
@@ -916,7 +917,7 @@ const Step1 = ({
           {/* // Update the measurements section in Step1 component */}
           <div className="">
             <p className="text-xs">
-              Value <strong>C</strong> - Circumference of Stump at 5 cm gap (cm)
+              Value <strong>C</strong> - Circumference of Stump at 5 cm gap (cm)<span className="text-red-500">*</span>
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-5 gap-y-4 w-[500px]">
@@ -926,13 +927,11 @@ const Step1 = ({
                 <div className="flex-1">
                   <Input
                     value={item?.value || ''}
-                    required={true}
                     name={`value_c_details[${index}].value`}
                     onChange={(e) => {
                       const inputValue = e.target.value;
                       if (inputValue === '' || /^[0-9]*\.?[0-9]*$/.test(inputValue)) {
                         const numValue = parseFloat(inputValue);
-                        
                         if (
                           inputValue === '' ||
                           (numValue >= 0 &&

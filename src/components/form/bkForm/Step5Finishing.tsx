@@ -95,6 +95,7 @@ export const Step5 = ({
   const showFinishOptionsMould = isAddiEase || isAddiEaseEco || isAddiEaseL;
   const isDesignSelf = values.Design_by === 'Self';
   const isPrintSelf = values.Print_by === 'Self';
+  const hideLaticesAndFinish = isDesignSelf && isPrintSelf;
 
   //colors dropdown
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -494,168 +495,112 @@ export const Step5 = ({
             </div>
           )}
 
-          {showFinishOptions && (
-            <div className="space-y-4 mt-5">
-              <label className="font-medium text-sm">
-                {isAddiEase || isAddiEaseL || isAddiEaseEco ? 'Finish' : ''}{' '}
+         <div className="space-y-4 mt-5">
+  {/* ✅ Wrap only Finish UI inside this condition */}
+  {showFinishOptions && !hideLaticesAndFinish && (
+    <>
+      <label className="font-medium text-sm">
+        {(isAddiEase || isAddiEaseL || isAddiEaseEco) ? 'Finish' : ''}
+      </label>
+      
+      {showFinishOptionsMould &&  (
+        <div className="ml-10 mb-5">
+          <div className="flex items-center gap-8 -mt-7 ml-12 ">
+            {finishOptions.map((option) => (
+              <label key={option.value} className="flex flex-col items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="finish_type"
+                  value={option.value}
+                  checked={values.finish_type === option.value}
+                  onChange={() => {
+                    setSelectedSubColor(null);
+                    setFieldValue('finish_type', option.value);
+                  }}
+                  className="sr-only peer"
+                />
+                <div className={`w-8 h-8 rounded-full border-2 ${option.color} ${
+                  values.finish_type === option.value
+                    ? 'border-blue-200 ring-2 ring-blue-300'
+                    : 'border-gray-300'
+                }`} />
+                <span className="text-sm mt-1 capitalize">{option.label}</span>
               </label>
-              {showFinishOptionsMould && (
-                <div className="ml-10 mb-5">
-                  <div className="flex items-center gap-8 -mt-7 ml-12 ">
-                    {finishOptions.map((option) => (
-                      <div key={option.value} className="relative">
-                        {option.subColors ? (
-                          <>
-                            {/* Dropdown Trigger Button */}
-                            {/* <div
-                              className={`w-8 h-8 rounded-full border-2 cursor-pointer ${
-                                values.finish_type === 'Colour'
-                                  ? 'border-blue-200 ring-2 ring-blue-300'
-                                  : 'border-gray-300'
-                              }`}
-                              style={{
-                                backgroundColor: option.hex
-                              }}
-                              onClick={() => setIsDropdownOpen((prev) => !prev)}
-                            ></div> */}
-
-                            {/* <div className="text-sm mt-1 text-center">{option.label}</div> */}
-
-                            {/* Dropdown Menu */}
-                            {/* {isDropdownOpen && (
-                              <div className="absolute z-10 mt-2 bg-white border rounded shadow-lg p-2 w-50">
-                                <p className="text-xs text-gray-500 mb-1">Choose Colour</p>
-                                <div className="grid grid-cols-2 gap-2">
-                                  {option.subColors.map((sub) => (
-                                    <label
-                                      key={sub.label}
-                                      className="flex items-center gap-2 cursor-pointer"
-                                    >
-                                      <input
-                                        type="radio"
-                                        name="finish_type"
-                                        value="Colour"
-                                        className="sr-only"
-                                        checked={
-                                          values.finish_type === 'Colour' &&
-                                          selectedSubColor?.label === sub.label
-                                        }
-                                        onChange={() => {
-                                          setSelectedSubColor(sub);
-                                          setFieldValue('finish_type', 'Colour');
-                                          setIsDropdownOpen(false);
-                                        }}
-                                      />
-                                      <div
-                                        className={`w-6 h-6 rounded-full border-2 ${
-                                          selectedSubColor?.label === sub.label
-                                            ? 'border-blue-400 ring-2 ring-blue-200'
-                                            : 'border-gray-300'
-                                        }`}
-                                        style={{ backgroundColor: sub.hex }}
-                                      />
-                                      <span className="text-sm">{sub.label}</span>
-                                    </label>
-                                  ))}
-                                </div>
-                              </div>
-                            )} */}
-                          </>
-                        ) : (
-                          // Normal options like Black Dye
-                          <label className="flex flex-col items-center cursor-pointer">
-                            <input
-                              type="radio"
-                              name="finish_type"
-                              value={option.value}
-                              checked={values.finish_type === option.value}
-                              onChange={() => {
-                                setSelectedSubColor(null);
-                                setFieldValue('finish_type', option.value);
-                              }}
-                              className="sr-only peer"
-                            />
-                            <div
-                              className={`w-8 h-8 rounded-full border-2 ${option.color} ${
-                                values.finish_type === option.value
-                                  ? 'border-blue-200 ring-2 ring-blue-300'
-                                  : 'border-gray-300'
-                              }`}
-                            />
-                            <span className="text-sm mt-1 capitalize">{option.label}</span>
-                          </label>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {errors.finish_type && touched.finish_type && (
-                    <p className="text-red-500 text-xs mt-1">{errors.finish_type}</p>
-                  )}
-                </div>
-              )}
-
-              <div className="space-y-2 mt-0">
-                <div className="relative w-[350px]">
-                  <Input
-                    type="text"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    placeholder="Enter coupon code"
-                    className={`w-full pr-10 ${
-                      couponCode.length >= 5 && !couponData && !isValidatingCoupon
-                        ? 'border-orange-200'
-                        : couponData
-                          ? 'border-green-200'
-                          : ''
-                    }`}
-                  />
-                  <div className="absolute right-3 top-2">
-                    {isValidatingCoupon ? (
-                      <Loader className="h-4 w-4 animate-spin" />
-                    ) : couponCode.length >= 5 ? (
-                      couponData ? (
-                        <Check className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <X className="h-5 w-5 text-red-500" />
-                      )
-                    ) : null}
-                  </div>
-                </div>
-                {couponData && (
-                  <div className="text-sm text-green-700 mt-1 ml-5">
-                    {couponData.coupon_name} ({couponData.discount_percentage}% off)
-                    {couponData.valid_upto && (
-                      <span className="text-gray-500 ml-6">
-                        valid date {new Date(couponData.valid_upto).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-              {!orderId && !deviceTypeId && (
-                <Button
-                  className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
-                  onClick={handleEstimateClick}
-                  disabled={isEstimating}
-                >
-                  {isEstimating
-                    ? 'Estimating...'
-                    : isEstimateStale
-                      ? 'Update Estimate'
-                      : 'Estimate Now'}
-                </Button>
-              )}
-              {showPreviwButton && (
-                <Button
-                  className="w-[350px] mt-4 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
-                  onClick={() => setIsOrderSummaryOpen(true)}
-                  disabled={isEstimating}
-                >
-                  Show Order Summary
-                </Button>
-              )}
-            </div>
+            ))}
+          </div>
+          {errors.finish_type && touched.finish_type && (
+            <p className="text-red-500 text-xs mt-1">{errors.finish_type}</p>
           )}
+        </div>
+      )}
+    </>
+  )}
+
+  {/* ✅ Always visible: coupon, estimate button, preview button */}
+  <div className="space-y-2 mt-0">
+    <div className="relative w-[350px]">
+      <Input
+        type="text"
+        value={couponCode}
+        onChange={(e) => setCouponCode(e.target.value)}
+        placeholder="Enter coupon code"
+        className={`w-full pr-10 ${
+          couponCode.length >= 5 && !couponData && !isValidatingCoupon
+            ? 'border-orange-200'
+            : couponData
+              ? 'border-green-200'
+              : ''
+        }`}
+      />
+      <div className="absolute right-3 top-2">
+        {isValidatingCoupon ? (
+          <Loader className="h-4 w-4 animate-spin" />
+        ) : couponCode.length >= 5 ? (
+          couponData ? (
+            <Check className="h-5 w-5 text-green-500" />
+          ) : (
+            <X className="h-5 w-5 text-red-500" />
+          )
+        ) : null}
+      </div>
+    </div>
+    {couponData && (
+      <div className="text-sm text-green-700 mt-1 ml-5">
+        {couponData.coupon_name} ({couponData.discount_percentage}% off)
+        {couponData.valid_upto && (
+          <span className="text-gray-500 ml-6">
+            valid date {new Date(couponData.valid_upto).toLocaleDateString()}
+          </span>
+        )}
+      </div>
+    )}
+  </div>
+
+  {!orderId && !deviceTypeId && (
+    <Button
+      className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+      onClick={handleEstimateClick}
+      disabled={isEstimating}
+    >
+      {isEstimating
+        ? 'Estimating...'
+        : isEstimateStale
+          ? 'Update Estimate'
+          : 'Estimate Now'}
+    </Button>
+  )}
+
+  {showPreviwButton && (
+    <Button
+      className="w-[350px] mt-4 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+      onClick={() => setIsOrderSummaryOpen(true)}
+      disabled={isEstimating}
+    >
+      Show Order Summary
+    </Button>
+  )}
+</div>
+
         </div>
 
         {showInsufficientCoinsModal ? (

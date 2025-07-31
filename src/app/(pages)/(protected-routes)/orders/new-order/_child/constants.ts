@@ -137,11 +137,19 @@ export const BK_FORM_INITIAL_VALUES = {
         value: ""
     },
     {
-        gap: "05 cm",
+        gap: "03 cm",
         value: ""
     },
     {
-        gap: "10 cm",
+        gap: "06 cm",
+        value: ""
+    },
+    {
+        gap: "09 cm",
+        value: ""
+    },
+    {
+        gap: "12 cm",
         value: ""
     },
     {
@@ -149,19 +157,11 @@ export const BK_FORM_INITIAL_VALUES = {
         value: ""
     },
     {
-        gap: "20 cm",
+        gap: "18 cm",
         value: ""
     },
     {
-        gap: "25 cm",
-        value: ""
-    },
-    {
-        gap: "30 cm",
-        value: ""
-    },
-    {
-        gap: "35 cm",
+        gap: "21 cm",
         value: ""
     }
 ]
