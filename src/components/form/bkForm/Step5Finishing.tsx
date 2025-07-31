@@ -87,6 +87,9 @@ export const Step5 = ({
   const isAddiEaseEco = values.model_name === 'AddiEaseEco';
   const isAddiEaseL = values.model_name === 'AddiEaseL';
 
+
+
+  
   const showFinishOptions =
     isAddiEase || isAddiEaseEco || isAddiEaseL || 'AddiEaseMould' || 'AddiEaseMould-HR';
   const showFinishOptionsMould = isAddiEase || isAddiEaseEco || isAddiEaseL;
@@ -504,7 +507,7 @@ export const Step5 = ({
                         {option.subColors ? (
                           <>
                             {/* Dropdown Trigger Button */}
-                            <div
+                            {/* <div
                               className={`w-8 h-8 rounded-full border-2 cursor-pointer ${
                                 values.finish_type === 'Colour'
                                   ? 'border-blue-200 ring-2 ring-blue-300'
@@ -514,12 +517,12 @@ export const Step5 = ({
                                 backgroundColor: option.hex
                               }}
                               onClick={() => setIsDropdownOpen((prev) => !prev)}
-                            ></div>
+                            ></div> */}
 
-                            <div className="text-sm mt-1 text-center">{option.label}</div>
+                            {/* <div className="text-sm mt-1 text-center">{option.label}</div> */}
 
                             {/* Dropdown Menu */}
-                            {isDropdownOpen && (
+                            {/* {isDropdownOpen && (
                               <div className="absolute z-10 mt-2 bg-white border rounded shadow-lg p-2 w-50">
                                 <p className="text-xs text-gray-500 mb-1">Choose Colour</p>
                                 <div className="grid grid-cols-2 gap-2">
@@ -556,7 +559,7 @@ export const Step5 = ({
                                   ))}
                                 </div>
                               </div>
-                            )}
+                            )} */}
                           </>
                         ) : (
                           // Normal options like Black Dye

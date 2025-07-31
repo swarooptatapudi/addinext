@@ -65,6 +65,7 @@ const step1Validation = Yup.object().shape({
   socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   design_variation: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   model_name: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  amputated_leg: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   height: Yup.string()
     .matches(/^\d+(\.\d{1,2})?$/, {
@@ -93,7 +94,7 @@ const step1Validation = Yup.object().shape({
     })
     .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
     .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 100.0),
-  stump_size: Yup.string()
+  stump_size: Yup.string().required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 92.57 or 95)',
       excludeEmptyString: true
@@ -101,13 +102,15 @@ const step1Validation = Yup.object().shape({
     .test('min-value', 'Minimum value is 1cm', (value) => !value || parseFloat(value) >= 1)
     .test('max-value', 'Maximum value is 100cm', (value) => !value || parseFloat(value) <= 100),
   shoe_size: Yup.string()
+  .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 92.57 or 95)',
       excludeEmptyString: true
     })
     .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 0)
     .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 100.0),
-  flexion_angle: Yup.string()
+  foot_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+    flexion_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
   add_abd_angle: Yup.string()
@@ -118,13 +121,12 @@ const step1Validation = Yup.object().shape({
       Yup.object().shape({
         value: Yup.string()
           .nullable()
-          .notRequired()
           .matches(/^\d+(\.\d{1,2})?$/, 'Must be a number (e.g. 12 or 12.5)')
           .test('min-value', 'Minimum value is 1', (value) => !value || parseFloat(value) >= 1)
           .test('max-value', 'Maximum value is 100', (value) => !value || parseFloat(value) <= 100)
       })
     )
-    .notRequired()
+    .required(FORMIK_ERRORS.REQUIRED)
   // value_c_details: Yup.array().of(
   //   Yup.object().shape({
   //     value: Yup.string()
@@ -764,8 +766,11 @@ const Step1 = ({
         <SelectBox
           options={FORM_OPTIONS?.amputated_leg || []}
           label="Amputation Leg"
+          required
           value={values.amputated_leg || ''}
           onValueChange={handleChange('amputated_leg')}
+            inVaild={shouldShowError('amputated_leg', true)}
+          error={errors.amputated_leg}
         />
         <SelectBox
           options={FORM_OPTIONS?.reason_for_amputation || []}
@@ -902,7 +907,7 @@ const Step1 = ({
                 placeholder="20"
                 value={values.stump_size || ''}
                 onChange={handleChange('stump_size')}
-                required
+                required={true}
                 inVaild={shouldShowError('stump_size')}
                 error={errors.stump_size}
               />
@@ -921,11 +926,13 @@ const Step1 = ({
                 <div className="flex-1">
                   <Input
                     value={item?.value || ''}
+                    required={true}
                     name={`value_c_details[${index}].value`}
                     onChange={(e) => {
                       const inputValue = e.target.value;
                       if (inputValue === '' || /^[0-9]*\.?[0-9]*$/.test(inputValue)) {
                         const numValue = parseFloat(inputValue);
+                        
                         if (
                           inputValue === '' ||
                           (numValue >= 0 &&
@@ -943,6 +950,7 @@ const Step1 = ({
                       if (inputValue === '') {
                         const newValueCDetails = [...values.value_c_details];
                         newValueCDetails[index].value = '0';
+                        
                         setFieldValue('value_c_details', newValueCDetails);
                       } else if (inputValue.endsWith('.')) {
                         const newValueCDetails = [...values.value_c_details];
@@ -972,9 +980,11 @@ const Step1 = ({
           <SelectBox
             options={FORM_OPTIONS['foot_type'] ?? []}
             label="Foot Type"
-            required={false}
+            required={true}
             value={values.foot_type || ''}
             onValueChange={handleChange('foot_type')}
+              inVaild={shouldShowError('foot_type', true)}
+          error={errors.foot_type}
             className="w-full"
           />
         </div>
@@ -983,6 +993,7 @@ const Step1 = ({
           <Input
             placeholder="0"
             label="Shoe Size (cm)"
+            required={true}
             value={values.shoe_size || ''}
             onChange={handleChange('shoe_size')}
             inVaild={shouldShowError('shoe_size')}
@@ -1019,8 +1030,11 @@ const Step1 = ({
           <SelectBox
             options={FORM_OPTIONS['stump_type'] ?? []}
             label="Stump Type"
+            required={true}
             value={values.stump_type || ''}
             onValueChange={handleChange('stump_type')}
+             inVaild={shouldShowError('stump_type', true)}
+          error={errors.stump_type}
             className="w-full"
           />
         </div>
