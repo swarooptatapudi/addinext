@@ -119,7 +119,7 @@ export default function ModelFilePicker({
 
     if (!f) return;
 
-    const allowedExtensions = ['.stl', '.obj', '.ply'];
+    const allowedExtensions = ['.stl', '.obj', '.ply', '.zip'];
     const fileExtension = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
 
     if (!allowedExtensions.includes(fileExtension)) {
@@ -135,7 +135,11 @@ export default function ModelFilePicker({
 
     setFile(f);
     setFileType(fileExtension);
+    if (fileExtension !== '.zip') {
     setFileUrl(URL.createObjectURL(f));
+  } else {
+    setFileUrl(null); // No preview for ZIP files
+  }
     onFileSelect?.(f);
   };
 
@@ -175,15 +179,15 @@ export default function ModelFilePicker({
           ) : (
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="picture">{label}</Label>
-              <Input id="picture" type="file" onChange={handleChange} accept=".stl,.obj,.ply" />
+              <Input id="picture" type="file" onChange={handleChange} accept=".stl,.obj,.ply,.zip" />
               {error && <p className="text-sm text-red-500">{error}</p>}
               <p className="text-xs text-muted-foreground">
-                Max file size: 25MB | Allowed types: .stl, .obj, .ply
+                Max file size: 25MB | Allowed types: .stl, .obj, .ply, .zip
               </p>
             </div>
           )}
 
-          {fileUrl && <ModelViewerR3F fileUrl={fileUrl} fileType={fileType} />}
+          {fileUrl && fileType !== '.zip' && <ModelViewerR3F fileUrl={fileUrl} fileType={fileType} />}
         </DialogContent>
       </Dialog>
     </div>

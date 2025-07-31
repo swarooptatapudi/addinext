@@ -128,6 +128,7 @@ export default function Addicoins(): React.JSX.Element {
         // order_id: "ddd",
         app_name:'addiwise customer portal',
         handler: async function(response: any) {
+          console.log('Payment response:', response);
           try {
             const payload = {
               buy_coin: buyQuantity,
@@ -166,6 +167,7 @@ export default function Addicoins(): React.JSX.Element {
           color: '#3399cc',
         },
       };
+      console.log('Razorpay options:', options);
       // Open Razorpay payment modal
       const rzp = new window.Razorpay(options);
       rzp.open();

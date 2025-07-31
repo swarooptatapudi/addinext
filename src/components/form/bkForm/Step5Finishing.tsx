@@ -166,7 +166,7 @@ export const Step5 = ({
   }, [isActiveStep]);
 
   useEffect(() => {
-    setShowLaticesField(isAddiEase && isAddiEaseL && !isDesignSelf);
+    setShowLaticesField(isAddiEase || isAddiEaseL && !isDesignSelf);
     if (orderId && deviceTypeId) {
       setFieldValue('finish_type', values.finish_type);
     } else {
@@ -360,7 +360,7 @@ export const Step5 = ({
         order_details: values
       };
       // @ts--ignore
-      console.log('orderPayload MOdal', orderPayload);
+      // console.log('orderPayload MOdal', orderPayload);
       setOrderData(orderPayload);
       setShowPreviwButton(true);
     } catch (error: any) {
@@ -911,7 +911,7 @@ export const Step5 = ({
                                   Additional Discount
                                 </span>
                                 <span className="text-gray-700">
-                                  ₹{estimateData.apiResponse.additional_discount}
+                                  (-)₹{estimateData.apiResponse.additional_discount}
                                 </span>
                               </div>
                             </li>
@@ -1178,7 +1178,7 @@ export const Step5 = ({
                                       Additional Discount
                                     </span>
                                     <span className="text-gray-700">
-                                      ₹{estimateData.apiResponse.additional_discount}
+                                      (-)₹{estimateData.apiResponse.additional_discount}
                                     </span>
                                   </div>
                                 </li>
@@ -1394,7 +1394,7 @@ export const Step5 = ({
                                   Additional Discount
                                 </span>
                                 <span className="text-gray-700">
-                                  ₹{estimateData.apiResponse.additional_discount}
+                                  (-)₹{estimateData.apiResponse.additional_discount}
                                 </span>
                               </div>
                             </li>
@@ -1567,7 +1567,7 @@ export const Step5 = ({
                             <div className="flex justify-between w-full">
                               <span className="font-medium text-gray-700">Additional Discount</span>
                               <span className="text-gray-700">
-                                -₹{estimateData.apiResponse.additional_discount}
+                                (-)₹{estimateData.apiResponse.additional_discount}
                               </span>
                             </div>
                           </li>
