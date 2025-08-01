@@ -99,6 +99,11 @@ const step1Validation = Yup.object().shape({
       message: 'Must be a number (e.g. 92.57 or 95)',
       excludeEmptyString: true
     })
+    .test('greater-than-stump-length', 'Value B must be greater than Value A', function(value) {
+      const stumpLength = this.parent.stump_length;
+      if (!value || !stumpLength) return true;
+      return parseFloat(value) > parseFloat(stumpLength);
+    })
     .test('min-value', 'Minimum value is 1cm', (value) => !value || parseFloat(value) >= 1)
     .test('max-value', 'Maximum value is 100cm', (value) => !value || parseFloat(value) <= 100),
   shoe_size: Yup.string()
@@ -119,34 +124,34 @@ const step1Validation = Yup.object().shape({
   value_c_details: Yup.array()
     .of(
       Yup.object().shape({
-        value: Yup.string()
-          .nullable()
-          .test('conditional-validation', 'Must be a valid number (e.g. 12 or 12.5)', 
-            // @ts-ignore
-            function (value) {
-            // Get the index of the current item in the array
-            const index = this.parent.index || 0;
-            // First entry (index 0) is mandatory
-            if (index === 0) {
-              return (
-                value &&
-                /^\d+(\.\d{1,2})?$/.test(value) &&
-                parseFloat(value) >= 1 &&
-                parseFloat(value) <= 100
-              );
-            }
-            // Other entries are optional; allow empty or valid numbers
-            return (
-              !value ||
-              (value &&
-                /^\d+(\.\d{1,2})?$/.test(value) &&
-                parseFloat(value) >= 1 &&
-                parseFloat(value) <= 100)
-            );
-          }),
+        // value: Yup.string()
+          // .nullable()
+          // .test('conditional-validation', 'Must be a valid number (e.g. 12 or 12.5)', 
+          //   // @ts-ignore
+          //   function (value) {
+          //   // Get the index of the current item in the array
+          //   const index = this.parent.index || 0;
+          //   // First entry (index 0) is mandatory
+          //   if (index === 0) {
+          //     return (
+          //       value &&
+          //       /^\d+(\.\d{1,2})?$/.test(value) &&
+          //       parseFloat(value) >= 1 &&
+          //       parseFloat(value) <= 100
+          //     );
+          //   }
+          //   // Other entries are optional; allow empty or valid numbers
+          //   return (
+          //     !value ||
+          //     (value &&
+          //       /^\d+(\.\d{1,2})?$/.test(value) &&
+          //       parseFloat(value) >= 1 &&
+          //       parseFloat(value) <= 100)
+          //   );
+          // }),
       })
     )
-    .required('Circumference details are required')
+    // .required('Circumference details are required')
    
   // value_c_details: Yup.array().of(
   //   Yup.object().shape({
@@ -922,7 +927,7 @@ const Step1 = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="mb-2">
               <label className="block text-xs font-medium text-black">
-                Value <strong>B</strong> Stump Size (cm)<span className="text-red-500">*</span>
+                Value <strong>B</strong> Patella to Ground (cm)<span className="text-red-500">*</span>
               </label>
               <Input
                 placeholder="20"
@@ -954,13 +959,11 @@ const Step1 = ({
                         const numValue = parseFloat(inputValue);
                         if (
                           inputValue === '' ||
-                          (numValue >= 0 &&
-                            numValue <= 100 &&
-                            (inputValue.match(/\./g) || []).length <= 1)
+                          (numValue >= 1 && numValue <= 100 && (inputValue.match(/\./g) || []).length <= 1)
                         ) {
                           const newValueCDetails = [...values.value_c_details];
                           newValueCDetails[index].value = inputValue;
-                          setFieldValue('value_c_details', newValueCDetails);
+                          setFieldValue('value_c_details', newValueCDetails, true); // true forces validation
                         }
                       }
                     }}
@@ -969,7 +972,6 @@ const Step1 = ({
                       if (inputValue === '') {
                         const newValueCDetails = [...values.value_c_details];
                         newValueCDetails[index].value = '0';
-                        
                         setFieldValue('value_c_details', newValueCDetails);
                       } else if (inputValue.endsWith('.')) {
                         const newValueCDetails = [...values.value_c_details];
@@ -982,8 +984,8 @@ const Step1 = ({
                       }
                     }}
                     placeholder="cm"
-                    inVaild={shouldShowError(`value_c_details.[${index}].value`)}
-                    error={errors?.value_c_details?.[index]?.value}
+                    // inVaild={shouldShowError(`value_c_details[${index}].value`, index === 0)}
+                    // error={errors?.value_c_details?.[index]?.value}
                     step="any"
                     min="0"
                     max="100"
@@ -1011,7 +1013,7 @@ const Step1 = ({
         <div className="col-span-1">
           <Input
             placeholder="0"
-            label="Shoe Size (cm)"
+            label="Shoe Size (cm) (UK Size)"
             required={true}
             value={values.shoe_size || ''}
             onChange={handleChange('shoe_size')}
