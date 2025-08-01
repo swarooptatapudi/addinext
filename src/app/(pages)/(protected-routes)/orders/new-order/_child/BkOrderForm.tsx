@@ -120,13 +120,33 @@ const step1Validation = Yup.object().shape({
     .of(
       Yup.object().shape({
         value: Yup.string()
-        .notRequired()
           .nullable()
-          .matches(/^\d+(\.\d{1,2})?$/, 'Must be a number (e.g. 12 or 12.5)')
-          .test('min-value', 'Minimum value is 1', (value) => !value || parseFloat(value) >= 1)
-          .test('max-value', 'Maximum value is 100', (value) => !value || parseFloat(value) <= 100)
+          .test('conditional-validation', 'Must be a valid number (e.g. 12 or 12.5)', 
+            // @ts-ignore
+            function (value) {
+            // Get the index of the current item in the array
+            const index = this.parent.index || 0;
+            // First entry (index 0) is mandatory
+            if (index === 0) {
+              return (
+                value &&
+                /^\d+(\.\d{1,2})?$/.test(value) &&
+                parseFloat(value) >= 1 &&
+                parseFloat(value) <= 100
+              );
+            }
+            // Other entries are optional; allow empty or valid numbers
+            return (
+              !value ||
+              (value &&
+                /^\d+(\.\d{1,2})?$/.test(value) &&
+                parseFloat(value) >= 1 &&
+                parseFloat(value) <= 100)
+            );
+          }),
       })
-    ).notRequired()
+    )
+    .required('Circumference details are required')
    
   // value_c_details: Yup.array().of(
   //   Yup.object().shape({
@@ -1894,6 +1914,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
   const nextStep = async (values: any, setErrors: any) => {
     setFormSubmitted(true);
     const errors = await validateCurrentStep(values);
+    console.log('Validation Errors:', errors);
     if (Object.keys(errors).length === 0) {
       if (currentStep === 1) {
         // Show confirmation dialog after Step 1
@@ -2142,6 +2163,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
                   <Button
                     className="shadow-2xl"
                     onClick={async () => {
+                      console.log("next step error", errors);
                       await nextStep(values, setErrors);
                     }}
                     type="button"
