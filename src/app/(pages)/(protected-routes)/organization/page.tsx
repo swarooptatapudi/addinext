@@ -216,10 +216,10 @@ export default function Organization(): React.JSX.Element {
                             <TableHead className="font-medium text-gray-600 p-2">Transaction ID</TableHead>
                             <TableHead className="font-medium text-gray-600">Date</TableHead>
                             <TableHead className="font-medium text-gray-600">Coins</TableHead>
-                            <TableHead className="font-medium text-gray-600">Rate</TableHead>
+                            {/* <TableHead className="font-medium text-gray-600">Rate</TableHead> */}
                             <TableHead className="font-medium text-gray-600">Aomunt</TableHead>
-                            <TableHead className="font-medium text-gray-600">Payment ID</TableHead>
-                            <TableHead className="font-medium text-gray-600">Payment Status</TableHead>
+                            {/* <TableHead className="font-medium text-gray-600">Payment ID</TableHead>
+                            <TableHead className="font-medium text-gray-600">Payment Status</TableHead> */}
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -239,21 +239,21 @@ export default function Organization(): React.JSX.Element {
                                 <TableCell>
                                   <span className="text-gray-600">{transaction.coins?.toLocaleString()}</span>
                                 </TableCell>
-                                <TableCell>
+                                {/* <TableCell>
                                   <span className="text-gray-600">{transaction.rate}</span>
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell>
                                   <span className="text-gray-600">{transaction.total_amount}</span>
                                 </TableCell>
             
-                                <TableCell className="font-medium">
+                                {/* <TableCell className="font-medium">
                                   <span className="text-gray-600">{transaction.payment_transaction_id}</span>
                                 </TableCell>
                                
                            
                                 <TableCell>
                                   <span className="text-gray-600">{transaction.payment_status}</span>
-                                </TableCell>
+                                </TableCell> */}
                               </TableRow>
                             ))
                           ) : (
@@ -280,7 +280,7 @@ export default function Organization(): React.JSX.Element {
                       <div className="p-2 bg-blue-100 rounded-lg">
                         <HistoryIcon className="w-5 h-5 text-blue-600" />
                       </div>
-                        <CardTitle className="text-xl font-semibold text-primary ">Sales Coins Transaction History</CardTitle>
+                        <CardTitle className="text-xl font-semibold text-primary ">Usage Coins  History</CardTitle>
                       </div>
                     </CardHeader> 
                     <CardContent className="p-0 mt-[-25px]">

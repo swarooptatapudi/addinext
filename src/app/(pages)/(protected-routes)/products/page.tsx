@@ -8,8 +8,8 @@ export default function Products(): React.JSX.Element {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
         <div>
           <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
-            Prosthetics Lower Extremity
-          </p>
+            Prosthetics
+          </p> <div className="text-xs  font-extrabold text-[#2e2a6f] mb-3  -mt-3 uppercase">Lower Extremity</div>
           <div className="flex flex-wrap gap-x-8 gap-y-6">
             <ProductItem 
               src="/assets/order-forms/products/BK.jpg" 
@@ -27,8 +27,8 @@ export default function Products(): React.JSX.Element {
         {/* Prosthetics Upper Extremity */}
         <div>
           <p className="text-xs  font-extrabold text-[#2e2a6f] mb-3 uppercase">
-            Prosthetics Upper Extremity
-          </p>
+            Prosthetics
+          </p> <div className="text-xs  font-extrabold text-[#2e2a6f] mb-3  -mt-3 uppercase">Upper Extremity</div> 
           <div className="flex flex-wrap gap-x-8 gap-y-6 justify-start">
             <ProductItem 
               src="/assets/order-forms/products/BE.jpg" 
@@ -39,20 +39,6 @@ export default function Products(): React.JSX.Element {
               src="/assets/order-forms/products/AE.jpg" 
               label="Above Elbow (AE)" 
               href="/orders/new-order/AE" 
-            />
-          </div>
-        </div>
-
-        {/* Off the Shelf */}
-        <div>
-          <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
-            Off the Shelf
-          </p>
-          <div className="flex flex-wrap gap-x-8 gap-y-6 flex flex-col justify-start">
-            <ProductItem 
-              src="/assets/order-forms/products/Addistud.jpg" 
-              label="AddiStud" 
-              href={''}
             />
           </div>
         </div>
@@ -91,7 +77,19 @@ export default function Products(): React.JSX.Element {
           />
         </div>
       </div>
-
+ {/* Off the Shelf */}
+        <div>
+          <p className="text-xs mt-5 font-extrabold text-[#2e2a6f] mb-3 uppercase">
+            Off the Shelf
+          </p>
+          <div className="flex flex-wrap gap-x-8 gap-y-6 flex flex-col justify-start">
+            <ProductItem 
+              src="/assets/order-forms/products/Addistud.jpg" 
+              label="AddiStud" 
+              href={''}
+            />
+          </div>
+        </div>
       {/* Scanners */}
       <div className='mt-5'>
         <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
@@ -103,11 +101,7 @@ export default function Products(): React.JSX.Element {
             label="AddiPrime" 
             href={''}
           />
-          <ProductItem 
-            src="/assets/order-forms/products/AddIPrint.jpg" 
-            label="AddiPrint-P500" 
-            href={''}
-          />
+         
         </div>
       </div>
 
@@ -120,6 +114,11 @@ export default function Products(): React.JSX.Element {
           <ProductItem 
             src="/assets/order-forms/products/HP-MJF.jpg" 
             label="HP-MJF" 
+            href={''}
+          />
+           <ProductItem 
+            src="/assets/order-forms/products/AddIPrint.jpg" 
+            label="AddiPrint-P500" 
             href={''}
           />
         </div>

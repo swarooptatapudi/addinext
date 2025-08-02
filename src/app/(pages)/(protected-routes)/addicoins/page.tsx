@@ -39,22 +39,39 @@ interface Transaction {
   base_rate?:string;
 }
 
+// interface RateAndDiscountData {
+//   data?: {
+//     user_rules: Array<{
+//       minimum: number;
+//       maximum: number;
+//       apply_rate: number;
+//       plan: string;
+//       coin_rate: number;
+//       discount: number;
+//       tax_value:number;
+//       base_rate: number;
+//     }>;
+//   };
+// }
 interface RateAndDiscountData {
-  data?: {
-    user_rules: Array<{
-      minimum: number;
-      maximum: number;
-      apply_rate: number;
-      plan: string;
-      coin_rate: number;
-      discount: number;
-      tax_value:number;
-      base_rate: number;
-    }>;
+  message?: {
+    status_code: number;
+    message: string;
+    data: {
+      coin_rules: {
+        custom_base_rate: number;
+        custom_tax_rate: number;
+        minimum_coin_purchase: number;
+        maximum_coin_purchase: number;
+        coin_price_per_unit: number;
+        addinxt_subscription: string;
+      };
+      subscription_discount: number;
+      time: string;
+    };
   };
 }
 
-// Static values as per requirements
 const COIN_BASE_PRICE = 200; // 1 Addicoins: ₹200
 const DISCOUNT_PERCENTAGE = 50; // Additional Discount: 50%
 const TAX_PERCENTAGE = 18; // Tax Value: 18%
@@ -64,10 +81,13 @@ export default function Addicoins(): React.JSX.Element {
   const { data }: { data?: RateAndDiscountData } = useGetRateAndDiscountsQuery({
     customer: user?.customer_id,
   });
+  console.log("rate dd:",data);
+    console.log("user  dd:",user);
   
   const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
     customer: user?.customer_id,
   });
+  console.log("transactionHistory dd:",user);
   const [initPayment, { isLoading }] = useBuyCoinsInitiatePaymentMutation();
   const [buyCoins, { isLoading: isPaymentSuccessLoading }] = useBuyCoinsAfterPaymentMutation();
   const [buyAddiNxtCoin, { isLoading: isBuyingCoins }] = useBuyAddiNxtCoinMutation(); 
@@ -75,10 +95,19 @@ export default function Addicoins(): React.JSX.Element {
   const [payId, setPayId] = React.useState<string>('');
   const [error, setError] = React.useState<string>('');
 
-  const minCoins = data?.data?.user_rules[0]?.minimum || 3;
-  const maxCoins = data?.data?.user_rules[0]?.maximum || Infinity;
-  const applyRate = data?.data?.user_rules[0]?.apply_rate || 0;
-  const currentPlan = data?.data?.user_rules[0]?.plan || "Basic";
+  // const minCoins = data?.data?.user_rules[0]?.minimum || 3;
+  // const maxCoins = data?.data?.user_rules[0]?.maximum || Infinity;
+  // const applyRate = data?.data?.user_rules[0]?.apply_rate || 0;
+  // const currentPlan = data?.data?.user_rules[0]?.plan || "Basic";
+  // const coinRules = data?.data?.user_rules;
+const coinRules = data?.message?.data?.coin_rules;
+const minCoins = coinRules?.minimum_coin_purchase || 3;
+const maxCoins = coinRules?.maximum_coin_purchase || Infinity;
+const applyRate = coinRules?.custom_base_rate || 0;
+const taxRate = coinRules?.custom_tax_rate || 18;
+const coinRate = coinRules?.coin_price_per_unit || 0;
+const subscriptionId = coinRules?.addinxt_subscription || "Basic";
+const standardDiscount = data?.message?.data?.subscription_discount || 50;
 
   // coupon code 
   const [couponCode, setCouponCode] = useState('');
@@ -179,7 +208,7 @@ export default function Addicoins(): React.JSX.Element {
           try {
             const payload = {
               buy_coin: buyQuantity,
-              plan: currentPlan,
+              plan: subscriptionId,
               payment_id: response.razorpay_payment_id,
               amount: finalRate.toString()
             };
@@ -208,7 +237,7 @@ export default function Addicoins(): React.JSX.Element {
         notes: {
           customer_id: user?.customer_id,
           coins: buyQuantity.toString(),
-          plan: currentPlan,
+          plan: subscriptionId,
         },
         theme: {
           color: '#3399cc',
@@ -300,6 +329,8 @@ const handleCouponValidation = async () => {
 const basicRate = calculateBasicRate(buyQuantity);
 const finalRate = calculateFinalRate(basicRate);
 
+
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -331,15 +362,17 @@ const finalRate = calculateFinalRate(basicRate);
                 <div>
                   <span className="font-medium text-gray-700">1 Addicoins: </span>
                   {/* <span className="text-gray-600">₹{data?.data?.user_rules[0]?.coin_rate}</span> */}
-                  <span className="text-gray-600">₹200</span>
+                  {/* <span className="text-gray-600">₹200</span> */}
+                  <span className="text-gray-600">₹{coinRate}</span>
+                   {/* <span className="text-gray-600">₹{rule?.coin_price_per_unit ?? 0}</span> */}
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                 <div>
                   <span className="font-medium text-gray-700">Standard Discount: </span>
-                  {/* <span className="text-gray-600">{data?.data?.user_rules[0]?.discount}%</span> */}
-                  <span className="text-gray-600">50%</span>
+                  <span className="text-gray-600">{standardDiscount}%</span>
+                  {/* <span className="text-gray-600">50%</span> */}
                 </div>
               </li>
               <li className="flex items-start gap-2">
@@ -379,8 +412,8 @@ const finalRate = calculateFinalRate(basicRate);
                 <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                 <div>
                   <span className="font-medium text-gray-700">Tax Value: </span>
-                  {/* <span className="text-gray-600">{data?.data?.user_rules[0]?.tax_value}%</span> */}
-                  <span className="text-gray-600">18%</span>
+                  <span className="text-gray-600">{taxRate}%</span>
+                  {/* <span className="text-gray-600">18%</span> */}
                 </div>
               </li>
               <li className="flex items-start gap-2">

@@ -19,7 +19,6 @@ declare global {
     Razorpay: any;
   }
 }
-
 export type Order = {
   order_id: string;
   customer: string;

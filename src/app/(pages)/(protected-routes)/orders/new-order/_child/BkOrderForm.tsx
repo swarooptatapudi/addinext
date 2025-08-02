@@ -113,17 +113,18 @@ const step1Validation = Yup.object().shape({
     flexion_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
+   stump_type:Yup.string() .required(FORMIK_ERRORS.REQUIRED) ,
   add_abd_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
-  value_c_details: Yup.array()
+  value_c_detailss: Yup.array()
     .of(
       Yup.object().shape({
         value: Yup.string()
-          .nullable()
           .test('conditional-validation', 'Must be a valid number (e.g. 12 or 12.5)', 
             // @ts-ignore
-            function (value) {
+            function (value) 
+            {
             // Get the index of the current item in the array
             const index = this.parent.index || 0;
             // First entry (index 0) is mandatory
@@ -133,7 +134,7 @@ const step1Validation = Yup.object().shape({
                 /^\d+(\.\d{1,2})?$/.test(value) &&
                 parseFloat(value) >= 1 &&
                 parseFloat(value) <= 100
-              );
+              );   
             }
             // Other entries are optional; allow empty or valid numbers
             return (
@@ -146,7 +147,7 @@ const step1Validation = Yup.object().shape({
           }),
       })
     )
-    .required('Circumference details are required')
+  
    
   // value_c_details: Yup.array().of(
   //   Yup.object().shape({
@@ -948,6 +949,7 @@ const Step1 = ({
                   <Input
                     value={item?.value || ''}
                     name={`value_c_details[${index}].value`}
+                    
                     onChange={(e) => {
                       const inputValue = e.target.value;
                       if (inputValue === '' || /^[0-9]*\.?[0-9]*$/.test(inputValue)) {
@@ -982,7 +984,7 @@ const Step1 = ({
                       }
                     }}
                     placeholder="cm"
-                    inVaild={shouldShowError(`value_c_details.[${index}].value`)}
+                    inVaild={shouldShowError(`value_c_details.[${index}].value`,)}
                     error={errors?.value_c_details?.[index]?.value}
                     step="any"
                     min="0"

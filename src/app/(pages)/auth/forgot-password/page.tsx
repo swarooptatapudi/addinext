@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function SignIn(): React.JSX.Element {
+export default function forgetPassword(): React.JSX.Element {
   const [login, { isSuccess, isLoading }] = useLoginMutation();
   const router = useRouter();
    
@@ -37,33 +37,31 @@ export default function SignIn(): React.JSX.Element {
 
   return (
     <div className="h-full p-4 flex flex-col items-center justify-center w-full">
-      <div className="flex flex-col items-center justify-center w-[80%] bg-white p-4 rounded-lg drop--lg py-10">
-        <h1 className="text-2xl font-bold">Sign In</h1>
-        <p className="text-sm text-gray-500">Sign in to your account</p>
-        <div className="flex flex-col gap-4 w-full mt-6">
-          <Formik initialValues={{ usr: '', pwd: '' }} onSubmit={(values) => login(values)}>
-            {({ values, handleChange, handleSubmit }) => (
-              <form onSubmit={handleSubmit}>
-                <div className="flex flex-col gap-4">
-                  <Input placeholder="Email" value={values.usr} onChange={handleChange('usr')} />
-                  <Input
-                    placeholder="Password"
-                    type="password"
-                    value={values.pwd}
-                    onChange={handleChange('pwd')}
-                  />
-                  <Button type="submit">
-                    Sign In
-                  </Button>
-                </div>
-              </form>
-            )}
-          </Formik>
-        </div>
+      <div className="flex flex-col items-center justify-center w-[80%] max-w-[400px] bg-white p-4 rounded-lg py-10">
+        <h1 className="text-2xl font-bold">Forgot Password</h1>
+        <p className="text-sm text-gray-500 mt-1">Enter your email to reset your password</p>
+       
+            <form  className="flex flex-col gap-4 w-full mt-6">
+              <Input
+                placeholder="Email"
+                name="email"
+                type="email"
+                // value={values.email}
+                // onChange={handleChange('email')}
+              />
+                <p className="text-sm text-red-500 -mt-2"></p>
+           
+              <Button type="submit" className="bg-[#5b3cc4] text-white">
+                Send Reset Link
+              </Button>
+              <div className="text-center mt-2">
+                <Link href="/auth" className="text-blue-600 text-sm hover:underline">
+                  Back to Sign In
+                </Link>
+              </div>
+            </form>
+          
       </div>
-      <div className="flex justify-end text-sm text-blue-600 hover:underline cursor-pointer">
-  <Link href="/auth/forgot-password">Forgot Password?</Link>
-</div>
     </div>
   );
 }
