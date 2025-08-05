@@ -129,7 +129,6 @@ export const Step5 = ({
     { value: 'sports', label: 'Sports', imgSrc: '/assets/order-forms/insoles/Sports.png' },
     { value: 'diabetic', label: 'Diabetic', imgSrc: '/assets/order-forms/insoles/Diabetics.png' },
   ];
-
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-lg font-semibold mt-5 text-primary">Design & Printing</h3>

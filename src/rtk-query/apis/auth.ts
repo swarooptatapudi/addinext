@@ -88,6 +88,30 @@ export const authApi = createApi({
       }),
       transformResponse: (response: any) => response
     }),
+    forgotPassword: builder.mutation<any, { email: string }>({
+  query: (payload) => ({
+    url: '/method/addiwise.apis.reset_password.forgot_password', 
+    method: 'POST',
+    body: payload,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }),
+  transformResponse: (response: any) => response
+}),
+resetPassword: builder.mutation<any, { key: string; new_password: string }>({
+  query: (payload) => ({
+    url: '/method/addiwise.apis.reset_password.reset_password',
+    method: 'POST',
+    body: payload,
+    headers: { 'Content-Type': 'application/json' },
+  }),
+  transformResponse: (response: any) => response
+}),
+
+
+
+
   })
 });
 
@@ -96,5 +120,7 @@ export const {
   useLazyLogoutQuery, 
   useLazyGetUserDetailsQuery,
   useUploadFileMutation,
-  useUploadUserProfileMutation 
+  useUploadUserProfileMutation,
+   useForgotPasswordMutation,
+   useResetPasswordMutation
 } = authApi;

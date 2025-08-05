@@ -204,9 +204,23 @@ export default function Orders(): React.JSX.Element {
             <Button size="sm" disabled={isDisabled || isPaymentLoading || !razorpayKey} className="bg-primary hover:bg-primary/90 text-white shadow-md" onClick={() => handleView(order)}>
               {isPaymentLoading ? 'Processing...' : 'Pay'}
             </Button>
-            <Button size="sm" variant="outline" className="ml-2" disabled={order.status !== 'Paid'} onClick={() => router.push(`/orders/design/${order.order_id}`)}>
-              Design
-            </Button>
+           <div className="relative group ml-2">
+  <Button
+    size="sm"
+    variant="outline"
+    disabled={order.status !== 'Paid'}
+    onClick={() => router.push(`/orders/design/${order.order_id}`)}
+  >
+    Design
+  </Button>
+
+  {order.status !== 'Paid' && (
+  <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-[#583ca3]/90 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+      Design engine under construction
+    </div>
+  )}
+</div>
+
           </div>
         );
       },

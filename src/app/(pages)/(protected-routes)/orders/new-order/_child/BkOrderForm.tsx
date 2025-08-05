@@ -94,12 +94,13 @@ const step1Validation = Yup.object().shape({
     })
     .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
     .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 100.0),
-  stump_size: Yup.string().required(FORMIK_ERRORS.REQUIRED)
+  stump_size: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 92.57 or 95)',
       excludeEmptyString: true
     })
-    .test('greater-than-stump-length', 'Value B must be greater than Value A', function(value) {
+    .test('greater-than-stump-length', 'Value B must be greater than Value A', function (value) {
       const stumpLength = this.parent.stump_length;
       if (!value || !stumpLength) return true;
       return parseFloat(value) > parseFloat(stumpLength);
@@ -107,7 +108,7 @@ const step1Validation = Yup.object().shape({
     .test('min-value', 'Minimum value is 1cm', (value) => !value || parseFloat(value) >= 1)
     .test('max-value', 'Maximum value is 100cm', (value) => !value || parseFloat(value) <= 100),
   shoe_size: Yup.string()
-  .required(FORMIK_ERRORS.REQUIRED)
+
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 92.57 or 95)',
       excludeEmptyString: true
@@ -115,45 +116,44 @@ const step1Validation = Yup.object().shape({
     .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 0)
     .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 100.0),
   foot_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
-    flexion_angle: Yup.string()
+  flexion_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
-   stump_type:Yup.string() .required(FORMIK_ERRORS.REQUIRED) ,
+  stump_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   add_abd_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
-  value_c_detailss: Yup.array()
-    .of(
-      Yup.object().shape({
-        value: Yup.string()
-          .test('conditional-validation', 'Must be a valid number (e.g. 12 or 12.5)', 
-            // @ts-ignore
-            function (value) 
-            {
-            // Get the index of the current item in the array
-            const index = this.parent.index || 0;
-            // First entry (index 0) is mandatory
+  value_c_details: Yup.array().of(
+    Yup.object().shape({
+      value: Yup.string()
+        .test(
+          'conditional-validation',
+          'Must be a valid number (e.g. 12 or 12.5)',
+          function (value) {
+            const index = parseInt(this.path.match(/\d+/)?.[0] || '0', 10);
+
+            // First entry (index 0) is required
             if (index === 0) {
               return (
-                value &&
+                !!value &&
                 /^\d+(\.\d{1,2})?$/.test(value) &&
                 parseFloat(value) >= 1 &&
                 parseFloat(value) <= 100
-              );   
+              );
             }
-            // Other entries are optional; allow empty or valid numbers
+
+            // Others: Skip validation if empty
+            if (!value) return true;
+
+            // If filled, must be valid
             return (
-              !value ||
-              (value &&
-                /^\d+(\.\d{1,2})?$/.test(value) &&
-                parseFloat(value) >= 1 &&
-                parseFloat(value) <= 100)
+              /^\d+(\.\d{1,2})?$/.test(value) && parseFloat(value) >= 1 && parseFloat(value) <= 100
             );
-          }),
-      })
-    )
-  
-   
+          }
+        )
+    })
+  )
+
   // value_c_details: Yup.array().of(
   //   Yup.object().shape({
   //     value: Yup.string()
@@ -206,74 +206,75 @@ const step2Validation = Yup.object()
     leftFootFile: Yup.mixed().nullable(),
     rightFootFile: Yup.mixed().nullable()
   })
-  .test(
-    'file-upload-validation',
-    'File upload validation',
-    function (value) {
-      const { foot_Amputation, upload_link, leftFootFile, rightFootFile } = value as {
-        foot_Amputation: string | null;
-        upload_link: string | null;
-        leftFootFile: File | null;
-        rightFootFile: File | null;
-      };
+  .test('file-upload-validation', 'File upload validation', function (value) {
+    const { foot_Amputation, upload_link, leftFootFile, rightFootFile } = value as {
+      foot_Amputation: string | null;
+      upload_link: string | null;
+      leftFootFile: File | null;
+      rightFootFile: File | null;
+    };
 
-      console.log('Validation Values:', { foot_Amputation, upload_link, leftFootFile, rightFootFile });
+    console.log('Validation Values:', {
+      foot_Amputation,
+      upload_link,
+      leftFootFile,
+      rightFootFile
+    });
 
-      // If upload_link is provided, validation passes
-      if (upload_link && upload_link.trim()) {
-        return true;
-      }
+    // If upload_link is provided, validation passes
+    if (upload_link && upload_link.trim()) {
+      return true;
+    }
 
-      // If foot_Amputation is not selected, require upload_link
-      if (!foot_Amputation) {
+    // If foot_Amputation is not selected, require upload_link
+    if (!foot_Amputation) {
+      return this.createError({
+        path: 'upload_link',
+        message: 'Either upload scans or provide a photo link is required'
+      });
+    }
+
+    // If foot_Amputation is selected, check for required files
+    if (foot_Amputation === 'Left_Foot' && !leftFootFile) {
+      return this.createError({
+        path: 'leftFootFile',
+        message: 'File for Left Foot is required'
+      });
+    }
+
+    if (foot_Amputation === 'Right_Foot' && !rightFootFile) {
+      return this.createError({
+        path: 'rightFootFile',
+        message: 'File for Right Foot is required'
+      });
+    }
+
+    if (foot_Amputation === 'Both') {
+      if (!leftFootFile && !rightFootFile) {
+        // Create errors for both files
+        // this.createError({
+        //   path: 'leftFootFile',
+        //   message: 'STL file for Left Foot is required'
+        // });
         return this.createError({
-          path: 'upload_link',
-          message: 'Either upload scans or provide a photo link is required'
+          path: 'rightFootFile',
+          message: 'Both file for Right and Left Foot is required'
         });
-      }
-
-      // If foot_Amputation is selected, check for required files
-      if (foot_Amputation === 'Left_Foot' && !leftFootFile) {
+      } else if (!leftFootFile) {
         return this.createError({
           path: 'leftFootFile',
           message: 'File for Left Foot is required'
         });
-      }
-
-      if (foot_Amputation === 'Right_Foot' && !rightFootFile) {
+      } else if (!rightFootFile) {
         return this.createError({
           path: 'rightFootFile',
           message: 'File for Right Foot is required'
         });
       }
-
-      if (foot_Amputation === 'Both') {
-        if (!leftFootFile && !rightFootFile) {
-          // Create errors for both files
-          // this.createError({
-          //   path: 'leftFootFile',
-          //   message: 'STL file for Left Foot is required'
-          // });
-          return this.createError({
-            path: 'rightFootFile',
-            message: 'Both file for Right and Left Foot is required'
-          });
-        } else if (!leftFootFile) {
-          return this.createError({
-            path: 'leftFootFile',
-            message: 'File for Left Foot is required'
-          });
-        } else if (!rightFootFile) {
-          return this.createError({
-            path: 'rightFootFile',
-            message: 'File for Right Foot is required'
-          });
-        }
-      }
-
-      return true;
     }
-  )
+
+    return true;
+  })
   .test(
     'validate-liner-fields',
     'Liner fields are required when "With Liner" is selected',
@@ -424,8 +425,7 @@ const DesignVariationDialog = ({
         title: 'Adjustable (AX)',
         description: 'Sockets with volume control for limb fluctuations',
         image: '/assets/order-forms/bk-order/foot-type/AX.png'
-      },
-      
+      }
     };
 
     // Try exact match first
@@ -523,13 +523,13 @@ const ModelDialog = ({
         description: 'Premium Sockets printed on MJF',
         image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
       },
-     
+
       addieasel: {
         title: 'AddiEaseL',
         description: 'Premium Sockets printed on SLS',
         image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
       },
-       addieasemould: {
+      addieasemould: {
         title: 'AddiEaseMould',
         description: 'Standard Moulds printed on AddiPrint',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould.png'
@@ -573,7 +573,6 @@ const ModelDialog = ({
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-2 justify-items-center ">
-
           {options.map((option) => {
             const variationText = option.label || option.value;
             const content = getDynamicContent(variationText);
@@ -613,7 +612,10 @@ const ModelDialog = ({
 };
 
 const WatchFieldReset = () => {
-  const { values, setFieldValue } = useFormikContext<any>();
+const { values, setFieldValue, setFieldTouched, touched, errors } = useFormikContext<any>();
+
+
+
 
   useEffect(() => {
     setFieldValue('design_variation', '');
@@ -629,6 +631,7 @@ const Step1 = ({
   errors,
   touched,
   setFieldValue,
+  setFieldTouched,
   isPatientSelected,
   FORM_OPTIONS,
   formSubmitted,
@@ -636,6 +639,7 @@ const Step1 = ({
   deviceTypeId,
   orderId
 }: any) => {
+  
   const [designVariationDialog, setDesignVariationDialog] = useState({
     open: false,
     options: []
@@ -645,36 +649,41 @@ const Step1 = ({
     open: false,
     options: []
   });
+const getValueByPath = (obj: any, path: string) => {
+  return path
+    .replace(/\[(\d+)\]/g, '.$1') // convert [0] to .0
+    .split('.')
+    .reduce((acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined), obj);
+};
 
-  const shouldShowError = (fieldName: string, isRequired = false) => {
-    const fieldValue = fieldName.includes('.')
-      ? fieldName
-          .split('.')
-          .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
-      : values[fieldName];
 
-    const fieldError = fieldName.includes('.')
-      ? fieldName
-          .split('.')
-          .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
-      : errors[fieldName];
+ const shouldShowError = (fieldName: string, isRequired = false) => {
+  const fieldValue = getValueByPath(values, fieldName);
+  const fieldError = getValueByPath(errors, fieldName);
+  const fieldTouched = getValueByPath(touched, fieldName);
 
-    if (
-      fieldName === 'upload_link' &&
-      fieldError === 'Either upload scans or provide a photo link is required'
-    ) {
-      return true;
-    }
+  // console.log('Field:', fieldName);
+  // console.log('Value:', fieldValue);
+  // console.log('Error:', fieldError);
+  // console.log('Touched:', fieldTouched);
 
-    if (isRequired) {
-      return (
-        (!fieldValue && (formSubmitted || touched[fieldName])) || 
-        (!!fieldError && (touched[fieldName] || formSubmitted))
-      );
-    }
+  if (
+    fieldName === 'upload_link' &&
+    fieldError === 'Either upload scans or provide a photo link is required'
+  ) {
+    return true;
+  }
 
-    return !!fieldError && (touched[fieldName] || formSubmitted);
-  };
+  if (isRequired) {
+    return (
+      (!fieldValue && (formSubmitted || fieldTouched)) ||
+      (!!fieldError && (fieldTouched || formSubmitted))
+    );
+  }
+
+  return !!fieldError && (fieldTouched || formSubmitted);
+};
+
 
   const socketTypeOptions = useMemo(() => {
     return (FORM_OPTIONS?.socket_type || []).map((option: { value: any }) => ({
@@ -727,7 +736,7 @@ const Step1 = ({
           label="Date of Birth"
           type="date"
           name="date_of_birth"
-          value={values.date_of_birth|| 'date'}
+          value={values.date_of_birth || 'date'}
           onChange={handleChange('date_of_birth')}
           required
           inVaild={shouldShowError('date_of_birth', true)}
@@ -796,7 +805,7 @@ const Step1 = ({
           required
           value={values.amputated_leg || ''}
           onValueChange={handleChange('amputated_leg')}
-            inVaild={shouldShowError('amputated_leg', true)}
+          inVaild={shouldShowError('amputated_leg', true)}
           error={errors.amputated_leg}
         />
         <SelectBox
@@ -817,16 +826,16 @@ const Step1 = ({
       </div>
       <div className="grid grid-cols-3 gap-4">
         <SelectBox
-                  options={socketTypeOptions}
-                  label="Socket Type"
-                  value={values.socket_type}
-                  onValueChange={(value) => {
-                    handleChange('socket_type')(value);
-                  }}
-                  inVaild={shouldShowError('socket_type', true)}
-                  error={errors.socket_type}
-                  required
-                />
+          options={socketTypeOptions}
+          label="Socket Type"
+          value={values.socket_type}
+          onValueChange={(value) => {
+            handleChange('socket_type')(value);
+          }}
+          inVaild={shouldShowError('socket_type', true)}
+          error={errors.socket_type}
+          required
+        />
 
         <div className="flex flex-col">
           <label className="block text-xs font-medium text-black mb-1">
@@ -928,7 +937,8 @@ const Step1 = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="mb-2">
               <label className="block text-xs font-medium text-black">
-                Value <strong>B</strong> Patella to Ground (cm)<span className="text-red-500">*</span>
+                Value <strong>B</strong> Patella to Ground (cm)
+                <span className="text-red-500">*</span>
               </label>
               <Input
                 placeholder="20"
@@ -943,7 +953,8 @@ const Step1 = ({
           {/* // Update the measurements section in Step1 component */}
           <div className="">
             <p className="text-xs">
-              Value <strong>C</strong> - Circumference of Stump at 5 cm gap (cm)<span className="text-red-500">*</span>
+              Value <strong>C</strong> - Circumference of Stump at 5 cm gap (cm)
+              <span className="text-red-500">*</span>
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-5 gap-y-4 w-[500px]">
@@ -954,40 +965,48 @@ const Step1 = ({
                   <Input
                     value={item?.value || ''}
                     name={`value_c_details[${index}].value`}
-                    
+                    required
                     onChange={(e) => {
                       const inputValue = e.target.value;
                       if (inputValue === '' || /^[0-9]*\.?[0-9]*$/.test(inputValue)) {
                         const numValue = parseFloat(inputValue);
                         if (
                           inputValue === '' ||
-                          (numValue >= 1 && numValue <= 100 && (inputValue.match(/\./g) || []).length <= 1)
+                          (numValue >= 1 &&
+                            numValue <= 100 &&
+                            (inputValue.match(/\./g) || []).length <= 1)
                         ) {
                           const newValueCDetails = [...values.value_c_details];
                           newValueCDetails[index].value = inputValue;
-                          setFieldValue('value_c_details', newValueCDetails, true); // true forces validation
+                          setFieldValue('value_c_details', newValueCDetails, true);
+                         
+                           // true forces validation
                         }
-                      }
+                      } 
                     }}
-                    onBlur={(e) => {
-                      const inputValue = e.target.value;
-                      if (inputValue === '') {
-                        const newValueCDetails = [...values.value_c_details];
-                        newValueCDetails[index].value = '0';
-                        setFieldValue('value_c_details', newValueCDetails);
-                      } else if (inputValue.endsWith('.')) {
-                        const newValueCDetails = [...values.value_c_details];
-                        newValueCDetails[index].value = inputValue.slice(0, -1);
-                        setFieldValue('value_c_details', newValueCDetails);
-                      } else if (inputValue.startsWith('.')) {
-                        const newValueCDetails = [...values.value_c_details];
-                        newValueCDetails[index].value = '0' + inputValue;
-                        setFieldValue('value_c_details', newValueCDetails);
-                      }
-                    }}
+                    // onBlur={(e) => {
+                    //   const inputValue = e.target.value;
+                    //   if (inputValue === '') {
+                    //     const newValueCDetails = [...values.value_c_details];
+                    //     newValueCDetails[index].value = '0';
+                    //     setFieldValue('value_c_details', newValueCDetails);
+                    //   } else if (inputValue.endsWith('.')) {
+                    //     const newValueCDetails = [...values.value_c_details];
+                    //     newValueCDetails[index].value = inputValue.slice(0, -1);
+                    //     setFieldValue('value_c_details', newValueCDetails);
+                    //   } else if (inputValue.startsWith('.')) {
+                    //     const newValueCDetails = [...values.value_c_details];
+                    //     newValueCDetails[index].value = '0' + inputValue;
+                    //     console.log('newValueCDetails' , newValueCDetails)
+                    //     setFieldValue('value_c_details', newValueCDetails);
+                    //   }
+                    //   console.log('newValueCDetails' , inputValue)
+                    // }}
+                    onBlur={() => setFieldTouched(`value_c_details[${index}].value`, true)}
+                    touched={touched}
                     placeholder="cm"
-                    inVaild={shouldShowError(`value_c_details.[${index}].value`,)}
-                    error={errors?.value_c_details?.[index]?.value}
+                    inVaild={index === 0 && shouldShowError(`value_c_details[0].value`, true)}
+                    error={index === 0 ? errors?.value_c_details?.[0]?.value : undefined}
                     step="any"
                     min="0"
                     max="100"
@@ -1006,8 +1025,8 @@ const Step1 = ({
             required={true}
             value={values.foot_type || ''}
             onValueChange={handleChange('foot_type')}
-              inVaild={shouldShowError('foot_type', true)}
-          error={errors.foot_type}
+            inVaild={shouldShowError('foot_type', true)}
+            error={errors.foot_type}
             className="w-full"
           />
         </div>
@@ -1016,7 +1035,6 @@ const Step1 = ({
           <Input
             placeholder="0"
             label="Shoe Size (cm) (UK Size)"
-            required={true}
             value={values.shoe_size || ''}
             onChange={handleChange('shoe_size')}
             inVaild={shouldShowError('shoe_size')}
@@ -1056,8 +1074,8 @@ const Step1 = ({
             required={true}
             value={values.stump_type || ''}
             onValueChange={handleChange('stump_type')}
-             inVaild={shouldShowError('stump_type', true)}
-          error={errors.stump_type}
+            inVaild={shouldShowError('stump_type', true)}
+            error={errors.stump_type}
             className="w-full"
           />
         </div>
@@ -1160,20 +1178,21 @@ const Step2 = ({
   // Enhanced error checking for file fields
   const shouldShowFileError = (fieldName: string) => {
     const fieldError = errors[fieldName];
-    
+
     // Show error if there's an error AND any of these conditions:
     // 1. Form was submitted
     // 2. Field was touched
     // 3. foot_Amputation selection requires this file (auto-trigger validation)
-    const shouldShow = !!fieldError && (
-      formSubmitted || 
-      touched[fieldName] || 
-      (values.foot_Amputation && (
-        (fieldName === 'leftFootFile' && (values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both')) ||
-        (fieldName === 'rightFootFile' && (values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both'))
-      ))
-    );
-    
+    const shouldShow =
+      !!fieldError &&
+      (formSubmitted ||
+        touched[fieldName] ||
+        (values.foot_Amputation &&
+          ((fieldName === 'leftFootFile' &&
+            (values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both')) ||
+            (fieldName === 'rightFootFile' &&
+              (values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both')))));
+
     console.log(`shouldShowFileError for ${fieldName}:`, {
       fieldError,
       formSubmitted,
@@ -1181,7 +1200,7 @@ const Step2 = ({
       foot_Amputation: values.foot_Amputation,
       shouldShow
     });
-    
+
     return shouldShow;
   };
 
@@ -1268,7 +1287,7 @@ const Step2 = ({
           )}
         </div>
       </div>
-      
+
       <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
@@ -1286,7 +1305,7 @@ const Step2 = ({
                 value={values.foot_Amputation || ''}
                 onValueChange={(value) => {
                   handleChange('foot_Amputation')(value);
-                  
+
                   // When foot_Amputation is selected, mark relevant file fields as touched
                   // This will trigger validation display for required files
                   if (value) {
@@ -1298,7 +1317,7 @@ const Step2 = ({
                     // setFieldValue('leftFootFile', null);
                     // setFieldValue('rightFootFile', null);
                     // setFieldValue('upload_link', '');
-                    
+
                     // Mark file fields as touched to trigger validation display
                     setTimeout(() => {
                       if (value === 'Left_Foot' || value === 'Both') {
@@ -1318,7 +1337,7 @@ const Step2 = ({
             </div>
           </div>
         </div>
-        
+
         {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
           <div className="w-fit justify-center">
             <StlFilePicker
@@ -1327,27 +1346,25 @@ const Step2 = ({
               onFileSelect={(file) => {
                 setFieldValue('leftFootFile', file);
                 // console.log('Left Foot STL selected:', file?.name);
-                
+
                 // Mark field as touched and clear errors when file is selected
                 if (file) {
-                  setErrors({ 
-                    ...errors, 
-                    leftFootFile: undefined, 
-                    upload_link: undefined 
+                  setErrors({
+                    ...errors,
+                    leftFootFile: undefined,
+                    upload_link: undefined
                   });
                 }
               }}
-              // @ts-ignore 
+              // @ts-ignore
               inVaild={shouldShowFileError('leftFootFile')}
-               // @ts-ignore 
+              // @ts-ignore
               error={errors.leftFootFile}
             />
-            
+
             {/* Custom error display for better control */}
             {shouldShowFileError('leftFootFile') && errors.leftFootFile && (
-              <div className="text-red-500 text-xs mt-1">
-                {errors.leftFootFile}
-              </div>
+              <div className="text-red-500 text-xs mt-1">{errors.leftFootFile}</div>
             )}
           </div>
         )}
@@ -1359,32 +1376,30 @@ const Step2 = ({
               buttonText="Right Foot"
               onFileSelect={(file) => {
                 setFieldValue('rightFootFile', file);
-                
+
                 // Mark field as touched and clear errors when file is selected
                 if (file) {
-                  setErrors({ 
-                    ...errors, 
-                    rightFootFile: undefined, 
-                    upload_link: undefined 
+                  setErrors({
+                    ...errors,
+                    rightFootFile: undefined,
+                    upload_link: undefined
                   });
                 }
               }}
-               // @ts-ignore 
+              // @ts-ignore
               inVaild={shouldShowFileError('rightFootFile')}
-               // @ts-ignore 
+              // @ts-ignore
               error={errors.rightFootFile}
             />
-            
+
             {/* Custom error display for better control */}
             {shouldShowFileError('rightFootFile') && errors.rightFootFile && (
-              <div className="text-red-500 text-xs mt-1">
-                {errors.rightFootFile}
-              </div>
+              <div className="text-red-500 text-xs mt-1">{errors.rightFootFile}</div>
             )}
           </div>
         )}
       </div>
-      
+
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
           <p className="mb-0 text-[14px] ">Upload Additional Files</p>
@@ -1410,7 +1425,7 @@ const Step2 = ({
           />
         </div>
       </div>
-      
+
       <div className="flex flex-col gap-4">
         <div className="col-span-3">
           <p className="mb-1 text-[14px]">Upload Link with Photos</p>
@@ -1493,7 +1508,6 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
       <div className="grid grid-cols-3 gap-4">
         <div className="mb-6">
           <p className="text-xs">
-            
             <span className="text-sm"> Global Volume Reduction </span>
             <br /> (please specify the percentage reduction in Volume without reducing the length of
             the socket)
@@ -1559,8 +1573,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
 
-
-
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -1577,9 +1589,9 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const deviceTypeId = searchParams.get('deviceType');
 
   // Add these state variables to your component
-const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
-const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
-const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
   useEffect(() => {
     if (orderId && deviceTypeId) {
@@ -1632,165 +1644,163 @@ const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
   }, [orderDetails]);
 
   // Add this useEffect to load Razorpay script
-useEffect(() => {
-  const loadRazorpayScript = async () => {
-    if (window.Razorpay) {
-      setIsRazorpayLoaded(true);
-      return;
-    }
+  useEffect(() => {
+    const loadRazorpayScript = async () => {
+      if (window.Razorpay) {
+        setIsRazorpayLoaded(true);
+        return;
+      }
 
-    try {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.async = true;
+      try {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
 
-      script.onload = () => setIsRazorpayLoaded(true);
-      script.onerror = () => {
+        script.onload = () => setIsRazorpayLoaded(true);
+        script.onerror = () => {
+          setIsRazorpayLoaded(false);
+          toast.error('Failed to load payment gateway. Please refresh the page.');
+        };
+
+        document.body.appendChild(script);
+      } catch (err) {
         setIsRazorpayLoaded(false);
-        toast.error('Failed to load payment gateway. Please refresh the page.');
-      };
+      }
+    };
 
-      document.body.appendChild(script);
-    } catch (err) {
-      setIsRazorpayLoaded(false);
-    }
-  };
-
-  loadRazorpayScript();
-}, []);
-
+    loadRazorpayScript();
+  }, []);
 
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
     if (data) {
       return getFormOptionsObject(data?.order_from_details);
-      
     }
     return {};
-  
   }, [data, isFormOptionsLoading]);
 
-// Main function for Pay & Place Order
-const handlePayAndPlaceOrder = async (values: any) => {
-  if (!razorpayKey || !isRazorpayLoaded) {
-    toast.error('Payment gateway is not available. Please try again.');
-    return;
-  }
+  // Main function for Pay & Place Order
+  const handlePayAndPlaceOrder = async (values: any) => {
+    if (!razorpayKey || !isRazorpayLoaded) {
+      toast.error('Payment gateway is not available. Please try again.');
+      return;
+    }
 
-  setIsPaymentProcessing(true);
-  setFormValues(values);
+    setIsPaymentProcessing(true);
+    setFormValues(values);
 
-  try {
-    // Prepare the order data (same as "Order Now, Pay Later")
-    const payload = {
-      item_type: 'BK',
-      socket_type: values.socket_type,
-      design_variation: values.design_variation,
-      activity_level: values.activity_level,
-      model_name: values.model_name,
-      stump_length: values.stump_length,
-      weight: values.weight
-    };
+    try {
+      // Prepare the order data (same as "Order Now, Pay Later")
+      const payload = {
+        item_type: 'BK',
+        socket_type: values.socket_type,
+        design_variation: values.design_variation,
+        activity_level: values.activity_level,
+        model_name: values.model_name,
+        stump_length: values.stump_length,
+        weight: values.weight
+      };
 
-    const itemCode = await getItemCodeByValues(payload);
-    setSelectedItem(itemCode);
+      const itemCode = await getItemCodeByValues(payload);
+      setSelectedItem(itemCode);
 
-    // Create order payload
-    const orderPayload = {
-      item_type: 'BK',
-      customer: user?.customer_id,
-      order_details: values,
-      item_code: itemCode,
-      addicoins: parseInt(values.addicoins)
-    };
+      // Create order payload
+      const orderPayload = {
+        item_type: 'BK',
+        customer: user?.customer_id,
+        order_details: values,
+        item_code: itemCode,
+        addicoins: parseInt(values.addicoins)
+      };
 
-    // console.log("handlePayAndPlaceOrder", orderPayload)
+      // console.log("handlePayAndPlaceOrder", orderPayload)
 
-    // You'll need to create an API endpoint that calculates order amount
-    // This should return the order amount for payment
-    // const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
-    
-    // if (orderAmountResponse?.status !== "success") {
-    //   throw new Error(orderAmountResponse?.message || "Failed to calculate order amount");
-    // }
+      // You'll need to create an API endpoint that calculates order amount
+      // This should return the order amount for payment
+      // const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
 
-    // const orderAmount = orderAmountResponse.data.order_amount;
-    const amountInPaise = 100000;
+      // if (orderAmountResponse?.status !== "success") {
+      //   throw new Error(orderAmountResponse?.message || "Failed to calculate order amount");
+      // }
 
-    // Configure Razorpay options
-    const options = {
-      key: razorpayKey,
-      amount: amountInPaise.toString(),
-      currency: 'INR',
-      name: 'Addiwise Company',
-      description: `Payment for BK Order`,
-      handler: async function (response: any) {
-        console.log('Payment Success:', response);
-        
-        try {
-          // After successful payment, create the order with payment details
-          const finalOrderPayload = {
-            ...orderPayload,
-            custom_payment_reference_id: response.razorpay_payment_id,
-            // razorpay_order_id: response.razorpay_order_id,
-            // razorpay_signature: response.razorpay_signature,
-            // payment_status: 'paid'
-          };
+      // const orderAmount = orderAmountResponse.data.order_amount;
+      const amountInPaise = 100000;
 
-          console.log('Final Order Payload:', finalOrderPayload);
-          const orderResponse = await createOrder(finalOrderPayload).unwrap();
-          // @ts-ignore 
-          if (orderResponse?.message?.status === "success") {
-            toast.success("Payment successful! Order created successfully.");
-            setSelectedItem('');
-            setFormValues(initialValues);
+      // Configure Razorpay options
+      const options = {
+        key: razorpayKey,
+        amount: amountInPaise.toString(),
+        currency: 'INR',
+        name: 'Addiwise Company',
+        description: `Payment for BK Order`,
+        handler: async function (response: any) {
+          console.log('Payment Success:', response);
+
+          try {
+            // After successful payment, create the order with payment details
+            const finalOrderPayload = {
+              ...orderPayload,
+              custom_payment_reference_id: response.razorpay_payment_id
+              // razorpay_order_id: response.razorpay_order_id,
+              // razorpay_signature: response.razorpay_signature,
+              // payment_status: 'paid'
+            };
+
+            console.log('Final Order Payload:', finalOrderPayload);
+            const orderResponse = await createOrder(finalOrderPayload).unwrap();
+            // @ts-ignore
+            if (orderResponse?.message?.status === 'success') {
+              toast.success('Payment successful! Order created successfully.');
+              setSelectedItem('');
+              setFormValues(initialValues);
+              setIsPaymentProcessing(false);
+              router.push('/orders');
+            } else {
+              // @ts-ignore
+              throw new Error(orderResponse?.message?.message || 'Order creation failed');
+            }
+          } catch (orderError) {
+            console.error('Order creation error:', orderError);
+            toast.error(
+              'Payment successful but order creation failed. Please contact support with payment ID: ' +
+                response.razorpay_payment_id
+            );
             setIsPaymentProcessing(false);
-            router.push("/orders");
-          } else {
-            // @ts-ignore 
-            throw new Error(orderResponse?.message?.message || "Order creation failed");
           }
-          
-        } catch (orderError) {
-          console.error("Order creation error:", orderError);
-          toast.error("Payment successful but order creation failed. Please contact support with payment ID: " + response.razorpay_payment_id);
-          setIsPaymentProcessing(false);
+        },
+        // prefill: {
+        //   name: user?.name || '',
+        //   email: user?.email || '',
+        //   contact: user?.mobile || '',
+        // },
+        // notes: {
+        //   item_type: 'BK',
+        //   customer_id: user?.customer_id,
+        // },
+        theme: { color: '#3399cc' },
+        modal: {
+          ondismiss: function () {
+            setIsPaymentProcessing(false);
+            toast.info('Payment cancelled');
+          }
         }
-      },
-      // prefill: {
-      //   name: user?.name || '',
-      //   email: user?.email || '',
-      //   contact: user?.mobile || '',
-      // },
-      // notes: {
-      //   item_type: 'BK',
-      //   customer_id: user?.customer_id,
-      // },
-      theme: { color: '#3399cc' },
-      modal: {
-        ondismiss: function() {
-          setIsPaymentProcessing(false);
-          toast.info("Payment cancelled");
-        }
-      }
-    };
+      };
 
-    const rzp = new window.Razorpay(options);
-    
-    rzp.on('payment.failed', function (response: any) {
-      console.error('Payment failed:', response);
+      const rzp = new window.Razorpay(options);
+
+      rzp.on('payment.failed', function (response: any) {
+        console.error('Payment failed:', response);
+        setIsPaymentProcessing(false);
+        toast.error(`Payment failed: ${response.error.description}`);
+      });
+
+      rzp.open();
+    } catch (error) {
+      console.error('Payment preparation error:', error);
       setIsPaymentProcessing(false);
-      toast.error(`Payment failed: ${response.error.description}`);
-    });
-
-    rzp.open();
-
-  } catch (error) {
-    console.error("Payment preparation error:", error);
-    setIsPaymentProcessing(false);
-    toast.error("Failed to prepare payment. Please try again.");
-  }
-};
+      toast.error('Failed to prepare payment. Please try again.');
+    }
+  };
 
   const handleConfirmOrder = () => {
     const payload: any = {};
@@ -1803,7 +1813,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
 
   const OnSubmit = async (values: any) => {
     setFormValues(values);
-    
+
     const payload = {
       item_type: 'BK',
       socket_type: values.socket_type,
@@ -1812,9 +1822,9 @@ const handlePayAndPlaceOrder = async (values: any) => {
       model_name: values.model_name,
       stump_length: values.stump_length,
       weight: values.weight
-    };  
+    };
     const itemCode = await getItemCodeByValues(payload);
-   
+
     setSelectedItem(itemCode);
 
     // Submit the final form
@@ -1827,55 +1837,55 @@ const handlePayAndPlaceOrder = async (values: any) => {
       addicoins: parseInt(values.addicoins)
     };
 
-    console.log("Create Order orderPayload:'", orderPayload)
+    console.log("Create Order orderPayload:'", orderPayload);
 
     try {
-    const res = await createOrder(orderPayload).unwrap();
+      const res = await createOrder(orderPayload).unwrap();
       // @ts-ignore
-    if (res?.message?.status === "success") {
-      toast.success("Order created successfully");
-      setSelectedItem('');
-      setFormValues(initialValues);
-      router.push("/orders");
-    } else {
-      // @ts-ignore
-      toast.error(` ${res?.message?.message || "Order creation failed"}`);
+      if (res?.message?.status === 'success') {
+        toast.success('Order created successfully');
+        setSelectedItem('');
+        setFormValues(initialValues);
+        router.push('/orders');
+      } else {
+        // @ts-ignore
+        toast.error(` ${res?.message?.message || 'Order creation failed'}`);
+      }
+    } catch (err) {
+      console.error('Mutation error:', err);
+      toast.error('Server error. Please try again.');
     }
-  } catch (err) {
-    console.error("Mutation error:", err);
-    toast.error("Server error. Please try again.");
-  }
   };
 
   const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
-  //    const itemCode = res?.data?.item_code;
-  //   if (itemCode) {
-  //   console.log(" Generated item code:", itemCode);
-  // } else {
-  //   console.warn(" Item code not found for given payload.");
-  // }
-    
+    //    const itemCode = res?.data?.item_code;
+    //   if (itemCode) {
+    //   console.log(" Generated item code:", itemCode);
+    // } else {
+    //   console.warn(" Item code not found for given payload.");
+    // }
+
     return res?.data?.item_code;
   };
 
-//  useEffect(() => {
-//   if (isSuccess && data) {
-//     if (data.message?.status === 'success') {
-//       toast.success(data.message.message || 'Order created successfully');
-//       setSelectedItem('');
-//       setFormValues(initialValues);
-//       router.push('/orders');
-//     } else {
-//       const errorMessage = data.message?.message || 'Order creation failed due to an unknown error';
-//       toast.error(errorMessage);
-//     }
-//   } else if (error) {
-//     // @ts-ignore
-//     const errorMessage = error?.message || 'Failed to connect to the server';
-//     toast.error(errorMessage);
-//   }
-// }, [isOrderCreating, isSuccess, data, error]);
+  //  useEffect(() => {
+  //   if (isSuccess && data) {
+  //     if (data.message?.status === 'success') {
+  //       toast.success(data.message.message || 'Order created successfully');
+  //       setSelectedItem('');
+  //       setFormValues(initialValues);
+  //       router.push('/orders');
+  //     } else {
+  //       const errorMessage = data.message?.message || 'Order creation failed due to an unknown error';
+  //       toast.error(errorMessage);
+  //     }
+  //   } else if (error) {
+  //     // @ts-ignore
+  //     const errorMessage = error?.message || 'Failed to connect to the server';
+  //     toast.error(errorMessage);
+  //   }
+  // }, [isOrderCreating, isSuccess, data, error]);
 
   const validateCurrentStep = async (values: any) => {
     try {
@@ -1931,7 +1941,6 @@ const handlePayAndPlaceOrder = async (values: any) => {
           model_name: values.model_name,
           stump_length: values.stump_length,
           weight: values.weight
-
         };
         // console.log('Item Payload:', itemPayload);
         const itemCode = await getItemCodeByValues(itemPayload);
@@ -1960,8 +1969,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
   };
   useEffect(() => {}, [formValues]);
 
-  useEffect(() => {
-  }, [formValues, isInitialDataLoaded]);
+  useEffect(() => {}, [formValues, isInitialDataLoaded]);
 
   if (orderId && !orderDetails?.data) {
     return <div className="flex justify-center p-8">Loading order data...</div>;
@@ -1994,6 +2002,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
           values,
           handleChange,
           handleSubmit,
+
           errors,
           touched,
           setFieldValue,
@@ -2001,7 +2010,6 @@ const handlePayAndPlaceOrder = async (values: any) => {
           isValid
         }) => (
           <div className="flex flex-col gap-6">
-            
             <WatchFieldReset />
             {/* Socket Type Dialog */}
             <SocketTypeDialog
@@ -2092,6 +2100,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
                 handleChange={handleChange}
                 errors={errors}
                 touched={touched}
+
                 setFieldValue={setFieldValue}
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
@@ -2167,7 +2176,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
                   <Button
                     className="shadow-2xl"
                     onClick={async () => {
-                      console.log("next step error", errors);
+                      console.log('next step error', errors);
                       await nextStep(values, setErrors);
                     }}
                     type="button"
@@ -2182,22 +2191,32 @@ const handlePayAndPlaceOrder = async (values: any) => {
                 ) : (
                   <>
                     {/* @ts-ignore */}
-                    {values.Design_by === "Self" && values.Print_by === "Self" ? (
-                      <div className='flex gap-2.5'>
+                    {values.Design_by === 'Self' && values.Print_by === 'Self' ? (
+                      <div className="flex gap-2.5">
                         <Button
                           className="shadow-2xl"
                           onClick={() => handleSubmit()}
-                          disabled={!estimateConform || isOrderCreating || isPaymentProcessing || !isRazorpayLoaded}
+                          disabled={
+                            !estimateConform ||
+                            isOrderCreating ||
+                            isPaymentProcessing ||
+                            !isRazorpayLoaded
+                          }
                         >
                           {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
                         </Button>
                       </div>
                     ) : (
-                      <div className='flex gap-2.5'>
+                      <div className="flex gap-2.5">
                         <Button
                           className="shadow-2xl"
                           onClick={() => handlePayAndPlaceOrder(values)}
-                          disabled={!estimateConform || isOrderCreating || isPaymentProcessing || !isRazorpayLoaded}
+                          disabled={
+                            !estimateConform ||
+                            isOrderCreating ||
+                            isPaymentProcessing ||
+                            !isRazorpayLoaded
+                          }
                         >
                           {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
                         </Button>
@@ -2251,6 +2270,5 @@ const handlePayAndPlaceOrder = async (values: any) => {
         showContinueButton={false}
       />
     </div>
-
   );
 }

@@ -406,13 +406,13 @@ export const Step5 = ({
           label: 'Black Dye',
           color: 'bg-black text-white'
         },
-        {
-          value: 'Colour',
-          label: selectedSubColor?.label || 'Colour',
-          color: selectedSubColor?.hex || 'bg-neutral-500 text-white',
-          subColors: subColors,
-          hex: selectedSubColor?.hex || '#888888' // coming from API
-        }
+        // {
+        //   value: 'Colour',
+        //   label: selectedSubColor?.label || 'Colour',
+        //   color: selectedSubColor?.hex || 'bg-neutral-500 text-white',
+        //   subColors: subColors,
+        //   hex: selectedSubColor?.hex || '#888888' // coming from API
+        // }
       ];
     } else if (isAddiEaseEco) {
       return [
@@ -421,11 +421,11 @@ export const Step5 = ({
           label: 'Black Dye',
           color: 'bg-black text-white'
         },
-        {
-          value: 'Epoxy',
-          label: 'Epoxy',
-          color: 'bg-slate-500 text-white'
-        }
+        // {
+        //   value: 'Epoxy',
+        //   label: 'Epoxy',
+        //   color: 'bg-slate-500 text-white'
+        // }
       ];
     }
     return [];
@@ -480,7 +480,7 @@ export const Step5 = ({
             </div>
           </div>
 
-          {showLaticesField && (
+          {showLaticesField && !hideLaticesAndFinish &&(
             <div className="grid md:grid-cols-2 gap-6 mt-2">
               <div className="flex items-center gap-4">
                 <label className="font-medium min-w-[100px] text-sm">Extras Latices</label>

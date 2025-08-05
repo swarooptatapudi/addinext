@@ -1,115 +1,142 @@
-
 'use client';
-import React from "react";
+import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookmarkIcon, CheckCircleIcon, CoinsIcon, CreditCardIcon, HistoryIcon, InfoIcon, ShoppingCartIcon } from 'lucide-react';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  BookmarkIcon,
+  CheckCircleIcon,
+  CoinsIcon,
+  CreditCardIcon,
+  HistoryIcon,
+  InfoIcon,
+  ShoppingCartIcon
+} from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
 import { useSelector } from 'react-redux';
-import { useGetRateAndDiscountsQuery, useGetTransactionHistoryQuery,useGetTransactionHistorySelesQuery } from '@/rtk-query/apis/addicoins';
+import {
+  useGetRateAndDiscountsQuery,
+  useGetTransactionHistoryQuery,
+  useGetTransactionHistorySelesQuery
+} from '@/rtk-query/apis/addicoins';
 import { USER } from '@/uttils/Types';
 import { RootState } from '@/rtk-query/store';
+import Image from 'next/image';
+
 interface Transaction {
-    payment_transaction_id?: string;
-    name: string;
-    coins: number;
-    total_amount:string;
-    rate:string;
-    transaction_date: string;
-    transaction_type: string;
-    payment_status: string;
-    sales_order?:string;
-    docstatus?:string;
-    customer_name?:string;
-    device_type?:string;
-  }
-  
-  interface RateAndDiscountData {
-    data?: {
-      user_rules: Array<{
-        minimum: number;
-        maximum: number;
-        apply_rate: number;
-        plan: string;
-        coin_rate: number;
-        discount: number;
-      }>;
-    };
-  }
+  payment_transaction_id?: string;
+  name: string;
+  coins: number;
+  total_amount: string;
+  invoice: string;
+  invoiceUrl: string;
+  payment_receipt: string;
+  payment_receiptURL: string;
+  rate: string;
+  transaction_date: string;
+  transaction_type: string;
+  payment_status: string;
+  sales_order?: string;
+  docstatus?: string;
+  customer_name?: string;
+  device_type?: string;
+}
+
+interface RateAndDiscountData {
+  data?: {
+    user_rules: Array<{
+      minimum: number;
+      maximum: number;
+      apply_rate: number;
+      plan: string;
+      coin_rate: number;
+      discount: number;
+    }>;
+  };
+}
 export default function Organization(): React.JSX.Element {
-    const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
-    const { data }: { data?: RateAndDiscountData } = useGetRateAndDiscountsQuery({
-        customer: user?.customer_id,
-      });
-       const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
-          customer: user?.customer_id,
-        });
-        const { data: transactionHistorySeles, refetch: refetchTransactionsS } = useGetTransactionHistorySelesQuery({
-            customer: user?.customer_id,
-        });
-        console.log("::>>",transactionHistorySeles);
-        
+  const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
+  const { data }: { data?: RateAndDiscountData } = useGetRateAndDiscountsQuery({
+    customer: user?.customer_id
+  });
+  const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
+    customer: user?.customer_id
+  });
+  const { data: transactionHistorySeles, refetch: refetchTransactionsS } =
+    useGetTransactionHistorySelesQuery({
+      customer: user?.customer_id
+    });
+  console.log('::>>', transactionHistorySeles);
 
-    return (
-        <div className="space-y-2">
-    <div className="min-h-screen bg-gray-50">
-      
+  return (
+    <div className="space-y-2">
+      <div className="min-h-screen bg-gray-50">
+        <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Clinic Card */}
+            <Card className="shadow-sm">
+              <CardHeader className="border-b">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <BookmarkIcon className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <CardTitle className="text-xl text-primary font-semibold">
+                    Clinic Details
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4 grid grid-cols-1 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Clinic Name</h3>
+                  <p className="text-lg font-medium mt-1">Addinxt Clinic</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">GST Number</h3>
+                  <p className="text-lg font-medium mt-1">24CPNBG1258T0Z5</p>
+                </div>
+              </CardContent>
+            </Card>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-           {/* Clinic Card */}
-           <Card className="shadow-sm">
-             <CardHeader className="border-b">
-               <div className="flex items-center gap-3">
-                 <div className="p-2 bg-blue-100 rounded-lg">
-                   <BookmarkIcon className="w-5 h-5 text-blue-600" />
-                 </div>
-                 <CardTitle className="text-xl text-primary font-semibold">Clinic Details</CardTitle>
-               </div>
-             </CardHeader>
-             <CardContent className="pt-4 grid grid-cols-1 gap-4">
-               <div>
-                 <h3 className="text-sm font-medium text-gray-500">Clinic Name</h3>
-                 <p className="text-lg font-medium mt-1">Addinxt Clinic</p>
-               </div>
-               <div>
-                 <h3 className="text-sm font-medium text-gray-500">GST Number</h3>
-                 <p className="text-lg font-medium mt-1">24CPNBG1258T0Z5</p>
-               </div>
-             </CardContent>
-           </Card>
+            {/* User Card */}
+            <Card className="shadow-sm">
+              <CardHeader className="border-b">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <InfoIcon className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <CardTitle className="text-xl font-semibold text-primary">
+                    Organization User
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4 grid grid-cols-1 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Name</h3>
+                  <p className="text-lg font-medium mt-1">Rohit Gupta</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Mobile</h3>
+                    <p className="text-lg font-medium mt-1">9876543210</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Email</h3>
+                    <p className="text-lg font-medium mt-1 truncate">addiwise56@gmail.com</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-           {/* User Card */}
-           <Card className="shadow-sm">
-             <CardHeader className="border-b">
-               <div className="flex items-center gap-3">
-                 <div className="p-2 bg-purple-100 rounded-lg">
-                   <InfoIcon className="w-5 h-5 text-purple-600" />
-                 </div>
-                 <CardTitle className="text-xl font-semibold text-primary">Organization User</CardTitle>
-               </div>
-             </CardHeader>
-             <CardContent className="pt-4 grid grid-cols-1 gap-4">
-               <div>
-                 <h3 className="text-sm font-medium text-gray-500">Name</h3>
-                 <p className="text-lg font-medium mt-1">Rohit Gupta</p>
-               </div>
-               <div className="grid grid-cols-2 gap-4">
-                 <div>
-                   <h3 className="text-sm font-medium text-gray-500">Mobile</h3>
-                   <p className="text-lg font-medium mt-1">9876543210</p>
-                 </div>
-                 <div>
-                   <h3 className="text-sm font-medium text-gray-500">Email</h3>
-                   <p className="text-lg font-medium mt-1 truncate">addiwise56@gmail.com</p>
-                 </div>
-               </div>
-             </CardContent>
-           </Card>
-         </div>
-
-         {/* Stats Section */}
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-           {/* <Card className="shadow-sm">
+          {/* Stats Section */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            {/* <Card className="shadow-sm">
              <CardHeader className="border-b">
                <div className="flex items-center gap-3">
                  <div className="p-2 bg-green-100 rounded-lg">
@@ -124,7 +151,7 @@ export default function Organization(): React.JSX.Element {
              </CardContent>
            </Card> */}
 
-          {/* <Card className="shadow-sm">
+            {/* <Card className="shadow-sm">
             <CardHeader className="border-b">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-orange-100 rounded-lg">
@@ -138,7 +165,7 @@ export default function Organization(): React.JSX.Element {
                <p className="text-sm text-gray-500 mt-1">Organization metrics</p>
              </CardContent>
            </Card> */}
-           {/* <Card className="shadow-sm">
+            {/* <Card className="shadow-sm">
              <CardHeader className="border-b">
                <div className="flex items-center gap-3">
                  <div className="p-2 bg-yellow-100 rounded-lg">
@@ -152,9 +179,9 @@ export default function Organization(): React.JSX.Element {
                <p className="text-sm text-gray-500 mt-1">Performance data</p>
              </CardContent>
            </Card> */}
-         </div>
-        {/* Clinic Info */}
-        {/* <div className="bg-white shadow rounded-lg p-6 mb-6">
+          </div>
+          {/* Clinic Info */}
+          {/* <div className="bg-white shadow rounded-lg p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">Clinic Details</h2>
@@ -175,8 +202,8 @@ export default function Organization(): React.JSX.Element {
           </div>
         </div>
         </div> */}
-        {/* Organization Info */}
-        {/* <div className="bg-white shadow rounded-lg p-6 mb-6">
+          {/* Organization Info */}
+          {/* <div className="bg-white shadow rounded-lg p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">Organization User</h2>
@@ -197,56 +224,64 @@ export default function Organization(): React.JSX.Element {
           </div>
         </div>
         </div> */}
-        {/* Coin History */}
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-          <Card className="mt-0">
-                    <CardHeader className="border-b">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          <CreditCardIcon className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <CardTitle className="text-xl font-semibold text-primary">Buy Coins Transaction History</CardTitle>
-                      </div>
-                    </CardHeader> 
-                    <CardContent className="p-0 mt-[-25px]">
-                      <Table>
-                        <TableHeader className="bg-gray-50 ">
-                          <TableRow>
-                            <TableHead className="font-medium text-gray-600 p-2">Transaction ID</TableHead>
-                            <TableHead className="font-medium text-gray-600">Date</TableHead>
-                            <TableHead className="font-medium text-gray-600">Coins</TableHead>
-                            {/* <TableHead className="font-medium text-gray-600">Rate</TableHead> */}
-                            <TableHead className="font-medium text-gray-600">Aomunt</TableHead>
-                            {/* <TableHead className="font-medium text-gray-600">Payment ID</TableHead>
+          {/* Coin History */}
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <Card className="mt-0">
+                <CardHeader className="border-b">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <CreditCardIcon className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <CardTitle className="text-xl font-semibold text-primary">
+                      Buy Coins Transaction History
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0 mt-[-25px]">
+                  <Table>
+                    <TableHeader className="bg-gray-50 ">
+                      <TableRow>
+                        <TableHead className="font-medium text-gray-600 p-2">
+                          Transaction ID
+                        </TableHead>
+                        <TableHead className="font-medium text-gray-600">Date</TableHead>
+                        <TableHead className="font-medium text-gray-600">Coins</TableHead>
+                        {/* <TableHead className="font-medium text-gray-600">Rate</TableHead> */}
+                        <TableHead className="font-medium text-gray-600">Amount</TableHead>
+                        <TableHead className="font-medium text-gray-600">Invoice</TableHead>
+                        <TableHead className="font-medium text-gray-600">Payment Receipt</TableHead>
+                        {/* <TableHead className="font-medium text-gray-600">Payment ID</TableHead>
                             <TableHead className="font-medium text-gray-600">Payment Status</TableHead> */}
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {transactionHistory?.data?.coin_history?.length ? (
-                            transactionHistory.data.coin_history.map((transaction: Transaction,index:number) => (
-                              <TableRow 
-                                key={index} 
-                                className="hover:bg-gray-100"
-                              >
-                                 <TableCell className="p-2">
-                                  <span className="text-gray-600">{transaction.name}</span>
-                                </TableCell>
-                               
-                                <TableCell>
-                                  <span className="text-gray-600">{transaction.transaction_date}</span>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-gray-600">{transaction.coins?.toLocaleString()}</span>
-                                </TableCell>
-                                {/* <TableCell>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {transactionHistory?.data?.coin_history?.length ? (
+                        transactionHistory.data.coin_history.map(
+                          (transaction: Transaction, index: number) => (
+                            <TableRow key={index} className="hover:bg-gray-100">
+                              <TableCell className="p-2">
+                                <span className="text-gray-600">{transaction.name}</span>
+                              </TableCell>
+
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  {transaction.transaction_date}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  {transaction.coins?.toLocaleString()}
+                                </span>
+                              </TableCell>
+                              {/* <TableCell>
                                   <span className="text-gray-600">{transaction.rate}</span>
                                 </TableCell> */}
-                                <TableCell>
-                                  <span className="text-gray-600">{transaction.total_amount}</span>
-                                </TableCell>
-            
-                                {/* <TableCell className="font-medium">
+                              <TableCell>
+                                <span className="text-gray-600">{transaction.total_amount}</span>
+                              </TableCell>
+
+                              {/* <TableCell className="font-medium">
                                   <span className="text-gray-600">{transaction.payment_transaction_id}</span>
                                 </TableCell>
                                
@@ -254,83 +289,126 @@ export default function Organization(): React.JSX.Element {
                                 <TableCell>
                                   <span className="text-gray-600">{transaction.payment_status}</span>
                                 </TableCell> */}
-                              </TableRow>
-                            ))
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center py-12 text-gray-500">
-                                No transactions found
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  <a
+                                    href={transaction.invoiceUrl}
+                                    download
+                                    className="text-gray-600 hover:underline cursor-pointer"
+                                  >
+                                    {transaction.invoice}
+                                    <Image
+                                      src={'/assets/order-forms/icons/arrowdownload.svg'}
+                                      alt=""
+                                      className="object-cover"
+                                      width={20}
+                                      height={20}
+                                      unoptimized
+                                    ></Image>
+                                  </a>
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  <a
+                                    href={transaction.payment_receiptURL}
+                                    download
+                                    className="text-gray-600 hover:underline cursor-pointer"
+                                  >
+                                    {transaction.payment_receipt}
+                                  </a>
+                                  <Image
+                                    src={'/assets/order-forms/icons/arrowdownload.svg'}
+                                    alt=""
+                                    className="object-cover"
+                                    width={20}
+                                    height={20}
+                                    unoptimized
+                                  ></Image>
+                                </span>
                               </TableCell>
                             </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-             </Card>          
+                          )
+                        )
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-12 text-gray-500">
+                            No transactions found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
-        <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
-          <div className="overflow-x-auto">
-        
+          <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
+            <div className="overflow-x-auto">
+              <Card>
+                <CardHeader className="border-b">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <HistoryIcon className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <CardTitle className="text-xl font-semibold text-primary ">
+                      Usage Coins History
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0 mt-[-25px]">
+                  <Table>
+                    <TableHeader className="bg-gray-50">
+                      <TableRow>
+                        <TableHead className="font-medium text-gray-600 ">
+                          Transaction ID{' '}
+                        </TableHead>
+                        <TableHead className="font-medium text-gray-600">Date</TableHead>
+                        <TableHead className="font-medium text-gray-600">Coins</TableHead>
+                        <TableHead className="font-medium text-gray-600">Sales Order ID</TableHead>
+                        <TableHead className="font-medium text-gray-600">Device Type</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {transactionHistorySeles?.data?.coin_history?.length ? (
+                        transactionHistorySeles.data.coin_history.map(
+                          (transaction: Transaction, index: number) => (
+                            <TableRow key={index} className="hover:bg-gray-100">
+                              <TableCell>
+                                <span className="text-gray-600">{transaction.name}</span>
+                              </TableCell>
 
-
-          <Card >
-                    <CardHeader className="border-b">
-                      <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <HistoryIcon className="w-5 h-5 text-blue-600" />
-                      </div>
-                        <CardTitle className="text-xl font-semibold text-primary ">Usage Coins  History</CardTitle>
-                      </div>
-                    </CardHeader> 
-                    <CardContent className="p-0 mt-[-25px]">
-                      <Table>
-                        <TableHeader className="bg-gray-50">
-                          <TableRow>
-                            <TableHead className="font-medium text-gray-600 ">Transaction ID </TableHead>
-                            <TableHead className="font-medium text-gray-600">Date</TableHead>
-                            <TableHead className="font-medium text-gray-600">Coins</TableHead>
-                            <TableHead className="font-medium text-gray-600">Sales Order ID</TableHead>
-                            <TableHead className="font-medium text-gray-600">Device Type</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {transactionHistorySeles?.data?.coin_history?.length ? (
-                            transactionHistorySeles.data.coin_history.map((transaction: Transaction,index:number) => (
-                              <TableRow 
-                                key={index} 
-                                className="hover:bg-gray-100"
-                              >
-                                 <TableCell>
-                                  <span className="text-gray-600">{transaction.name}</span>
-                                </TableCell>
-                               
-                                <TableCell>
-                                  <span className="text-gray-600">{transaction.transaction_date}</span>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-gray-600">{transaction.coins?.toLocaleString()}</span>
-                                </TableCell>
-                                <TableCell className="font-medium">
-                                  <span className="text-gray-600">{transaction.sales_order}</span>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-gray-600">{transaction.device_type}</span>
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center py-12 text-gray-500">
-                                No transactions found
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  {transaction.transaction_date}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  {transaction.coins?.toLocaleString()}
+                                </span>
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                <span className="text-gray-600">{transaction.sales_order}</span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">{transaction.device_type}</span>
                               </TableCell>
                             </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-             </Card>
-            {/* <table className="min-w-full divide-y divide-gray-200">
+                          )
+                        )
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-12 text-gray-500">
+                            No transactions found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+              {/* <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
@@ -352,16 +430,13 @@ export default function Organization(): React.JSX.Element {
                 </tr>
               </tbody>
             </table> */}
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
-          
-           
-        </div>
-    );
+  );
 }
-
 
 //--------------------------------------------------------------------------------------
 //======================================================================================
@@ -432,7 +507,7 @@ export default function Organization(): React.JSX.Element {
 //       case 'pending':
 //         // return <Badge variant="warning">{status}</Badge>;
 //         return <Badge variant="outline">{status}</Badge>;
-//       case 'failed':    
+//       case 'failed':
 //         return <Badge variant="destructive">{status}</Badge>;
 //       default:
 //         return <Badge>{status}</Badge>;

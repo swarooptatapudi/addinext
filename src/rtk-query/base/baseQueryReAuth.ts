@@ -11,7 +11,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 
   if (result.error) {
     // const { status, data } = result.error;
-    toast.error(result?.error?.data?.message || 'Something went wrong');
+    // toast.error(result?.error?.data?.message || 'Something went wrong');
     console.error('Base query error:', result);
   }
 

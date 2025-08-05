@@ -548,7 +548,7 @@ const finalRate = calculateFinalRate(basicRate);
             </div>
             <div>
               <span className="text-md font-bold text-primary">AddiCoins Required</span>
-              <CardTitle className="text-sm">
+              <CardTitle className="text-sm text-gray-700">
                 Socket Categories
               </CardTitle>
             </div>

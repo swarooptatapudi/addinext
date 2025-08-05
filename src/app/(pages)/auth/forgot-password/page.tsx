@@ -1,159 +1,59 @@
-'use client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useLoginMutation } from '@/rtk-query/apis/auth';
-import { Formik } from 'formik';
-import React, { useEffect } from 'react';
-import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
-export default function forgetPassword(): React.JSX.Element {
-  const [login, { isSuccess, isLoading }] = useLoginMutation();
-  const router = useRouter();
-   
-  useEffect(() => {
-    if (isSuccess) {
-      router.replace('/dashboard'); 
-      window.location.reload(); 
-      toast.success('Login successful');
+
+"use client";
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "react-toastify";
+import { useForgotPasswordMutation } from "@/rtk-query/apis/auth";
+
+export default function ForgotPassword() {
+  const [email, setEmail] = useState("");
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!email) {
+      toast.error("Please enter your email");
+      return;
     }
-  }, [isSuccess, router]);
-  // useEffect(() => {
-  //   console.log("Login status changed", { isSuccess, isLoading });
-  //   if (isSuccess) {
-  //     console.log("Redirecting to dashboard");
-  //     router.push('/dashboard');
-  //     toast.success('Login successful');
-  //   }
-  // }, [isSuccess,router]);
 
-  // useEffect(() => {
-  //   if (isSuccess) {
-  //     router.push('/dashboard');
-  //     toast.success('Login successful');
-  //   }
-  // }, [isSuccess]);
+    try {
+      const res = await forgotPassword({ email }).unwrap();
+       toast.success(res?.message?.message || "Reset link sent! Check your email.");
+      setEmail("");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Email dosen't exists");
+    }
+  };
 
   return (
     <div className="h-full p-4 flex flex-col items-center justify-center w-full">
-      <div className="flex flex-col items-center justify-center w-[80%] max-w-[400px] bg-white p-4 rounded-lg py-10">
+      <div className="w-[80%] max-w-[400px] bg-white p-6 rounded-lg">
         <h1 className="text-2xl font-bold">Forgot Password</h1>
-        <p className="text-sm text-gray-500 mt-1">Enter your email to reset your password</p>
-       
-            <form  className="flex flex-col gap-4 w-full mt-6">
-              <Input
-                placeholder="Email"
-                name="email"
-                type="email"
-                // value={values.email}
-                // onChange={handleChange('email')}
-              />
-                <p className="text-sm text-red-500 -mt-2"></p>
-           
-              <Button type="submit" className="bg-[#5b3cc4] text-white">
-                Send Reset Link
-              </Button>
-              <div className="text-center mt-2">
-                <Link href="/auth" className="text-blue-600 text-sm hover:underline">
-                  Back to Sign In
-                </Link>
-              </div>
-            </form>
-          
+        <p className="text-sm text-gray-500 mt-1">
+          Enter your email to reset your password
+        </p>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-6">
+          <Input
+            placeholder="Email"
+            name="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <Button
+            type="submit"
+            className="bg-[#5b3cc4] text-white"
+            disabled={isLoading}
+          >
+            {isLoading ? "Sending..." : "Send Reset Link"}
+          </Button>
+        </form>
       </div>
     </div>
   );
 }
-
-
-//===================================================================
-// 'use client';
-// import { Button } from '@/components/ui/button';
-// import { Input } from '@/components/ui/input';
-// import { useLoginMutation } from '@/rtk-query/apis/auth';
-// import { Formik } from 'formik';
-// import React, { useEffect } from 'react';
-// import { toast } from 'react-toastify';
-// import { useRouter } from 'next/navigation';
-
-// export default function SignIn(): React.JSX.Element {
-//   const [login, { isSuccess, isLoading, error }] = useLoginMutation();
-//   const router = useRouter();
-// useEffect(() => {
-//     if (isSuccess) {
-//       console.log(isSuccess,login);
-      
-//       // router.push('/dashboard');
-//       window.location.href = '/dashboard';
-//       // Force a full page reload to ensure all state is reset
-//       setTimeout(() => window.location.reload(), 100);
-//       toast.success('Login successful');
-//     }
-//   }, [isSuccess, router]);
-//   // useEffect(() => {
-//   //   if (isSuccess) {
-//   //     // router.push('/dashboard');
-//   //     window.location.href = '/dashboard';
-//   //     toast.success('Login successful');
-      
-//   //   }
-//   // }, [isSuccess, router]);
-
-//   useEffect(() => {
-//     if (error) {
-//       // Log the full error for debugging
-//       console.error('Login error:', error);
-//       // Show user-friendly error message
-//       toast.error('Login failed. Please check your credentials and try again.');
-//     }
-//   }, [error]);
-
-//   return (
-//     <div className="h-full p-4 flex flex-col items-center justify-center w-full">
-//       <div className="flex flex-col items-center justify-center w-[80%] bg-white p-4 rounded-lg drop--lg py-10">
-//         <h1 className="text-2xl font-bold">Sign In</h1>
-//         <p className="text-sm text-gray-500">Sign in to your account</p>
-//         <div className="flex flex-col gap-4 w-full mt-6">
-//           <Formik 
-//             initialValues={{ usr: '', pwd: '' }} 
-//             onSubmit={(values) => {
-//               console.log('Submitting:', values); // Debug log
-//               login(values)
-//                 .unwrap()
-//                 .then((payload) => {
-//                   console.log('Login successful:', payload); // Debug log
-//                 })
-//                 .catch((error) => {
-//                   console.error('Login rejected:', error); // Debug log
-//                 });
-//             }}
-//           >
-//             {({ values, handleChange, handleSubmit }) => (
-//               <form onSubmit={handleSubmit}>
-//                 <div className="flex flex-col gap-4">
-//                   <Input 
-//                     placeholder="Email" 
-//                     name="usr"
-//                     value={values.usr} 
-//                     onChange={handleChange} 
-//                   />
-//                   <Input
-//                     placeholder="Password"
-//                     type="password"
-//                     name="pwd"
-//                     value={values.pwd}
-//                     onChange={handleChange}
-//                   />
-//                   <Button type="submit" disabled={isLoading}>
-//                     Sign In
-//                   </Button>
-//                 </div>
-//               </form>
-//             )}
-//           </Formik>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
