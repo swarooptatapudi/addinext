@@ -1,4 +1,5 @@
 export interface USER {
+  transaction_id(transaction_id: any, name: any): void;
   email: string;
   user_id: string;
   full_name: string;

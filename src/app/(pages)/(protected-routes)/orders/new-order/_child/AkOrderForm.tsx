@@ -785,7 +785,6 @@ return !!fieldError && (touched[fieldName] || formSubmitted);
         onChange={handleChange}
         style={{ height: '35px', width: '190px' }}
         type="text"
-       
         placeholder='(cm)'
         className="w-full placeholder:text-[12px]"
         inVaild={shouldShowError(`ak_socket_measurements[${index}].measurement_cm`)}

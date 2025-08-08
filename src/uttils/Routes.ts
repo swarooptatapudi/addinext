@@ -17,7 +17,7 @@ export const ROUTES: ROUTE_INTERFACE[] = [
   },
   {
     path: '/orders',
-    name: 'Orders',
+    name: 'O&P Orders',
     icon: LayoutList,
     roles: ['admin']
   },

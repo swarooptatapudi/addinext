@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BookmarkIcon,
@@ -23,11 +23,13 @@ import { useSelector } from 'react-redux';
 import {
   useGetRateAndDiscountsQuery,
   useGetTransactionHistoryQuery,
-  useGetTransactionHistorySelesQuery
+  useGetTransactionHistorySelesQuery,
+ 
 } from '@/rtk-query/apis/addicoins';
 import { USER } from '@/uttils/Types';
 import { RootState } from '@/rtk-query/store';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 interface Transaction {
   payment_transaction_id?: string;
@@ -46,6 +48,11 @@ interface Transaction {
   docstatus?: string;
   customer_name?: string;
   device_type?: string;
+  transaction_id?: string;
+  sales_invoice_pdf_url: string;
+  payment_entry_pdf_url: string;
+  custom_sales_invoice: string;
+  custom_payment_entry: string;
 }
 
 interface RateAndDiscountData {
@@ -57,6 +64,7 @@ interface RateAndDiscountData {
       plan: string;
       coin_rate: number;
       discount: number;
+      transaction_id: string;
     }>;
   };
 }
@@ -68,11 +76,71 @@ export default function Organization(): React.JSX.Element {
   const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
     customer: user?.customer_id
   });
+  console.log('transactionHistory=>', transactionHistory);
   const { data: transactionHistorySeles, refetch: refetchTransactionsS } =
     useGetTransactionHistorySelesQuery({
       customer: user?.customer_id
     });
+
   console.log('::>>', transactionHistorySeles);
+
+  // const { data: transactionHistory, isLoading, isError } = useGetReceiptsPdfQuery('CT-25-050');
+
+  useEffect(() => {
+    console.log('ReceiptsData from API:', transactionHistory);
+  }, [transactionHistory]);
+
+  const receipts = transactionHistory?.data;
+  console.log('Receipts object:', receipts);
+  // console.log('ReceiptsData from API:', receiptsData);
+  // console.log('Parsed receipts object:', receipts);
+
+  // const downloadPdf = (base64String: string, fileName: string) => {
+  //   const linkSource = `data:application/pdf;base64,${base64String}`;
+  //   const downloadLink = document.createElement('a');
+  //   downloadLink.href = linkSource;
+  //   downloadLink.download = `${fileName}.pdf`;
+  //   downloadLink.click();
+  // };
+
+  // const downloadBase64File = (base64: string, filename: string) => {
+  //   const linkSource = `data:application/pdf;base64,${base64}`;
+  //   const downloadLink = document.createElement('a');
+  //   downloadLink.href = linkSource;
+  //   downloadLink.download = `${filename}.pdf`;
+  //   downloadLink.click();
+  // };
+  const downloadPdfFromUrl = async (pdfUrl: string, fileName: string) => {
+    try {
+      const response = await fetch(pdfUrl, {
+        method: 'GET',
+        headers: {
+          // If your API requires auth, include token here
+          // 'Authorization': `Bearer ${yourToken}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${fileName}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(' Error downloading PDF:', error);
+      alert('Unable to download PDF. Please try again.');
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -115,25 +183,123 @@ export default function Organization(): React.JSX.Element {
                   </CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pt-4 grid grid-cols-1 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Name</h3>
-                  <p className="text-lg font-medium mt-1">Rohit Gupta</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Mobile</h3>
-                    <p className="text-lg font-medium mt-1">9876543210</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Email</h3>
-                    <p className="text-lg font-medium mt-1 truncate">addiwise56@gmail.com</p>
-                  </div>
-                </div>
-              </CardContent>
+              <CardContent className="pt-4 grid grid-cols-2 gap-4">
+  <div>
+    <h3 className="text-sm font-medium text-gray-500">Name</h3>
+    <p className="text-lg font-medium mt-1">Rohit Gupta</p>
+  </div>
+
+  <div>
+    <h3 className="text-sm font-medium text-gray-500">Mobile</h3>
+    <p className="text-lg font-medium mt-1">9876543210</p>
+  </div>
+
+  
+
+  <div>
+    <h3 className="text-sm font-medium text-gray-500">Email</h3>
+    <p className="text-lg font-medium mt-1 truncate">addiwise56@gmail.com</p>
+  </div><div>
+    <h3 className="text-sm font-medium text-gray-500">Subscription Name</h3>
+    <p className="text-lg font-medium mt-1 truncate">Premium</p>
+  </div>
+</CardContent>
+
             </Card>
           </div>
+{/* Addinxt subscription transcation  history */}
+  <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
+            <div className="overflow-x-auto">
+              <Card>
+                <CardHeader className="border-b">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <HistoryIcon className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <CardTitle className="text-xl font-semibold text-primary ">
+                     Addinxt Subscription Transcation  History
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0 mt-[-25px]">
+                  <Table>
+                    <TableHeader className="bg-gray-50">
+                      <TableRow>
+                        <TableHead className="font-medium text-gray-600 ">
+                          Transaction ID
+                        </TableHead>
+                        <TableHead className="font-medium text-gray-600">Date</TableHead>
+                        <TableHead className="font-medium text-gray-600">Subscription Type </TableHead>
+                        <TableHead className="font-medium text-gray-600">Start Date</TableHead>
+                        <TableHead className="font-medium text-gray-600">End Date</TableHead>
+                          <TableHead className="font-medium text-gray-600">Amount</TableHead>
+                            <TableHead className="font-medium text-gray-600">Invoice</TableHead>
+                         <TableHead className="font-medium text-gray-600">Payment Receipt</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {transactionHistorySeles?.data?.coin_history?.length ? (
+                        transactionHistorySeles.data.coin_history.map(
+                          (transaction: Transaction, index: number) => (
+                            <TableRow key={index} className="hover:bg-gray-100">
+                              <TableCell>
+                                <span className="text-gray-600">{transaction.name}</span>
+                              </TableCell>
 
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  {transaction.transaction_date}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  {transaction.coins?.toLocaleString()}
+                                </span>
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                <span className="text-gray-600">{transaction.sales_order}</span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">{transaction.device_type}</span>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-12 text-gray-500">
+                            No transactions found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+              {/* <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debit</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goodful</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DCE</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pay M-Ster</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$100.00</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">No</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Yes</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">DCE123</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Completed</td>
+                </tr>
+              </tbody>
+            </table> */}
+            </div>
+          </div>
           {/* Stats Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             {/* <Card className="shadow-sm">
@@ -291,9 +457,12 @@ export default function Organization(): React.JSX.Element {
                                 </TableCell> */}
                               <TableCell>
                                 <span className="text-gray-600">
-                                  <a
-                                    href={transaction.invoiceUrl}
-                                    download
+                                  {/* <Button
+                               
+                                  
+                                       onClick={() =>
+      handleDownloadPdf(user.transaction_id, receipts.sales_invoice.name)
+    }
                                     className="text-gray-600 hover:underline cursor-pointer"
                                   >
                                     {transaction.invoice}
@@ -305,26 +474,87 @@ export default function Organization(): React.JSX.Element {
                                       height={20}
                                       unoptimized
                                     ></Image>
-                                  </a>
+                                  </Button> */}
+
+                                  <Button
+                                    className="bg-white text-gray-600 hover:bg-white no-underline hover:underline"
+                                    onClick={() => {
+                                      console.log(
+                                        '📄 Downloading Invoice PDF from:',
+                                        transaction.sales_invoice_pdf_url
+                                      );
+                                      if (transaction.sales_invoice_pdf_url) {
+                                        downloadPdfFromUrl(
+  transaction.sales_invoice_pdf_url,
+  transaction.custom_sales_invoice || 'Sales_Invoice'
+);
+
+                                      } else {
+                                        console.error('Invoice PDF URL is missing');
+                                      }
+                                    }}
+                                  >
+                                    <Image
+                                      src={'/assets/order-forms/icons/arrowdownload.svg'}
+                                      alt=""
+                                      className="object-cover"
+                                      width={20}
+                                      height={20}
+                                      unoptimized
+                                    />
+                                    Invoice
+                                  </Button>
                                 </span>
                               </TableCell>
                               <TableCell>
                                 <span className="text-gray-600">
-                                  <a
-                                    href={transaction.payment_receiptURL}
-                                    download
-                                    className="text-gray-600 hover:underline cursor-pointer"
+                                  <Button
+                                    className="bg-white text-gray-600 hover:bg-white no-underline hover:underline"
+                                    onClick={() => {
+                                      console.log(
+                                        '📄 Downloading payment_entry_pdffrom:',
+                                        transaction.payment_entry_pdf_url
+                                      );
+                                      if (transaction.payment_entry_pdf_url) {
+                                      downloadPdfFromUrl(
+  transaction.payment_entry_pdf_url,
+  transaction.custom_payment_entry || 'Payment Receipt'
+);
+
+                                      } else {
+                                        console.error('Patment receipt PDF URL is missing');
+                                      }
+                                    }}
                                   >
-                                    {transaction.payment_receipt}
-                                  </a>
-                                  <Image
-                                    src={'/assets/order-forms/icons/arrowdownload.svg'}
-                                    alt=""
-                                    className="object-cover"
-                                    width={20}
-                                    height={20}
-                                    unoptimized
-                                  ></Image>
+                                    <Image
+                                      src={'/assets/order-forms/icons/arrowdownload.svg'}
+                                      alt=""
+                                      className="object-cover"
+                                      width={20}
+                                      height={20}
+                                      unoptimized
+                                    />
+                                    Payment Receipt
+                                  </Button>
+                                  {/* <Button
+                                      className="bg-white text-gray-600 border-none hover:bg-white no-underline hover:underline"
+                                      onClick={() =>
+                                        downloadPdfFromUrl(
+                                          
+                                          transactionHistory.payment_entry_pdf_url,
+                                          transactionHistory.payment_entry_pdf_url || 'Payment_Entry'
+                                        )
+                                      }
+                                    >
+                                      <Image
+                                        src={'/assets/order-forms/icons/arrowdownload.svg'}
+                                        alt=""
+                                        className="object-cover"
+                                        width={20}
+                                        height={20}
+                                        unoptimized
+                                      ></Image>Payment Receipt
+                                    </Button> */}
                                 </span>
                               </TableCell>
                             </TableRow>
@@ -432,12 +662,107 @@ export default function Organization(): React.JSX.Element {
             </table> */}
             </div>
           </div>
+{/* Other buying transcation history */}
+  <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
+            <div className="overflow-x-auto">
+              <Card>
+                <CardHeader className="border-b">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <HistoryIcon className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <CardTitle className="text-xl font-semibold text-primary ">
+                     Other Transcation History 
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0 mt-[-25px]">
+                  <Table>
+                    <TableHeader className="bg-gray-50">
+                      <TableRow>
+                        <TableHead className="font-medium text-gray-600 ">
+                          Transaction ID{' '}
+                        </TableHead>
+                        <TableHead className="font-medium text-gray-600">Date</TableHead>
+                        <TableHead className="font-medium text-gray-600">Transcation Type</TableHead>
+                        <TableHead className="font-medium text-gray-600">Amount</TableHead>
+                        <TableHead className="font-medium text-gray-600">Invoice</TableHead>
+                         <TableHead className="font-medium text-gray-600">Payment Receipt</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {transactionHistorySeles?.data?.coin_history?.length ? (
+                        transactionHistorySeles.data.coin_history.map(
+                          (transaction: Transaction, index: number) => (
+                            <TableRow key={index} className="hover:bg-gray-100">
+                              <TableCell>
+                                <span className="text-gray-600">{transaction.name}</span>
+                              </TableCell>
+
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  {transaction.transaction_date}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  {transaction.coins?.toLocaleString()}
+                                </span>
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                <span className="text-gray-600">{transaction.sales_order}</span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">{transaction.device_type}</span>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-12 text-gray-500">
+                            No transactions found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+              {/* <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debit</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goodful</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DCE</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pay M-Ster</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$100.00</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">No</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Yes</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">DCE123</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Completed</td>
+                </tr>
+              </tbody>
+            </table> */}
+            </div>
+          </div>
+        
         </main>
       </div>
     </div>
   );
 }
 
+function saveAs(blob: Blob, arg1: string) {
+  throw new Error('Function not implemented.');
+}
 //--------------------------------------------------------------------------------------
 //======================================================================================
 // 'use client';

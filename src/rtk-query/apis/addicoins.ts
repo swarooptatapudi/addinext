@@ -56,7 +56,10 @@ export const addicoinsApi = createApi({
         body: payload
       }),
       transformResponse: (response: any) => response
-    })
+    }),
+
+
+
   })
 });
 
@@ -66,5 +69,6 @@ export const {
   useBuyCoinsAfterPaymentMutation,
   useGetTransactionHistoryQuery,
   useGetTransactionHistorySelesQuery,
-  useBuyAddiNxtCoinMutation  
+  useBuyAddiNxtCoinMutation ,
+
 } = addicoinsApi;
