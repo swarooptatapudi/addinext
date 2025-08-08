@@ -23,9 +23,9 @@ import { useSelector } from 'react-redux';
 import {
   useGetRateAndDiscountsQuery,
   useGetTransactionHistoryQuery,
-  useGetTransactionHistorySelesQuery,
- 
+  useGetTransactionHistorySelesQuery
 } from '@/rtk-query/apis/addicoins';
+import { useGetSubscriptionTranscationHistoryQuery } from '@/rtk-query/apis/subscription';
 import { USER } from '@/uttils/Types';
 import { RootState } from '@/rtk-query/store';
 import Image from 'next/image';
@@ -54,6 +54,31 @@ interface Transaction {
   custom_sales_invoice: string;
   custom_payment_entry: string;
 }
+// interface SubscriptionTranscationHistory{
+//   message?: {
+//         name: string,
+//         plan_name: string,
+//         amount:  number,
+//         start_date: string,
+//       end_date:string,
+//         payment_status: string,
+//         bonus_coins: number
+//     }
+// }
+
+interface SubscriptionTransactionItem {
+  name: string;
+  plan_name: string;
+  amount: number;
+  start_date: string;
+  end_date: string;
+  payment_status: string;
+  bonus_coins: number;
+  sales_invoice: string;
+  payment_entry: string;
+  invoice_pdf_url: string;
+  payment_pdf_url: string;
+}
 
 interface RateAndDiscountData {
   data?: {
@@ -76,22 +101,28 @@ export default function Organization(): React.JSX.Element {
   const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
     customer: user?.customer_id
   });
-  console.log('transactionHistory=>', transactionHistory);
+
+  const { data: subscriptionTranscationHistory, refetch: subscriptionTranscationHistorys } =
+    useGetSubscriptionTranscationHistoryQuery({
+      customer: user?.customer_id
+    });
+  // console.log('subscriptionTranscationHistory=>', subscriptionTranscationHistory);
+  // console.log('transactionHistory=>', transactionHistory);
   const { data: transactionHistorySeles, refetch: refetchTransactionsS } =
     useGetTransactionHistorySelesQuery({
       customer: user?.customer_id
     });
 
-  console.log('::>>', transactionHistorySeles);
+  // console.log('::>>', transactionHistorySeles);
 
   // const { data: transactionHistory, isLoading, isError } = useGetReceiptsPdfQuery('CT-25-050');
 
   useEffect(() => {
-    console.log('ReceiptsData from API:', transactionHistory);
+    // console.log('ReceiptsData from API:', transactionHistory);
   }, [transactionHistory]);
 
   const receipts = transactionHistory?.data;
-  console.log('Receipts object:', receipts);
+  // console.log('Receipts object:', receipts);
   // console.log('ReceiptsData from API:', receiptsData);
   // console.log('Parsed receipts object:', receipts);
 
@@ -184,31 +215,29 @@ export default function Organization(): React.JSX.Element {
                 </div>
               </CardHeader>
               <CardContent className="pt-4 grid grid-cols-2 gap-4">
-  <div>
-    <h3 className="text-sm font-medium text-gray-500">Name</h3>
-    <p className="text-lg font-medium mt-1">Rohit Gupta</p>
-  </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Name</h3>
+                  <p className="text-lg font-medium mt-1">Rohit Gupta</p>
+                </div>
 
-  <div>
-    <h3 className="text-sm font-medium text-gray-500">Mobile</h3>
-    <p className="text-lg font-medium mt-1">9876543210</p>
-  </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Mobile</h3>
+                  <p className="text-lg font-medium mt-1">9876543210</p>
+                </div>
 
-  
-
-  <div>
-    <h3 className="text-sm font-medium text-gray-500">Email</h3>
-    <p className="text-lg font-medium mt-1 truncate">addiwise56@gmail.com</p>
-  </div><div>
-    <h3 className="text-sm font-medium text-gray-500">Subscription Name</h3>
-    <p className="text-lg font-medium mt-1 truncate">Premium</p>
-  </div>
-</CardContent>
-
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Email</h3>
+                  <p className="text-lg font-medium mt-1 truncate">addiwise56@gmail.com</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Subscription Name</h3>
+                  <p className="text-lg font-medium mt-1 truncate">Premium</p>
+                </div>
+              </CardContent>
             </Card>
           </div>
-{/* Addinxt subscription transcation  history */}
-  <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
+          {/* Addinxt subscription transcation  history */}
+          <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
             <div className="overflow-x-auto">
               <Card>
                 <CardHeader className="border-b">
@@ -217,7 +246,7 @@ export default function Organization(): React.JSX.Element {
                       <HistoryIcon className="w-5 h-5 text-blue-600" />
                     </div>
                     <CardTitle className="text-xl font-semibold text-primary ">
-                     Addinxt Subscription Transcation  History
+                      Addinxt Subscription Transcation History
                     </CardTitle>
                   </div>
                 </CardHeader>
@@ -225,50 +254,59 @@ export default function Organization(): React.JSX.Element {
                   <Table>
                     <TableHeader className="bg-gray-50">
                       <TableRow>
-                        <TableHead className="font-medium text-gray-600 ">
-                          Transaction ID
-                        </TableHead>
+                        <TableHead className="font-medium text-gray-600 ">Order ID</TableHead>
                         <TableHead className="font-medium text-gray-600">Date</TableHead>
-                        <TableHead className="font-medium text-gray-600">Subscription Type </TableHead>
+                        <TableHead className="font-medium text-gray-600">
+                          Subscription Type{' '}
+                        </TableHead>
                         <TableHead className="font-medium text-gray-600">Start Date</TableHead>
                         <TableHead className="font-medium text-gray-600">End Date</TableHead>
-                          <TableHead className="font-medium text-gray-600">Amount</TableHead>
-                            <TableHead className="font-medium text-gray-600">Invoice</TableHead>
-                         <TableHead className="font-medium text-gray-600">Payment Receipt</TableHead>
+                        <TableHead className="font-medium text-gray-600">Amount</TableHead>
+                        <TableHead className="font-medium text-gray-600">Invoice</TableHead>
+                        <TableHead className="font-medium text-gray-600">Receipt</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {transactionHistorySeles?.data?.coin_history?.length ? (
-                        transactionHistorySeles.data.coin_history.map(
-                          (transaction: Transaction, index: number) => (
-                            <TableRow key={index} className="hover:bg-gray-100">
-                              <TableCell>
-                                <span className="text-gray-600">{transaction.name}</span>
-                              </TableCell>
-
-                              <TableCell>
-                                <span className="text-gray-600">
-                                  {transaction.transaction_date}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <span className="text-gray-600">
-                                  {transaction.coins?.toLocaleString()}
-                                </span>
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                <span className="text-gray-600">{transaction.sales_order}</span>
-                              </TableCell>
-                              <TableCell>
-                                <span className="text-gray-600">{transaction.device_type}</span>
-                              </TableCell>
-                            </TableRow>
-                          )
-                        )
+                      {subscriptionTranscationHistory ? (
+                        <TableRow className="hover:bg-gray-100">
+                          <TableCell>
+                            {' '}
+                            <span className="text-gray-600">
+                              {subscriptionTranscationHistory.name}
+                            </span>
+                          </TableCell>
+                          <TableCell>{subscriptionTranscationHistory.start_date}</TableCell>
+                          <TableCell>{subscriptionTranscationHistory.plan_name}</TableCell>
+                          <TableCell>{subscriptionTranscationHistory.start_date}</TableCell>
+                          <TableCell>{subscriptionTranscationHistory.end_date}</TableCell>
+                          <TableCell>
+                            {subscriptionTranscationHistory.amount.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <a
+                              href={subscriptionTranscationHistory.invoice_pdf_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 underline"
+                            >
+                              Invoice PDF
+                            </a>
+                          </TableCell>
+                          <TableCell>
+                            <a
+                              href={subscriptionTranscationHistory.payment_pdf_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 underline"
+                            >
+                              Payment PDF
+                            </a>
+                          </TableCell>
+                        </TableRow>
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={8} className="text-center py-12 text-gray-500">
-                            No transactions found
+                          <TableCell colSpan={8} className="text-center text-gray-500 py-6">
+                            No subscription found.
                           </TableCell>
                         </TableRow>
                       )}
@@ -416,7 +454,7 @@ export default function Organization(): React.JSX.Element {
                         {/* <TableHead className="font-medium text-gray-600">Rate</TableHead> */}
                         <TableHead className="font-medium text-gray-600">Amount</TableHead>
                         <TableHead className="font-medium text-gray-600">Invoice</TableHead>
-                        <TableHead className="font-medium text-gray-600">Payment Receipt</TableHead>
+                        <TableHead className="font-medium text-gray-600">Receipt</TableHead>
                         {/* <TableHead className="font-medium text-gray-600">Payment ID</TableHead>
                             <TableHead className="font-medium text-gray-600">Payment Status</TableHead> */}
                       </TableRow>
@@ -485,10 +523,9 @@ export default function Organization(): React.JSX.Element {
                                       );
                                       if (transaction.sales_invoice_pdf_url) {
                                         downloadPdfFromUrl(
-  transaction.sales_invoice_pdf_url,
-  transaction.custom_sales_invoice || 'Sales_Invoice'
-);
-
+                                          transaction.sales_invoice_pdf_url,
+                                          transaction.custom_sales_invoice || 'Sales_Invoice'
+                                        );
                                       } else {
                                         console.error('Invoice PDF URL is missing');
                                       }
@@ -516,11 +553,10 @@ export default function Organization(): React.JSX.Element {
                                         transaction.payment_entry_pdf_url
                                       );
                                       if (transaction.payment_entry_pdf_url) {
-                                      downloadPdfFromUrl(
-  transaction.payment_entry_pdf_url,
-  transaction.custom_payment_entry || 'Payment Receipt'
-);
-
+                                        downloadPdfFromUrl(
+                                          transaction.payment_entry_pdf_url,
+                                          transaction.custom_payment_entry || 'Receipt'
+                                        );
                                       } else {
                                         console.error('Patment receipt PDF URL is missing');
                                       }
@@ -534,7 +570,7 @@ export default function Organization(): React.JSX.Element {
                                       height={20}
                                       unoptimized
                                     />
-                                    Payment Receipt
+                                    Receipt
                                   </Button>
                                   {/* <Button
                                       className="bg-white text-gray-600 border-none hover:bg-white no-underline hover:underline"
@@ -662,8 +698,8 @@ export default function Organization(): React.JSX.Element {
             </table> */}
             </div>
           </div>
-{/* Other buying transcation history */}
-  <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
+          {/* Other buying transcation history */}
+          <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
             <div className="overflow-x-auto">
               <Card>
                 <CardHeader className="border-b">
@@ -672,7 +708,7 @@ export default function Organization(): React.JSX.Element {
                       <HistoryIcon className="w-5 h-5 text-blue-600" />
                     </div>
                     <CardTitle className="text-xl font-semibold text-primary ">
-                     Other Transcation History 
+                      Other Transcation History
                     </CardTitle>
                   </div>
                 </CardHeader>
@@ -684,10 +720,12 @@ export default function Organization(): React.JSX.Element {
                           Transaction ID{' '}
                         </TableHead>
                         <TableHead className="font-medium text-gray-600">Date</TableHead>
-                        <TableHead className="font-medium text-gray-600">Transcation Type</TableHead>
+                        <TableHead className="font-medium text-gray-600">
+                          Transcation Type
+                        </TableHead>
                         <TableHead className="font-medium text-gray-600">Amount</TableHead>
                         <TableHead className="font-medium text-gray-600">Invoice</TableHead>
-                         <TableHead className="font-medium text-gray-600">Payment Receipt</TableHead>
+                        <TableHead className="font-medium text-gray-600">Receipt</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -753,7 +791,6 @@ export default function Organization(): React.JSX.Element {
             </table> */}
             </div>
           </div>
-        
         </main>
       </div>
     </div>

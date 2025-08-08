@@ -257,7 +257,7 @@ export default function Orders(): React.JSX.Element {
     },
     {
       id: 'payment-receipt',
-      header: 'Payment Receipt',
+      header: 'Receipt',
       cell: ({ row }) => {
         const order = row.original;
         const isDisabled = order.status === 'Completed' || order.status === 'Paid';
