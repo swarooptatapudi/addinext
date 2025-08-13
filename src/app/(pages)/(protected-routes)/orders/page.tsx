@@ -422,6 +422,7 @@ export default function Orders(): React.JSX.Element {
         columns={columns}
         data={(data?.data?.sales_orders || [])
           .filter((order: Order) =>
+            // Use (order.patient_name || '') to handle null/undefined
             (order.patient_name || '').toLowerCase().includes(searchTerm.toLowerCase())
           )
           .map((order: any) => ({ ...order, device_type: order.custom_order_types || '-' }))}
