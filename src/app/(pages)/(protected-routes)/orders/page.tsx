@@ -19,6 +19,22 @@ declare global {
     Razorpay: any;
   }
 }
+
+type SalesInvoice = {
+  name: string;
+  posting_date: string;
+  status: string;
+  grand_total: number;
+  pdf_url: string;
+  payments: {
+    name: string;
+    posting_date: string;
+    status: string;
+    paid_amount: number;
+    pdf_url: string;
+  }[];
+};
+
 export type Order = {
   order_id: string;
   customer: string;
@@ -30,10 +46,15 @@ export type Order = {
   order_value: number;
   status: string;
   symbol?: string;
+sales_invoices
+
+
+: SalesInvoice[]; 
 };
 
 export default function Orders(): React.JSX.Element {
   const { data, isLoading, error } = useGetOrdersQuery('');
+  // console.log("salesdata",data)
   const [getOrderDetails, { isLoading: isPaymentLoading }] = useGetOrderDetailsMutation();
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,6 +62,14 @@ export default function Orders(): React.JSX.Element {
 
   const router = useRouter();
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
+
+  const tableData: Order[] = (data?.data?.sales_orders || []).map((so: any) => ({
+  ...so,
+  device_type: so.custom_order_types || '-',
+  sales_invoices: so.sales_invoices || [] // Ensure property exists
+}));
+
 
   useEffect(() => {
     const loadRazorpayScript = async () => {
@@ -232,7 +261,26 @@ export default function Orders(): React.JSX.Element {
               </Button>
 
               {order.status !== 'Paid' && (
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-[#583ca3]/90 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <div className="   absolute z-10 
+      opacity-0 group-hover:opacity-100 
+      transition-all duration-200 ease-out
+
+      /* Mobile-first styling */
+      max-w-[80vw] text-center break-words
+      bg-[#583ca3]/90 text-white text-xs md:text-sm
+      px-3 py-1.5 rounded-lg shadow-lg
+
+      /* Position: below on small screens */
+      top-full mt-2 left-1/2 -translate-x-1/2
+
+      /* On larger screens: above */
+      md:-top-10 md:mt-0
+
+      /* Animation on hover */
+      transform scale-95 group-hover:scale-100
+
+      /* Remove nowrap for wrapping text */
+    ">
                   Design engine under construction
                 </div>
               )}
@@ -241,34 +289,93 @@ export default function Orders(): React.JSX.Element {
         );
       }
     },
-    {
-      id: 'invoice',
-      header: 'Invoice',
-      cell: ({ row }) => {
-        const order = row.original;
-        const isDisabled = order.status === 'Completed' || order.status === 'Paid';
+  {
+  id: 'invoice',
+  header: 'Invoice',
+  cell: ({ row }) => {
+    const invoices = row.original.sales_invoices;
+    if (!invoices.length) return <span className="text-gray-400">-</span>;
 
-        return (
-          <div className="flex space-x-">
-            <div className="relative group ml-2"></div>
+    return (
+      <div className="flex flex-col gap-1">
+        {invoices.map((inv, i) => (
+          <div key={i}>
+            <a
+              href={inv.pdf_url}
+             
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              Invoice PDF
+            </a>
+            {/* {inv.payments.map((pay, j) => (
+              <a
+                key={j}
+                href={pay.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-600 underline ml-2"
+              >
+                Payment  PDF
+              </a>
+            ))} */}
           </div>
-        );
-      }
-    },
-    {
-      id: 'payment-receipt',
-      header: 'Receipt',
-      cell: ({ row }) => {
-        const order = row.original;
-        const isDisabled = order.status === 'Completed' || order.status === 'Paid';
+        ))}
+      </div>
+    );
+  },
+},
 
-        return (
-          <div className="flex space-x-">
-            <div className="relative group ml-2"></div>
+  {
+  id: 'payment-receipt',
+  header: 'Receipt',
+  cell: ({ row }) => {
+    const invoices = row.original.sales_invoices;
+    if (!invoices.length) return <span className="text-gray-400">-</span>;
+
+    return (
+      <div className="flex flex-col gap-1">
+        {invoices.map((inv, i) => (
+          <div key={i}>
+            {/* <a
+              href={inv.pdf_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              Invoice PDF
+            </a> */}
+            {inv.payments.map((pay, j) => (
+              <a
+                key={j}
+                href={pay.pdf_url}
+                download={"Receipt.pdf"}
+                rel="noopener noreferrer"
+                className="text-green-600 underline ml-2"
+              >
+                Receipt PDF
+              </a>
+            ))}
           </div>
-        );
-      }
-    }
+        ))}
+      </div>
+    );
+  },
+},
+    // {
+    //   id: 'payment-receipt',
+    //   header: 'Receipt',
+    //   cell: ({ row }) => {
+    //     const order = row.original;
+    //     const isDisabled = order.status === 'Completed' || order.status === 'Paid';
+
+    //     return (
+    //       <div className="flex space-x-">
+    //         <div className="relative group ml-2"></div>
+    //       </div>
+    //     );
+    //   }
+    // }
   ];
 
   if (isLoading) {
@@ -303,7 +410,15 @@ export default function Orders(): React.JSX.Element {
           </div>
         )}
       </div>
-      <DataTable
+   <DataTable
+  columns={columns}
+  data={tableData.filter(order =>
+    (order.patient_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+  )}
+  sorting={sorting}
+  onSortingChange={setSorting}
+/>   
+      {/* <DataTable
         columns={columns}
         data={(data?.data?.sales_orders || [])
           .filter((order: Order) =>
@@ -312,7 +427,7 @@ export default function Orders(): React.JSX.Element {
           .map((order: any) => ({ ...order, device_type: order.custom_order_types || '-' }))}
         sorting={sorting}
         onSortingChange={setSorting}
-      />
+      /> */}
     </div>
   );
 }

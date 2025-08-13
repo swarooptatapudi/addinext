@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
+import Printers from '@/app/(pages)/(protected-routes)/printers/page'
 
 export default function Products(): React.JSX.Element {
   return (
@@ -86,7 +87,7 @@ export default function Products(): React.JSX.Element {
             <ProductItem 
               src="/assets/order-forms/products/Addistud.jpg" 
               label="AddiStud" 
-              href={''}
+              href=""
             />
           </div>
         </div>
@@ -114,12 +115,12 @@ export default function Products(): React.JSX.Element {
           <ProductItem 
             src="/assets/order-forms/products/HP-MJF.jpg" 
             label="HP-MJF" 
-            href={''}
+            href="/printers"
           />
            <ProductItem 
             src="/assets/order-forms/products/AddIPrint.jpg" 
             label="AddiPrint-P500" 
-            href={''}
+            href='/printers'
           />
         </div>
       </div>

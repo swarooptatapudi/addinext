@@ -1,4 +1,4 @@
-import { LayoutDashboardIcon, LayoutList, Network, Package } from 'lucide-react';
+import { LayoutDashboardIcon, LayoutList, Network, Package, ReceiptText } from 'lucide-react';
 import React from 'react';
 
 export interface ROUTE_INTERFACE {
@@ -21,10 +21,17 @@ export const ROUTES: ROUTE_INTERFACE[] = [
     icon: LayoutList,
     roles: ['admin']
   },
+
   {
     path: '/organization',
     name: 'Organization',
     icon: Network,
+    roles: ['admin']
+  }, 
+   {
+    path: '/transcations',
+    name: 'Transcations',
+    icon: ReceiptText,
     roles: ['admin']
   },
   {
