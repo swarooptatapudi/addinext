@@ -53,6 +53,7 @@ interface Transaction {
   payment_entry_pdf_url: string;
   custom_sales_invoice: string;
   custom_payment_entry: string;
+  sales_order_id: string
 }
 // interface SubscriptionTranscationHistory{
 //   message?: {
@@ -255,6 +256,7 @@ export default function Transcations(): React.JSX.Element {
                   <Table>
                     <TableHeader className="bg-gray-50">
                       <TableRow>
+                        <TableHead className="font-medium text-gray-600 ">Order ID</TableHead>
                         <TableHead className="font-medium text-gray-600 ">Transcation ID</TableHead>
                         <TableHead className="font-medium text-gray-600">Date</TableHead>
                         <TableHead className="font-medium text-gray-600">
@@ -270,12 +272,16 @@ export default function Transcations(): React.JSX.Element {
                     <TableBody>
                       {subscriptionTranscationHistory ? (
                         <TableRow className="hover:bg-gray-100">
+                          
                           <TableCell>
-                            {' '}
                             <span className="text-gray-600">
-                              {subscriptionTranscationHistory.name}
+                              {subscriptionTranscationHistory.custom_sales_order}
                             </span>
                           </TableCell>
+                           <TableCell>
+                            <span className="text-gray-600">
+                              {subscriptionTranscationHistory.name}
+                            </span></TableCell>
                           <TableCell>{subscriptionTranscationHistory.start_date}</TableCell>
                           <TableCell>{subscriptionTranscationHistory.plan_name}</TableCell>
                           <TableCell>{subscriptionTranscationHistory.start_date}</TableCell>
@@ -306,7 +312,7 @@ export default function Transcations(): React.JSX.Element {
                         </TableRow>
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={8} className="text-center text-gray-500 py-6">
+                          <TableCell colSpan={9} className="text-center text-gray-500 py-6">
                             No subscription found.
                           </TableCell>
                         </TableRow>
@@ -446,7 +452,9 @@ export default function Transcations(): React.JSX.Element {
     <CardContent className="p-0 mt-[-25px]">
       <Table>
         <TableHeader className="bg-gray-50 ">
-          <TableRow>
+          <TableRow><TableHead className="font-medium text-gray-600 p-2">
+              Order ID
+            </TableHead>
             <TableHead className="font-medium text-gray-600 p-2">
               Transaction ID
             </TableHead>
@@ -463,6 +471,9 @@ export default function Transcations(): React.JSX.Element {
             transactionHistory.data.coin_history.map(
               (transaction: Transaction, index: number) => (
                 <TableRow key={index} className="hover:bg-gray-100">
+                   <TableCell className="p-2">
+                    <span className="text-gray-600">{transaction.sales_order_id}</span>
+                  </TableCell>
                   <TableCell className="p-2">
                     <span className="text-gray-600">{transaction.name}</span>
                   </TableCell>
@@ -547,7 +558,7 @@ export default function Transcations(): React.JSX.Element {
             )
           ) : (
             <TableRow>
-              <TableCell colSpan={7} className="text-center py-12 text-gray-500">
+              <TableCell colSpan={8} className="text-center py-12 text-gray-500">
                 No transactions found
               </TableCell>
             </TableRow>

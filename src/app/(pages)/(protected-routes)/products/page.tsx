@@ -87,7 +87,7 @@ export default function Products(): React.JSX.Element {
             <ProductItem 
               src="/assets/order-forms/products/Addistud.jpg" 
               label="AddiStud" 
-              href=""
+              href="/offtheshelf"
             />
           </div>
         </div>
@@ -100,7 +100,7 @@ export default function Products(): React.JSX.Element {
           <ProductItem 
             src="/assets/order-forms/products/AddiPrime.jpg" 
             label="AddiPrime" 
-            href={''}
+            href="/scanners"
           />
          
         </div>

@@ -13,6 +13,7 @@ import { useGetOrdersQuery, useGetOrderDetailsMutation } from '@/rtk-query/apis/
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import OrderSummaryModal from '@/components/form/bkForm/OrderSummaryModal'
 
 declare global {
   interface Window {
@@ -59,30 +60,26 @@ export default function Orders(): React.JSX.Element {
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState<SortingState>([{ id: 'order_date', desc: true }]);
-
+  const [openModal, setOpenModal] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  
   const router = useRouter();
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-
-
   const tableData: Order[] = (data?.data?.sales_orders || []).map((so: any) => ({
   ...so,
   device_type: so.custom_order_types || '-',
   sales_invoices: so.sales_invoices || [] // Ensure property exists
 }));
-
-
   useEffect(() => {
     const loadRazorpayScript = async () => {
       if (window.Razorpay) {
         setIsRazorpayLoaded(true);
         return;
       }
-
       try {
         const script = document.createElement('script');
         script.src = 'https://checkout.razorpay.com/v1/checkout.js';
         script.async = true;
-
         script.onload = () => setIsRazorpayLoaded(true);
         script.onerror = () => {
           setIsRazorpayLoaded(false);
@@ -159,7 +156,12 @@ export default function Orders(): React.JSX.Element {
       );
     }
   };
-
+  // const handleOrderIdClick = (order: Order) => {
+  //   if (order.device_type === 'BK Orders') {
+  //     setSelectedOrder(order)
+  //     setOpenModal(true) // ✅ opens modal instead of navigation
+  //   }
+  // }
   const columns: ColumnDef<Order>[] = [
     {
       accessorKey: 'order_id',
@@ -261,28 +263,7 @@ export default function Orders(): React.JSX.Element {
               </Button>
 
               {order.status !== 'Paid' && (
-                <div className="   absolute z-10 
-      opacity-0 group-hover:opacity-100 
-      transition-all duration-200 ease-out
-
-      /* Mobile-first styling */
-      max-w-[80vw] text-center break-words
-      bg-[#583ca3]/90 text-white text-xs md:text-sm
-      px-3 py-1.5 rounded-lg shadow-lg
-
-      /* Position: below on small screens */
-      top-full mt-2 left-1/2 -translate-x-1/2
-
-      /* On larger screens: above */
-      md:-top-10 md:mt-0
-
-      /* Animation on hover */
-      transform scale-95 group-hover:scale-100
-
-      /* Remove nowrap for wrapping text */
-    ">
-                  Design engine under construction
-                </div>
+            <></>
               )}
             </div>
           </div>
@@ -302,7 +283,7 @@ export default function Orders(): React.JSX.Element {
           <div key={i}>
             <a
               href={inv.pdf_url}
-             
+              download={"invoice.pdf"}
               rel="noopener noreferrer"
               className="text-blue-600 underline"
             >
@@ -432,3 +413,6 @@ export default function Orders(): React.JSX.Element {
     </div>
   );
 }
+
+
+
