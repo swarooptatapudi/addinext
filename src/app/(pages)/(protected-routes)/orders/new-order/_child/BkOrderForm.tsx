@@ -1009,7 +1009,7 @@ const Step1 = ({
                     //   }
                     //   console.log('newValueCDetails' , inputValue)
                     // }}
-                    onBlur={() => setFieldTouched(`value_c_details[${index}].value`, true)}
+                    // onBlur={() => setFieldTouched(`value_c_details[${index}].value`, true)}
                     touched={touched}
                     placeholder="cm"
                     inVaild={index === 0 && shouldShowError(`value_c_details[0].value`, true)}

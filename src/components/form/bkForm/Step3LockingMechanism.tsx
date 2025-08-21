@@ -140,7 +140,7 @@ const isViewMode = !!(deviceTypeId && orderId);
           options={FORM_OPTIONS['locking_system'] ?? []}
           label="Locking/Suspension System"
           value={values.locking_system ?? ''}
-          disabled
+    
           onValueChange={handleLockingSystemChange}
           inVaild={shouldShowError('locking_system',true)}
          error={errors.locking_system}
