@@ -100,13 +100,14 @@ type ModelFilePickerProps = {
   label?: string;
   buttonText?: string;
   onFileSelect?: (file: File | null) => void;
+   allowedExtensions?: string[];
 };
 
 export default function ModelFilePicker({
   label = 'Select Scan',
   buttonText = 'Upload Scan File',
-  
   onFileSelect,
+  allowedExtensions = ['.stl', '.ply'], // 👈 default
 }: ModelFilePickerProps) {
   const [file, setFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
@@ -116,14 +117,15 @@ export default function ModelFilePicker({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     setError(null);
-
     if (!f) return;
 
-    const allowedExtensions = ['.stl', '.obj', '.ply', '.zip'];
     const fileExtension = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
 
+    // ✅ use the prop instead of hardcoded array
     if (!allowedExtensions.includes(fileExtension)) {
-      setError('Invalid file type. Please upload .stl, .obj, or .ply files.');
+      setError(
+        `Invalid file type. Please upload one of: ${allowedExtensions.join(', ')}`
+      );
       return;
     }
 
@@ -135,11 +137,13 @@ export default function ModelFilePicker({
 
     setFile(f);
     setFileType(fileExtension);
+
     if (fileExtension !== '.zip') {
-    setFileUrl(URL.createObjectURL(f));
-  } else {
-    setFileUrl(null); // No preview for ZIP files
-  }
+      setFileUrl(URL.createObjectURL(f));
+    } else {
+      setFileUrl(null); // no preview for zip
+    }
+
     onFileSelect?.(f);
   };
 
@@ -147,18 +151,22 @@ export default function ModelFilePicker({
     <div className="space-y-2 pl-4 pr-4 pb-4 w-[200px] sm:w-[150px] md:w-[150px] lg:w-[145px] xl:w-[170px]">
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" className='w-full'>
-            {file ? <p className="truncate ">{file?.name}</p> : buttonText}
+          <Button variant="outline" className="w-full">
+            {file ? <p className="truncate">{file?.name}</p> : buttonText}
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{file ? `Preview ${fileType.toUpperCase()} File` : buttonText}</DialogTitle>
+            <DialogTitle>
+              {file ? `Preview ${fileType.toUpperCase()} File` : buttonText}
+            </DialogTitle>
           </DialogHeader>
 
           {file ? (
             <div>
-              <p className="text-xs text-muted-foreground truncate max-w-[500px]">{file.name}</p>
+              <p className="text-xs text-muted-foreground truncate max-w-[500px]">
+                {file.name}
+              </p>
               <div className="flex items-center gap-4 mt-4">
                 <Button
                   variant="outline"
@@ -179,20 +187,29 @@ export default function ModelFilePicker({
           ) : (
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="picture">{label}</Label>
-              <Input id="picture" type="file" onChange={handleChange} accept=".stl,.obj,.ply,.zip" />
+              {/* ✅ generate accept dynamically */}
+              <Input
+                id="picture"
+                type="file"
+                onChange={handleChange}
+                accept={allowedExtensions.join(',')}
+              />
               {error && <p className="text-sm text-red-500">{error}</p>}
               <p className="text-xs text-muted-foreground">
-                Max file size: 25MB | Allowed types: .stl, .obj, .ply, .zip
+                Max file size: 25MB | Allowed types: {allowedExtensions.join(', ')}
               </p>
             </div>
           )}
 
-          {fileUrl && fileType !== '.zip' && <ModelViewerR3F fileUrl={fileUrl} fileType={fileType} />}
+          {fileUrl && fileType !== '.zip' && (
+            <ModelViewerR3F fileUrl={fileUrl} fileType={fileType} />
+          )}
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+
 
 // ------------it is working ----------------------
 // 'use client';

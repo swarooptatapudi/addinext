@@ -108,7 +108,7 @@ export default function Transcations(): React.JSX.Element {
     useGetSubscriptionTranscationHistoryQuery({
       customer: user?.customer_id
     });
-  // console.log('subscriptionTranscationHistory=>', subscriptionTranscationHistory);
+  console.log('subscriptionTranscationHistory=>', subscriptionTranscationHistory);
   // console.log('transactionHistory=>', transactionHistory);
   const { data: transactionHistorySeles, refetch: refetchTransactionsS } =
     useGetTransactionHistorySelesQuery({
@@ -269,55 +269,72 @@ export default function Transcations(): React.JSX.Element {
                         <TableHead className="font-medium text-gray-600">Receipt</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
-                      {subscriptionTranscationHistory ? (
-                        <TableRow className="hover:bg-gray-100">
-                          
-                          <TableCell>
-                            <span className="text-gray-600">
-                              {subscriptionTranscationHistory.custom_sales_order}
-                            </span>
-                          </TableCell>
-                           <TableCell>
-                            <span className="text-gray-600">
-                              {subscriptionTranscationHistory.name}
-                            </span></TableCell>
-                          <TableCell>{subscriptionTranscationHistory.start_date}</TableCell>
-                          <TableCell>{subscriptionTranscationHistory.plan_name}</TableCell>
-                          <TableCell>{subscriptionTranscationHistory.start_date}</TableCell>
-                          <TableCell>{subscriptionTranscationHistory.end_date}</TableCell>
-                          <TableCell>
-                            {subscriptionTranscationHistory.amount.toLocaleString()}
-                          </TableCell>
-                          <TableCell>
-                            <a
-                              href={subscriptionTranscationHistory.invoice_pdf_url}
-                              download="invoice.pdf"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 underline"
-                            >
-                              Invoice PDF
-                            </a>
-                          </TableCell>
-                          <TableCell>
-                            <a
-                              href={subscriptionTranscationHistory.payment_pdf_url}
-                              download="receipt.pdf"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 underline"
-                            >
-                             Receipt PDF
-                            </a>
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={9} className="text-center text-gray-500 py-6">
-                            No subscription found.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
+                 <TableBody>
+  {subscriptionTranscationHistory && subscriptionTranscationHistory.length > 0 ? (
+    subscriptionTranscationHistory.map((subscription: any, index: number) => (
+      <TableRow key={index} className="hover:bg-gray-100">
+        <TableCell>
+          <span className="text-gray-600">
+            {subscription.custom_sales_order ?? "-"}
+          </span>
+        </TableCell>
+
+        <TableCell>
+          <span className="text-gray-600">{subscription.name}</span>
+        </TableCell>
+
+        <TableCell>{subscription.start_date}</TableCell>
+        <TableCell>{subscription.plan_name}</TableCell>
+        <TableCell>{subscription.start_date}</TableCell>
+        <TableCell>{subscription.end_date}</TableCell>
+
+        <TableCell>
+          {subscription.amount ? subscription.amount.toLocaleString() : "-"}
+        </TableCell>
+
+        {/* Invoice PDF */}
+        <TableCell>
+          {subscription.invoice_pdf_url ? (
+            <a
+              href={subscription.invoice_pdf_url}
+              download="invoice.pdf"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              Invoice PDF
+            </a>
+          ) : (
+            "-"
+          )}
+        </TableCell>
+
+        {/* Receipt PDF */}
+        <TableCell>
+          {subscription.payment_pdf_url ? (
+            <a
+              href={subscription.payment_pdf_url}
+              download="receipt.pdf"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              Receipt PDF
+            </a>
+          ) : (
+            "-"
+          )}
+        </TableCell>
+      </TableRow>
+    ))
+  ) : (
+    <TableRow>
+      <TableCell colSpan={9} className="text-center text-gray-500 py-6">
+        No subscription found.
+      </TableCell>
+    </TableRow>
+  )}
+</TableBody>
+
+
                   </Table>
                 </CardContent>
               </Card> 

@@ -131,6 +131,7 @@ export const ordersApi = createApi({
         method: 'POST',
         body: data
       }),
+      
       transformResponse: (response: any) => response
     }),
     getBKEstimate: builder.mutation<BKEstimateResponse, BKEstimateRequest>({
@@ -172,3 +173,4 @@ export const {
   useValidateCouponMutation,
   useGetOrderDetailIdsMutation
 } = ordersApi;
+export type OrderData = SalesOrder | SalesOrderDetails;

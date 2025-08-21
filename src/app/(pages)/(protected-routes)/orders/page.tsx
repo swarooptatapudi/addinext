@@ -13,12 +13,18 @@ import { useGetOrdersQuery, useGetOrderDetailsMutation } from '@/rtk-query/apis/
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import OrderSummaryModal from '@/components/form/bkForm/OrderSummaryModal'
+import OrderSummaryModal from '@/components/app/common/OrderSummaryModal'
+import { OrderData } from '@/rtk-query/apis/orders';
 
 declare global {
   interface Window {
     Razorpay: any;
   }
+}
+
+interface GetSalesOrderDetailsRequest {
+  order_id: string;
+  order_type: string;
 }
 
 type SalesInvoice = {
@@ -60,8 +66,9 @@ export default function Orders(): React.JSX.Element {
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState<SortingState>([{ id: 'order_date', desc: true }]);
-  const [openModal, setOpenModal] = useState(false)
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+
+
+
   
   const router = useRouter();
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
@@ -104,7 +111,7 @@ export default function Orders(): React.JSX.Element {
         order_type: order.device_type
       };
       const response = await getOrderDetails(payload).unwrap();
-
+console.log("payload orderid",response)
       const orderAmount = response.data.order_amount;
       const amountInPaise = Math.round(orderAmount * 100);
 
@@ -147,34 +154,60 @@ export default function Orders(): React.JSX.Element {
   };
 
   const handleOrderIdClick = (order: Order) => {
+    console.log("Order data on click:", order); 
     if (order.device_type === 'BK Orders') {
       router.push(
         `/orders/new-order/BK?${new URLSearchParams({
           orderId: order.order_id,
-          deviceType: order.device_type
+          deviceType: order.device_type,
+          // mode: 'view'
         }).toString()}`
       );
     }
   };
-  // const handleOrderIdClick = (order: Order) => {
-  //   if (order.device_type === 'BK Orders') {
-  //     setSelectedOrder(order)
-  //     setOpenModal(true) // ✅ opens modal instead of navigation
-  //   }
-  // }
+// const handleOrderIdClick = async (order: Order) => {
+//   try {
+//     const response = await getOrderDetails({
+//       order_id: order.order_id,
+//       order_type: order.device_type, // required by API
+//     }).unwrap();
+
+//     // Cast or map response to OrderData
+//     setSelectedOrder(response as OrderData);
+//     setOpenModal(true);
+//   } catch (err) {
+//     console.error("Failed to fetch order details", err);
+//   }
+// };
+
+
+
   const columns: ColumnDef<Order>[] = [
+    // {
+    //   accessorKey: 'order_id',
+    //   header: 'Order ID',
+    //   cell: ({ row }) => (
+    //     <span
+    //       className="cursor-pointer hover:underline hover:text-blue-500"
+    //       onClick={() => handleOrderIdClick(row.original)}
+    //     >
+    //       {row.original.order_id}
+    //     </span>
+    //   )
+    // },
     {
-      accessorKey: 'order_id',
-      header: 'Order ID',
-      cell: ({ row }) => (
-        <span
-          className="cursor-pointer hover:underline hover:text-blue-500"
-          onClick={() => handleOrderIdClick(row.original)}
-        >
-          {row.original.order_id}
-        </span>
-      )
-    },
+  accessorKey: 'order_id',
+  header: 'Order ID',
+  cell: ({ row }) => (
+    <span
+      className="cursor-pointer hover:underline hover:text-blue-500"
+      onClick={() => handleOrderIdClick(row.original)}
+    >
+      {row.original.order_id}
+    </span>
+  )
+},
+
     {
       accessorKey: 'patient_name',
       header: 'Patient Name',
@@ -410,6 +443,9 @@ export default function Orders(): React.JSX.Element {
         sorting={sorting}
         onSortingChange={setSorting}
       /> */}
+
+
+
     </div>
   );
 }

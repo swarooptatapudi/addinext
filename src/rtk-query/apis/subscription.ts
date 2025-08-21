@@ -50,7 +50,7 @@ export const subscriptionApi = createApi({
     method: 'GET',
     params: { customer },
   }),
-  transformResponse: (response: any) => response?.message?? null,
+ transformResponse: (response: any) => response?.message?.data ?? null,
 })
 
   })

@@ -3,6 +3,7 @@ import { Poppins } from 'next/font/google';
 import './globals.css';
 import { ToastContainer } from 'react-toastify';
 
+
 const poppins = Poppins({
   variable: '--font-poppins',
   subsets: ['latin'],

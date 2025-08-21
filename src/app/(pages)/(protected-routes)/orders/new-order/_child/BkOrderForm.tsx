@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
-import { Formik, useFormikContext } from 'formik';
+import { Formik, useFormikContext,useFormik } from 'formik';
 import * as Yup from 'yup';
 
 // Components
@@ -125,32 +125,31 @@ const step1Validation = Yup.object().shape({
     .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
   value_c_details: Yup.array().of(
     Yup.object().shape({
-      value: Yup.string()
-        .test(
-          'conditional-validation',
-          'Must be a valid number (e.g. 12 or 12.5)',
-          function (value) {
-            const index = parseInt(this.path.match(/\d+/)?.[0] || '0', 10);
+      value: Yup.string().test(
+        'conditional-validation',
+        'Must be a valid number (e.g. 12 or 12.5)',
+        function (value) {
+          const index = parseInt(this.path.match(/\d+/)?.[0] || '0', 10);
 
-            // First entry (index 0) is required
-            if (index === 0) {
-              return (
-                !!value &&
-                /^\d+(\.\d{1,2})?$/.test(value) &&
-                parseFloat(value) >= 1 &&
-                parseFloat(value) <= 100
-              );
-            }
-
-            // Others: Skip validation if empty
-            if (!value) return true;
-
-            // If filled, must be valid
+          // First entry (index 0) is required
+          if (index === 0) {
             return (
-              /^\d+(\.\d{1,2})?$/.test(value) && parseFloat(value) >= 1 && parseFloat(value) <= 100
+              !!value &&
+              /^\d+(\.\d{1,2})?$/.test(value) &&
+              parseFloat(value) >= 1 &&
+              parseFloat(value) <= 100
             );
           }
-        )
+
+          // Others: Skip validation if empty
+          if (!value) return true;
+
+          // If filled, must be valid
+          return (
+            /^\d+(\.\d{1,2})?$/.test(value) && parseFloat(value) >= 1 && parseFloat(value) <= 100
+          );
+        }
+      )
     })
   )
 
@@ -214,12 +213,12 @@ const step2Validation = Yup.object()
       rightFootFile: File | null;
     };
 
-    console.log('Validation Values:', {
-      foot_Amputation,
-      upload_link,
-      leftFootFile,
-      rightFootFile
-    });
+    // console.log('Validation Values:', {
+    //   foot_Amputation,
+    //   upload_link,
+    //   leftFootFile,
+    //   rightFootFile
+    // });
 
     // If upload_link is provided, validation passes
     if (upload_link && upload_link.trim()) {
@@ -612,10 +611,7 @@ const ModelDialog = ({
 };
 
 const WatchFieldReset = () => {
-const { values, setFieldValue, setFieldTouched, touched, errors } = useFormikContext<any>();
-
-
-
+  const { values, setFieldValue, setFieldTouched, touched, errors } = useFormikContext<any>();
 
   useEffect(() => {
     setFieldValue('design_variation', '');
@@ -639,51 +635,50 @@ const Step1 = ({
   deviceTypeId,
   orderId
 }: any) => {
-  
   const [designVariationDialog, setDesignVariationDialog] = useState({
     open: false,
     options: []
   });
-
+  
+  const isViewMode = !!(deviceTypeId && orderId);
+  
   const [modelDialog, setModelDialog] = useState({
     open: false,
     options: []
   });
-const getValueByPath = (obj: any, path: string) => {
-  return path
-    .replace(/\[(\d+)\]/g, '.$1') // convert [0] to .0
-    .split('.')
-    .reduce((acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined), obj);
-};
+  const getValueByPath = (obj: any, path: string) => {
+    return path
+      .replace(/\[(\d+)\]/g, '.$1') // convert [0] to .0
+      .split('.')
+      .reduce((acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined), obj);
+  };
 
+  const shouldShowError = (fieldName: string, isRequired = false) => {
+    const fieldValue = getValueByPath(values, fieldName);
+    const fieldError = getValueByPath(errors, fieldName);
+    const fieldTouched = getValueByPath(touched, fieldName);
 
- const shouldShowError = (fieldName: string, isRequired = false) => {
-  const fieldValue = getValueByPath(values, fieldName);
-  const fieldError = getValueByPath(errors, fieldName);
-  const fieldTouched = getValueByPath(touched, fieldName);
+    // console.log('Field:', fieldName);
+    // console.log('Value:', fieldValue);
+    // console.log('Error:', fieldError);
+    // console.log('Touched:', fieldTouched);
 
-  // console.log('Field:', fieldName);
-  // console.log('Value:', fieldValue);
-  // console.log('Error:', fieldError);
-  // console.log('Touched:', fieldTouched);
+    if (
+      fieldName === 'upload_link' &&
+      fieldError === 'Either upload scans or provide a photo link is required'
+    ) {
+      return true;
+    }
 
-  if (
-    fieldName === 'upload_link' &&
-    fieldError === 'Either upload scans or provide a photo link is required'
-  ) {
-    return true;
-  }
+    if (isRequired) {
+      return (
+        (!fieldValue && (formSubmitted || fieldTouched)) ||
+        (!!fieldError && (fieldTouched || formSubmitted))
+      );
+    }
 
-  if (isRequired) {
-    return (
-      (!fieldValue && (formSubmitted || fieldTouched)) ||
-      (!!fieldError && (fieldTouched || formSubmitted))
-    );
-  }
-
-  return !!fieldError && (fieldTouched || formSubmitted);
-};
-
+    return !!fieldError && (fieldTouched || formSubmitted);
+  };
 
   const socketTypeOptions = useMemo(() => {
     return (FORM_OPTIONS?.socket_type || []).map((option: { value: any }) => ({
@@ -798,6 +793,7 @@ const getValueByPath = (obj: any, path: string) => {
           type="date"
           value={values.amputation_date || ''}
           onChange={handleChange('amputation_date')}
+             disabled={isViewMode} 
         />
         <SelectBox
           options={FORM_OPTIONS?.amputated_leg || []}
@@ -807,12 +803,14 @@ const getValueByPath = (obj: any, path: string) => {
           onValueChange={handleChange('amputated_leg')}
           inVaild={shouldShowError('amputated_leg', true)}
           error={errors.amputated_leg}
+          disabled={isViewMode} 
         />
         <SelectBox
           options={FORM_OPTIONS?.reason_for_amputation || []}
           label="Reason of Amputation"
           value={values.reason_for_amputation || ''}
           onValueChange={handleChange('reason_for_amputation')}
+          disabled={isViewMode} 
         />
         <SelectBox
           options={FORM_OPTIONS?.activity_level || []}
@@ -822,6 +820,7 @@ const getValueByPath = (obj: any, path: string) => {
           required
           inVaild={shouldShowError('activity_level', true)}
           error={errors.activity_level}
+          disabled={isViewMode} 
         />
       </div>
       <div className="grid grid-cols-3 gap-4">
@@ -829,6 +828,7 @@ const getValueByPath = (obj: any, path: string) => {
           options={socketTypeOptions}
           label="Socket Type"
           value={values.socket_type}
+          disabled={isViewMode} 
           onValueChange={(value) => {
             handleChange('socket_type')(value);
           }}
@@ -845,6 +845,7 @@ const getValueByPath = (obj: any, path: string) => {
             <>
               <Button
                 variant="outline"
+                disabled={isViewMode} 
                 className="w-full text-left justify-start h-10"
                 onClick={() =>
                   setDesignVariationDialog({
@@ -875,6 +876,7 @@ const getValueByPath = (obj: any, path: string) => {
             <>
               <Button
                 variant="outline"
+                disabled={isViewMode} 
                 className="w-full text-left justify-start h-10"
                 onClick={() =>
                   setModelDialog({
@@ -898,6 +900,7 @@ const getValueByPath = (obj: any, path: string) => {
                 !values.socket_type ? 'Select socket type first' : 'Select design variation first'
               }
               disabled
+              
             />
           )}
         </div>
@@ -917,6 +920,7 @@ const getValueByPath = (obj: any, path: string) => {
             loading="lazy"
             priority={false}
             unoptimized={true}
+            
           />
         </div>
         <div className="flex flex-col col-span-2 gap-4 ml-5">
@@ -930,6 +934,7 @@ const getValueByPath = (obj: any, path: string) => {
                 value={values.stump_length || ''}
                 onChange={handleChange('stump_length')}
                 inVaild={shouldShowError('stump_length', false)}
+                disabled={isViewMode} 
                 error={errors.stump_length}
               />
             </div>
@@ -947,6 +952,7 @@ const getValueByPath = (obj: any, path: string) => {
                 required={true}
                 inVaild={shouldShowError('stump_size')}
                 error={errors.stump_size}
+                disabled={isViewMode} 
               />
             </div>
           </div>
@@ -966,6 +972,7 @@ const getValueByPath = (obj: any, path: string) => {
                     value={item?.value || ''}
                     name={`value_c_details[${index}].value`}
                     required
+                    disabled={isViewMode} 
                     onChange={(e) => {
                       const inputValue = e.target.value;
                       if (inputValue === '' || /^[0-9]*\.?[0-9]*$/.test(inputValue)) {
@@ -979,10 +986,10 @@ const getValueByPath = (obj: any, path: string) => {
                           const newValueCDetails = [...values.value_c_details];
                           newValueCDetails[index].value = inputValue;
                           setFieldValue('value_c_details', newValueCDetails, true);
-                         
-                           // true forces validation
+
+                          // true forces validation
                         }
-                      } 
+                      }
                     }}
                     // onBlur={(e) => {
                     //   const inputValue = e.target.value;
@@ -1023,6 +1030,7 @@ const getValueByPath = (obj: any, path: string) => {
             options={FORM_OPTIONS['foot_type'] ?? []}
             label="Foot Type"
             required={true}
+            disabled={isViewMode} 
             value={values.foot_type || ''}
             onValueChange={handleChange('foot_type')}
             inVaild={shouldShowError('foot_type', true)}
@@ -1040,6 +1048,7 @@ const getValueByPath = (obj: any, path: string) => {
             inVaild={shouldShowError('shoe_size')}
             error={errors.shoe_size}
             className="w-full placeholder:text-[12px]"
+            disabled={isViewMode} 
           />
         </div>
 
@@ -1052,6 +1061,7 @@ const getValueByPath = (obj: any, path: string) => {
             inVaild={shouldShowError('flexion_angle')}
             error={errors.flexion_angle}
             className="w-full placeholder:text-[12px]"
+            disabled={isViewMode} 
           />
         </div>
 
@@ -1064,6 +1074,7 @@ const getValueByPath = (obj: any, path: string) => {
             inVaild={shouldShowError('add_abd_angle')}
             error={errors.add_abd_angle}
             className="w-full placeholder:text-[12px]"
+            disabled={isViewMode} 
           />
         </div>
 
@@ -1071,6 +1082,7 @@ const getValueByPath = (obj: any, path: string) => {
           <SelectBox
             options={FORM_OPTIONS['stump_type'] ?? []}
             label="Stump Type"
+            disabled={isViewMode} 
             required={true}
             value={values.stump_type || ''}
             onValueChange={handleChange('stump_type')}
@@ -1098,11 +1110,13 @@ const getValueByPath = (obj: any, path: string) => {
             className="h-[200px] "
             value={values.stump_condition || ''}
             onChange={handleChange('stump_condition')}
+            disabled={isViewMode} 
           />
         </div>
       </div>
       <div className="grid grid-cols-1 gap-4">
         <Textarea
+        disabled={isViewMode} 
           label="Previous Prosthetic Experience (Please describe any previous experience of Prosthetics used, Make, Model,
                  Type, Issues with it and expectation from the new Prosthetic socket)"
           className="h-[100px]"
@@ -1117,6 +1131,7 @@ const getValueByPath = (obj: any, path: string) => {
         options={designVariationOptions}
         onSelect={(value) => setFieldValue('design_variation', value)}
         socketType={values.socket_type}
+           
       />
 
       <ModelDialog
@@ -1125,6 +1140,7 @@ const getValueByPath = (obj: any, path: string) => {
         options={modelOptions}
         onSelect={(value) => setFieldValue('model_name', value)}
         socketType={values.socket_type}
+        
         // designVariation={values.design_variation}
       />
     </div>
@@ -1139,9 +1155,12 @@ const Step2 = ({
   setFieldValue,
   setErrors,
   FORM_OPTIONS,
-  formSubmitted
+  formSubmitted,
+  deviceTypeId,
+  orderId
 }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
+   
     const fieldValue = fieldName.includes('.')
       ? fieldName
           .split('.')
@@ -1174,6 +1193,7 @@ const Step2 = ({
 
     return !!fieldError && (touched[fieldName] || formSubmitted);
   };
+const isViewMode = !!(deviceTypeId && orderId);
 
   // Enhanced error checking for file fields
   const shouldShowFileError = (fieldName: string) => {
@@ -1222,6 +1242,7 @@ const Step2 = ({
             ]}
             label="Scan Type"
             required={true}
+             disabled={isViewMode}
             value={values.direct_body || ''}
             onValueChange={(value) => {
               handleChange('direct_body')(value);
@@ -1236,6 +1257,7 @@ const Step2 = ({
             }}
             inVaild={!!errors.direct_body && (touched.direct_body || formSubmitted)}
             error={errors.direct_body}
+          
           />
           {values.direct_body === 'With_Liner' && <div style={{ marginBottom: '55px' }}></div>}
         </div>
@@ -1258,6 +1280,7 @@ const Step2 = ({
                   required={values.direct_body === 'With_Liner'}
                   inVaild={shouldShowError('liner_thickness', values.direct_body === 'With_Liner')}
                   error={errors.liner_thickness}
+                  disabled={isViewMode}
                 />
                 <div style={{ marginBottom: '70px' }}></div>
               </div>
@@ -1270,6 +1293,7 @@ const Step2 = ({
               <SelectBox
                 options={FORM_OPTIONS[values.liner_thickness + '_' + 'variation'] || []}
                 label="Liner Type"
+                disabled={isViewMode} 
                 value={values.liner_type || ''}
                 onValueChange={(value) => {
                   handleChange('liner_type')(value);
@@ -1290,9 +1314,10 @@ const Step2 = ({
 
       <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
       <div className="grid grid-cols-8 gap-4">
+        {/* Foot Selection */}
         <div className="col-span-3">
           <div className="grid grid-cols-2">
-            <p className="mb-1 text-[14px]  flex items-center">Upload Scan</p>
+            <p className="mb-1 text-[14px] flex items-center">Upload Scan</p>
             <div className="w-[150px] ml-8">
               <SelectBox
                 options={[
@@ -1301,34 +1326,32 @@ const Step2 = ({
                   { value: 'Right_Foot', label: 'Right Foot' },
                   { value: 'Both', label: 'Both' }
                 ]}
-                className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''}`}
+                className={`mt-3 min-w-max ml-0 w-[410px] ${
+                  showEitherOrError ? 'border-red-500' : ''
+                }`}
                 value={values.foot_Amputation || ''}
                 onValueChange={(value) => {
                   handleChange('foot_Amputation')(value);
 
-                  // When foot_Amputation is selected, mark relevant file fields as touched
-                  // This will trigger validation display for required files
                   if (value) {
-                    // Clear upload_link related errors
+                    // Reset upload errors when new selection is made
                     setErrors({
                       ...errors,
-                      upload_link: undefined
+                      upload_link: undefined,
+                      leftFootFile: undefined,
+                      rightFootFile: undefined
                     });
-                    // setFieldValue('leftFootFile', null);
-                    // setFieldValue('rightFootFile', null);
-                    // setFieldValue('upload_link', '');
 
-                    // Mark file fields as touched to trigger validation display
-                    setTimeout(() => {
-                      if (value === 'Left_Foot' || value === 'Both') {
-                        // This will trigger the validation and error display for leftFootFile
-                        // setFieldValue('leftFootFile', null);
-                      }
-                      if (value === 'Right_Foot' || value === 'Both') {
-                        // This will trigger the validation and error display for rightFootFile
-                        // setFieldValue('rightFootFile', null);
-                      }
-                    }, 100);
+                    // Reset fields
+                    setFieldValue('leftFootFile', '');
+                    setFieldValue('rightFootFile', '');
+
+                    if (value === 'Left_Foot') {
+                      setFieldValue('rightFootFile', ''); // clear right
+                    }
+                    if (value === 'Right_Foot') {
+                      setFieldValue('leftFootFile', ''); // clear left
+                    }
                   }
                 }}
                 inVaild={shouldShowError('upload_link')}
@@ -1338,16 +1361,14 @@ const Step2 = ({
           </div>
         </div>
 
+        {/* Left Foot Upload */}
         {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
           <div className="w-fit justify-center">
             <StlFilePicker
-              label="Upload STL file (left foot)"
+              label="Upload  file (Left Foot)"
               buttonText="Left Foot"
-              onFileSelect={(file) => {
+              onFileSelect={(file: any) => {
                 setFieldValue('leftFootFile', file);
-                // console.log('Left Foot STL selected:', file?.name);
-
-                // Mark field as touched and clear errors when file is selected
                 if (file) {
                   setErrors({
                     ...errors,
@@ -1362,22 +1383,21 @@ const Step2 = ({
               error={errors.leftFootFile}
             />
 
-            {/* Custom error display for better control */}
             {shouldShowFileError('leftFootFile') && errors.leftFootFile && (
               <div className="text-red-500 text-xs mt-1">{errors.leftFootFile}</div>
             )}
           </div>
         )}
 
+        {/* Right Foot Upload */}
         {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
           <div className="w-fit">
             <StlFilePicker
-              label="Upload STL file (Right foot)"
+              label="Upload file (Right Foot)"
               buttonText="Right Foot"
-              onFileSelect={(file) => {
+              onFileSelect={(file: any) => {
                 setFieldValue('rightFootFile', file);
 
-                // Mark field as touched and clear errors when file is selected
                 if (file) {
                   setErrors({
                     ...errors,
@@ -1392,7 +1412,6 @@ const Step2 = ({
               error={errors.rightFootFile}
             />
 
-            {/* Custom error display for better control */}
             {shouldShowFileError('rightFootFile') && errors.rightFootFile && (
               <div className="text-red-500 text-xs mt-1">{errors.rightFootFile}</div>
             )}
@@ -1402,30 +1421,102 @@ const Step2 = ({
 
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
+          <p className="mb-0 text-[14px] ">Upload OBJ File</p>
+        </div>
+
+        <div className="w-fit">
+          <GenericFileViewer
+            allowedTypes={['.obj']}
+            maxSizeMB={5}
+            label="Select Image"
+            buttonText="File 1"
+            disabled={isViewMode}  
+            onFileSelect={(file) => {
+              setFieldValue('leftFootFile', file);
+              setErrors({
+                ...errors,
+                leftFootFile: undefined,
+                upload_link: undefined
+              });
+            }}
+          />
+        </div>
+        <div className="w-fit ml-2">
+          <GenericFileViewer
+            allowedTypes={['.mtl']}
+            maxSizeMB={5}
+            label="Select Image"
+            buttonText="File 2"
+            disabled={isViewMode}  
+            onFileSelect={(file) => {
+              setFieldValue('leftFootFile', file);
+              setErrors({
+                ...errors,
+                leftFootFile: undefined,
+                upload_link: undefined
+              });
+            }}
+          />
+        </div>
+        <div className="w-fit ml-2">
+          <GenericFileViewer
+            allowedTypes={['.jpg']}
+            maxSizeMB={5}
+            label="Select Image"
+            buttonText="File 3"
+            disabled={isViewMode}  
+            onFileSelect={(file) => {
+              setFieldValue('leftFootFile', file);
+              setErrors({
+                ...errors,
+                leftFootFile: undefined,
+                upload_link: undefined
+              });
+            }}
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-8 gap-4">
+        <div className="col-span-3">
           <p className="mb-0 text-[14px] ">Upload Additional Files</p>
           <span className="mb-1 text-[12px] ">(Design / Rough calculations etc.)</span>
         </div>
 
         <div className="w-fit">
           <GenericFileViewer
+          disabled={isViewMode}  
             allowedTypes={['.pdf', '.png', '.jpg', '.jpeg']}
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 1"
-            onFileSelect={(file) => console.log('File 1 selected:', file?.name)}
+            onFileSelect={(file) => {
+              setFieldValue('leftFootFile', file);
+              setErrors({
+                ...errors,
+                leftFootFile: undefined,
+                upload_link: undefined
+              });
+            }}
           />
         </div>
         <div className="w-fit ml-2">
           <GenericFileViewer
+          disabled={isViewMode}  
             allowedTypes={['.pdf', '.png', '.jpg', '.jpeg']}
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 2"
-            onFileSelect={(file) => console.log('File 2 selected:', file?.name)}
+            onFileSelect={(file) => {
+              setFieldValue('leftFootFile', file);
+              setErrors({
+                ...errors,
+                leftFootFile: undefined,
+                upload_link: undefined
+              });
+            }}
           />
         </div>
       </div>
-
       <div className="flex flex-col gap-4">
         <div className="col-span-3">
           <p className="mb-1 text-[14px]">Upload Link with Photos</p>
@@ -1467,7 +1558,7 @@ const Step2 = ({
   );
 };
 
-const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
+const Step4 = ({ values, handleChange, errors, touched, formSubmitted ,orderId,deviceTypeId}: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
     const fieldValue = fieldName.includes('.')
       ? fieldName
@@ -1487,6 +1578,8 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
 
     return !!fieldError && (touched[fieldName] || formSubmitted);
   };
+  const isViewMode = !!(deviceTypeId && orderId);
+    console.log("isViewMode:", isViewMode, "orderId:", orderId, "deviceTypeId:", deviceTypeId);
   return (
     <div>
       {/* <h3 className="font-semibold text-lg">Stump Condition</h3> */}
@@ -1531,6 +1624,7 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
                   placeholder={'Default Value ' + item?.default_mm}
                   label={item?.area_name + ' (mm)'}
                   value={item?.cpo_input_mm || ''}
+                  disabled={isViewMode}      
                   name={`socket_design_details[${index}].cpo_input_mm`}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -1592,7 +1686,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-
+  const mode = searchParams.get('mode'); // "view" or null
+  const isDisabled = mode === 'view'; // disable fields if "view"
   useEffect(() => {
     if (orderId && deviceTypeId) {
       getOrderDetails({
@@ -2100,7 +2195,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 handleChange={handleChange}
                 errors={errors}
                 touched={touched}
-
                 setFieldValue={setFieldValue}
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}

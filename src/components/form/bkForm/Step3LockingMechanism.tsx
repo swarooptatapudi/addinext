@@ -42,11 +42,15 @@ export const Step3 = ({
   setFieldValue,
   FORM_OPTIONS,
   formSubmitted,
+    deviceTypeId,
+  orderId,
   FORMIK_ERRORS
 }: any) => {
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
   const [objectUrls, setObjectUrls] = useState<Record<string, string>>({});
   const [localFiles, setLocalFiles] = useState<Record<string, string[]>>({});
+const isViewMode = !!(deviceTypeId && orderId);
+
 
   const shouldShowError = (fieldName: string, isRequired = false) => {
     if (!isRequired && !values[fieldName]) return false;
@@ -136,9 +140,11 @@ export const Step3 = ({
           options={FORM_OPTIONS['locking_system'] ?? []}
           label="Locking/Suspension System"
           value={values.locking_system ?? ''}
+          disabled
           onValueChange={handleLockingSystemChange}
           inVaild={shouldShowError('locking_system',true)}
          error={errors.locking_system}
+        
           // error={shouldShowError('locking_system', true)}
           // errorMessage={errors.locking_system || 'This field is required'}
           required={true}
