@@ -56,7 +56,9 @@ export const Step5 = ({
   setEstimateConform,
   orderId,
   deviceTypeId,
-  user // Add user prop to access customer_id
+  user, // Add user prop to access customer_id
+  isViewMode
+
 }: any) => {
   const [showEstimateCard, setShowEstimateCard] = useState(false);
   const [estimateData, setEstimateData] = useState<any>(null);
@@ -451,6 +453,7 @@ export const Step5 = ({
                   }}
                   inVaild={!!errors.Design_by && !!touched.Design_by}
                   required
+                  disabled={isViewMode} 
                 />
                 {errors.Design_by && touched.Design_by && (
                   <p className="text-red-500 text-xs mt-1">{errors.Design_by}</p>
@@ -472,6 +475,7 @@ export const Step5 = ({
                   }}
                   inVaild={!!errors.Print_by && !!touched.Print_by}
                   required
+                  disabled={isViewMode}
                 />
                 {errors.Print_by && touched.Print_by && (
                   <p className="text-red-500 text-xs mt-1">{errors.Print_by}</p>
@@ -489,6 +493,7 @@ export const Step5 = ({
                     options={FORM_OPTIONS.Latices || []}
                     value={values.Latices || ''}
                     onValueChange={(value) => setFieldValue('Latices', value)}
+                    disabled={isViewMode}
                   />
                 </div>
               </div>

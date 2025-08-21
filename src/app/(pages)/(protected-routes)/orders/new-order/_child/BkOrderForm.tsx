@@ -632,15 +632,14 @@ const Step1 = ({
   FORM_OPTIONS,
   formSubmitted,
   setSocketTypeDialog,
+  orderId,
   deviceTypeId,
-  orderId
+  isViewMode
 }: any) => {
   const [designVariationDialog, setDesignVariationDialog] = useState({
     open: false,
     options: []
   });
-  
-  const isViewMode = !!(deviceTypeId && orderId);
   
   const [modelDialog, setModelDialog] = useState({
     open: false,
@@ -726,6 +725,7 @@ const Step1 = ({
           required
           inVaild={shouldShowError('patient_name', true)}
           error={errors.patient_name}
+          disabled={isViewMode}
         />
         <Input
           label="Date of Birth"
@@ -1156,8 +1156,7 @@ const Step2 = ({
   setErrors,
   FORM_OPTIONS,
   formSubmitted,
-  deviceTypeId,
-  orderId
+  isViewMode
 }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
    
@@ -1193,7 +1192,6 @@ const Step2 = ({
 
     return !!fieldError && (touched[fieldName] || formSubmitted);
   };
-const isViewMode = !!(deviceTypeId && orderId);
 
   // Enhanced error checking for file fields
   const shouldShowFileError = (fieldName: string) => {
@@ -1356,6 +1354,7 @@ const isViewMode = !!(deviceTypeId && orderId);
                 }}
                 inVaild={shouldShowError('upload_link')}
                 // error={errors.upload_link}
+                disabled={isViewMode}
               />
             </div>
           </div>
@@ -1546,6 +1545,7 @@ const isViewMode = !!(deviceTypeId && orderId);
             }}
             inVaild={shouldShowError('upload_link')}
             // error={errors.upload_link}
+            disabled={isViewMode}
           />
         </div>
       </div>
@@ -1558,7 +1558,7 @@ const isViewMode = !!(deviceTypeId && orderId);
   );
 };
 
-const Step4 = ({ values, handleChange, errors, touched, formSubmitted ,orderId,deviceTypeId}: any) => {
+const Step4 = ({ values, handleChange, errors, touched, formSubmitted , isViewMode}: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
     const fieldValue = fieldName.includes('.')
       ? fieldName
@@ -1578,8 +1578,6 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted ,orderId,d
 
     return !!fieldError && (touched[fieldName] || formSubmitted);
   };
-  const isViewMode = !!(deviceTypeId && orderId);
-    console.log("isViewMode:", isViewMode, "orderId:", orderId, "deviceTypeId:", deviceTypeId);
   return (
     <div>
       {/* <h3 className="font-semibold text-lg">Stump Condition</h3> */}
@@ -1677,17 +1675,21 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   });
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
   const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
-
+const [formDisable,setFormDisable] = useState(false)
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const deviceTypeId = searchParams.get('deviceType');
+  const paid = searchParams.get('paid');
+  const isPaid = paid==="Paid"
+
+  const isViewMode = !!(deviceTypeId && orderId && isPaid);
+
 
   // Add these state variables to your component
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
   const mode = searchParams.get('mode'); // "view" or null
-  const isDisabled = mode === 'view'; // disable fields if "view"
   useEffect(() => {
     if (orderId && deviceTypeId) {
       getOrderDetails({
@@ -1849,6 +1851,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
               setSelectedItem('');
               setFormValues(initialValues);
               setIsPaymentProcessing(false);
+              setFormDisable(true)
               router.push('/orders');
             } else {
               // @ts-ignore
@@ -2199,8 +2202,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
                 setSocketTypeDialog={setSocketTypeDialog}
-                deviceTypeId={deviceTypeId}
-                orderId={orderId}
+                isViewMode={isViewMode}
               />
             )}
             {currentStep === 2 && (
@@ -2213,6 +2215,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 setErrors={setErrors} // Add this line
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
+                isViewMode={isViewMode}
               />
             )}
             {currentStep === 3 && (
@@ -2224,6 +2227,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 setFieldValue={setFieldValue}
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
+                isViewMode={isViewMode}
               />
             )}
             {currentStep === 4 && (
@@ -2235,6 +2239,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 setFieldValue={setFieldValue}
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
+                isViewMode={isViewMode}
               />
             )}
             {currentStep === 5 && (
@@ -2250,9 +2255,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 currentStep={currentStep}
                 isActiveStep={currentStep === 5}
                 setEstimateConform={setEstimateConform}
-                orderId={orderId}
-                deviceTypeId={deviceTypeId}
                 user={user}
+                isViewMode={isViewMode}
               />
             )}
 

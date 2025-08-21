@@ -155,11 +155,14 @@ export const ordersApi = createApi({
       transformResponse: (response: CouponResponse) => response,
     }),
     getOrderDetailIds: builder.mutation<any, GetSalesOrderDetailsRequest>({
-      query: (data) => ({
-        url: '/method/addiwise.apis.order.update_sales_order_details',
-        method: 'POST',
-        body: data
-      }),
+      query: (data) => {
+        console.log("Fetching order detail IDs", data);
+        return {
+          url: '/method/addiwise.apis.order.update_sales_order_details',
+          method: 'POST',
+          body: data
+        };
+      },
       transformResponse: (response: any) => response
     }),
   })

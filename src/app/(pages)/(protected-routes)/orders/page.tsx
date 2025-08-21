@@ -160,7 +160,7 @@ console.log("payload orderid",response)
         `/orders/new-order/BK?${new URLSearchParams({
           orderId: order.order_id,
           deviceType: order.device_type,
-          // mode: 'view'
+          paid: order.status
         }).toString()}`
       );
     }

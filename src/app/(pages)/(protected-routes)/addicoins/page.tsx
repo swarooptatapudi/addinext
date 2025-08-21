@@ -72,9 +72,8 @@ interface RateAndDiscountData {
   };
 }
 
-const COIN_BASE_PRICE = 200; // 1 Addicoins: ₹200
-const DISCOUNT_PERCENTAGE = 50; // Additional Discount: 50%
-const TAX_PERCENTAGE = 18; // Tax Value: 18%
+// const COIN_BASE_PRICE = 200; // 1 Addicoins: ₹200
+// const TAX_PERCENTAGE = 18; // Tax Value: 18%
 
 export default function Addicoins(): React.JSX.Element {
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
@@ -279,22 +278,22 @@ const standardDiscount = data?.message?.data?.subscription_discount || 50;
   // Calculate basic rate based on coins entered
 const calculateBasicRate = (coins: number): number => {
   if (!coins || coins === 0) return 0;
-  const baseAmount = coins * COIN_BASE_PRICE;
-  const discountAmount = baseAmount * (DISCOUNT_PERCENTAGE / 100);
+  const baseAmount = coins * coinRate;
+  const discountAmount = baseAmount * (standardDiscount / 100);
   console.log('Base Amount:', baseAmount);
   console.log('Discount Amount:', discountAmount);
   if (couponData?.discount_percentage) {
-    const finalDiscountAmount = discountAmount * (couponData?.discount_percentage / 100);
+    const finalDiscountAmount = (baseAmount-discountAmount) * (couponData?.discount_percentage / 100);
     return discountAmount - finalDiscountAmount; 
   } else {
-  return discountAmount; 
+  return (baseAmount - discountAmount); 
   }
 };
 
 // Calculate final rate (after tax)
 const calculateFinalRate = (basicRate: number): number => {
   if (!basicRate) return 0;
-  const taxAmount = basicRate * (TAX_PERCENTAGE / 100);
+  const taxAmount = basicRate * (taxRate / 100);
   return basicRate + taxAmount;
 };
 

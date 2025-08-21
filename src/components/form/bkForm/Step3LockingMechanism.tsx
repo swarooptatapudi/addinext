@@ -44,12 +44,12 @@ export const Step3 = ({
   formSubmitted,
     deviceTypeId,
   orderId,
-  FORMIK_ERRORS
+  FORMIK_ERRORS,
+  isViewMode
 }: any) => {
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
   const [objectUrls, setObjectUrls] = useState<Record<string, string>>({});
   const [localFiles, setLocalFiles] = useState<Record<string, string[]>>({});
-const isViewMode = !!(deviceTypeId && orderId);
 
 
   const shouldShowError = (fieldName: string, isRequired = false) => {
@@ -148,6 +148,7 @@ const isViewMode = !!(deviceTypeId && orderId);
           // error={shouldShowError('locking_system', true)}
           // errorMessage={errors.locking_system || 'This field is required'}
           required={true}
+          disabled={isViewMode}
         />
 
         {showFileUpload && (
@@ -164,6 +165,7 @@ const isViewMode = !!(deviceTypeId && orderId);
                 onFileSelect={handleFileSelect('locking_system_file')}
                 // error={shouldShowError('locking_system_file')}
                 // errorMessage={errors.locking_system_file}
+                disabled={isViewMode}
               />
             </div>
           </div>
