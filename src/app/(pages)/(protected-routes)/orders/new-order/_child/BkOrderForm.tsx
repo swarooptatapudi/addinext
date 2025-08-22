@@ -1217,6 +1217,7 @@ const Step2 = ({
       touched: touched[fieldName],
       foot_Amputation: values.foot_Amputation,
       shouldShow
+      
     });
 
     return shouldShow;
@@ -1227,6 +1228,9 @@ const Step2 = ({
     !values.foot_Amputation &&
     !values.upload_link &&
     errors.upload_link === 'Either upload scans or provide a photo link is required';
+
+  
+
 
   return (
     <div className="flex flex-col gap-4">
@@ -1331,26 +1335,7 @@ const Step2 = ({
                 onValueChange={(value) => {
                   handleChange('foot_Amputation')(value);
 
-                  if (value) {
-                    // Reset upload errors when new selection is made
-                    setErrors({
-                      ...errors,
-                      upload_link: undefined,
-                      leftFootFile: undefined,
-                      rightFootFile: undefined
-                    });
-
-                    // Reset fields
-                    setFieldValue('leftFootFile', '');
-                    setFieldValue('rightFootFile', '');
-
-                    if (value === 'Left_Foot') {
-                      setFieldValue('rightFootFile', ''); // clear right
-                    }
-                    if (value === 'Right_Foot') {
-                      setFieldValue('leftFootFile', ''); // clear left
-                    }
-                  }
+                 
                 }}
                 inVaild={shouldShowError('upload_link')}
                 // error={errors.upload_link}
@@ -1366,6 +1351,7 @@ const Step2 = ({
             <StlFilePicker
               label="Upload  file (Left Foot)"
               buttonText="Left Foot"
+              accept={['.stl','.ply']}
               onFileSelect={(file: any) => {
                 setFieldValue('leftFootFile', file);
                 if (file) {
@@ -1394,6 +1380,7 @@ const Step2 = ({
             <StlFilePicker
               label="Upload file (Right Foot)"
               buttonText="Right Foot"
+              accept={['.stl','.ply']}
               onFileSelect={(file: any) => {
                 setFieldValue('rightFootFile', file);
 
@@ -1423,57 +1410,36 @@ const Step2 = ({
           <p className="mb-0 text-[14px] ">Upload OBJ File</p>
         </div>
 
-        <div className="w-fit">
-          <GenericFileViewer
-            allowedTypes={['.obj']}
-            maxSizeMB={5}
-            label="Select Image"
-            buttonText="File 1"
-            disabled={isViewMode}  
-            onFileSelect={(file) => {
-              setFieldValue('leftFootFile', file);
-              setErrors({
-                ...errors,
-                leftFootFile: undefined,
-                upload_link: undefined
-              });
-            }}
-          />
-        </div>
-        <div className="w-fit ml-2">
-          <GenericFileViewer
-            allowedTypes={['.mtl']}
-            maxSizeMB={5}
-            label="Select Image"
-            buttonText="File 2"
-            disabled={isViewMode}  
-            onFileSelect={(file) => {
-              setFieldValue('leftFootFile', file);
-              setErrors({
-                ...errors,
-                leftFootFile: undefined,
-                upload_link: undefined
-              });
-            }}
-          />
-        </div>
-        <div className="w-fit ml-2">
-          <GenericFileViewer
-            allowedTypes={['.jpg']}
-            maxSizeMB={5}
-            label="Select Image"
-            buttonText="File 3"
-            disabled={isViewMode}  
-            onFileSelect={(file) => {
-              setFieldValue('leftFootFile', file);
-              setErrors({
-                ...errors,
-                leftFootFile: undefined,
-                upload_link: undefined
-              });
-            }}
-          />
-        </div>
+        <StlFilePicker
+  label="Select Scan"
+  buttonText="File 1"
+  accept={['.obj']}
+  onFileSelect={(file: any) => {
+    setFieldValue('leftFootFile', file);
+    setErrors({ ...errors, leftFootFile: undefined });
+  }}
+/>
+
+<StlFilePicker
+  label="Select Scan"
+  buttonText="File 2"
+  accept={['.mtl']}
+  onFileSelect={(file: any) => {
+    setFieldValue('leftFootMtlFile', file); 
+    setErrors({ ...errors, leftFootMtlFile: undefined });
+  }}
+/>
+
+<StlFilePicker
+  label='Select Scan'
+  buttonText="File 3"
+  accept={['.jpg']}
+  onFileSelect={(file: any) => {
+    setFieldValue('leftFootTextureFile', file); 
+    setErrors({ ...errors, leftFootTextureFile: undefined });
+  }}
+/>
+
       </div>
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
@@ -1692,10 +1658,12 @@ const [formDisable,setFormDisable] = useState(false)
   const mode = searchParams.get('mode'); // "view" or null
   useEffect(() => {
     if (orderId && deviceTypeId) {
+      console.log('orderId%%deviceTypeId=>',orderId,deviceTypeId)
       getOrderDetails({
         order_type: deviceTypeId,
         order_id: orderId
       })
+      
         .unwrap()
         .then((response) => {
           const transformedData = {
@@ -1771,6 +1739,7 @@ const [formDisable,setFormDisable] = useState(false)
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
     if (data) {
+      console.log('isFormOptionsLoading=>',data)
       return getFormOptionsObject(data?.order_from_details);
     }
     return {};
@@ -1939,6 +1908,7 @@ const [formDisable,setFormDisable] = useState(false)
 
     try {
       const res = await createOrder(orderPayload).unwrap();
+      
       // @ts-ignore
       if (res?.message?.status === 'success') {
         toast.success('Order created successfully');

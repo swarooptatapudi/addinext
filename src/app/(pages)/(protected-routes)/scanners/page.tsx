@@ -18,7 +18,6 @@ const scanners = [
     name: 'AddiScan-E',
     image: '/assets/order-forms/products/AddiPrime.jpg', // Replace with actual image path
   },
- 
 ];
 
 export default function Scanners(): React.JSX.Element {

@@ -19,7 +19,6 @@ type Step3Props = {
   setFieldValue: (field: string, value: any) => void;
   FORM_OPTIONS: FormOptions;
   formSubmitted: boolean;
-  
 };
 
 const LOCAL_FILE_MAPPINGS: Record<string, string[]> = {

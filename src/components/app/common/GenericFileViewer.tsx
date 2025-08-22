@@ -26,7 +26,7 @@ export function GenericFileViewer({
   buttonText = 'Upload File',
   onFileSelect,
   allowedTypes = ['.png', '.jpg', '.jpeg', '.pdf', '.obj', '.mtl'],
-  maxSizeMB = 10,
+  maxSizeMB = 25,
   disabled = false,
 }: FileViewerProps) {
   const [file, setFile] = useState<File | null>(null);

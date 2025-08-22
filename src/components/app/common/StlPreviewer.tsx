@@ -4,9 +4,11 @@ import { OrbitControls, Html, Grid, Environment, Bounds } from '@react-three/dre
 import { Suspense, useState, useRef } from 'react';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Document, Page, pdfjs } from 'react-pdf';
 import {
   Dialog,
   DialogContent,
@@ -15,26 +17,64 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { TextureLoader } from 'three';
 
-function Model({ url, fileType }: { url: string; fileType: string }) {
+function Model({ url, fileType, mtlUrl, textureUrl }: { 
+  url: string; 
+  fileType: string; 
+  mtlUrl?: string;     // optional .mtl file if .obj is used
+  textureUrl?: string;
+    // optional .jpg/.png texture
+}) {
   switch (fileType) {
-    case '.stl':
+    case ".stl": {
       const stl = useLoader(STLLoader, url);
       return (
         <mesh geometry={stl} scale={0.5} castShadow receiveShadow>
           <meshStandardMaterial color="#ccc" />
         </mesh>
       );
-    case '.obj':
+    }
+
+    case ".obj": {
+      // If .mtl is provided, preload materials
+      if (mtlUrl) {
+        const materials = useLoader(MTLLoader, mtlUrl);
+        materials.preload();
+
+        const objWithMtl = useLoader(OBJLoader, url, (loader) => {
+          (loader as OBJLoader).setMaterials(materials);
+        });
+
+        return <primitive object={objWithMtl} scale={0.5} />;
+      }
+
+      // If no MTL, just load the OBJ
       const obj = useLoader(OBJLoader, url);
       return <primitive object={obj} scale={0.5} />;
-    case '.ply':
+    }
+
+    case ".ply": {
       const ply = useLoader(PLYLoader, url);
       return (
         <mesh geometry={ply} scale={0.5} castShadow receiveShadow>
           <meshStandardMaterial color="#ccc" />
         </mesh>
       );
+    }
+
+    case ".jpg":
+    case ".png": {
+      const texture = useLoader(TextureLoader, url);
+      return (
+        <mesh scale={0.5}>
+          {/* Simple plane preview for image */}
+          <planeGeometry args={[3, 3]} />
+          <meshStandardMaterial map={texture} />
+        </mesh>
+      );
+    }
+
     default:
       return null;
   }
@@ -101,18 +141,22 @@ type ModelFilePickerProps = {
   buttonText?: string;
   onFileSelect?: (file: File | null) => void;
    allowedExtensions?: string[];
+     accept?: string[]; 
 };
 
 export default function ModelFilePicker({
   label = 'Select Scan',
   buttonText = 'Upload Scan File',
   onFileSelect,
-  allowedExtensions = ['.stl', '.ply'], // 👈 default
+  allowedExtensions = ['.stl', '.ply','.obj', '.mtl','jpg'],
+  accept, // 👈 default
 }: ModelFilePickerProps) {
   const [file, setFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+
+const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -122,18 +166,18 @@ export default function ModelFilePicker({
     const fileExtension = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
 
     // ✅ use the prop instead of hardcoded array
-    if (!allowedExtensions.includes(fileExtension)) {
+    if (!extensions.includes(fileExtension)) {
       setError(
-        `Invalid file type. Please upload one of: ${allowedExtensions.join(', ')}`
+        `Invalid file type. Please upload one of: ${extensions.join(', ')}`
       );
       return;
     }
 
-    const maxSize = 25 * 1024 * 1024; // 25MB
-    if (f.size > maxSize) {
-      setError('File size exceeds 25MB limit.');
-      return;
-    }
+ const maxSize = 25 * 1024 * 1024; // 25MB in bytes
+if (f.size > maxSize) {
+  setError('File size exceeds 25MB limit.');
+  return;
+}
 
     setFile(f);
     setFileType(fileExtension);
@@ -192,11 +236,11 @@ export default function ModelFilePicker({
                 id="picture"
                 type="file"
                 onChange={handleChange}
-                accept={allowedExtensions.join(',')}
+                accept={extensions.join(',')} 
               />
               {error && <p className="text-sm text-red-500">{error}</p>}
               <p className="text-xs text-muted-foreground">
-                Max file size: 25MB | Allowed types: {allowedExtensions.join(', ')}
+                Max file size: 25MB | Allowed types: {extensions.join(', ')}
               </p>
             </div>
           )}

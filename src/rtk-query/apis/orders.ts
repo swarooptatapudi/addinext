@@ -107,17 +107,19 @@ export const ordersApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ['Orders'],
   endpoints: (builder) => ({
-    createOrder: builder.mutation({
-      query: (data) => ({
-        url: '/method/addiwise.apis.order_types.bk_order.create_bk_order',
-        method: 'POST',  
-        body: data
-      }),
-      transformResponse: (response: SalesOrdersResponse) => {
-        console.log("create_bk_order", response);
-        return response;
-      }
-    }),
+   createOrder: builder.mutation({
+  query: (data) => {
+    return {
+      url: '/method/addiwise.apis.order_types.bk_order.create_bk_order',
+      method: 'POST',
+      body: data, 
+        headers: {
+      "Content-Type": "application/json",
+    }, 
+    };
+  },
+}),
+
     getOrders: builder.query({
       query: () => ({
         url: `/method/addiwise.apis.order.get_sales_order`,
