@@ -34,7 +34,7 @@
     "react": "^19.0.0",
     "react-day-picker": "^9.6.7",
     "react-dom": "^19.0.0",
-    "react-pdf": "^9.2.1",
+    "react-pdf": "^10.1.0",
     "react-redux": "^9.2.0",
     "react-stl-viewer": "^2.5.0",
     "react-toastify": "^11.0.5",

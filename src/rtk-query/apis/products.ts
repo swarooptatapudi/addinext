@@ -28,13 +28,21 @@ export const productsApi = createApi({
       }),
       transformResponse: (response: any) => response.message
     }),
-getProductColorStep5: builder.mutation({
-  query: (_unusedArg) => ({
-    url: '/method/addiwise.apis.color_api.get_colors',
-    method: 'GET',
-  }),
-  transformResponse: (response: any) => response.message.colors,
-})
+    getProductColorStep5: builder.mutation({
+      query: (_unusedArg) => ({
+        url: '/method/addiwise.apis.color_api.get_colors',
+        method: 'GET',
+      }),
+      transformResponse: (response: any) => response.message.colors,
+    }),
+    getProductsList: builder.query<any, void>({
+      query: () => ({
+        url: `/method/addiwise.apis.customer.get_items`,
+        method: 'GET',
+      }),
+      transformResponse: (response: any) => response.message.data,
+    })
+
   })
 });
 
@@ -43,4 +51,5 @@ export const {
   useGetProductsByTempleteQuery,
   useGetItemNameByDetailsMutation,
   useGetProductColorStep5Mutation,
+  useGetProductsListQuery
 } = productsApi;

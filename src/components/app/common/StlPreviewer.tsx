@@ -8,7 +8,8 @@ import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Document, Page, pdfjs } from 'react-pdf';
+import * as THREE from "three";
+
 import {
   Dialog,
   DialogContent,
@@ -37,22 +38,33 @@ function Model({ url, fileType, mtlUrl, textureUrl }: {
     }
 
     case ".obj": {
-      // If .mtl is provided, preload materials
-      if (mtlUrl) {
-        const materials = useLoader(MTLLoader, mtlUrl);
-        materials.preload();
+  // If .mtl is provided, preload materials
+  if (mtlUrl) {
+    const materials = useLoader(MTLLoader, mtlUrl);
+    materials.preload();
 
-        const objWithMtl = useLoader(OBJLoader, url, (loader) => {
-          (loader as OBJLoader).setMaterials(materials);
-        });
+    const obj = useLoader(OBJLoader, url, (loader) => {
+      loader.setMaterials(materials);
+    });
+    return <primitive object={obj} scale={0.5} />;
+  }
 
-        return <primitive object={objWithMtl} scale={0.5} />;
-      }
+  // If no MTL, just load the OBJ and give it a default colored material
+  const obj = useLoader(OBJLoader, url);
 
-      // If no MTL, just load the OBJ
-      const obj = useLoader(OBJLoader, url);
-      return <primitive object={obj} scale={0.5} />;
+  obj.traverse((child: any) => {
+    if (child.isMesh) {
+      child.material = new THREE.MeshStandardMaterial({
+        color: "",   // 👈 nice blue default color
+        metalness: 0.3,
+        roughness: 0.6,
+      });
     }
+  });
+
+  return <primitive object={obj} scale={0.5} />;
+}
+
 
     case ".ply": {
       const ply = useLoader(PLYLoader, url);
@@ -187,7 +199,6 @@ if (f.size > maxSize) {
     } else {
       setFileUrl(null); // no preview for zip
     }
-
     onFileSelect?.(f);
   };
 

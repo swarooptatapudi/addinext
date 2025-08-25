@@ -51,31 +51,38 @@ interface SalesOrderDetailsResponse {
   data: SalesOrderDetails;
 }
 
+
+interface UpdateSalesOrderDetailsRequest {
+  order_type: string;
+  order_id: string;
+  custom_payment_reference_id?: string;
+  payment_status: string// optional field
+}
 interface BKEstimateRequest {
   item_code: string;
   design_by: string;
   print_by: string;
   laticess: string;
   finish: string;
-  discount_per:number;
-  discount_amt:number;
+  discount_per: number;
+  discount_amt: number;
 }
 
 interface BKEstimateResponse {
   message: string;
   data: {
-    design:number;
+    design: number;
     print: number;
     laticess: number;
     finish: number;
     estimate_price: number;
-    item_discount:number;
+    item_discount: number;
     additional_discount: number;
     discounted_price: number;
     discounted_price_18: number;
     discounted_price_5: number;
-    gst_18:number;
-    gst_5:number;
+    gst_18: number;
+    gst_5: number;
     total_price: number;
   };
 }
@@ -102,30 +109,31 @@ interface GetSalesOrderDetailsRequest {
   order_id: string;
 }
 
+
+
 export const ordersApi = createApi({
   reducerPath: 'ordersApi',
   baseQuery: baseQueryWithReauth,
   tagTypes: ['Orders'],
   endpoints: (builder) => ({
-   createOrder: builder.mutation({
-  query: (data) => {
-    return {
-      url: '/method/addiwise.apis.order_types.bk_order.create_bk_order',
-      method: 'POST',
-      body: data, 
-        headers: {
-      "Content-Type": "application/json",
-    }, 
-    };
-  },
-}),
-
-    getOrders: builder.query({
+    createOrder: builder.mutation({
+      query: (data) => {
+        return {
+          url: '/method/addiwise.apis.order_types.bk_order.create_bk_order',
+          method: 'POST',
+          body: data,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        };
+      },
+    }),
+    getOrders: builder.query<SalesOrdersResponse, void>({
       query: () => ({
         url: `/method/addiwise.apis.order.get_sales_order`,
         method: 'GET'
       }),
-      transformResponse: (response: SalesOrdersResponse) => response
+      providesTags: ['Orders']
     }),
     getOrderDetails: builder.mutation<any, GetSalesOrderDetailsRequest>({
       query: (data) => ({
@@ -133,7 +141,7 @@ export const ordersApi = createApi({
         method: 'POST',
         body: data
       }),
-      
+
       transformResponse: (response: any) => response
     }),
     getBKEstimate: builder.mutation<BKEstimateResponse, BKEstimateRequest>({
@@ -156,26 +164,30 @@ export const ordersApi = createApi({
       }),
       transformResponse: (response: CouponResponse) => response,
     }),
-    getOrderDetailIds: builder.mutation<any, GetSalesOrderDetailsRequest>({
-      query: (data) => {
-        console.log("Fetching order detail IDs", data);
-        return {
-          url: '/method/addiwise.apis.order.update_sales_order_details',
-          method: 'POST',
-          body: data
-        };
-      },
-      transformResponse: (response: any) => response
+    getOrderDetailIds: builder.mutation<any, UpdateSalesOrderDetailsRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order.update_sales_order_details',
+        method: 'POST',
+        body: data
+      })
+    }),
+    updateSalesOrderDetails: builder.mutation<any, UpdateSalesOrderDetailsRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order.update_sales_order_details',
+        method: 'POST',
+        body: data,
+      }),
     }),
   })
 });
 
-export const { 
-  useCreateOrderMutation, 
+export const {
+  useCreateOrderMutation,
   useGetOrdersQuery,
   useGetOrderDetailsMutation,
   useGetBKEstimateMutation,
   useValidateCouponMutation,
-  useGetOrderDetailIdsMutation
+  useGetOrderDetailIdsMutation,
+  useUpdateSalesOrderDetailsMutation,
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;

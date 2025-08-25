@@ -7,12 +7,11 @@ export const BK_FORM_INITIAL_VALUES = {
   mobile_no: '',
   email: '',
   authorized_representative: '',
-  assessment_date: '',
-  amputation_date: '',
+  scan_date: '', // mapped from assessment_date / amputation_date
   reason_for_amputation: '',
   stump_condition: '',
   stump_length: '',
-  file_dimensions:'',
+  file_dimensions: '',
   amputated_leg: '',
   stump_size: '',
   previous_prosthetic_experience: '',
@@ -26,7 +25,7 @@ export const BK_FORM_INITIAL_VALUES = {
   flexion_angle: '',
   add_abd_angle: '',
   liner_type: '',
-  liner_thickness:'',
+  liner_thickness: '',
   direct_body: '',
   activity_level: '',
   adapter_type: '',
@@ -34,137 +33,52 @@ export const BK_FORM_INITIAL_VALUES = {
   design_variation: '',
   model_name: '',
   additional_customization_requirements: '',
-  foot_Amputation :'',
-  leftFootFile: null, // Store Left Foot STL file
-  rightFootFile: null, // Store Right Foot STL file
-  upload_link:'',
+  foot_side: '', // mapped from foot_Amputation
+  left_foot_file: null, // mapped from leftFootFile
+  right_foot_file: null, // mapped from rightFootFile
+  upload_link: '',
+  custom_upload_link_with_photos: '',
+  item_code:'',
   global_volume_reduction: '',
   gst_5: 0.0,
   gst_18: 0.0,
   item_discount: 0.0,
   additional_discount: 0.0,
-  addicoins:0.0,
+  addicoins: 0.0,
   socket_design_details: [
-    {
-      area: 'A',
-      area_name: 'Patella',
-      default_mm: '+1',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'B',
-      area_name: 'Patella Tendon',
-      default_mm: '-8',
-
-      cpo_input_mm: ''
-    },
-    {
-      area: 'C',
-      area_name: 'Crest of Tibia',
-      default_mm: '+3',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'D',
-      area_name: 'Lateral Shaft Tibia',
-      default_mm: '-3',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'E',
-      area_name: 'Medial Shaft Tibia',
-      default_mm: '-3',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'F',
-      area_name: 'Distal End Tibia',
-      default_mm: '+6',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'G',
-      area_name: 'Medial Supracondylar',
-      default_mm: '-4',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'H',
-      area_name: 'Hamstring Tendons',
-      default_mm: '+2',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'I',
-      area_name: 'Hamstring Tendons',
-      default_mm: '+2',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'J',
-      area_name: 'Posterior Conmpartment',
-      default_mm: '-4',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'K',
-      area_name: 'Lateral Supracondylar',
-      default_mm: '-4',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'L',
-      area_name: 'Head of Fibula',
-      default_mm: '+3',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'M',
-      area_name: 'Distal End Fibula',
-      default_mm: '+4',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'N',
-      area_name: 'Tibial Tuberosity',
-      default_mm: '+1',
-      cpo_input_mm: ''
-    }
+    { area: 'A', area_name: 'Patella', default_mm: '+1', cpo_input_mm: '' },
+    { area: 'B', area_name: 'Patella Tendon', default_mm: '-8', cpo_input_mm: '' },
+    { area: 'C', area_name: 'Crest of Tibia', default_mm: '+3', cpo_input_mm: '' },
+    { area: 'D', area_name: 'Lateral Shaft Tibia', default_mm: '-3', cpo_input_mm: '' },
+    { area: 'E', area_name: 'Medial Shaft Tibia', default_mm: '-3', cpo_input_mm: '' },
+    { area: 'F', area_name: 'Distal End Tibia', default_mm: '+6', cpo_input_mm: '' },
+    { area: 'G', area_name: 'Medial Supracondylar', default_mm: '-4', cpo_input_mm: '' },
+    { area: 'H', area_name: 'Hamstring Tendons', default_mm: '+2', cpo_input_mm: '' },
+    { area: 'I', area_name: 'Hamstring Tendons', default_mm: '+2', cpo_input_mm: '' },
+    { area: 'J', area_name: 'Posterior Conmpartment', default_mm: '-4', cpo_input_mm: '' },
+    { area: 'K', area_name: 'Lateral Supracondylar', default_mm: '-4', cpo_input_mm: '' },
+    { area: 'L', area_name: 'Head of Fibula', default_mm: '+3', cpo_input_mm: '' },
+    { area: 'M', area_name: 'Distal End Fibula', default_mm: '+4', cpo_input_mm: '' },
+    { area: 'N', area_name: 'Tibial Tuberosity', default_mm: '+1', cpo_input_mm: '' }
   ],
   value_c_details: [
+    { gap: "00 cm", value: "" },
+    { gap: "03 cm", value: "" },
+    { gap: "06 cm", value: "" },
+    { gap: "09 cm", value: "" },
+    { gap: "12 cm", value: "" },
+    { gap: "15 cm", value: "" },
+    { gap: "18 cm", value: "" },
+    { gap: "21 cm", value: "" }
+  ],
+  scan_items: [
     {
-        gap: "00 cm",
-        value: ""
-    },
-    {
-        gap: "03 cm",
-        value: ""
-    },
-    {
-        gap: "06 cm",
-        value: ""
-    },
-    {
-        gap: "09 cm",
-        value: ""
-    },
-    {
-        gap: "12 cm",
-        value: ""
-    },
-    {
-        gap: "15 cm",
-        value: ""
-    },
-    {
-        gap: "18 cm",
-        value: ""
-    },
-    {
-        gap: "21 cm",
-        value: ""
+      foot_side: '',        // will be dynamically set
+      left_foot_file: null, // will store left foot STL
+      right_foot_file: null,// will store right foot STL
+      scan_date: ''         // will use assessment_date / amputation_date
     }
-]
+  ]
 };
 
 // ak form
@@ -324,6 +238,7 @@ export const AKB_FORM_INITIAL_VALUES = {
   stump_type: '',
   locking_system: '',
   scan_condition: '',
+  scan_items:'',
   scan_markings: '',
   foot_type: '',
   shoe_size: '',
