@@ -9,13 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-// PDF.js setup
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 type FileViewerProps = {
   label?: string;
   buttonText?: string;
-  onFileSelect?: (file: File | null) => void;
+  onFileSelect?: (fileUrl: string | null) => void; // now it sends URL
   allowedTypes?: string[];
   maxSizeMB?: number;
   disabled?: boolean;
@@ -33,20 +32,18 @@ export function GenericFileViewer({
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     setError(null);
     if (!selectedFile) return;
 
-    // Validate type
     const fileExt = selectedFile.name.substring(selectedFile.name.lastIndexOf('.')).toLowerCase();
     if (!allowedTypes.includes(fileExt)) {
       setError(`Allowed formats: ${allowedTypes.join(', ')}`);
       return;
     }
-
-    // Validate size
     if (selectedFile.size > maxSizeMB * 1024 * 1024) {
       setError(`File exceeds ${maxSizeMB}MB limit`);
       return;
@@ -54,23 +51,45 @@ export function GenericFileViewer({
 
     setFile(selectedFile);
     setFileUrl(URL.createObjectURL(selectedFile));
-    onFileSelect?.(selectedFile);
+  };
+
+  // Upload file to backend and return URL
+  const uploadFileToBackend = async (file: File) => {
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('method/addiwise.apis.order_types.bk_order.create_bk_order', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      setLoading(false);
+
+      if (!data.success) {
+        setError(data.error || 'Upload failed');
+        return null;
+      }
+
+      return data.file_url; // returned by backend
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+      setError('Upload failed');
+      return null;
+    }
   };
 
   const renderPreview = () => {
     if (!fileUrl || !file) return null;
     const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
 
-    // Images
-    if (['.png', '.jpg', '.jpeg'].includes(fileExt)) {
-      return (
-        <div className="flex justify-center items-center h-[400px]">
-          <img src={fileUrl} alt={file.name} className="max-h-full max-w-full object-contain" />
-        </div>
-      );
+    if (['.png', '.jpg', '.jpeg',].includes(fileExt)) {
+      return <img src={fileUrl} alt={file.name} className="max-h-full max-w-full object-contain" />;
     }
 
-    // PDF
     if (fileExt === '.pdf') {
       return (
         <div className="h-[400px] overflow-auto">
@@ -82,13 +101,12 @@ export function GenericFileViewer({
       );
     }
 
-    // OBJ
-    function OBJModel({ url }: { url: string }) {
-      const obj = useLoader(OBJLoader, url);
-      return <primitive object={obj} scale={0.5} />;
-    }
-
     if (fileExt === '.obj') {
+      function OBJModel({ url }: { url: string }) {
+        const obj = useLoader(OBJLoader, url);
+        return <primitive object={obj} scale={0.5} />;
+      }
+
       return (
         <div className="h-[400px] w-full">
           <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
@@ -126,7 +144,7 @@ export function GenericFileViewer({
               <div className="flex gap-2 justify-end">
                 <Button
                   variant="outline"
-                  disabled={disabled}
+                  disabled={disabled || loading}
                   onClick={() => {
                     setFile(null);
                     setFileUrl(null);
@@ -135,9 +153,22 @@ export function GenericFileViewer({
                 >
                   Remove File
                 </Button>
-                <DialogTrigger asChild>
-                  <Button disabled={disabled}>Confirm</Button>
-                </DialogTrigger>
+
+                <Button
+                  disabled={disabled || loading}
+                  onClick={async () => {
+                    if (file) {
+                      const uploadedUrl = await uploadFileToBackend(file);
+                      if (uploadedUrl) {
+                        onFileSelect?.(uploadedUrl); // send URL to parent/backend
+                        setFile(null);
+                        setFileUrl(null);
+                      }
+                    }
+                  }}
+                >
+                  {loading ? 'Uploading...' : 'Confirm'}
+                </Button>
               </div>
             </>
           ) : (

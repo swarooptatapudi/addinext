@@ -170,37 +170,56 @@ export default function ModelFilePicker({
 
 const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    setError(null);
-    if (!f) return;
+ const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const f = e.target.files?.[0];
+  setError(null);
+  if (!f) return;
 
-    const fileExtension = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+  const fileExtension = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+  if (!extensions.includes(fileExtension)) {
+    setError(`Invalid file type. Please upload one of: ${extensions.join(', ')}`);
+    return;
+  }
 
-    // ✅ use the prop instead of hardcoded array
-    if (!extensions.includes(fileExtension)) {
-      setError(
-        `Invalid file type. Please upload one of: ${extensions.join(', ')}`
-      );
-      return;
-    }
+  const maxSize = 25 * 1024 * 1024; // 25MB
+  if (f.size > maxSize) {
+    setError('File size exceeds 25MB limit.');
+    return;
+  }
 
- const maxSize = 25 * 1024 * 1024; // 25MB in bytes
-if (f.size > maxSize) {
-  setError('File size exceeds 25MB limit.');
-  return;
-}
+  setFile(f);
+  setFileType(fileExtension);
 
-    setFile(f);
-    setFileType(fileExtension);
+  if (fileExtension !== '.zip') {
+    setFileUrl(URL.createObjectURL(f));
+  } else {
+    setFileUrl(null);
+  }
 
-    if (fileExtension !== '.zip') {
-      setFileUrl(URL.createObjectURL(f));
-    } else {
-      setFileUrl(null); // no preview for zip
-    }
-    onFileSelect?.(f);
-  };
+  // ✅ Upload file to backend
+  try {
+    const formData = new FormData();
+    formData.append("file", f);
+
+    const res = await fetch("/method/addiwise.apis.order_types.bk_order.create_bk_order", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error("Upload failed");
+
+    console.log("Response status:", res.status);
+console.log("Response text:", await res.text());
+    const data = await res.json();
+    console.log("Upload success:", data);
+  } catch (err) {
+    console.error("Error uploading file:", err);
+    setError("Upload failed");
+  }
+
+  onFileSelect?.(f);
+};
+
 
   return (
     <div className="space-y-2 pl-4 pr-4 pb-4 w-[200px] sm:w-[150px] md:w-[150px] lg:w-[145px] xl:w-[170px]">

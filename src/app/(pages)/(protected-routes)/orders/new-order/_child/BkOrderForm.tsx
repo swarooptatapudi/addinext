@@ -9,6 +9,7 @@ import * as Yup from 'yup';
 
 // Components
 import StlFilePicker from '@/components/app/common/StlPreviewer';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SelectBox } from '@/components/ui/selectbox';
@@ -171,7 +172,7 @@ const step1Validation = Yup.object().shape({
 });
 
 // const step2Validation = Yup.object().shape({
-//   upload_link: Yup.string()
+//   custom_custom_upload_link_with_photos_with_photos: Yup.string()
 //     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
 //     .nullable(),
 //   direct_body: Yup.string().required('Scan condition is required'),
@@ -180,11 +181,11 @@ const step1Validation = Yup.object().shape({
 //   'either-scan-or-link',
 //   'Either upload scans or provide a photo link is required',
 //   function (value) {
-//     const { foot_side, upload_link } = value;
+//     const { foot_side, custom_upload_link_with_photos } = value;
 
-//     if (!foot_side && !upload_link) {
+//     if (!foot_side && !custom_upload_link_with_photos) {
 //       return this.createError({
-//         path: 'upload_link',
+//         path: 'custom_upload_link_with_photos',
 //         message: 'Either upload scans or provide a photo link is required'
 //       });
 //     }
@@ -195,7 +196,7 @@ const step1Validation = Yup.object().shape({
 
 
 const step2Validation = Yup.object().shape({
-  upload_link: Yup.string()
+  custom_upload_link_with_photos: Yup.string()
     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
     .nullable(),
   direct_body: Yup.string().required('Scan condition is required'),
@@ -205,29 +206,29 @@ const step2Validation = Yup.object().shape({
   left_foot_file: Yup.mixed().nullable(),
   right_foot_file: Yup.mixed().nullable()
 }).test('file-upload-validation', 'File upload validation', function (value) {
-  const { foot_side, upload_link, left_foot_file, right_foot_file } = value as {
+  const { foot_side, custom_upload_link_with_photos, left_foot_file, right_foot_file } = value as {
     foot_side: string | null;
-    upload_link: string | null;
+    custom_upload_link_with_photos: string | null;
     left_foot_file: File | null;
     right_foot_file: File | null;
   };
 
   // console.log('Validation Values:', {
   //   foot_side,
-  //   upload_link,
+  //   custom_upload_link_with_photos,
   //   left_foot_file,
   //   right_foot_file
   // });
 
-  // If upload_link is provided, validation passes
-  if (upload_link && upload_link.trim()) {
+  // If custom_upload_link_with_photos is provided, validation passes
+  if (custom_upload_link_with_photos && custom_upload_link_with_photos.trim()) {
     return true;
   }
 
-  // If foot_side is not selected, require upload_link
+  // If foot_side is not selected, require custom_upload_link_with_photos
   if (!foot_side) {
     return this.createError({
-      path: 'upload_link',
+      path: 'custom_upload_link_with_photos',
       message: 'Either upload scans or provide a photo link is required'
     });
   }
@@ -662,7 +663,7 @@ const Step1 = ({
     // console.log('Touched:', fieldTouched);
 
     if (
-      fieldName === 'upload_link' &&
+      fieldName === 'custom_upload_link_with_photos' &&
       fieldError === 'Either upload scans or provide a photo link is required'
     ) {
       return true;
@@ -1191,25 +1192,25 @@ const Step2 = ({
   // };
 
   const updateScanItems = (footSide: string, file: File) => {
-  const newScanItems = [...values.scan_items];
-  const index = newScanItems.findIndex(item => item.foot_side === footSide);
+    const newScanItems = [...values.scan_items];
+    const index = newScanItems.findIndex(item => item.foot_side === footSide);
 
-  if (index >= 0) {
-    // Update existing row
-    if (footSide === 'Left_Foot') newScanItems[index].left_foot_file = file;
-    if (footSide === 'Right_Foot') newScanItems[index].right_foot_file = file;
-  } else {
-    // Add new row if not exists
-    newScanItems.push({
-      foot_side: footSide,
-      left_foot_file: footSide === 'Left_Foot' ? file : null,
-      right_foot_file: footSide === 'Right_Foot' ? file : null,
-      scan_date: values.scan_date || ''
-    });
-  }
+    if (index >= 0) {
+      // Update existing row
+      if (footSide === 'Left_Foot') newScanItems[index].left_foot_file = file;
+      if (footSide === 'Right_Foot') newScanItems[index].right_foot_file = file;
+    } else {
+      // Add new row if not exists
+      newScanItems.push({
+        foot_side: footSide,
+        left_foot_file: footSide === 'Left_Foot' ? file : null,
+        right_foot_file: footSide === 'Right_Foot' ? file : null,
+        scan_date: values.scan_date || ''
+      });
+    }
 
-  setFieldValue('scan_items', newScanItems);
-};
+    setFieldValue('scan_items', newScanItems);
+  };
 
   const shouldShowError = (fieldName: string, isRequired = false) => {
     const fieldValue = fieldName.includes('.')
@@ -1229,7 +1230,7 @@ const Step2 = ({
     }
 
     if (
-      fieldName === 'upload_link' &&
+      fieldName === 'custom_upload_link_with_photos' &&
       fieldError === 'Either upload scans or provide a photo link is required'
     ) {
       return true;
@@ -1265,8 +1266,8 @@ const Step2 = ({
   const showEitherOrError =
     formSubmitted &&
     !values.foot_side &&
-    !values.upload_link &&
-    errors.upload_link === 'Either upload scans or provide a photo link is required';
+    !values.custom_upload_link_with_photos &&
+    errors.custom_upload_link_with_photos === 'Either upload scans or provide a photo link is required';
 
   return (
     <div className="flex flex-col gap-4">
@@ -1363,7 +1364,7 @@ const Step2 = ({
                   setFieldValue('left_foot_file', null);
                   setFieldValue('right_foot_file', null);
                 }}
-                inVaild={shouldShowError('upload_link')}
+                inVaild={shouldShowError('custom_upload_link_with_photos')}
                 disabled={isViewMode}
               />
             </div>
@@ -1383,7 +1384,7 @@ const Step2 = ({
                   setErrors({
                     ...errors,
                     left_foot_file: undefined,
-                    upload_link: undefined
+                    custom_upload_link_with_photos: undefined
                   });
                 }
               }}//@ts-ignore
@@ -1409,7 +1410,7 @@ const Step2 = ({
                   setErrors({
                     ...errors,
                     right_foot_file: undefined,
-                    upload_link: undefined
+                    custom_upload_link_with_photos: undefined
                   });
                 }
               }}
@@ -1477,7 +1478,7 @@ const Step2 = ({
               setErrors({
                 ...errors,
                 additional_file_1: undefined,
-                upload_link: undefined
+                custom_upload_link_with_photos: undefined
               });
             }}
           />
@@ -1494,7 +1495,7 @@ const Step2 = ({
               setErrors({
                 ...errors,
                 additional_file_2: undefined,
-                upload_link: undefined
+                custom_upload_link_with_photos: undefined
               });
             }}
           />
@@ -1512,12 +1513,12 @@ const Step2 = ({
           <Input
             placeholder="https://drive.google.com/..."
             className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''}`}
-            value={values.upload_link || ''}
+            value={values.custom_upload_link_with_photos || ''}
             onChange={(value) => {
-              handleChange('upload_link')(value);
+              handleChange('custom_upload_link_with_photos')(value);
               // Optionally clear file-related errors here if you want
             }}
-            inVaild={shouldShowError('upload_link')}
+            inVaild={shouldShowError('custom_upload_link_with_photos')}
             disabled={isViewMode}
           />
         </div>
@@ -1669,11 +1670,20 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       getOrderDetails({
         order_type: deviceTypeId,
         order_id: orderId,
-        payment_status: isPaid ? 'Paid' : 'Pending'
+        // payment_status: isPaid ? 'Paid' : 'Pending'
       })
 
         .unwrap()
         .then((response) => {
+          console.log("Full API response =>", response);
+          console.log("API Keys =>", Object.keys(response.data));
+
+          console.log("Fetched order details =>", response.data);
+
+          // 👇 If you want to check specific nested keys
+          console.log("value_c_details =>", response.data?.value_c_details);
+          console.log("socket_design_details =>", response.data?.socket_design_details);
+
           const transformedData = {
             ...initialValues,
             ...response.data,
@@ -1694,6 +1704,13 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 })
               ) || initialValues.socket_design_details
           };
+
+          console.log("InitialValues =>", initialValues);
+          console.log("API Response (response.data) =>", response.data);
+          console.log("Merged/Transformed =>", transformedData);
+
+          console.log("Transformed Data =>", transformedData);
+
           setFormValues(transformedData);
           if (response.data.item_code) {
             setSelectedItem(response.data.item_code);
@@ -1879,6 +1896,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
 
   const handleConfirmOrder = () => {
     const payload: any = {};
+
     payload.item_type = 'BK';
     payload.customer = user?.customer_id;
     payload.order_details = formValues;

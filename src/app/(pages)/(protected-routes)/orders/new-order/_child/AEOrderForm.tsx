@@ -1057,7 +1057,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 1"
-            onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+            // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
           />
         </div>
         <div className="w-fit ml-2">
@@ -1066,7 +1066,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 2"
-            onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+            // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
           />
         </div>
       </div>

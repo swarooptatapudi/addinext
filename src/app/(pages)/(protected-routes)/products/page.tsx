@@ -4,17 +4,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 import { useGetProductsListQuery } from '@/rtk-query/apis/products';
+import InsolesOrderForm from '../orders/new-order/_child/InsolesOrderForm';
 
 export default function Products(): React.JSX.Element {
 
   const { data: products, isLoading, error } = useGetProductsListQuery();
-  console.log("products", products);
+  // console.log("products", products);
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load products</p>;
 
   const printer = products?.filter(
     (item: any) => item.item_group === "Printer 3D" && item.custom_allow_to_ui === 1
   );
+
 
   const orthotics = products?.filter((item: any) => (item.item_group === "Orthotics" && item.custom_allow_to_ui === 1))
   const offtheself = products?.filter((item: any) => (item.item_group === "Off the Shelf" && item.custom_allow_to_ui === 1))
@@ -67,15 +69,20 @@ export default function Products(): React.JSX.Element {
           Orthotics
         </p>
         <div className="flex flex-wrap gap-x-8 gap-y-6">
-          {orthotics?.map((orthotics: any) => (
+          {orthotics?.map((orthotic: any) => (
             <ProductItem
-              key={orthotics.name}
-              src={orthotics.image || "/assets/placeholder.jpg"}
-              label={orthotics.item_name}
-              href=""
+              key={orthotic.name}
+              src={orthotic.image || "/assets/placeholder.jpg"}
+              label={orthotic.item_name}
+              href={
+                orthotic.item_name === "Insole"
+                  ? "/orders/new-order/Insoles"   // 👈 route for Insole
+                  : ""   // 👈 route for others
+              }
             />
           ))}
         </div>
+
       </div>
       {/* Off the Shelf */}
       <div className="mt-5">

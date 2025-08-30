@@ -17,10 +17,6 @@ export default function NewOrder(): React.JSX.Element {
   const { data, isLoading, isSuccess } = useGetProductsQuery('');
   const [currentDate, setCurrentDate] = useState('');
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
-
-
-  
-
   useEffect(() => {
     setCurrentDate(format(new Date(), 'dd-MM-yyyy'));
   }, []);

@@ -36,7 +36,7 @@ import { getFormOptionsObject } from '@/uttils/UttilFuncations';
 import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 import { AKINSOLES_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/insolesForm/Step5Finishing';
-import { CheckboxGroup }  from '@/components/app/common/foot-complaints-form';
+import { CheckboxGroup } from '@/components/app/common/foot-complaints-form';
 
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
@@ -44,7 +44,7 @@ const step1Validation = Yup.object().shape({
     .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
     .required(FORMIK_ERRORS.REQUIRED),
   socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
-  insole_model:Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  insole_model: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   height: Yup.string()
     .matches(/^\d+(\.\d{1,2})?$/, {
@@ -78,7 +78,7 @@ const step1Validation = Yup.object().shape({
       'Size must be no more than 60',
       (value) => parseInt(value) <= 60
     ),
-    foot_length: Yup.string()
+  foot_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
     .test(
@@ -91,7 +91,7 @@ const step1Validation = Yup.object().shape({
       'foot length must be no more than 50',
       (value) => parseInt(value) <= 50
     ),
-    metatarsal_length: Yup.string()
+  metatarsal_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
     .test(
@@ -104,7 +104,7 @@ const step1Validation = Yup.object().shape({
       'metatarsal length must be no more than 50',
       (value) => parseInt(value) <= 50
     ),
-    metatarsal_width: Yup.string()
+  metatarsal_width: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
     .test(
@@ -116,8 +116,8 @@ const step1Validation = Yup.object().shape({
       'max-value',
       'metatarsal width must be no more than 50',
       (value) => parseInt(value) <= 50
-    ),  
-    shoe_width: Yup.string()
+    ),
+  shoe_width: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
     .test(
@@ -129,7 +129,7 @@ const step1Validation = Yup.object().shape({
       'max-value',
       'Size must be no more than 25',
       (value) => parseInt(value) <= 25
-    ), 
+    ),
   flexion_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
@@ -153,28 +153,29 @@ const step4Validation = Yup.object().shape({
       'Must be a percentage between 0% and 5% (e.g. 2%)',
       (value) => {
         if (!value) return true;
-        
+
         const regex = /^\d{1,2}%$/;
         if (!regex.test(value)) return false;
-        
+
         const num = parseInt(value.replace('%', ''));
         return num >= 0 && num <= 5;
       }
     ),
-    socket_design_details: Yup.array().of(
-      Yup.object().shape({
-        cpo_input_mm: Yup.string()
-          .test(
-            'is-valid-number',
-            'Must be a number between -20 and +20',
-            (value) => {
-              if (!value || value.trim() === '') return true; // Allow empty
-              if (!/^-?\d+$/.test(value)) return false;
-              const num = parseInt(value, 10);
-              return num >= -20 && num <= 20;
-            }
-          )   })
+  socket_design_details: Yup.array().of(
+    Yup.object().shape({
+      cpo_input_mm: Yup.string()
+        .test(
+          'is-valid-number',
+          'Must be a number between -20 and +20',
+          (value) => {
+            if (!value || value.trim() === '') return true; // Allow empty
+            if (!/^-?\d+$/.test(value)) return false;
+            const num = parseInt(value, 10);
+            return num >= -20 && num <= 20;
+          }
         )
+    })
+  )
 });
 
 const step3Validation = Yup.object().shape({
@@ -188,14 +189,14 @@ const step5Validation = Yup.object().shape({
 
 const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
 
-const SocketTypeDialog = ({ 
-  open, 
-  onOpenChange, 
-  data 
-}: { 
-  open: boolean; 
-  onOpenChange: (open: boolean) => void; 
-  data: any 
+const SocketTypeDialog = ({
+  open,
+  onOpenChange,
+  data
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  data: any
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -203,7 +204,7 @@ const SocketTypeDialog = ({
         <DialogHeader>
           <DialogTitle>Socket Type Information</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           {data && (
             <>
@@ -213,19 +214,19 @@ const SocketTypeDialog = ({
                   {data.description || ''}
                 </p>
               </div>
-              
+
               {data.image && (
                 <div className="mt-4">
-                  <Image 
-                    src={data.image} 
-                    alt={data.label} 
-                    width={500} 
+                  <Image
+                    src={data.image}
+                    alt={data.label}
+                    width={500}
                     height={300}
                     className="rounded-md border"
                   />
                 </div>
               )}
-              
+
               {data.features && (
                 <div className="mt-4">
                   <h5 className="font-medium mb-2">Key Features:</h5>
@@ -266,7 +267,7 @@ const InsolesDialog = ({
   const getDynamicContent = (variation: string) => {
     // Trim and normalize the variation text
     const normalizedVariation = variation.trim();
-    
+
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
       'AddiSole': {
         title: 'AddiSole',
@@ -279,36 +280,36 @@ const InsolesDialog = ({
         image: '/assets/order-forms/insoles/AddiSoleEco.png'
       },
     };
-  
+
     if (contentMap[normalizedVariation]) {
       return contentMap[normalizedVariation];
     }
-  
+
     const lowerCaseVariation = normalizedVariation.toLowerCase();
-    const caseInsensitiveMatch = Object.entries(contentMap).find(([key]) => 
+    const caseInsensitiveMatch = Object.entries(contentMap).find(([key]) =>
       key.toLowerCase() === lowerCaseVariation
     );
-  
+
     if (caseInsensitiveMatch) {
       return caseInsensitiveMatch[1];
     }
-  
+
     const baseVariation = normalizedVariation.split(' (')[0].trim();
-    const partialMatch = Object.entries(contentMap).find(([key]) => 
+    const partialMatch = Object.entries(contentMap).find(([key]) =>
       key === baseVariation
     );
-  
+
     if (partialMatch) {
       return partialMatch[1];
     }
-  
+
     return {
       title: normalizedVariation,
       description: '',
       image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
     };
   };
- 
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
@@ -318,14 +319,14 @@ const InsolesDialog = ({
             Choose your preferred Insoles Model from the options below
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {options.map((option) => {
             const variationText = option.label || option.value;
             const content = getDynamicContent(variationText);
-            
+
             return (
-              <div 
+              <div
                 key={option.value}
                 className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => {
@@ -336,9 +337,9 @@ const InsolesDialog = ({
                 <h4 className="font-sm text-lg">{content.title}</h4>
                 <p className="text-[12px] text-gray-700 mt-1">{content.description}</p>
                 <div className="mt-0">
-                  <Image 
-                    src={content.image} 
-                    alt={content.title} 
+                  <Image
+                    src={content.image}
+                    alt={content.title}
                     width={200}
                     height={150}
                     className="rounded-md border object-cover"
@@ -375,7 +376,7 @@ const ModelDialog = ({
 
   const getDynamicContent = (variation: string) => {
 
-    const normalizedVariation = variation.trim().toLowerCase();   
+    const normalizedVariation = variation.trim().toLowerCase();
 
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
       'addieaseeco': {
@@ -394,7 +395,7 @@ const ModelDialog = ({
         description: 'Moulds Printed on FDM Printe',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould.png'
       },
-      
+
       'addieasemould-hr': {
         title: 'AddiEaseMould-HR',
         description: 'Heat Resistant Moulds Printed on FDM Printer',
@@ -410,7 +411,7 @@ const ModelDialog = ({
 
     // Try partial match (without parentheses)
     const baseVariation = normalizedVariation.split(' (')[0];
-    const partialMatch = Object.entries(contentMap).find(([key]) => 
+    const partialMatch = Object.entries(contentMap).find(([key]) =>
       key.startsWith(baseVariation)
     );
 
@@ -435,14 +436,14 @@ const ModelDialog = ({
             Choose your preferred design variation from the options below
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {options.map((option) => {
             const variationText = option.label || option.value;
             const content = getDynamicContent(variationText);
-            
+
             return (
-              <div 
+              <div
                 key={option.value}
                 className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => {
@@ -453,9 +454,9 @@ const ModelDialog = ({
                 <h4 className="font-sm text-lg">{content.title}</h4>
                 <p className="text-[12px] text-gray-700 mt-1">{content.description}</p>
                 <div className="mt-1">
-                  <Image 
-                    src={content.image} 
-                    alt={content.title} 
+                  <Image
+                    src={content.image}
+                    alt={content.title}
                     width={200}
                     height={150}
                     className="rounded-md border object-cover"
@@ -487,25 +488,25 @@ const WatchFieldReset = () => {
   return null;
 };
 
-const Step1 = ({ 
-  values, 
-  handleChange, 
-  errors, 
-  touched, 
-  setFieldValue, 
-  isPatientSelected, 
-  FORM_OPTIONS, 
+const Step1 = ({
+  values,
+  handleChange,
+  errors,
+  touched,
+  setFieldValue,
+  isPatientSelected,
+  FORM_OPTIONS,
   formSubmitted,
-  setSocketTypeDialog  
+  setSocketTypeDialog
 }: any) => {
-  
-    const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  
+
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+
   const [insoleDialog, setInsoleDialog] = useState({
-      open: false,
-      options: []
-    });
-  
+    open: false,
+    options: []
+  });
+
   const [modelDialog, setModelDialog] = useState({
     open: false,
     options: []
@@ -524,22 +525,22 @@ const Step1 = ({
       ...option,
     }));
   }, [FORM_OPTIONS?.socket_type]);
-  
 
-const designVariationOptions = useMemo(() => {
-  return FORM_OPTIONS['insole_model'] || [];
-}, [FORM_OPTIONS]);
 
-useEffect(() => {
-  console.log("Available insole models:", FORM_OPTIONS['insole_model']);
-  console.log("Current insole model value:", values.insole_model);
-}, [FORM_OPTIONS, values.insole_model]);
-    
+  const designVariationOptions = useMemo(() => {
+    return FORM_OPTIONS['insole_model'] || [];
+  }, [FORM_OPTIONS]);
+
+  useEffect(() => {
+    console.log("Available insole models:", FORM_OPTIONS['insole_model']);
+    console.log("Current insole model value:", values.insole_model);
+  }, [FORM_OPTIONS, values.insole_model]);
+
 
   const modelOptions = useMemo(() => {
     if (!values.socket_type || !values.design_variation) return [];
-    const baseOptions  = FORM_OPTIONS[values.socket_type + '_' + values.design_variation +'_'+'_design_variation'] || [];
-    
+    const baseOptions = FORM_OPTIONS[values.socket_type + '_' + values.design_variation + '_' + '_design_variation'] || [];
+
     return baseOptions.map((option: { value: string; label: string }) => ({
       ...option,
     }));
@@ -548,7 +549,7 @@ useEffect(() => {
   return (
     <div className="flex flex-col gap-6">
       <h3 className="font-semibold text-lg text-primary">Basic Details</h3>
-      <div className="grid grid-cols-3 gap-4"> 
+      <div className="grid grid-cols-3 gap-4">
         <PatientPicker
           label="Patient Name"
           placeholder="Patient Name"
@@ -623,48 +624,48 @@ useEffect(() => {
       <div className="divider"></div>
 
       <div className="grid grid-cols-4 gap-4">
-              <Input
-                label='Shoe Size (European) '
-                placeholder="10"
-                value={values.shoe_size}
-                onChange={handleChange('shoe_size')}
-                required
-                inVaild={shouldShowError('shoe_size', true)}
-                error={errors.shoe_size}
-              />
-        
-             <Input
-              label="Shoe Width (cm)"
-              placeholder="10"
-              value={values.shoe_width}
-              onChange={handleChange('shoe_width')}
-              required
-              inVaild={shouldShowError('shoe_width', true)}
-              error={errors.shoe_width}
-              />
-              <div className="flex flex-col">
+        <Input
+          label='Shoe Size (European) '
+          placeholder="10"
+          value={values.shoe_size}
+          onChange={handleChange('shoe_size')}
+          required
+          inVaild={shouldShowError('shoe_size', true)}
+          error={errors.shoe_size}
+        />
+
+        <Input
+          label="Shoe Width (cm)"
+          placeholder="10"
+          value={values.shoe_width}
+          onChange={handleChange('shoe_width')}
+          required
+          inVaild={shouldShowError('shoe_width', true)}
+          error={errors.shoe_width}
+        />
+        <div className="flex flex-col">
           <label className="block text-xs font-medium text-black mb-1">
             Insoles Model <span className="text-red-500">*</span>
           </label>
           <div>
 
-          <Button
-  variant="outline"
-  className="w-full text-left justify-start h-10"
-  onClick={() => setInsoleDialog({
-    open: true,
-    options: designVariationOptions
-  })}
->
-  {values.insole_model 
-    ? designVariationOptions.find((opt: { value: string }) => opt.value === values.insole_model)?.label
-    : "Select Insole Model"}
-</Button>
-                        {shouldShowError('insole_model', true) && (
-                          <p className="text-xs text-red-500 mt-1">{errors.insole_model}</p>
-                        )}
-                        </div>
-          
+            <Button
+              variant="outline"
+              className="w-full text-left justify-start h-10"
+              onClick={() => setInsoleDialog({
+                open: true,
+                options: designVariationOptions
+              })}
+            >
+              {values.insole_model
+                ? designVariationOptions.find((opt: { value: string }) => opt.value === values.insole_model)?.label
+                : "Select Insole Model"}
+            </Button>
+            {shouldShowError('insole_model', true) && (
+              <p className="text-xs text-red-500 mt-1">{errors.insole_model}</p>
+            )}
+          </div>
+
         </div>
         <SelectBox
           options={FORM_OPTIONS?.activity_level || []}
@@ -772,15 +773,15 @@ useEffect(() => {
               </label>
               <div className='mt-1'>
 
-              <Input
-                placeholder="10"
-                value={values.foot_length}
-                onChange={handleChange('foot_length')}
-                required
-                inVaild={shouldShowError('foot_length', true)}
-                error={errors.foot_length}
+                <Input
+                  placeholder="10"
+                  value={values.foot_length}
+                  onChange={handleChange('foot_length')}
+                  required
+                  inVaild={shouldShowError('foot_length', true)}
+                  error={errors.foot_length}
                 />
-                </div>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4 ">
@@ -790,15 +791,15 @@ useEffect(() => {
               </label>
               <div className='mt-1'>
 
-              <Input
-                placeholder="10"
-                value={values.metatarsal_length }
-                onChange={handleChange('metatarsal_length')}
-                required
-                inVaild={shouldShowError('metatarsal_length', true)}
-                error={errors.metatarsal_length}
+                <Input
+                  placeholder="10"
+                  value={values.metatarsal_length}
+                  onChange={handleChange('metatarsal_length')}
+                  required
+                  inVaild={shouldShowError('metatarsal_length', true)}
+                  error={errors.metatarsal_length}
                 />
-                </div>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4 ">
@@ -807,89 +808,89 @@ useEffect(() => {
                 <strong>C</strong> - Metatarsal width (cm) <span className="text-red-500">*</span>
               </label>
               <div className='mt-1'>
-              <Input
-                placeholder="10"
-                value={values.metatarsal_width}
-                onChange={handleChange('metatarsal_width')}
-                required
-                inVaild={shouldShowError('metatarsal_width', true)}
-                error={errors.metatarsal_width}
-              />
-            </div>
-              
+                <Input
+                  placeholder="10"
+                  value={values.metatarsal_width}
+                  onChange={handleChange('metatarsal_width')}
+                  required
+                  inVaild={shouldShowError('metatarsal_width', true)}
+                  error={errors.metatarsal_width}
+                />
+              </div>
+
             </div>
           </div>
-      
+
         </div>
       </div>
       <div className="ml-1 space-y-4">
-      <h6 className="text-2xl font-bold text-[16px] ml-5 text-primary">FOOT COMPLAINTS/ PROBLEMS</h6>
-  <div className="grid grid-cols-2 gap-4 mr-40 mb-5">
-    <CheckboxGroup
-      options={[
-        { id: 'plantar-fascitis', label: 'Plantar Fascitis', group: 'Heel Pain' },
-        { id: 'heel-spur', label: 'Heel Spur', group: 'Heel Pain' },
-        { id: 'flat-feet', label: 'Flat Feet', group: 'Arch Pain' },
-        { id: 'pronation', label: 'Pronation', group: 'Arch Pain' },
-        { id: 'metatarsalgia', label: 'Metatarsalgia', group: 'Metatarsal Pain' },
-        { id: 'mortons-neuroma', label: 'Mortons Neuroma', group: 'Metatarsal Pain' },
-        { id: 'heel-deformity', label: 'Heel Deformity', group: 'Ankle Pain' },
-        { id: 'ankle-pain', label: 'Ankle Pain', group: 'Ankle Pain' },
-        { id: 'osteoarthritis', label: 'Osteoarthritis', group: 'Knee Pain' },
-        { id: 'corn', label: 'Corn', group: 'Skin Issues' },
-        { id: 'calluses', label: 'Calluses', group: 'Skin Issues' },
-        { id: 'achiles-tendonitis', label: 'Achilles Tendonitis', group: 'Ach Tend.' },
-        { id: 'neuroma', label: 'Neuroma', group: 'Diabetic' },
-        { id: 'shin-pain', label: 'Shin Pain', group: 'Shin Splint' },
-        { id: 'high-arches', label: 'High Arches', group: 'Lateral Foot Pain' },
-      ]}
-      selectedOptions={selectedOptions}
-      onChange={(newSelectedOptions) => {
-        setSelectedOptions(newSelectedOptions);
-        setFieldValue('selected_foot_conditions', newSelectedOptions);
-      }}
-    />
-  </div>
-</div>
+        <h6 className="text-2xl font-bold text-[16px] ml-5 text-primary">FOOT COMPLAINTS/ PROBLEMS</h6>
+        <div className="grid grid-cols-2 gap-4 mr-40 mb-5">
+          <CheckboxGroup
+            options={[
+              { id: 'plantar-fascitis', label: 'Plantar Fascitis', group: 'Heel Pain' },
+              { id: 'heel-spur', label: 'Heel Spur', group: 'Heel Pain' },
+              { id: 'flat-feet', label: 'Flat Feet', group: 'Arch Pain' },
+              { id: 'pronation', label: 'Pronation', group: 'Arch Pain' },
+              { id: 'metatarsalgia', label: 'Metatarsalgia', group: 'Metatarsal Pain' },
+              { id: 'mortons-neuroma', label: 'Mortons Neuroma', group: 'Metatarsal Pain' },
+              { id: 'heel-deformity', label: 'Heel Deformity', group: 'Ankle Pain' },
+              { id: 'ankle-pain', label: 'Ankle Pain', group: 'Ankle Pain' },
+              { id: 'osteoarthritis', label: 'Osteoarthritis', group: 'Knee Pain' },
+              { id: 'corn', label: 'Corn', group: 'Skin Issues' },
+              { id: 'calluses', label: 'Calluses', group: 'Skin Issues' },
+              { id: 'achiles-tendonitis', label: 'Achilles Tendonitis', group: 'Ach Tend.' },
+              { id: 'neuroma', label: 'Neuroma', group: 'Diabetic' },
+              { id: 'shin-pain', label: 'Shin Pain', group: 'Shin Splint' },
+              { id: 'high-arches', label: 'High Arches', group: 'Lateral Foot Pain' },
+            ]}
+            selectedOptions={selectedOptions}
+            onChange={(newSelectedOptions) => {
+              setSelectedOptions(newSelectedOptions);
+              setFieldValue('selected_foot_conditions', newSelectedOptions);
+            }}
+          />
+        </div>
+      </div>
 
       <InsolesDialog
-  open={insoleDialog.open}
-  onOpenChange={(open) => setInsoleDialog(prev => ({...prev, open}))}
-  options={designVariationOptions}
-  onSelect={(value) => {
-    setFieldValue('insole_model', value); 
-  }}
-  socketType={values.socket_type}
-/>
+        open={insoleDialog.open}
+        onOpenChange={(open) => setInsoleDialog(prev => ({ ...prev, open }))}
+        options={designVariationOptions}
+        onSelect={(value) => {
+          setFieldValue('insole_model', value);
+        }}
+        socketType={values.socket_type}
+      />
 
       <ModelDialog
         open={modelDialog.open}
-        onOpenChange={(open) => setModelDialog(prev => ({...prev, open}))}
+        onOpenChange={(open) => setModelDialog(prev => ({ ...prev, open }))}
         options={modelOptions}
         onSelect={(value) => setFieldValue('model_name', value)}
         socketType={values.socket_type}
-        // designVariation={values.design_variation}
+      // designVariation={values.design_variation}
       />
     </div>
   );
 };
 
-const Step2 = ({ 
-  values, 
-  handleChange, 
-  errors, 
-  touched, 
-  setFieldValue, 
+const Step2 = ({
+  values,
+  handleChange,
+  errors,
+  touched,
+  setFieldValue,
   FORM_OPTIONS,
-  formSubmitted 
+  formSubmitted
 }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
     if (!isRequired && !values[fieldName]) {
       return false;
-    }    
+    }
     if (isRequired && (formSubmitted || touched[fieldName])) {
       return !!errors[fieldName];
-    }    
+    }
     return !!(touched[fieldName] && errors[fieldName]);
   };
 
@@ -966,7 +967,7 @@ const Step2 = ({
             <StlFilePicker
               label="Upload STL file (left foot)"
               buttonText="Left Foot"
-               
+
               onFileSelect={(file) => console.log('Model A selected:', file?.name)}
             />
           </div>
@@ -994,7 +995,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 1"
-            onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+          // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
           />
         </div>
         <div className="w-fit ml-2">
@@ -1003,7 +1004,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 2"
-            onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+          // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
           />
         </div>
       </div>
@@ -1032,20 +1033,20 @@ const Step2 = ({
 const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
     // Handle nested fields like socket_design_details[0].cpo_input_mm
-    const fieldValue = fieldName.includes('.') 
-      ? fieldName.split('.').reduce((obj, key) => 
-          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+    const fieldValue = fieldName.includes('.')
+      ? fieldName.split('.').reduce((obj, key) =>
+        obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
       : values[fieldName];
-  
+
     if (!fieldValue) {
       if (!isRequired) return false;
       return formSubmitted || touched[fieldName];
     }
     const fieldError = fieldName.includes('.')
-      ? fieldName.split('.').reduce((obj, key) => 
-          obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+      ? fieldName.split('.').reduce((obj, key) =>
+        obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
       : errors[fieldName];
-      
+
     return !!fieldError && (touched[fieldName] || formSubmitted);
   };
   return (
@@ -1066,13 +1067,13 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
             length of the socket)
           </p>
         </div>
-        <Input 
-          placeholder="Default Value:2%" 
+        <Input
+          placeholder="Default Value:2%"
           onChange={handleChange('global_volume_reduction')}
           value={values.global_volume_reduction || ''}
           inVaild={shouldShowError('global_volume_reduction')}
           error={errors.global_volume_reduction || ''}
-          />
+        />
       </div>
       <div className="flex justify-center p-2 mr-20">
         <Image
@@ -1081,7 +1082,7 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
           width={520}
           height={400}
           className="object-cover"
-          />
+        />
       </div>
     </div>
   );
@@ -1137,7 +1138,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
     };
     const itemCode = await getItemCodeByValues(payload);
     setSelectedItem(itemCode);
-    
+
     // Submit the final form
     const orderPayload = {
       item_type: 'BK',
@@ -1190,7 +1191,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   };
 
   const nextStep = async (values: any, setErrors: any) => {
-    
+
     setFormSubmitted(true);
     const errors = await validateCurrentStep(values);
     if (Object.keys(errors).length === 0) {
@@ -1233,16 +1234,16 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
 
   return (
     <div className="pb-16 relative">
-      <Formik 
-        initialValues={initialValues} 
-        onSubmit={OnSubmit} 
+      <Formik
+        initialValues={initialValues}
+        onSubmit={OnSubmit}
         validationSchema={
-          currentStep === 1 ? step1Validation : 
-          currentStep === 2 ? step2Validation : 
-          currentStep === 3 ? step3Validation :
-          currentStep === 4 ? step4Validation :
-          currentStep === 5 ? step5Validation : 
-          null
+          currentStep === 1 ? step1Validation :
+            currentStep === 2 ? step2Validation :
+              currentStep === 3 ? step3Validation :
+                currentStep === 4 ? step4Validation :
+                  currentStep === 5 ? step5Validation :
+                    null
         }
         validateOnChange={true}
         validateOnBlur={true}
@@ -1251,22 +1252,22 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
         {({ values, handleChange, handleSubmit, errors, touched, setFieldValue, setErrors, isValid }) => (
           <div className="flex flex-col gap-6">
             <WatchFieldReset />
-             {/* Socket Type Dialog */}
-             <SocketTypeDialog
+            {/* Socket Type Dialog */}
+            <SocketTypeDialog
               open={socketTypeDialog.open}
-              onOpenChange={(open) => setSocketTypeDialog(prev => ({...prev, open}))}
+              onOpenChange={(open) => setSocketTypeDialog(prev => ({ ...prev, open }))}
               data={socketTypeDialog.data}
             />
             {/* Step indicator */}
             <div className="flex justify-center mb-8">
               <div className="flex items-center gap-2">
                 {[
-                 { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
-                 { step: 2, name: 'Scan', icon: '📁' },
-                 { step: 3, name: 'Locking Mechanism', icon: '🔒' },
-                 { step: 4, name: 'Modifications', icon: '✏️' },
-                 { step: 5, name: 'Finishing', icon: '🎨' }
-                 ].map(({step, name, icon}) => (
+                  { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
+                  { step: 2, name: 'Scan', icon: '📁' },
+                  { step: 3, name: 'Locking Mechanism', icon: '🔒' },
+                  { step: 4, name: 'Modifications', icon: '✏️' },
+                  { step: 5, name: 'Finishing', icon: '🎨' }
+                ].map(({ step, name, icon }) => (
                   <React.Fragment key={step}>
                     <button
                       type="button"
@@ -1283,13 +1284,12 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                       className="flex flex-col items-center gap-1"
                     >
                       <div
-                        className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${
-                          currentStep === step
-                            ? "bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4"
-                            : completedSteps.includes(step)
+                        className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${currentStep === step
+                          ? "bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4"
+                          : completedSteps.includes(step)
                             ? "bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4"
                             : "bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4"
-                        } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                          } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       >
                         <span className="flex items-center gap-2">
                           {currentStep === step && (
@@ -1324,11 +1324,10 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                             strokeWidth={1.5}
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className={`transition-all duration-500 ${
-                              completedSteps.includes(step) 
-                                ? 'stroke-primary' 
-                                : 'stroke-gray-300'
-                            }`}
+                            className={`transition-all duration-500 ${completedSteps.includes(step)
+                              ? 'stroke-primary'
+                              : 'stroke-gray-300'
+                              }`}
                           />
                         </svg>
                       </div>
@@ -1363,17 +1362,17 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
             )}
             {currentStep === 3 && (
               <Step3
-              values={values}
-              handleChange={handleChange}
-              errors={errors}
-              touched={touched}
-              setFieldValue={setFieldValue}
-              FORM_OPTIONS={FORM_OPTIONS}
-              formSubmitted={formSubmitted}
+                values={values}
+                handleChange={handleChange}
+                errors={errors}
+                touched={touched}
+                setFieldValue={setFieldValue}
+                FORM_OPTIONS={FORM_OPTIONS}
+                formSubmitted={formSubmitted}
               />
             )}
             {currentStep === 4 && (
-              <Step4 
+              <Step4
                 values={values}
                 handleChange={handleChange}
                 errors={errors}
@@ -1385,7 +1384,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
             )}
             {currentStep === 5 && (
 
-              <Step5 
+              <Step5
                 values={values}
                 handleChange={handleChange}
                 errors={errors}
@@ -1401,8 +1400,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
             <div className="sticky bottom-4 left-0 flex justify-between bg-white p-2 rounded-lg shadow-md">
               <div>
                 {currentStep > 1 && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={prevStep}
                     type="button"
                   >
@@ -1412,8 +1411,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
               </div>
               <div>
                 {currentStep < 5 ? (
-                  <Button 
-                    className="shadow-2xl" 
+                  <Button
+                    className="shadow-2xl"
                     onClick={async () => {
                       await nextStep(values, setErrors);
                     }}
@@ -1422,8 +1421,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                     Next
                   </Button>
                 ) : (
-                  <Button 
-                    className="shadow-2xl" 
+                  <Button
+                    className="shadow-2xl"
                     onClick={() => handleSubmit()}
                     type="submit"
                   >
@@ -1435,9 +1434,9 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
           </div>
         )}
       </Formik>
-      
+
       {/* Confirmation dialog after Step 1 */}
-      <ConfirmOrderDialog 
+      <ConfirmOrderDialog
         open={showStep1Confirmation}
         onOpenChange={setShowStep1Confirmation}
         formValues={{
@@ -1452,9 +1451,9 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
         onConfirm={handleStep1Confirmation}
         showContinueButton={true}
       />
-      
+
       {/* Final submission dialog (hidden in this case since we're submitting directly) */}
-      <ConfirmOrderDialog 
+      <ConfirmOrderDialog
         open={modelOpen}
         onOpenChange={setModelOpen}
         formValues={{

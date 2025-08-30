@@ -161,7 +161,10 @@ export const Step3 = ({
                 maxSizeMB={5}
                 label="Select File"
                 buttonText="Upload File"
-                onFileSelect={handleFileSelect('locking_system_file')}
+                 onFileSelect={(fileUrl) => {
+    console.log("Got file URL for locking system:", fileUrl);
+    // store fileUrl in form / state / send to API
+  }}
                 // error={shouldShowError('locking_system_file')}
                 // errorMessage={errors.locking_system_file}
                 disabled={isViewMode}
