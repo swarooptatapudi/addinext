@@ -31,87 +31,20 @@ import { RootState } from '@/rtk-query/store';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
-interface Transaction {
-  payment_transaction_id?: string;
-  name: string;
-  coins: number;
-  total_amount: string;
-  invoice: string;
-  invoiceUrl: string;
-  payment_receipt: string;
-  payment_receiptURL: string;
-  rate: string;
-  transaction_date: string;
-  transaction_type: string;
-  payment_status: string;
-  sales_order?: string;
-  docstatus?: string;
-  customer_name?: string;
-  device_type?: string;
-  transaction_id?: string;
-  sales_invoice_pdf_url: string;
-  payment_entry_pdf_url: string;
-  custom_sales_invoice: string;
-  custom_payment_entry: string;
-}
-// interface SubscriptionTranscationHistory{
-//   message?: {
-//         name: string,
-//         plan_name: string,
-//         amount:  number,
-//         start_date: string,
-//       end_date:string,
-//         payment_status: string,
-//         bonus_coins: number
-//     }
-// }
 
-interface SubscriptionTransactionItem {
-  name: string;
-  plan_name: string;
-  amount: number;
-  start_date: string;
-  end_date: string;
-  payment_status: string;
-  bonus_coins: number;
-  sales_invoice: string;
-  payment_entry: string;
-  invoice_pdf_url: string;
-  payment_pdf_url: string;
-}
 
-interface RateAndDiscountData {
-  data?: {
-    user_rules: Array<{
-      minimum: number;
-      maximum: number;
-      apply_rate: number;
-      plan: string;
-      coin_rate: number;
-      discount: number;
-      transaction_id: string;
-    }>;
-  };
-}
+
 export default function Organization(): React.JSX.Element {
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
-  const { data }: { data?: RateAndDiscountData } = useGetRateAndDiscountsQuery({
-    customer: user?.customer_id
-  });
+ 
   const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
     customer: user?.customer_id
   });
 
-  const { data: subscriptionTranscationHistory, refetch: subscriptionTranscationHistorys } =
-    useGetSubscriptionTranscationHistoryQuery({
-      customer: user?.customer_id
-    });
+  
   // console.log('subscriptionTranscationHistory=>', subscriptionTranscationHistory);
   // console.log('transactionHistory=>', transactionHistory);
-  const { data: transactionHistorySeles, refetch: refetchTransactionsS } =
-    useGetTransactionHistorySelesQuery({
-      customer: user?.customer_id
-    });
+
 
   // console.log('::>>', transactionHistorySeles);
 
@@ -243,7 +176,9 @@ export default function Organization(): React.JSX.Element {
                   </div>
                 </CardContent>
               </Card>
+              <div></div>
             </div>
+            
           </main>
         </div>
       </div>

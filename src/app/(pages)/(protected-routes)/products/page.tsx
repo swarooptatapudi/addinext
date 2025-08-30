@@ -95,7 +95,7 @@ export default function Products(): React.JSX.Element {
               key={offtheself.name}
               src={offtheself.image}
               label={offtheself.item_name}
-              href=""
+              href={`/products/buyproducts?name=${encodeURIComponent(offtheself.item_name)}`}
             />
           ))}
         </div>
