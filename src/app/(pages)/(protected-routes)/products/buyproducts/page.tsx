@@ -1,42 +1,111 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCartIcon, CreditCardIcon, BookmarkIcon, InfoIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useValidateCouponMutation } from "@/rtk-query/apis/orders";
+import { useGetProductsListQuery } from "@/rtk-query/apis/products";
+import { toast } from "react-toastify";
 
 export default function BuyProductsPage() {
+  const [quantity, setQuantity] = useState(1);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponData, setCouponData] = useState<any>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [validateCoupon] = useValidateCouponMutation();
+
+  // Debounced coupon check
+  useEffect(() => {
+    if (!couponCode) return;
+
+    const timer = setTimeout(() => {
+      handleCouponValidation();
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [couponCode]);
+
   const searchParams = useSearchParams();
   const productName = searchParams.get("name") || "Unknown Product";
 
-  // 🧮 State for price calculations
-  const [quantity, setQuantity] = useState(1);
-  const [mrp, setMrp] = useState(2000);
-  const [standardDiscount, setStandardDiscount] = useState(200);
-  const [couponCode, setCouponCode] = useState("");
-  const [couponDiscount, setCouponDiscount] = useState(0);
 
-  // Apply coupon logic
-  const applyCoupon = () => {
-    if (couponCode === "SAVE10") {
-      setCouponDiscount(0.1 * mrp * quantity);
-    } else {
-      setCouponDiscount(0);
+  // Fetch products
+  const { data: products, isLoading, error } = useGetProductsListQuery();
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Failed to load products</p>;
+
+  // 🎯 Find product by name (from query params)
+  const selectedProduct = products?.find(
+    (item: any) => item.item_name === productName
+  );
+  console.log("selectedProduct", selectedProduct);
+
+
+
+  const description = selectedProduct?.description || "";
+  // ✅ MRP & Discount come from selected product
+  const mrp = selectedProduct?.mrp || 0;
+  console.log("mrp", mrp);
+  const discountAmount = selectedProduct?.standard_discount || 0;
+  // console.log("discountAmount", discountAmount);
+
+  // Coupon validation with debounce
+  const handleCouponValidation = async () => {
+    if (!couponCode.trim()) {
+      setCouponData(null);
+      return;
+    }
+
+    if (couponCode.trim().length < 5) {
+      setCouponData(null);
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    try {
+      const response = await validateCoupon({ coupon_code: couponCode }).unwrap();
+      console.log("Coupon Validation Response:", response);
+      setCouponData(response.message);
+      toast.success("Coupon applied successfully!");
+    } catch (error: any) {
+      setCouponData(null);
+      console.error("Coupon Validation Error:", error);
+      toast.error(error.data?.message || "Invalid coupon code");
+    } finally {
+      setIsValidatingCoupon(false);
     }
   };
 
-  // Net amount (after discounts)
-  const netAmount = mrp * quantity - standardDiscount - couponDiscount;
 
-  // Tax @ 18%
+
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+  if (error) {
+    return <p>Failed to load products</p>;
+  }
+
+  // 🧮 Price calculations
+  const baseAmount = mrp * quantity;
+
+  const netAmount = baseAmount - discountAmount / 100 * baseAmount - (couponData?.discount_amount || 0);
+
   const tax = netAmount * 0.18;
-
-  // Final total
   const totalAmount = netAmount + tax;
 
-  // 📌 AddiStud Description logic
+  // 📌 Coupon discount applied (if available)
+  const finalAmount =
+    totalAmount - totalAmount * (couponData?.discount_percentage || 0) / 100
+
+  if (!selectedProduct) {
+    return <p>No product selected</p>; // conditions go *after* hooks
+  }
+
+  // 📌 AddiStud Description
   const getAddiStudDescription = () => {
     if (productName === "AddiStud-P") {
       return (
@@ -50,10 +119,10 @@ export default function BuyProductsPage() {
             </div>
           </CardHeader>
           <CardContent className="text-sm text-gray-700">
-            Fluctuations in limb size can cause discomfort, instability, and frequent device replacements.
-            AddiStud-P provides seamless adjustment for Trans-Tibial & Trans-Femoral sockets, training,
-            and temporary prostheses. With its gear-driven dial system, users can fine-tune socket fit
-            instantly for better comfort, stability, and longer device lifespan.
+            {/* Fluctuations in limb size can cause discomfort, instability, and
+            frequent device replacements. AddiStud-P provides seamless
+            adjustment for Trans-Tibial & Trans-Femoral sockets, training, and
+            temporary prostheses. */}{description}
           </CardContent>
         </Card>
       );
@@ -69,26 +138,7 @@ export default function BuyProductsPage() {
             </div>
           </CardHeader>
           <CardContent className="text-sm text-gray-700">
-            AddiStud-O allows customizable, on-the-go fit adjustments for AFOs, spinal braces, and
-            post-surgical rehabilitation. By adapting to limb size changes instantly, it enhances comfort,
-            stability, and reduces the need for frequent clinical interventions.
-          </CardContent>
-        </Card>
-      );
-    } else if (productName.includes("AddiStud")) {
-      return (
-        <Card className="border border-gray-200 bg-gray-50 shadow-sm rounded-lg mb-6">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <InfoIcon className="w-5 h-5 text-gray-600" />
-              <CardTitle className="text-lg font-semibold text-gray-800">
-                AddiStud: Adjustable Dial System
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="text-sm text-gray-700">
-            A smart dial system for prosthetic sockets & orthotic braces that adapts to limb size
-            changes instantly, improving comfort, stability, and device lifespan.
+            {description}
           </CardContent>
         </Card>
       );
@@ -98,12 +148,8 @@ export default function BuyProductsPage() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-
       {/* LEFT COLUMN */}
       <div>
-        {/* 📌 Product Description */}
-
-
         {/* Summary Card */}
         <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border border-gray-200 rounded-lg mb-6">
           <CardHeader className="pb-0">
@@ -117,19 +163,17 @@ export default function BuyProductsPage() {
           <CardContent className="pt-4">
             <ul className="text-l space-y-3">
               <li>Quantity: {quantity}</li>
-              <li>MRP: ₹{mrp * quantity}</li>
-              <li>Standard Discount: -₹{standardDiscount}</li>
-              {couponDiscount > 0 && (
+              <li>MRP: ₹{baseAmount}</li>
+              <li>Standard Discount: {discountAmount}%</li>
+              {couponData?.discount_amount > 0 && (
                 <li className="text-green-600">
-                  Coupon Applied: -₹{couponDiscount}
+                  Coupon Applied: -₹{couponData.discount_amount}
                 </li>
               )}
-              <li>
-                Net Amount: <span className="font-semibold">₹{netAmount}</span>
-              </li>
+              <li>Net Amount: <span className="font-semibold">₹{netAmount}</span></li>
               <li>Taxes @ 18%: ₹{tax.toFixed(2)}</li>
               <li className="font-bold text-primary">
-                Total Amount: ₹{totalAmount.toFixed(2)}
+                Total Payable: ₹{finalAmount.toFixed(2)}
               </li>
             </ul>
           </CardContent>
@@ -161,36 +205,20 @@ export default function BuyProductsPage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium">MRP (per unit)</label>
-            <Input
-              type="number"
-              value={mrp}
-              onChange={(e) => setMrp(Number(e.target.value))}
-              className="mt-1"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Standard Discount</label>
-            <Input
-              type="number"
-              value={standardDiscount}
-              onChange={(e) => setStandardDiscount(Number(e.target.value))}
-              className="mt-1"
-            />
-          </div>
-
-          <div>
             <label className="text-sm font-medium">Enter Coupon Code</label>
-            <div className="flex gap-2 mt-1">
+            <div className="w-full mt-1">
               <Input
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 placeholder="Enter code"
               />
-              <Button size="sm" onClick={applyCoupon}>
-                Apply
-              </Button>
+              {/* <Button
+                size="sm"
+                onClick={handleCouponValidation}
+                disabled={isValidatingCoupon}
+              >
+                {isValidatingCoupon ? "Validating..." : "Apply"}
+              </Button> */}
             </div>
           </div>
         </CardContent>
@@ -202,10 +230,10 @@ export default function BuyProductsPage() {
               <span className="font-medium ">Total Amount:</span>
             </div>
             <div className="text-xl font-bold text-primary">
-              ₹{totalAmount.toFixed(2)}
+              ₹{finalAmount.toFixed(2)}
             </div>
           </div>
-          <Button className="w-full py-6 bg-primary  text-white font-semibold shadow-md transition-all">
+          <Button className="w-full py-6 bg-primary text-white font-semibold shadow-md transition-all">
             <ShoppingCartIcon className="w-5 h-5" />
             Buy Now
           </Button>
