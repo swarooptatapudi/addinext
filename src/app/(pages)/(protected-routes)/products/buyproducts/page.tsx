@@ -11,7 +11,7 @@ import { useGetProductsListQuery } from "@/rtk-query/apis/products";
 import { toast } from "react-toastify";
 
 export default function BuyProductsPage() {
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(0);
   const [couponCode, setCouponCode] = useState("");
   const [couponData, setCouponData] = useState<any>(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
