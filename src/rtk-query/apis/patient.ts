@@ -30,15 +30,16 @@ export const patientApi = createApi({
       }),
       transformResponse: (response: LOGIN_RESPONSE) => response.message
     }),
-    GetPatient: builder.query({
+    GetPatientList: builder.query({
       query: (payload) => ({
         url: '/method/addiwise.apis.customer.get_patients_by_customer',
-        method: 'GET',
-        body: payload
+        method: 'GET'
+
       }),
-      transformResponse: (response: LOGIN_RESPONSE) => response.message
+      transformResponse: (response: any) => response.message.data
+
     }),
   })
 });
 
-export const { useLazyGetPatientsQuery, useCreatePatientMutation } = patientApi;
+export const { useLazyGetPatientsQuery, useCreatePatientMutation, useGetPatientListQuery } = patientApi;

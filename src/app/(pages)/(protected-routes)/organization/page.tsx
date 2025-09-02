@@ -1,190 +1,418 @@
-'use client';
-import React, { useEffect } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+// 'use client';
+// import React, { useEffect } from 'react';
+// import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+// import {
+//   BookmarkIcon,
+//   CheckCircleIcon,
+//   CoinsIcon,
+//   CreditCardIcon,
+//   HistoryIcon,
+//   InfoIcon,
+//   ShoppingCartIcon
+// } from 'lucide-react';
+// import {
+//   Table,
+//   TableBody,
+//   TableCaption,
+//   TableCell,
+//   TableHead,
+//   TableHeader,
+//   TableRow
+// } from '@/components/ui/table';
+// import { useSelector } from 'react-redux';
+// import {
+//   useGetRateAndDiscountsQuery,
+//   useGetTransactionHistoryQuery,
+//   useGetTransactionHistorySelesQuery
+// } from '@/rtk-query/apis/addicoins';
+// import { useGetSubscriptionTranscationHistoryQuery } from '@/rtk-query/apis/subscription';
+// import { USER } from '@/uttils/Types';
+// import { RootState } from '@/rtk-query/store';
+// import Image from 'next/image';
+// import { Button } from '@/components/ui/button';
+// import { useGetPatientListQuery } from '@/rtk-query/apis/patient';
+
+
+// interface PatientList {
+//   patient_name: string;
+//   sales_order: string;
+//   productitems: string;
+// }
+
+
+
+// export default function Organization(): React.JSX.Element {
+//   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
+//   console.log('userDetails=>', user);
+
+//   const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
+//     customer: user?.customer_id
+//   });
+
+//   const { data: patientList, refetch: refetchPatientList } = useGetPatientListQuery({
+
+//   })
+//   console.log('patientList=>', patientList);
+
+//   // console.log('subscriptionTranscationHistory=>', subscriptionTranscationHistory);
+//   // console.log('transactionHistory=>', transactionHistory);
+
+
+//   // console.log('::>>', transactionHistorySeles);
+
+//   // const { data: transactionHistory, isLoading, isError } = useGetReceiptsPdfQuery('CT-25-050');
+
+//   // useEffect(() => {
+//   //   // console.log('ReceiptsData from API:', transactionHistory);
+//   // }, [transactionHistory]);
+
+//   // const receipts = transactionHistory?.data;
+//   // console.log('Receipts object:', receipts);
+//   // console.log('ReceiptsData from API:', receiptsData);
+//   // console.log('Parsed receipts object:', receipts);
+
+//   // const downloadPdf = (base64String: string, fileName: string) => {
+//   //   const linkSource = `data:application/pdf;base64,${base64String}`;
+//   //   const downloadLink = document.createElement('a');
+//   //   downloadLink.href = linkSource;
+//   //   downloadLink.download = `${fileName}.pdf`;
+//   //   downloadLink.click();
+//   // };
+
+//   // const downloadBase64File = (base64: string, filename: string) => {
+//   //   const linkSource = `data:application/pdf;base64,${base64}`;
+//   //   const downloadLink = document.createElement('a');
+//   //   downloadLink.href = linkSource;
+//   //   downloadLink.download = `${filename}.pdf`;
+//   //   downloadLink.click();
+//   // };
+
+
+//   return (
+//     <>
+//       <div className="space-y-2">
+//         <div className="min-h-screen bg-gray-50">
+//           <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//               {/* Clinic Card */}
+//               <Card className="shadow-sm">
+//                 <CardHeader className="border-b">
+//                   <div className="flex items-center gap-3">
+//                     <div className="p-2 bg-blue-100 rounded-lg">
+//                       <BookmarkIcon className="w-5 h-5 text-blue-600" />
+//                     </div>
+//                     <CardTitle className="text-xl text-primary font-semibold">
+//                       Clinic Details
+//                     </CardTitle>
+//                   </div>
+//                 </CardHeader>
+//                 <CardContent className="pt-4 grid grid-cols-1 gap-4">
+//                   <div>
+//                     <h3 className="text-sm font-medium text-gray-500">Clinic Name</h3>
+//                     <p className="text-lg font-medium mt-1">Addinxt Clinic</p>
+//                   </div>
+//                   <div>
+//                     <h3 className="text-sm font-medium text-gray-500">GST Number</h3>
+//                     <p className="text-lg font-medium mt-1">24CPNBG1258T0Z5</p>
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//               {/* User Card */}
+//               <Card className="shadow-sm">
+
+//                 <CardHeader className="border-b">
+
+//                   <div className="flex items-center gap-3">
+
+//                     <div className="p-2 bg-purple-100 rounded-lg">
+
+//                       <InfoIcon className="w-5 h-5 text-purple-600" />
+//                     </div>
+//                     <CardTitle className="text-xl font-semibold text-primary">
+
+//                       Organization User
+//                     </CardTitle>
+//                   </div>
+//                 </CardHeader>
+//                 <CardContent className="pt-4 grid grid-cols-2 gap-4">
+
+//                   <div>
+
+//                     <h3 className="text-sm font-medium text-gray-500">Name</h3>
+//                     <p className="text-lg font-medium mt-1">Rohit Gupta</p>
+//                   </div>
+//                   <div>
+
+//                     <h3 className="text-sm font-medium text-gray-500">Mobile</h3>
+//                     <p className="text-lg font-medium mt-1">9876543210</p>
+//                   </div>
+//                   <div>
+
+//                     <h3 className="text-sm font-medium text-gray-500">Email</h3>
+//                     <p className="text-lg font-medium mt-1 truncate">addiwise56@gmail.com</p>
+//                   </div>
+//                   <div>
+
+//                     <h3 className="text-sm font-medium text-gray-500">Subscription Name</h3>
+//                     <p className="text-lg font-medium mt-1 truncate">Premium</p>
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//               <div className='mt-6 '>
+//                 <Card>
+//                   <CardHeader className="border-b">
+//                     <div className="flex items-center gap-3">
+//                       <div className="p-2 bg-blue-100 rounded-lg">
+//                         <HistoryIcon className="w-5 h-5 text-blue-600" />
+//                       </div>
+//                       <CardTitle className="text-xl font-semibold text-primary ">
+//                         Patient List
+//                       </CardTitle>
+//                     </div>
+//                   </CardHeader>
+//                   <CardContent className="p-0 mt-[-25px]">
+//                     <Table>
+//                       <TableHeader className="bg-gray-50">
+//                         <TableRow>
+//                           <TableHead className="font-medium text-gray-600 ">
+//                             Patient Name
+//                           </TableHead>
+//                           <TableHead className="font-medium text-gray-600">Sales Order ID</TableHead>
+//                           <TableHead className="font-medium text-gray-600">Item</TableHead>
+//                         </TableRow>
+//                       </TableHeader>
+//                       <TableBody>
+//                         {patientList?.message?.data?.length ? (
+//                           patientList.message.data.flatMap((patient: any, pIndex: number) =>
+
+//                             patient.customer_details?.map((cust: any, cIndex: number) => (
+//                               <TableRow key={`${pIndex}-${cIndex}`} className="hover:bg-gray-100">
+//                                 {/* Patient details */}
+//                                 <TableCell className="font-medium text-gray-900">
+//                                   {patient.patient_name}
+//                                 </TableCell>
+//                                 <TableCell>{cust.sales_order}</TableCell>
+//                                 <TableCell>{cust.productitem}</TableCell>
+//                               </TableRow>
+//                             ))
+//                           )
+//                         ) : (
+//                           <TableRow>
+//                             <TableCell colSpan={3} className="text-center py-12 text-gray-500">
+//                               No Patients found
+//                             </TableCell>
+//                           </TableRow>
+//                         )}
+
+//                       </TableBody>
+
+//                     </Table>
+//                   </CardContent></Card>
+//               </div>
+//             </div>
+
+//           </main>
+//         </div>
+//       </div>
+//     </>
+//   );
+// }
+
+"use client";
+import React, { useEffect, useState } from "react";
 import {
-  BookmarkIcon,
-  CheckCircleIcon,
-  CoinsIcon,
-  CreditCardIcon,
-  HistoryIcon,
-  InfoIcon,
-  ShoppingCartIcon
-} from 'lucide-react';
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow
-} from '@/components/ui/table';
-import { useSelector } from 'react-redux';
-import {
-  useGetRateAndDiscountsQuery,
-  useGetTransactionHistoryQuery,
-  useGetTransactionHistorySelesQuery
-} from '@/rtk-query/apis/addicoins';
-import { useGetSubscriptionTranscationHistoryQuery } from '@/rtk-query/apis/subscription';
-import { USER } from '@/uttils/Types';
-import { RootState } from '@/rtk-query/store';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/table";
+import { HistoryIcon, BookmarkIcon, InfoIcon } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/rtk-query/store";
+import { useGetPatientListQuery } from "@/rtk-query/apis/patient";
+import { USER } from "@/uttils/Types";
 
-
-
+interface Patient {
+  patient_name: string;
+  customer_details: {
+    sales_order: string;
+    productitem: string;
+    date_of_transaction: string;
+  }[];
+}
 
 export default function Organization(): React.JSX.Element {
-  const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
- 
-  const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
-    customer: user?.customer_id
-  });
+  const { user }: { user: USER } = useSelector(
+    (state: RootState) => state.userReducer
+  );
 
-  
-  // console.log('subscriptionTranscationHistory=>', subscriptionTranscationHistory);
-  // console.log('transactionHistory=>', transactionHistory);
+  const { data: patientList } = useGetPatientListQuery({});
+  console.log(" Fetched Patient Data:", patientList);
+  const [patients, setPatients] = useState<Patient[]>([]);
 
-
-  // console.log('::>>', transactionHistorySeles);
-
-  // const { data: transactionHistory, isLoading, isError } = useGetReceiptsPdfQuery('CT-25-050');
-
+  // ✅ Keep local state clean
   useEffect(() => {
-    // console.log('ReceiptsData from API:', transactionHistory);
-  }, [transactionHistory]);
-
-  const receipts = transactionHistory?.data;
-  // console.log('Receipts object:', receipts);
-  // console.log('ReceiptsData from API:', receiptsData);
-  // console.log('Parsed receipts object:', receipts);
-
-  // const downloadPdf = (base64String: string, fileName: string) => {
-  //   const linkSource = `data:application/pdf;base64,${base64String}`;
-  //   const downloadLink = document.createElement('a');
-  //   downloadLink.href = linkSource;
-  //   downloadLink.download = `${fileName}.pdf`;
-  //   downloadLink.click();
-  // };
-
-  // const downloadBase64File = (base64: string, filename: string) => {
-  //   const linkSource = `data:application/pdf;base64,${base64}`;
-  //   const downloadLink = document.createElement('a');
-  //   downloadLink.href = linkSource;
-  //   downloadLink.download = `${filename}.pdf`;
-  //   downloadLink.click();
-  // };
-  const downloadPdfFromUrl = async (pdfUrl: string, fileName: string) => {
-    try {
-      const response = await fetch(pdfUrl, {
-        method: 'GET',
-        headers: {
-          // If your API requires auth, include token here
-          // 'Authorization': `Bearer ${yourToken}`,
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to download PDF');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${fileName}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-
-      // Clean up
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error(' Error downloading PDF:', error);
-      alert('Unable to download PDF. Please try again.');
-    }
-  };
+    console.log("📥 Raw API Data:", patientList);
+    setPatients(patientList);
+  }, [patientList]);
 
   return (
-    <>
-      <div className="space-y-2">
-        <div className="min-h-screen bg-gray-50">
-          <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Clinic Card */}
-              <Card className="shadow-sm">
+    <div className="space-y-2">
+      <div className="min-h-screen bg-gray-50">
+        <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Clinic Card */}
+            <Card className="shadow-sm">
+              <CardHeader className="border-b">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <BookmarkIcon className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <CardTitle className="text-xl text-primary font-semibold">
+                    Clinic Details
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4 grid grid-cols-1 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Clinic Name
+                  </h3>
+                  <p className="text-lg font-medium mt-1">Addinxt Clinic</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    GST Number
+                  </h3>
+                  <p className="text-lg font-medium mt-1">24CPNBG1258T0Z5</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* User Card */}
+            <Card className="shadow-sm">
+              <CardHeader className="border-b">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <InfoIcon className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <CardTitle className="text-xl font-semibold text-primary">
+                    Organization User
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Name</h3>
+                  <p className="text-lg font-medium mt-1">{user?.full_name}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Mobile</h3>
+                  <p className="text-lg font-medium mt-1">
+                    {user?.phone_number || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Email</h3>
+                  <p className="text-lg font-medium mt-1 truncate">
+                    {user?.user_id}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Subscription Name
+                  </h3>
+                  <p className="text-lg font-medium mt-1 truncate">
+                    {user?.active_plan}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Patient List */}
+
+          </div>
+          <div className="bg-white w-full shadow rounded-lg overflow-hidden mt-10">
+            <div className="overflow-x-auto">
+
+              <Card>
                 <CardHeader className="border-b">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
-                      <BookmarkIcon className="w-5 h-5 text-blue-600" />
+                      <HistoryIcon className="w-5 h-5 text-blue-600" />
                     </div>
-                    <CardTitle className="text-xl text-primary font-semibold">
-                      Clinic Details
+                    <CardTitle className="text-xl font-semibold text-primary ">
+                      Patient Transaction Summary
                     </CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-4 grid grid-cols-1 gap-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Clinic Name</h3>
-                    <p className="text-lg font-medium mt-1">Addinxt Clinic</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">GST Number</h3>
-                    <p className="text-lg font-medium mt-1">24CPNBG1258T0Z5</p>
-                  </div>
+                <CardContent className="p-0 mt-[-25px]">
+                  <Table>
+                    <TableHeader className="bg-gray-50">
+                      <TableRow>
+                        <TableHead className="font-medium text-gray-600">
+                          Patient Name
+                        </TableHead>
+                        <TableHead className="font-medium text-gray-600">
+                          Sales Order ID
+                        </TableHead>
+                        <TableHead className="font-medium text-gray-600">
+                          Item
+                        </TableHead>
+                        <TableHead className="font-medium text-gray-600">
+                          Date of Transaction
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {patients?.length > 0 ? (
+                        patients.map((patient, pIndex) =>
+                          patient.customer_details?.map((cust, cIndex) => (
+                            <TableRow
+                              key={`${pIndex}-${cIndex}`}
+                              className="hover:bg-gray-100"
+                            >
+                              <TableCell className="font-medium text-gray-900">
+                                {patient.patient_name}
+                              </TableCell>
+                              <TableCell>{cust.sales_order}</TableCell>
+                              <TableCell>{cust.productitem}</TableCell>
+                              <TableCell>{cust.date_of_transaction}</TableCell>
+                            </TableRow>
+                          ))
+                        )
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={3}
+                            className="text-center py-12 text-gray-500"
+                          >
+                            No Patients found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
-              {/* User Card */}
-              <Card className="shadow-sm">
-               
-                <CardHeader className="border-b">
-                 
-                  <div className="flex items-center gap-3">
-                   
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                     
-                      <InfoIcon className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <CardTitle className="text-xl font-semibold text-primary">
-                     
-                      Organization User
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-4 grid grid-cols-2 gap-4">
-                 
-                  <div>
-                   
-                    <h3 className="text-sm font-medium text-gray-500">Name</h3>
-                    <p className="text-lg font-medium mt-1">Rohit Gupta</p>
-                  </div>
-                  <div>
-                   
-                    <h3 className="text-sm font-medium text-gray-500">Mobile</h3>
-                    <p className="text-lg font-medium mt-1">9876543210</p>
-                  </div>
-                  <div>
-                   
-                    <h3 className="text-sm font-medium text-gray-500">Email</h3>
-                    <p className="text-lg font-medium mt-1 truncate">addiwise56@gmail.com</p>
-                  </div>
-                  <div>
-                   
-                    <h3 className="text-sm font-medium text-gray-500">Subscription Name</h3>
-                    <p className="text-lg font-medium mt-1 truncate">Premium</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <div></div>
             </div>
-            
-          </main>
-        </div>
+
+          </div>
+        </main>
       </div>
-    </>
+    </div>
   );
 }
+
+
 
 function saveAs(blob: Blob, arg1: string) {
   throw new Error('Function not implemented.');
