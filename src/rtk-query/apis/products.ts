@@ -41,7 +41,21 @@ export const productsApi = createApi({
         method: 'GET',
       }),
       transformResponse: (response: any) => response.message.data,
-    })
+    }),
+    getProductsSalesOrderList: builder.query({
+      query: () => ({
+        url: '/method/addiwise.apis.order_types.bk_order.get_sales_order_offthe_shelf',
+        method: 'GET',
+        // params: customer ? { customer } : undefined, // ✅ pass query param
+      }),
+      transformResponse: (response: any) => {
+        console.log("Full API Response >>>", response); // 🔍 debug
+        return response?.data?.sales_orders ?? [];
+      },
+    }),
+
+
+
 
   })
 });
@@ -51,5 +65,6 @@ export const {
   useGetProductsByTempleteQuery,
   useGetItemNameByDetailsMutation,
   useGetProductColorStep5Mutation,
-  useGetProductsListQuery
+  useGetProductsListQuery,
+  useGetProductsSalesOrderListQuery
 } = productsApi;

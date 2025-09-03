@@ -44,14 +44,14 @@ export const subscriptionApi = createApi({
       }),
       transformResponse: (response: any) => response.message
     }),
-   getSubscriptionTranscationHistory: builder.query({
-  query: ({ customer }) => ({
-    url: `/method/addiwise.apis.customer.get_subscription`,
-    method: 'GET',
-    params: { customer },
-  }),
- transformResponse: (response: any) => response?.message?.data ?? null,
-})
+    getSubscriptionTranscationHistory: builder.query({
+      query: ({ customer }) => ({
+        url: `/method/addiwise.apis.customer.get_subscription`,
+        method: 'GET',
+        params: { customer },
+      }),
+      transformResponse: (response: any) => response?.message?.data ?? [],
+    })
 
   })
 });
@@ -63,4 +63,3 @@ export const {
   useSubscribePlanMutation,
   useGetSubscriptionTranscationHistoryQuery,
 } = subscriptionApi;
-// 

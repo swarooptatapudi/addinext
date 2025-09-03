@@ -30,6 +30,7 @@ import { USER } from '@/uttils/Types';
 import { RootState } from '@/rtk-query/store';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { useGetProductsSalesOrderListQuery } from '@/rtk-query/apis/products';
 
 interface Transaction {
   payment_transaction_id?: string;
@@ -108,12 +109,19 @@ export default function Transcations(): React.JSX.Element {
     useGetSubscriptionTranscationHistoryQuery({
       customer: user?.customer_id
     });
-  console.log('subscriptionTranscationHistory=>', subscriptionTranscationHistory);
+
+  // console.log('subscriptionTranscationHistory=>', subscriptionTranscationHistory);
   // console.log('transactionHistory=>', transactionHistory);
   const { data: transactionHistorySeles, refetch: refetchTransactionsS } =
     useGetTransactionHistorySelesQuery({
       customer: user?.customer_id
     });
+
+  const { data: receiptsData = [], refetch: refetchReceipts } =
+    useGetProductsSalesOrderListQuery({ customer: user?.customer_id });
+
+  console.log("receiptsData>>", receiptsData);
+
 
   // console.log('::>>', transactionHistorySeles);
 
@@ -269,75 +277,75 @@ export default function Transcations(): React.JSX.Element {
                         <TableHead className="font-medium text-gray-600">Receipt</TableHead>
                       </TableRow>
                     </TableHeader>
-                 <TableBody>
-  {subscriptionTranscationHistory && subscriptionTranscationHistory.length > 0 ? (
-    subscriptionTranscationHistory.map((subscription: any, index: number) => (
-      <TableRow key={index} className="hover:bg-gray-100">
-        <TableCell>
-          <span className="text-gray-600">
-            {subscription.custom_sales_order ?? "-"}
-          </span>
-        </TableCell>
+                    <TableBody>
+                      {subscriptionTranscationHistory && subscriptionTranscationHistory.length > 0 ? (
+                        subscriptionTranscationHistory.map((subscription: any, index: number) => (
+                          <TableRow key={index} className="hover:bg-gray-100">
+                            <TableCell>
+                              <span className="text-gray-600">
+                                {subscription.custom_sales_order ?? "-"}
+                              </span>
+                            </TableCell>
 
-        <TableCell>
-          <span className="text-gray-600">{subscription.name}</span>
-        </TableCell>
+                            <TableCell>
+                              <span className="text-gray-600">{subscription.name}</span>
+                            </TableCell>
 
-        <TableCell>{subscription.start_date}</TableCell>
-        <TableCell>{subscription.plan_name}</TableCell>
-        <TableCell>{subscription.start_date}</TableCell>
-        <TableCell>{subscription.end_date}</TableCell>
+                            <TableCell>{subscription.start_date}</TableCell>
+                            <TableCell>{subscription.plan_name}</TableCell>
+                            <TableCell>{subscription.start_date}</TableCell>
+                            <TableCell>{subscription.end_date}</TableCell>
 
-        <TableCell>
-          {subscription.amount ? subscription.amount.toLocaleString() : "-"}
-        </TableCell>
+                            <TableCell>
+                              {subscription.amount ? subscription.amount.toLocaleString() : "-"}
+                            </TableCell>
 
-        {/* Invoice PDF */}
-        <TableCell>
-          {subscription.invoice_pdf_url ? (
-            <a
-              href={subscription.invoice_pdf_url}
-              download="invoice.pdf"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline"
-            >
-              Invoice PDF
-            </a>
-          ) : (
-            "-"
-          )}
-        </TableCell>
+                            {/* Invoice PDF */}
+                            <TableCell>
+                              {subscription.invoice_pdf_url ? (
+                                <a
+                                  href={subscription.invoice_pdf_url}
+                                  download="invoice.pdf"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  Invoice PDF
+                                </a>
+                              ) : (
+                                "-"
+                              )}
+                            </TableCell>
 
-        {/* Receipt PDF */}
-        <TableCell>
-          {subscription.payment_pdf_url ? (
-            <a
-              href={subscription.payment_pdf_url}
-              download="receipt.pdf"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline"
-            >
-              Receipt PDF
-            </a>
-          ) : (
-            "-"
-          )}
-        </TableCell>
-      </TableRow>
-    ))
-  ) : (
-    <TableRow>
-      <TableCell colSpan={9} className="text-center text-gray-500 py-6">
-        No subscription found.
-      </TableCell>
-    </TableRow>
-  )}
-</TableBody>
+                            {/* Receipt PDF */}
+                            <TableCell>
+                              {subscription.payment_pdf_url ? (
+                                <a
+                                  href={subscription.payment_pdf_url}
+                                  download="receipt.pdf"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  Receipt PDF
+                                </a>
+                              ) : (
+                                "-"
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={9} className="text-center text-gray-500 py-6">
+                            No subscription found.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
 
 
                   </Table>
                 </CardContent>
-              </Card> 
+              </Card>
               {/* <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -455,63 +463,63 @@ export default function Transcations(): React.JSX.Element {
           {/* Coin History */}
           <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
-  <Card className="mt-0">
-    <CardHeader className="border-b">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-blue-100 rounded-lg">
-          <CreditCardIcon className="w-5 h-5 text-blue-600" />
-        </div>
-        <CardTitle className="text-xl font-semibold text-primary">
-          Buy Coins Transaction History
-        </CardTitle>
-      </div>
-    </CardHeader>
-    <CardContent className="p-0 mt-[-25px]">
-      <Table>
-        <TableHeader className="bg-gray-50 ">
-          <TableRow><TableHead className="font-medium text-gray-600 p-2">
-              Order ID
-            </TableHead>
-            <TableHead className="font-medium text-gray-600 p-2">
-              Transaction ID
-            </TableHead>
-            <TableHead className="font-medium text-gray-600">Date</TableHead>
-            <TableHead className="font-medium text-gray-600">Coins</TableHead>
-            <TableHead className="font-medium text-gray-600">Rate</TableHead>
-            <TableHead className="font-medium text-gray-600">Amount</TableHead>
-            <TableHead className="font-medium text-gray-600">Invoice</TableHead>
-            <TableHead className="font-medium text-gray-600">Receipt</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {transactionHistory?.data?.coin_history?.length ? (
-            transactionHistory.data.coin_history.map(
-              (transaction: Transaction, index: number) => (
-                <TableRow key={index} className="hover:bg-gray-100">
-                   <TableCell className="p-2">
-                    <span className="text-gray-600">{transaction.sales_order_id}</span>
-                  </TableCell>
-                  <TableCell className="p-2">
-                    <span className="text-gray-600">{transaction.name}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-gray-600">
-                      {transaction.transaction_date}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-gray-600">
-                      {transaction.coins?.toLocaleString()}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-gray-600">{transaction.rate}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-gray-600">{transaction.total_amount}</span>
-                  </TableCell>
-                  <TableCell>
-                    {/* <Button
+              <Card className="mt-0">
+                <CardHeader className="border-b">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <CreditCardIcon className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <CardTitle className="text-xl font-semibold text-primary">
+                      Buy Coins Transaction History
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0 mt-[-25px]">
+                  <Table>
+                    <TableHeader className="bg-gray-50 ">
+                      <TableRow><TableHead className="font-medium text-gray-600 p-2">
+                        Order ID
+                      </TableHead>
+                        <TableHead className="font-medium text-gray-600 p-2">
+                          Transaction ID
+                        </TableHead>
+                        <TableHead className="font-medium text-gray-600">Date</TableHead>
+                        <TableHead className="font-medium text-gray-600">Coins</TableHead>
+                        <TableHead className="font-medium text-gray-600">Rate</TableHead>
+                        <TableHead className="font-medium text-gray-600">Amount</TableHead>
+                        <TableHead className="font-medium text-gray-600">Invoice</TableHead>
+                        <TableHead className="font-medium text-gray-600">Receipt</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {transactionHistory?.data?.coin_history?.length ? (
+                        transactionHistory.data.coin_history.map(
+                          (transaction: Transaction, index: number) => (
+                            <TableRow key={index} className="hover:bg-gray-100">
+                              <TableCell className="p-2">
+                                <span className="text-gray-600">{transaction.sales_order_id}</span>
+                              </TableCell>
+                              <TableCell className="p-2">
+                                <span className="text-gray-600">{transaction.name}</span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  {transaction.transaction_date}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">
+                                  {transaction.coins?.toLocaleString()}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">{transaction.rate}</span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-gray-600">{transaction.total_amount}</span>
+                              </TableCell>
+                              <TableCell>
+                                {/* <Button
                       className="bg-white text-gray-600 hover:bg-white no-underline hover:underline"
                       onClick={() => {
                         if (transaction.sales_invoice_pdf_url) {
@@ -534,13 +542,13 @@ export default function Transcations(): React.JSX.Element {
                       />
                       Invoice
                     </Button> */}
-                    <a   href={transaction.sales_invoice_pdf_url}
-                              download="invoice.pdf"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 underline">Invoice PDF</a>
-                  </TableCell>
-                  <TableCell>
-                    {/* <Button
+                                <a href={transaction.sales_invoice_pdf_url}
+                                  download="invoice.pdf"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline">Invoice PDF</a>
+                              </TableCell>
+                              <TableCell>
+                                {/* <Button
                       className="bg-white text-gray-600 hover:bg-white no-underline hover:underline"
                       onClick={() => {
                         if (transaction.payment_entry_pdf_url) {
@@ -563,31 +571,31 @@ export default function Transcations(): React.JSX.Element {
                       />
                       Receipt
                     </Button>  */}
-                    <a   href={transaction.payment_entry_pdf_url}
-                              download="receipt.pdf"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 underline"> Receipt PDF</a>
+                                <a href={transaction.payment_entry_pdf_url}
+                                  download="receipt.pdf"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"> Receipt PDF</a>
 
-                              
-                  </TableCell>
-                </TableRow>
-              )
-            )
-          ) : (
-            <TableRow>
-              <TableCell colSpan={8} className="text-center py-12 text-gray-500">
-                No transactions found
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </CardContent>
-  </Card>
-</div>
+
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-12 text-gray-500">
+                            No transactions found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
 
           </div>
-           {/* Coins  history */}
+          {/* Coins  history */}
           <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
             <div className="overflow-x-auto">
               <Card>
@@ -597,7 +605,7 @@ export default function Transcations(): React.JSX.Element {
                       <HistoryIcon className="w-5 h-5 text-blue-600" />
                     </div>
                     <CardTitle className="text-xl font-semibold text-primary ">
-                     Usage Coins History
+                      Usage Coins History
                     </CardTitle>
                   </div>
                 </CardHeader>
@@ -606,7 +614,7 @@ export default function Transcations(): React.JSX.Element {
                     <TableHeader className="bg-gray-50">
                       <TableRow>
                         <TableHead className="font-medium text-gray-600 ">
-                       Transcation ID
+                          Order ID
                         </TableHead>
                         <TableHead className="font-medium text-gray-600">Date</TableHead>
                         <TableHead className="font-medium text-gray-600">
@@ -614,7 +622,7 @@ export default function Transcations(): React.JSX.Element {
                         </TableHead>
                         <TableHead className="font-medium text-gray-600">Sales Order ID</TableHead>
                         <TableHead className="font-medium text-gray-600">Device Type</TableHead>
-                        
+
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -699,11 +707,11 @@ export default function Transcations(): React.JSX.Element {
                     <TableHeader className="bg-gray-50">
                       <TableRow>
                         <TableHead className="font-medium text-gray-600 ">
-                        Transcation ID
+                          Order ID
                         </TableHead>
                         <TableHead className="font-medium text-gray-600">Date</TableHead>
                         <TableHead className="font-medium text-gray-600">
-                          Transcation Type
+                          Product Name
                         </TableHead>
                         <TableHead className="font-medium text-gray-600">Amount</TableHead>
                         <TableHead className="font-medium text-gray-600">Invoice</TableHead>
@@ -711,33 +719,66 @@ export default function Transcations(): React.JSX.Element {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {transactionHistorySeles?.data?.coin_history?.length ? (
-                        transactionHistorySeles.data.coin_history.map(
-                          (transaction: Transaction, index: number) => (
-                            <TableRow key={index} className="hover:bg-gray-100">
-                              <TableCell>
-                                <span className="text-gray-600">{transaction.name}</span>
-                              </TableCell>
+                      {receiptsData?.length ? (
+                        receiptsData.map((order: any, index: number) => (
+                          <TableRow key={index} className="hover:bg-gray-100">
+                            {/* Order ID */}
+                            <TableCell>
+                              <span className="text-gray-600">{order.order_id}</span>
+                            </TableCell>
 
-                              <TableCell>
-                                <span className="text-gray-600">
-                                  {transaction.transaction_date}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <span className="text-gray-600">
-                                  {transaction.coins?.toLocaleString()}
-                                </span>
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                <span className="text-gray-600">{transaction.sales_order}</span>
-                              </TableCell>
-                              <TableCell>
-                                <span className="text-gray-600">{transaction.device_type}</span>
-                              </TableCell>
-                            </TableRow>
-                          )
-                        )
+                            {/* Order Date */}
+                            <TableCell>
+                              <span className="text-gray-600">{order.order_date}</span>
+                            </TableCell>
+
+                            {/* Product Name (first item) */}
+                            <TableCell>
+                              <span className="text-gray-600">
+                                {order.items?.[0]?.product_name || "-"}
+                              </span>
+                            </TableCell>
+
+                            {/* Order Value */}
+                            <TableCell className="font-medium">
+                              <span className="text-gray-600">
+                                {order.symbol}{order.order_value?.toLocaleString()}
+                              </span>
+                            </TableCell>
+
+                            {/* Invoice PDF */}
+                            <TableCell>
+                              {order.sales_invoices?.[0]?.pdf_url ? (
+                                <a
+                                  href={order.sales_invoices[0].pdf_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  Invoice
+                                </a>
+                              ) : (
+                                "-"
+                              )}
+                            </TableCell>
+
+                            {/* Receipt PDF (first payment) */}
+                            <TableCell>
+                              {order.sales_invoices?.[0]?.payments?.[0]?.pdf_url ? (
+                                <a
+                                  href={order.sales_invoices[0].payments[0].pdf_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-green-600 underline"
+                                >
+                                  Receipt
+                                </a>
+                              ) : (
+                                "-"
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
                       ) : (
                         <TableRow>
                           <TableCell colSpan={6} className="text-center py-12 text-gray-500">
@@ -746,6 +787,7 @@ export default function Transcations(): React.JSX.Element {
                         </TableRow>
                       )}
                     </TableBody>
+
                   </Table>
                 </CardContent>
               </Card>
@@ -773,7 +815,7 @@ export default function Transcations(): React.JSX.Element {
             </table> */}
             </div>
           </div>
-          
+
         </main>
       </div>
     </div>
