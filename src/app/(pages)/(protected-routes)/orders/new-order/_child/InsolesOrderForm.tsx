@@ -37,6 +37,7 @@ import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 import { AKINSOLES_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/insolesForm/Step5Finishing';
 import { CheckboxGroup } from '@/components/app/common/foot-complaints-form';
+import Link from 'next/link';
 
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
@@ -83,39 +84,39 @@ const step1Validation = Yup.object().shape({
     .matches(/^\d+$/, 'Must contain only digits')
     .test(
       'min-value',
-      'foot length must be at least 0',
-      (value) => parseInt(value) >= 0
+      'foot length must be at least 5',
+      (value) => parseInt(value) >= 5
     )
     .test(
       'max-value',
       'foot length must be no more than 50',
-      (value) => parseInt(value) <= 50
+      (value) => parseInt(value) <= 25
     ),
   metatarsal_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
     .test(
       'min-value',
-      'metatarsal length must be at least 0',
-      (value) => parseInt(value) >= 0
+      'metatarsal length must be at least 3',
+      (value) => parseInt(value) >= 3
     )
     .test(
       'max-value',
-      'metatarsal length must be no more than 50',
-      (value) => parseInt(value) <= 50
+      'metatarsal length must be no more than 45',
+      (value) => parseInt(value) >= 25
     ),
   metatarsal_width: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
     .test(
       'min-value',
-      'metatarsal width must be at least 0',
-      (value) => parseInt(value) >= 0
+      'metatarsal width must be at least 3',
+      (value) => parseInt(value) >= 3
     )
     .test(
       'max-value',
-      'metatarsal width must be no more than 50',
-      (value) => parseInt(value) <= 50
+      'metatarsal width must be no more than 25',
+      (value) => parseInt(value) <= 25
     ),
   shoe_width: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
@@ -272,6 +273,11 @@ const InsolesDialog = ({
       'AddiSole': {
         title: 'AddiSole',
         description: 'Premium Insole printed on HP-MJF',
+        image: '/assets/order-forms/insoles/AddiSole.png'
+      },
+      'AddiSoleL': {
+        title: 'AddiSoleL',
+        description: 'Insoles printed on SLS Printer ',
         image: '/assets/order-forms/insoles/AddiSole.png'
       },
       'AddiSoleEco': {
@@ -624,7 +630,7 @@ const Step1 = ({
       <div className="divider"></div>
 
       <div className="grid grid-cols-4 gap-4">
-        <Input
+        <div><Input
           label='Shoe Size (European) '
           placeholder="10"
           value={values.shoe_size}
@@ -633,15 +639,49 @@ const Step1 = ({
           inVaild={shouldShowError('shoe_size', true)}
           error={errors.shoe_size}
         />
+          {/* <Link href="https://sarainfoway.bitrix24.in/online/?IM_DIALOG=chat34952&IM_MESSAGE=2209348" target="_blank" rel="noopener noreferrer">
+            <a className="text-blue-600 underline hover:text-blue-800">
+              Verify shoe size
+            </a>
+          </Link> */}
+          <a
+            href="https://uaterp.addiwise.com/files/AT_IN_SHOE%20SIZES_v.1.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
 
-        <Input
-          label="Shoe Width (cm)"
-          placeholder="10"
+            className="text-blue-600 underline"
+          >
+            Verify shoe size
+          </a>
+        </div>
+
+
+
+        {/* <Input
+          label="Usage"
+          placeholder="Choose your comfort need"
           value={values.shoe_width}
           onChange={handleChange('shoe_width')}
           required
           inVaild={shouldShowError('shoe_width', true)}
           error={errors.shoe_width}
+        /> */}
+        <SelectBox
+          options={[
+            { value: 'City Comfort', label: 'Daily comfort for urban walking' },
+            { value: 'Endurance', label: 'Support for long hours on foot' },
+            { value: 'Sensitive', label: 'Extra soft cushioning support' },
+            { value: 'Sports', label: 'Sports stability and shock absorption' },
+            { value: 'Diabetes', label: 'Diabetic foot pressure protection' }
+          ]}
+          label="Usage"
+          placeholder="Choose your comfort need"
+          value={values.gender}
+          onValueChange={handleChange('gender')}
+          inVaild={shouldShowError('gender', true)}
+          required
+          error={errors.gender}
+
         />
         <div className="flex flex-col">
           <label className="block text-xs font-medium text-black mb-1">
@@ -771,7 +811,7 @@ const Step1 = ({
               <label className="block text-xs font-medium text-black">
                 <strong>A</strong> - Foot Length (cm) <span className="text-red-500">*</span>
               </label>
-              <div className='mt-1'>
+              <div className=' mt-1'>
 
                 <Input
                   placeholder="10"
@@ -799,6 +839,7 @@ const Step1 = ({
                   inVaild={shouldShowError('metatarsal_length', true)}
                   error={errors.metatarsal_length}
                 />
+
               </div>
             </div>
           </div>
@@ -807,7 +848,7 @@ const Step1 = ({
               <label className="block text-xs font-medium text-black">
                 <strong>C</strong> - Metatarsal width (cm) <span className="text-red-500">*</span>
               </label>
-              <div className='mt-1'>
+              <div className=' mt-1'>
                 <Input
                   placeholder="10"
                   value={values.metatarsal_width}

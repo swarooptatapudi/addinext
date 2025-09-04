@@ -149,7 +149,7 @@ export default function Orders(): React.JSX.Element {
             toast.success('Payment Successfull');
             refetch();
           } catch (err) {
-            console.error('❌ Failed to update backend:', err);
+            console.error('Failed to update backend:', err);
             toast.error('Payment success but backend update failed');
           }
         },

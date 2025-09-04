@@ -33,9 +33,9 @@ export const BK_FORM_INITIAL_VALUES = {
   design_variation: '',
   model_name: '',
   additional_customization_requirements: '',
-  foot_side: '', // mapped from foot_Amputation
-  left_foot_file: null, // mapped from leftFootFile
-  right_foot_file: null, // mapped from rightFootFile
+  // foot_side: '', // mapped from foot_Amputation
+  // left_foot_file: null, // mapped from leftFootFile
+  // right_foot_file: null, // mapped from rightFootFile
   upload_link: '',
   custom_upload_link_with_photos: '',
   item_code: '',
@@ -65,13 +65,13 @@ export const BK_FORM_INITIAL_VALUES = {
   ],
   value_c_details: [
     { gap: "00 cm", value: "" },
-    { gap: "03 cm", value: "" },
-    { gap: "06 cm", value: "" },
-    { gap: "09 cm", value: "" },
-    { gap: "12 cm", value: "" },
-    { gap: "15 cm", value: "" },
-    { gap: "18 cm", value: "" },
-    { gap: "21 cm", value: "" }
+    { gap: "03 cm", value: "0" },
+    { gap: "06 cm", value: "0" },
+    { gap: "09 cm", value: "0" },
+    { gap: "12 cm", value: "0" },
+    { gap: "15 cm", value: "0" },
+    { gap: "18 cm", value: "0" },
+    { gap: "21 cm", value: "0" }
   ],
   scan_items: [
     {

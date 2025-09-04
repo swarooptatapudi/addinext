@@ -141,9 +141,14 @@ const step1Validation = Yup.object().shape({
               parseFloat(value) <= 100
             );
           }
+          if (value === "0") return true;
+
 
           // Others: Skip validation if empty
           if (!value) return true;
+
+
+
 
           // If filled, must be valid
           return (
@@ -2119,7 +2124,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                   { step: 2, name: 'Scan', icon: '📁' },
                   { step: 3, name: 'Locking Mechanism', icon: '🔒' },
                   { step: 4, name: 'Modifications', icon: '✏️' },
-                  { step: 5, name: 'Finishing', icon: '🎨' }
+                  { step: 5, name: 'Finished', icon: '🎨' }
                 ].map(({ step, name, icon }) => (
                   <React.Fragment key={step}>
                     <button

@@ -9,14 +9,14 @@ import { AddPatientDialog } from './AddPatientDialog';
 
 export default function PatientPicker({ value, onChange, setFieldValue, ...props }: any) {
     const [getPatients, { data }] = useLazyGetPatientsQuery();
-    console.log("getPatients", data);
+    // console.log("getPatients", data);
     const [search, setSearch] = useState('');
     const { user } = useSelector((state: RootState) => state.userReducer);
     const [open, setOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [modelOpen, setModelOpen] = useState(false);
 
-    useEffect(() => {
+    useEffect(() => { 
         const timeout = setTimeout(() => {
             if (search) {
                 const filters = {

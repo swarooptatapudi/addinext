@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { TextureLoader } from 'three';
-
+ 
 function Model({ url, fileType, mtlUrl, textureUrl }: { 
   url: string; 
   fileType: string; 
@@ -201,10 +201,11 @@ const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
     const formData = new FormData();
     formData.append("file", f);
 
-    const res = await fetch("/method/addiwise.apis.order_types.bk_order.create_bk_order", {
-      method: "POST",
-      body: formData,
-    });
+    const res = await fetch("https://uaterp.addiwise.com/api/method/addiwise.apis.order_types.bk_order.create_bk_order", {
+  method: "POST",
+  body: formData,
+});
+
 
     if (!res.ok) throw new Error("Upload failed");
 
@@ -265,6 +266,10 @@ console.log("Response text:", await res.text());
               <Input
                 id="picture"
                 type="file"
+
+
+
+                
                 onChange={handleChange}
                 accept={extensions.join(',')} 
               />

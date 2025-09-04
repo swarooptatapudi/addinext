@@ -955,7 +955,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 1"
-            // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+          // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
           />
         </div>
         <div className="w-fit ml-2">
@@ -964,7 +964,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 2"
-            // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+          // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
           />
         </div>
       </div>
@@ -1240,7 +1240,7 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
                   { step: 2, name: 'Scan', icon: '📁' },
                   { step: 3, name: 'Components', icon: '🔒' },
                   { step: 4, name: 'Modifications', icon: '✏️' },
-                  { step: 5, name: 'Finishing', icon: '🎨' }
+                  { step: 5, name: 'Finished', icon: '🎨' }
                 ].map(({ step, name, icon }) => (
                   <React.Fragment key={step}>
                     <button
@@ -1259,10 +1259,10 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
                     >
                       <div
                         className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${currentStep === step
-                            ? "bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4"
-                            : completedSteps.includes(step)
-                              ? "bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4"
-                              : "bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4"
+                          ? "bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4"
+                          : completedSteps.includes(step)
+                            ? "bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4"
+                            : "bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4"
                           } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       >
                         <span className="flex items-center gap-2">
@@ -1299,8 +1299,8 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             className={`transition-all duration-500 ${completedSteps.includes(step)
-                                ? 'stroke-primary'
-                                : 'stroke-gray-300'
+                              ? 'stroke-primary'
+                              : 'stroke-gray-300'
                               }`}
                           />
                         </svg>
