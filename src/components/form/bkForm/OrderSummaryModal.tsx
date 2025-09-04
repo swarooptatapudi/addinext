@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 
 // Define the order data structure
+
+
 interface SocketDesignDetail {
   area: string;
   area_name: string;
@@ -161,51 +163,60 @@ const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChang
           {/* Step 1: Basic Details & Measurements */}
           <Section title="Basic Details & Measurements" stepNumber={1}>
             <div className="grid grid-cols-1 gap-0">
-              <DataRow label="Patient Name" value={orderData.order_details.patient_name} />
-              <DataRow label="Gender" value={orderData.order_details.gender} />
-              <DataRow label="Date of Birth" value={orderData.order_details.date_of_birth} />
-              <DataRow label="Height" value={orderData.order_details.height ? `${orderData.order_details.height} cm` : ""} />
-              <DataRow label="Weight" value={orderData.order_details.weight ? `${orderData.order_details.weight} kg` : ""} />
-              <DataRow label="Mobile No" value={orderData.order_details.mobile_no} />
-              <DataRow label="Email" value={orderData.order_details.email} />
-              <DataRow label="Amputation Date" value={orderData.order_details.amputation_date} />
-              <DataRow label="Amputated Leg" value={orderData.order_details.amputated_leg} />
-              <DataRow label="Reason for Amputation" value={orderData.order_details.reason_for_amputation} />
-              <DataRow label="Activity Level" value={orderData.order_details.activity_level} />
-              <DataRow label="Socket Type" value={orderData.order_details.socket_type} />
-              <DataRow label="Design Variation" value={orderData.order_details.design_variation} />
-              <DataRow label="Model Name" value={orderData.order_details.model_name} />
-              <DataRow label="Stump Length" value={orderData.order_details.stump_length ? `${orderData.order_details.stump_length} cm` : ""} />
-              <DataRow label="Stump Size" value={orderData.order_details.stump_size} />
-              <DataRow label="Foot Type" value={orderData.order_details.foot_type} />
-              <DataRow label="Shoe Size" value={orderData.order_details.shoe_size} />
-              <DataRow label="Flexion Angle" value={orderData.order_details.flexion_angle} />
-              <DataRow label="Add/Abd Angle" value={orderData.order_details.add_abd_angle} />
-              <DataRow label="Stump Type" value={orderData.order_details.stump_type} />
-              <DataRow label="Stump Condition" value={orderData.order_details.stump_condition} />
-              <DataRow label="Previous Prosthetic Experience" value={orderData.order_details.previous_prosthetic_experience} isLast={true} />
+           <DataRow label="Patient Name" value={orderData?.order_details?.patient_name ?? ""} />
+<DataRow label="Gender" value={orderData?.order_details?.gender ?? ""} />
+<DataRow label="Date of Birth" value={orderData?.order_details?.date_of_birth ?? ""} />
+<DataRow label="Height" value={orderData?.order_details?.height ? `${orderData.order_details.height} cm` : ""} />
+<DataRow label="Weight" value={orderData?.order_details?.weight ? `${orderData.order_details.weight} kg` : ""} />
+<DataRow label="Mobile No" value={orderData?.order_details?.mobile_no ?? ""} />
+<DataRow label="Email" value={orderData?.order_details?.email ?? ""} />
+<DataRow label="Amputation Date" value={orderData?.order_details?.amputation_date ?? ""} />
+<DataRow label="Amputated Leg" value={orderData?.order_details?.amputated_leg ?? ""} />
+<DataRow label="Reason for Amputation" value={orderData?.order_details?.reason_for_amputation ?? ""} />
+<DataRow label="Activity Level" value={orderData?.order_details?.activity_level ?? ""} />
+<DataRow label="Socket Type" value={orderData?.order_details?.socket_type ?? ""} />
+<DataRow label="Design Variation" value={orderData?.order_details?.design_variation ?? ""} />
+<DataRow label="Model Name" value={orderData?.order_details?.model_name ?? ""} />
+<DataRow label="Stump Length" value={orderData?.order_details?.stump_length ? `${orderData.order_details.stump_length} cm` : ""} />
+<DataRow label="Stump Size" value={orderData?.order_details?.stump_size ?? ""} />
+<DataRow label="Foot Type" value={orderData?.order_details?.foot_type ?? ""} />
+<DataRow label="Shoe Size" value={orderData?.order_details?.shoe_size ?? ""} />
+<DataRow label="Flexion Angle" value={orderData?.order_details?.flexion_angle ?? ""} />
+<DataRow label="Add/Abd Angle" value={orderData?.order_details?.add_abd_angle ?? ""} />
+<DataRow label="Stump Type" value={orderData?.order_details?.stump_type ?? ""} />
+<DataRow label="Stump Condition" value={orderData?.order_details?.stump_condition ?? ""} />
+<DataRow label="Previous Prosthetic Experience" value={orderData?.order_details?.previous_prosthetic_experience ?? ""} isLast={true} />
+
             </div>
           </Section>
 
           {/* Step 2: Scan */}
           <Section title="Scan" stepNumber={2}>
-            <div className="grid grid-cols-1 gap-0">
-              <DataRow label="Direct Body" value={orderData.order_details.direct_body} />
-              {orderData.order_details.liner_thickness &&
-              <DataRow label="Liner Thickness" value={orderData.order_details.liner_thickness} />}
-              {orderData.order_details.liner_type &&
-              <DataRow label="Liner Type" value={orderData.order_details.liner_type} />}
-              {orderData.order_details.foot_Amputation &&
-              <DataRow label="Foot Amputation" value={orderData.order_details.foot_Amputation} />}
-              {orderData.order_details.upload_link &&
-              <DataRow label="Upload Link" value={orderData.order_details.upload_link} isLast={true} />}
-            </div>
+           <div className="grid grid-cols-1 gap-0">
+  <DataRow label="Direct Body" value={orderData?.order_details?.direct_body ?? ""} />
+  
+  {orderData?.order_details?.liner_thickness && (
+    <DataRow label="Liner Thickness" value={orderData.order_details.liner_thickness ?? ""} />
+  )}
+  
+  {orderData?.order_details?.liner_type && (
+    <DataRow label="Liner Type" value={orderData.order_details.liner_type ?? ""} />
+  )}
+  
+  {orderData?.order_details?.foot_Amputation && (
+    <DataRow label="Foot Amputation" value={orderData.order_details.foot_Amputation ?? ""} />
+  )}
+  
+  {orderData?.order_details?.upload_link && (
+    <DataRow label="Upload Link" value={orderData.order_details.upload_link ?? ""} isLast={true} />
+  )}
+</div>
           </Section>
 
           {/* Step 3: Locking Mechanism */}
           <Section title="Locking Mechanism" stepNumber={3}>
             <div className="grid grid-cols-1 gap-0">
-              <DataRow label="Locking System" value={orderData.order_details.locking_system} isLast={true}/>
+             <DataRow label="Global Volume Reduction" value={orderData?.order_details?.global_volume_reduction ?? ""} />
               {/* <DataRow label="File Dimensions" value={orderData.order_details.file_dimensions} isLast={true} /> */}
             </div>
           </Section>
@@ -213,7 +224,7 @@ const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChang
           {/* Step 4: Modifications */}
           <Section title="Modifications" stepNumber={4}>
             <div className="grid grid-cols-1 gap-0">
-              <DataRow label="Global Volume Reduction" value={orderData.order_details.global_volume_reduction} />
+              <DataRow label="Global Volume Reduction" value={orderData?.order_details?.global_volume_reduction ?? ""} />
             </div>
             
             {/* Socket Design Details */}
@@ -221,16 +232,16 @@ const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChang
               <h4 className="font-semibold text-gray-700 mb-3">Socket Design Details:</h4>
               <div className="bg-gray-50 rounded-lg p-3">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                  {orderData.order_details.socket_design_details.map((detail, index) => (
-                    <div key={index} className="bg-white p-2 rounded border">
-                      <div className="font-medium text-sm">{detail.area} - {detail.area_name}</div>
-                      <div className="text-xs text-gray-600">Default: {detail.default_mm}mm</div>
-                      {detail.cpo_input_mm && (
-                        <div className="text-xs text-blue-600">CPO Input: {detail.cpo_input_mm}mm</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+  {orderData?.order_details?.socket_design_details?.map((detail, index) => (
+    <div key={index} className="bg-white p-2 rounded border">
+      <div className="font-medium text-sm">{detail.area ?? ""} - {detail.area_name ?? ""}</div>
+      <div className="text-xs text-gray-600">Default: {detail.default_mm ?? ""}mm</div>
+      {detail.cpo_input_mm && (
+        <div className="text-xs text-blue-600">CPO Input: {detail.cpo_input_mm}mm</div>
+      )}
+    </div>
+  ))}
+</div>
               </div>
             </div>
           </Section>
@@ -238,13 +249,17 @@ const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChang
           {/* Step 5: Finishing */}
           <Section title="Finishing" stepNumber={5}>
             <div className="grid grid-cols-1 gap-0">
-              <DataRow label="Model Name" value={orderData.order_details.model_name} />
-              <DataRow label="Design By" value={orderData.order_details.Design_by} />
-              <DataRow label="Print By" value={orderData.order_details.Print_by} />
-              {orderData.order_details.Latices && 
-              <DataRow label="Latices" value={orderData.order_details.Latices} />}
-              {orderData.order_details.finish_type  && 
-              <DataRow label="Finish Type" value={orderData.order_details.finish_type} />}
+             <DataRow label="Model Name" value={orderData?.order_details?.model_name ?? ""} />
+<DataRow label="Design By" value={orderData?.order_details?.Design_by ?? ""} />
+<DataRow label="Print By" value={orderData?.order_details?.Print_by ?? ""} />
+
+{orderData?.order_details?.Latices && (
+  <DataRow label="Latices" value={orderData.order_details.Latices ?? ""} />
+)}
+
+{orderData?.order_details?.finish_type && (
+  <DataRow label="Finish Type" value={orderData.order_details.finish_type ?? ""} />
+)}
               {/* <DataRow label="GST 5%" value={orderData.order_details.gst_5 ? `₹${orderData.order_details.gst_5}` : ""} /> */}
               {/* <DataRow label="GST 18%" value={orderData.order_details.gst_18 ? `₹${orderData.order_details.gst_18}` : ""} /> */}
               {/* <DataRow label="Item Discount" value={orderData.order_details.item_discount ? `₹${orderData.order_details.item_discount}` : ""} /> */}

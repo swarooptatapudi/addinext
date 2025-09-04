@@ -7,12 +7,11 @@ export const BK_FORM_INITIAL_VALUES = {
   mobile_no: '',
   email: '',
   authorized_representative: '',
-  assessment_date: '',
-  amputation_date: '',
+  scan_date: '', // mapped from assessment_date / amputation_date
   reason_for_amputation: '',
   stump_condition: '',
   stump_length: '',
-  file_dimensions:'',
+  file_dimensions: '',
   amputated_leg: '',
   stump_size: '',
   previous_prosthetic_experience: '',
@@ -26,7 +25,7 @@ export const BK_FORM_INITIAL_VALUES = {
   flexion_angle: '',
   add_abd_angle: '',
   liner_type: '',
-  liner_thickness:'',
+  liner_thickness: '',
   direct_body: '',
   activity_level: '',
   adapter_type: '',
@@ -34,137 +33,54 @@ export const BK_FORM_INITIAL_VALUES = {
   design_variation: '',
   model_name: '',
   additional_customization_requirements: '',
-  foot_Amputation :'',
-  leftFootFile: null, // Store Left Foot STL file
-  rightFootFile: null, // Store Right Foot STL file
-  upload_link:'',
+  // foot_side: '', // mapped from foot_Amputation
+  // left_foot_file: null, // mapped from leftFootFile
+  // right_foot_file: null, // mapped from rightFootFile
+  upload_link: '',
+  custom_upload_link_with_photos: '',
+  item_code: '',
   global_volume_reduction: '',
   gst_5: 0.0,
   gst_18: 0.0,
   item_discount: 0.0,
   additional_discount: 0.0,
-  addicoins:0.0,
+  custom_additional_files_: '',
+  custom_additional_files_1: '',
+  addicoins: 0.0,
   socket_design_details: [
-    {
-      area: 'A',
-      area_name: 'Patella',
-      default_mm: '+1',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'B',
-      area_name: 'Patella Tendon',
-      default_mm: '-8',
-
-      cpo_input_mm: ''
-    },
-    {
-      area: 'C',
-      area_name: 'Crest of Tibia',
-      default_mm: '+3',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'D',
-      area_name: 'Lateral Shaft Tibia',
-      default_mm: '-3',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'E',
-      area_name: 'Medial Shaft Tibia',
-      default_mm: '-3',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'F',
-      area_name: 'Distal End Tibia',
-      default_mm: '+6',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'G',
-      area_name: 'Medial Supracondylar',
-      default_mm: '-4',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'H',
-      area_name: 'Hamstring Tendons',
-      default_mm: '+2',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'I',
-      area_name: 'Hamstring Tendons',
-      default_mm: '+2',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'J',
-      area_name: 'Posterior Conmpartment',
-      default_mm: '-4',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'K',
-      area_name: 'Lateral Supracondylar',
-      default_mm: '-4',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'L',
-      area_name: 'Head of Fibula',
-      default_mm: '+3',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'M',
-      area_name: 'Distal End Fibula',
-      default_mm: '+4',
-      cpo_input_mm: ''
-    },
-    {
-      area: 'N',
-      area_name: 'Tibial Tuberosity',
-      default_mm: '+1',
-      cpo_input_mm: ''
-    }
+    { area: 'A', area_name: 'Patella', default_mm: '+1', cpo_input_mm: '' },
+    { area: 'B', area_name: 'Patella Tendon', default_mm: '-8', cpo_input_mm: '' },
+    { area: 'C', area_name: 'Crest of Tibia', default_mm: '+3', cpo_input_mm: '' },
+    { area: 'D', area_name: 'Lateral Shaft Tibia', default_mm: '-3', cpo_input_mm: '' },
+    { area: 'E', area_name: 'Medial Shaft Tibia', default_mm: '-3', cpo_input_mm: '' },
+    { area: 'F', area_name: 'Distal End Tibia', default_mm: '+6', cpo_input_mm: '' },
+    { area: 'G', area_name: 'Medial Supracondylar', default_mm: '-4', cpo_input_mm: '' },
+    { area: 'H', area_name: 'Hamstring Tendons', default_mm: '+2', cpo_input_mm: '' },
+    { area: 'I', area_name: 'Hamstring Tendons', default_mm: '+2', cpo_input_mm: '' },
+    { area: 'J', area_name: 'Posterior Conmpartment', default_mm: '-4', cpo_input_mm: '' },
+    { area: 'K', area_name: 'Lateral Supracondylar', default_mm: '-4', cpo_input_mm: '' },
+    { area: 'L', area_name: 'Head of Fibula', default_mm: '+3', cpo_input_mm: '' },
+    { area: 'M', area_name: 'Distal End Fibula', default_mm: '+4', cpo_input_mm: '' },
+    { area: 'N', area_name: 'Tibial Tuberosity', default_mm: '+1', cpo_input_mm: '' }
   ],
   value_c_details: [
+    { gap: "00 cm", value: "" },
+    { gap: "03 cm", value: "0" },
+    { gap: "06 cm", value: "0" },
+    { gap: "09 cm", value: "0" },
+    { gap: "12 cm", value: "0" },
+    { gap: "15 cm", value: "0" },
+    { gap: "18 cm", value: "0" },
+    { gap: "21 cm", value: "0" }
+  ],
+  scan_items: [
     {
-        gap: "00 cm",
-        value: ""
-    },
-    {
-        gap: "05 cm",
-        value: ""
-    },
-    {
-        gap: "10 cm",
-        value: ""
-    },
-    {
-        gap: "15 cm",
-        value: ""
-    },
-    {
-        gap: "20 cm",
-        value: ""
-    },
-    {
-        gap: "25 cm",
-        value: ""
-    },
-    {
-        gap: "30 cm",
-        value: ""
-    },
-    {
-        gap: "35 cm",
-        value: ""
+      foot_side: '',        // will be dynamically set
+      left_foot_file: null, // will store left foot STL
+      right_foot_file: null,// will store right foot STL
+      scan_date: ''         // will use assessment_date / amputation_date
     }
-]
+  ]
 };
 
 // ak form
@@ -172,7 +88,7 @@ export const BK_FORM_INITIAL_VALUES = {
 export const AK_FORM_INITIAL_VALUES = {
   patient_name: '',
   email: '',
- mobile_no: '',
+  mobile_no: '',
   gender: '',
   date_of_birth: '',
   height: '',
@@ -306,7 +222,7 @@ export const AKB_FORM_INITIAL_VALUES = {
   date_of_birth: '',
   height: '',
   weight: '',
- mobile_no: '',
+  mobile_no: '',
   email: '',
   authorized_representative: '',
   assessment_date: '',
@@ -314,23 +230,24 @@ export const AKB_FORM_INITIAL_VALUES = {
   reason_for_amputation: '',
   stump_condition: '',
   stump_length: '',
-  mpt_distance:'',
-  floor_distance:'',
-  waist_circumference:'',
-  Foot_length:'',
+  mpt_distance: '',
+  floor_distance: '',
+  waist_circumference: '',
+  Foot_length: '',
   amputated_leg: '',
   stump_size: '',
   previous_prosthetic_experience: '',
   stump_type: '',
   locking_system: '',
   scan_condition: '',
+  scan_items: '',
   scan_markings: '',
   foot_type: '',
   shoe_size: '',
   flexion_angle: '',
   abductionadduction_angle: '',
   liner_type: '',
-  liner_thickness:'',
+  liner_thickness: '',
   direct_body: '',
   activity_level: '',
   adapter_type: '',
@@ -338,8 +255,8 @@ export const AKB_FORM_INITIAL_VALUES = {
   design_variation: '',
   model_name: '',
   additional_customization_requirements: '',
-  foot_Amputation :'Both',
-  images_link:'',
+  foot_Amputation: 'Both',
+  images_link: '',
   global_volume_reduction: '',
   socket_design_details: [
     {
@@ -532,7 +449,7 @@ export const AKINSOLES_FORM_INITIAL_VALUES = {
   date_of_birth: '',
   height: '',
   weight: '',
- mobile_no: '',
+  mobile_no: '',
   email: '',
   authorized_representative: '',
   assessment_date: '',
@@ -552,7 +469,7 @@ export const AKINSOLES_FORM_INITIAL_VALUES = {
   flexion_angle: '',
   abductionadduction_angle: '',
   liner_type: '',
-  liner_thickness:'',
+  liner_thickness: '',
   direct_body: '',
   activity_level: '',
   adapter_type: '',
@@ -560,14 +477,14 @@ export const AKINSOLES_FORM_INITIAL_VALUES = {
   design_variation: '',
   model_name: '',
   additional_customization_requirements: '',
-  foot_Amputation :'Both',
-  images_link:'',
+  foot_Amputation: 'Both',
+  images_link: '',
   global_volume_reduction: '',
-  shoe_width:'',
-  foot_length:'',
-  metatarsal_length:'',
-  metatarsal_width:'',
-  insole_model:'',
+  shoe_width: '',
+  foot_length: '',
+  metatarsal_length: '',
+  metatarsal_width: '',
+  insole_model: '',
   socket_design_details: [
     {
       area: 'A',
@@ -760,7 +677,7 @@ export const BE_FORM_INITIAL_VALUES = {
   date_of_birth: '',
   height: '',
   weight: '',
- mobile_no: '',
+  mobile_no: '',
   email: '',
   authorized_representative: '',
   assessment_date: '',
@@ -768,10 +685,10 @@ export const BE_FORM_INITIAL_VALUES = {
   reason_for_amputation: '',
   stump_condition: '',
   stump_length: '',
-  mpt_distance:'',
-  floor_distance:'',
-  waist_circumference:'',
-  Foot_length:'',
+  mpt_distance: '',
+  floor_distance: '',
+  waist_circumference: '',
+  Foot_length: '',
   amputated_leg: '',
   stump_size: '',
   previous_prosthetic_experience: '',
@@ -784,7 +701,7 @@ export const BE_FORM_INITIAL_VALUES = {
   flexion_angle: '',
   abductionadduction_angle: '',
   liner_type: '',
-  liner_thickness:'',
+  liner_thickness: '',
   direct_body: '',
   activity_level: '',
   adapter_type: '',
@@ -792,10 +709,10 @@ export const BE_FORM_INITIAL_VALUES = {
   design_variation: '',
   model_name: '',
   additional_customization_requirements: '',
-  foot_Amputation :'Both',
-  images_link:'',
+  foot_Amputation: 'Both',
+  images_link: '',
   global_volume_reduction: '',
-  shoulder_joint:'',
+  shoulder_joint: '',
   socket_design_details: [
     {
       area: 'A',
@@ -929,43 +846,43 @@ export const BE_FORM_INITIAL_VALUES = {
     {
       point_name: 'Olecrenon Process',
       default_mm: '2',
-      area:'A',
+      area: 'A',
       modifications_mm: ''
     },
     {
       point_name: 'Medial Epicondyle',
       default_mm: '2',
-      area:'B',
+      area: 'B',
       modifications_mm: ''
     },
     {
       point_name: 'Lateral Epicondyle',
       default_mm: '2',
-      area:'C',
+      area: 'C',
       modifications_mm: ''
     },
     {
       point_name: 'Distal End Suture Line',
-      area:'D',
+      area: 'D',
       default_mm: '2',
       modifications_mm: ''
     },
     {
       point_name: 'Ant. Below the Elbow Crease',
       default_mm: '-2',
-      area:'E',
+      area: 'E',
       modifications_mm: ''
     },
     {
       point_name: 'Supra Epicondyles',
       default_mm: '-3',
-      area:'F',
+      area: 'F',
       modifications_mm: ''
     },
     {
       point_name: 'Supra Olecrenon',
       default_mm: '-3',
-      area:'G',
+      area: 'G',
       modifications_mm: ''
     },
   ],
@@ -977,7 +894,7 @@ export const AE_FORM_INITIAL_VALUES = {
   date_of_birth: '',
   height: '',
   weight: '',
- mobile_no: '',
+  mobile_no: '',
   email: '',
   authorized_representative: '',
   assessment_date: '',
@@ -985,10 +902,10 @@ export const AE_FORM_INITIAL_VALUES = {
   reason_for_amputation: '',
   stump_condition: '',
   stump_length: '',
-  mpt_distance:'',
-  floor_distance:'',
-  waist_circumference:'',
-  Foot_length:'',
+  mpt_distance: '',
+  floor_distance: '',
+  waist_circumference: '',
+  Foot_length: '',
   amputated_leg: '',
   stump_size: '',
   previous_prosthetic_experience: '',
@@ -1001,7 +918,7 @@ export const AE_FORM_INITIAL_VALUES = {
   flexion_angle: '',
   abductionadduction_angle: '',
   liner_type: '',
-  liner_thickness:'',
+  liner_thickness: '',
   direct_body: '',
   activity_level: '',
   adapter_type: '',
@@ -1009,10 +926,10 @@ export const AE_FORM_INITIAL_VALUES = {
   design_variation: '',
   model_name: '',
   additional_customization_requirements: '',
-  foot_Amputation :'Both',
-  images_link:'',
+  foot_Amputation: 'Both',
+  images_link: '',
   global_volume_reduction: '',
-  shoulder_joint:'',
+  shoulder_joint: '',
   socket_design_details: [
     {
       area: 'A',
@@ -1146,43 +1063,43 @@ export const AE_FORM_INITIAL_VALUES = {
     {
       point_name: 'Head Of Humerus',
       default_mm: '0',
-      area:'A',
+      area: 'A',
       modifications_mm: ''
     },
     {
       point_name: 'Subscapular Fossa',
       default_mm: '-3',
-      area:'B',
+      area: 'B',
       modifications_mm: ''
     },
     {
       point_name: 'Infraspinous Fossa',
       default_mm: '-3',
-      area:'C',
+      area: 'C',
       modifications_mm: ''
     },
     {
       point_name: 'Distal End Suture Line',
-      area:'D',
+      area: 'D',
       default_mm: '2',
       modifications_mm: ''
     },
     {
       point_name: 'Above the Shoulder Joint',
       default_mm: '-3',
-      area:'E',
+      area: 'E',
       modifications_mm: ''
     },
     {
       point_name: 'End of Rib Case (in case of Shoulder Disart)',
       default_mm: '-4',
-      area:'F',
+      area: 'F',
       modifications_mm: ''
     },
     {
       point_name: 'Overall Stump- If bulky –reduce 2mm If firm muscles—reduce 1mm If skinny- maintain as per scan',
       default_mm: '',
-      area:' ',
+      area: ' ',
       modifications_mm: ''
     },
   ],

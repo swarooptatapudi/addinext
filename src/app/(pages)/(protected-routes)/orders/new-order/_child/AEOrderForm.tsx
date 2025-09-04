@@ -338,7 +338,7 @@ const ModelDialog = ({
         description: 'Heat Resistant Moulds Printed on FDM Printer',
         image: '/assets/order-forms/below-elbow/AddiEaseMouldHRforAEBG.png'
       },
-      
+
     };
 
     // Try exact match first
@@ -541,7 +541,7 @@ const Step1 = ({
           required
           inVaild={shouldShowError('date_of_birth', true)}
           error={errors.date_of_birth}
-          
+
         />
 
         <Input
@@ -637,8 +637,8 @@ const Step1 = ({
               >
                 {values.design_variation
                   ? designVariationOptions.find(
-                      (opt: { value: string }) => opt.value === values.design_variation
-                    )?.label
+                    (opt: { value: string }) => opt.value === values.design_variation
+                  )?.label
                   : 'Select Design Variation'}
               </Button>
               {shouldShowError('design_variation', true) && (
@@ -667,7 +667,7 @@ const Step1 = ({
               >
                 {values.model_name
                   ? modelOptions.find((opt: { value: string }) => opt.value === values.model_name)
-                      ?.label
+                    ?.label
                   : 'Select Model'}
               </Button>
               {shouldShowError('model_name', true) && (
@@ -934,7 +934,7 @@ const Step1 = ({
         options={modelOptions}
         onSelect={(value) => setFieldValue('model_name', value)}
         socketType={values.socket_type}
-        // designVariation={values.design_variation}
+      // designVariation={values.design_variation}
       />
     </div>
   );
@@ -1057,7 +1057,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 1"
-            onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+          // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
           />
         </div>
         <div className="w-fit ml-2">
@@ -1066,7 +1066,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 2"
-            onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+          // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
           />
         </div>
       </div>
@@ -1351,7 +1351,7 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
                   { step: 2, name: 'Scan', icon: '📁' },
                   { step: 3, name: 'Components', icon: '🔒' },
                   { step: 4, name: 'Modifications', icon: '✏️' },
-                  { step: 5, name: 'Finishing', icon: '🎨' }
+                  { step: 5, name: 'Finished', icon: '🎨' }
                 ].map(({ step, name, icon }) => (
                   <React.Fragment key={step}>
                     <button
@@ -1369,13 +1369,12 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
                       className="flex flex-col items-center gap-1"
                     >
                       <div
-                        className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${
-                          currentStep === step
-                            ? 'bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4'
-                            : completedSteps.includes(step)
-                              ? 'bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4'
-                              : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4'
-                        } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                        className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${currentStep === step
+                          ? 'bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4'
+                          : completedSteps.includes(step)
+                            ? 'bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4'
+                            : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4'
+                          } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       >
                         <span className="flex items-center gap-2">
                           {currentStep === step && <></>}
@@ -1408,9 +1407,8 @@ export default function AEOrderForm({ item_type }: { item_type: string }): React
                             strokeWidth={1.5}
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className={`transition-all duration-500 ${
-                              completedSteps.includes(step) ? 'stroke-primary' : 'stroke-gray-300'
-                            }`}
+                            className={`transition-all duration-500 ${completedSteps.includes(step) ? 'stroke-primary' : 'stroke-gray-300'
+                              }`}
                           />
                         </svg>
                       </div>

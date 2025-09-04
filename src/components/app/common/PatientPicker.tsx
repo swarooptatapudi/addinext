@@ -9,18 +9,19 @@ import { AddPatientDialog } from './AddPatientDialog';
 
 export default function PatientPicker({ value, onChange, setFieldValue, ...props }: any) {
     const [getPatients, { data }] = useLazyGetPatientsQuery();
+    // console.log("getPatients", data);
     const [search, setSearch] = useState('');
     const { user } = useSelector((state: RootState) => state.userReducer);
     const [open, setOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [modelOpen, setModelOpen] = useState(false);
 
-    useEffect(() => {
+    useEffect(() => { 
         const timeout = setTimeout(() => {
             if (search) {
                 const filters = {
                     patient_name: ['like', `%${search}%`],
-                    owner: ['like', `%${user.user_id}%`]
+                    // owner: ['like', `%${user.user_id}%`]
                 };
                 getPatients(JSON.stringify(filters));
             }
@@ -42,7 +43,7 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
     const handleNewPatientConfirm = (newPatient: any) => {
         setModelOpen(false);
         setOpen(false);
-        
+
         // Auto-fill all the form fields with the new patient data
         setFieldValue('patient_name', `${newPatient.first_name} ${newPatient.last_name}`);
         setFieldValue('first_name', newPatient.first_name);
@@ -50,10 +51,11 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
         setFieldValue('date_of_birth', newPatient.date_of_birth);
         setFieldValue('height', newPatient.height);
         setFieldValue('weight', newPatient.weight);
-        setFieldValue('mobile_no', newPatient.mobile_no );
+        setFieldValue('mobile_no', newPatient.mobile_no);
         setFieldValue('email', newPatient.email);
         setFieldValue('gender', newPatient.gender);
         setFieldValue('clinic_name', newPatient.clinic_name);
+
     };
 
     return (
@@ -75,16 +77,19 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
                             key={patient.name}
                             className="p-2 cursor-pointer hover:bg-primary/10 text-xs border-b last:border-b-0"
                             onClick={() => {
-                               
+
                                 setOpen(false);
                                 setFieldValue('patient_name', patient?.patient_name || '');
                                 setFieldValue('weight', patient?.weight);
                                 setFieldValue('date_of_birth', patient?.date_of_birth || patient?.date_of_birth || '');
                                 setFieldValue('height', patient?.height || '');
                                 setFieldValue('email', patient?.email || '');
-                                setFieldValue('mobile_no',  patient?.mobile_no ||'');
+                                setFieldValue('mobile_no', patient?.mobile_no || '');
                                 setFieldValue('gender', patient?.gender || '');
                                 setFieldValue('clinic_name', patient?.clinic_name || '');
+                                setFieldValue("direct_body", patient.direct_body || "");
+
+
                             }}
                         >
                             {patient.patient_name} ({patient.date_of_birth || patient.date_of_birth || ' '})
@@ -92,11 +97,11 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
                         </div>
                     ))
                 ) : (
-                    <button 
+                    <button
                         onClick={() => {
                             setOpen(false);
                             setModelOpen(true);
-                        }} 
+                        }}
                         className="w-full p-2 text-center bg-[#735daf] text-sm text-white"
                     >
                         + Add New Patient
@@ -104,10 +109,10 @@ export default function PatientPicker({ value, onChange, setFieldValue, ...props
                 )}
             </div>
 
-            <AddPatientDialog 
-                open={modelOpen} 
-                onOpenChange={setModelOpen} 
-                onConfirm={handleNewPatientConfirm} 
+            <AddPatientDialog
+                open={modelOpen}
+                onOpenChange={setModelOpen}
+                onConfirm={handleNewPatientConfirm}
             />
         </div>
     );

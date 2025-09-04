@@ -19,7 +19,6 @@ type Step3Props = {
   setFieldValue: (field: string, value: any) => void;
   FORM_OPTIONS: FormOptions;
   formSubmitted: boolean;
-  
 };
 
 const LOCAL_FILE_MAPPINGS: Record<string, string[]> = {
@@ -42,11 +41,15 @@ export const Step3 = ({
   setFieldValue,
   FORM_OPTIONS,
   formSubmitted,
-  FORMIK_ERRORS
+    deviceTypeId,
+  orderId,
+  FORMIK_ERRORS,
+  isViewMode
 }: any) => {
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
   const [objectUrls, setObjectUrls] = useState<Record<string, string>>({});
   const [localFiles, setLocalFiles] = useState<Record<string, string[]>>({});
+
 
   const shouldShowError = (fieldName: string, isRequired = false) => {
     if (!isRequired && !values[fieldName]) return false;
@@ -136,12 +139,15 @@ export const Step3 = ({
           options={FORM_OPTIONS['locking_system'] ?? []}
           label="Locking/Suspension System"
           value={values.locking_system ?? ''}
+    
           onValueChange={handleLockingSystemChange}
           inVaild={shouldShowError('locking_system',true)}
          error={errors.locking_system}
+        
           // error={shouldShowError('locking_system', true)}
           // errorMessage={errors.locking_system || 'This field is required'}
           required={true}
+          disabled={isViewMode}
         />
 
         {showFileUpload && (
@@ -155,9 +161,13 @@ export const Step3 = ({
                 maxSizeMB={5}
                 label="Select File"
                 buttonText="Upload File"
-                onFileSelect={handleFileSelect('locking_system_file')}
+                 onFileSelect={(fileUrl) => {
+    console.log("Got file URL for locking system:", fileUrl);
+    // store fileUrl in form / state / send to API
+  }}
                 // error={shouldShowError('locking_system_file')}
                 // errorMessage={errors.locking_system_file}
+                disabled={isViewMode}
               />
             </div>
           </div>

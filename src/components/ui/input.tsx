@@ -9,6 +9,7 @@ type InputProps = React.ComponentProps<'input'> & {
   inVaild?: boolean;
   error?: string;
   boldKey?: string;
+  touched?: string ;
 };
 
 function Input({
@@ -17,6 +18,7 @@ function Input({
   label,
   required,
   inVaild,
+  touched,
   boldKey,
   error,
   ...props

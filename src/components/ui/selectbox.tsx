@@ -15,6 +15,7 @@ type SelectBoxProps = React.ComponentProps<typeof Select> & {
   placeholder?: string; // Extend with custom types
   className?: string;
   required?: boolean;
+  disabled?: boolean;
   options: Array<{
     value: string;
     label?: string;

@@ -1,6 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import baseQueryWithReauth from '../base/baseQueryReAuth';
 
+
 type Response = {
   message: {
     status: string;
@@ -42,7 +43,16 @@ export const subscriptionApi = createApi({
         body: { payload }
       }),
       transformResponse: (response: any) => response.message
+    }),
+    getSubscriptionTranscationHistory: builder.query({
+      query: ({ customer }) => ({
+        url: `/method/addiwise.apis.customer.get_subscription`,
+        method: 'GET',
+        params: { customer },
+      }),
+      transformResponse: (response: any) => response?.message?.data ?? [],
     })
+
   })
 });
 
@@ -50,5 +60,6 @@ export const {
   useGetSubscriptionPlansQuery,
   useGetSubscriptionPlanQuery,
   usePaymentInitMutation,
-  useSubscribePlanMutation
+  useSubscribePlanMutation,
+  useGetSubscriptionTranscationHistoryQuery,
 } = subscriptionApi;

@@ -61,7 +61,7 @@ const step1Validation = Yup.object().shape({
     })
     .test('min-weight', 'Minimum weight is 10kg', (value) => parseFloat(value) >= 10)
     .test('max-weight', 'Maximum weight is 180kg', (value) => parseFloat(value) <= 180),
-    stump_length: Yup.string()
+  stump_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only numbers')
     .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
@@ -72,7 +72,7 @@ const step1Validation = Yup.object().shape({
     })
     .test('min-height', 'Minimum height is 1cm', (value) => !value || parseFloat(value) >= 1)
     .test('max-height', 'Maximum height', (value) => !value || parseFloat(value) <= 200.0),
-    shoulder_joint: Yup.string()
+  shoulder_joint: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only numbers')
     .test('min-value', 'Shoulder Joint must be at least 1', (value) => Number(value) >= 1),
@@ -99,44 +99,45 @@ const step4Validation = Yup.object().shape({
       'Must be a percentage between 0% and 5% (e.g. 2%)',
       (value) => {
         if (!value) return true;
-        
+
         const regex = /^\d{1,2}%$/;
         if (!regex.test(value)) return false;
-        
+
         const num = parseInt(value.replace('%', ''));
         return num >= 0 && num <= 5;
       }
     ),
-    socket_design_details: Yup.array().of(
-      Yup.object().shape({
-        cpo_input_mm: Yup.string()
-          .test(
-            'is-valid-number',
-            'Must be a number between -20 and +20',
-            (value) => {
-              if (!value || value.trim() === '') return true; // Allow empty
-              if (!/^-?\d+$/.test(value)) return false;
-              const num = parseInt(value, 10);
-              return num >= -20 && num <= 20;
-            }
-          )   })
-        ),
-        table_zbib: Yup.array().of(
-          Yup.object().shape({
-            modifications_mm: Yup.string()
-              .nullable()
-              .test(
-                'is-valid-number',
-                'Must be a number between -10 and 10',
-                (value) => {
-                  if (!value || value.trim() === '') return true; 
-                  if (!/^-?\d+$/.test(value)) return false;
-                  const num = parseInt(value, 10);
-                  return num >= -10 && num <= 10;
-                }
-              )
-          })
-        ),
+  socket_design_details: Yup.array().of(
+    Yup.object().shape({
+      cpo_input_mm: Yup.string()
+        .test(
+          'is-valid-number',
+          'Must be a number between -20 and +20',
+          (value) => {
+            if (!value || value.trim() === '') return true; // Allow empty
+            if (!/^-?\d+$/.test(value)) return false;
+            const num = parseInt(value, 10);
+            return num >= -20 && num <= 20;
+          }
+        )
+    })
+  ),
+  table_zbib: Yup.array().of(
+    Yup.object().shape({
+      modifications_mm: Yup.string()
+        .nullable()
+        .test(
+          'is-valid-number',
+          'Must be a number between -10 and 10',
+          (value) => {
+            if (!value || value.trim() === '') return true;
+            if (!/^-?\d+$/.test(value)) return false;
+            const num = parseInt(value, 10);
+            return num >= -10 && num <= 10;
+          }
+        )
+    })
+  ),
 });
 
 const step3Validation = Yup.object().shape({
@@ -149,14 +150,14 @@ const step5Validation = Yup.object().shape({
 });
 
 const initialValues = BE_FORM_INITIAL_VALUES;
-const SocketTypeDialog = ({ 
-  open, 
-  onOpenChange, 
-  data 
-}: { 
-  open: boolean; 
-  onOpenChange: (open: boolean) => void; 
-  data: any 
+const SocketTypeDialog = ({
+  open,
+  onOpenChange,
+  data
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  data: any
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -164,7 +165,7 @@ const SocketTypeDialog = ({
         <DialogHeader>
           <DialogTitle>Socket Type Information</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           {data && (
             <>
@@ -174,19 +175,19 @@ const SocketTypeDialog = ({
                   {data.description || ' '}
                 </p>
               </div>
-              
+
               {data.image && (
                 <div className="mt-4">
-                  <Image 
-                    src={data.image} 
-                    alt={data.label} 
-                    width={500} 
+                  <Image
+                    src={data.image}
+                    alt={data.label}
+                    width={500}
                     height={300}
                     className="rounded-md border"
                   />
                 </div>
               )}
-              
+
               {data.features && (
                 <div className="mt-4">
                   <h5 className="font-medium mb-2">Key Features:</h5>
@@ -225,9 +226,9 @@ const DesignVariationDialog = ({
   socketType: string;
 }) => {
   const getDynamicContent = (variation: string) => {
-    
+
     const normalizedVariation = variation.trim().toLowerCase();
-    
+
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
       'standard (sx)': {
         title: 'Standard (SX)',
@@ -248,7 +249,7 @@ const DesignVariationDialog = ({
 
     // Try partial match (without parentheses)
     const baseVariation = normalizedVariation.split(' (')[0];
-    const partialMatch = Object.entries(contentMap).find(([key]) => 
+    const partialMatch = Object.entries(contentMap).find(([key]) =>
       key.startsWith(baseVariation)
     );
 
@@ -273,14 +274,14 @@ const DesignVariationDialog = ({
             Choose your preferred design variation from the options below
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {options.map((option) => {
             const variationText = option.label || option.value;
             const content = getDynamicContent(variationText);
-            
+
             return (
-              <div 
+              <div
                 key={option.value}
                 className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => {
@@ -291,9 +292,9 @@ const DesignVariationDialog = ({
                 <h4 className="font-sm text-lg">{content.title}</h4>
                 <p className="text-[12px] text-gray-700 mt-1">{content.description}</p>
                 <div className="mt-0">
-                  <Image 
-                    src={content.image} 
-                    alt={content.title} 
+                  <Image
+                    src={content.image}
+                    alt={content.title}
                     width={200}
                     height={150}
                     className="rounded-md border object-cover"
@@ -330,7 +331,7 @@ const ModelDialog = ({
 
   const getDynamicContent = (variation: string) => {
 
-    const normalizedVariation = variation.trim().toLowerCase();   
+    const normalizedVariation = variation.trim().toLowerCase();
 
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
       'addieasesoft': {
@@ -349,7 +350,7 @@ const ModelDialog = ({
         description: 'Moulds Printed on FDM Printe',
         image: '/assets/order-forms/below-elbow/AddiEaseMouldforAEBE.png'
       },
-      
+
     };
 
     // Try exact match first
@@ -359,7 +360,7 @@ const ModelDialog = ({
 
     // Try partial match (without parentheses)
     const baseVariation = normalizedVariation.split(' (')[0];
-    const partialMatch = Object.entries(contentMap).find(([key]) => 
+    const partialMatch = Object.entries(contentMap).find(([key]) =>
       key.startsWith(baseVariation)
     );
 
@@ -384,14 +385,14 @@ const ModelDialog = ({
             Choose your preferred design variation from the options below
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {options.map((option) => {
             const variationText = option.label || option.value;
             const content = getDynamicContent(variationText);
-            
+
             return (
-              <div 
+              <div
                 key={option.value}
                 className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => {
@@ -402,9 +403,9 @@ const ModelDialog = ({
                 <h4 className="font-sm text-lg">{content.title}</h4>
                 <p className="text-[12px] text-gray-700 mt-1">{content.description}</p>
                 <div className="mt-1">
-                  <Image 
-                    src={content.image} 
-                    alt={content.title} 
+                  <Image
+                    src={content.image}
+                    alt={content.title}
                     width={200}
                     height={150}
                     className="rounded-md border object-cover"
@@ -436,22 +437,22 @@ const WatchFieldReset = () => {
   return null;
 };
 
-const Step1 = ({ 
-  values, 
-  handleChange, 
-  errors, 
-  touched, 
-  setFieldValue, 
-  isPatientSelected, 
-  FORM_OPTIONS, 
+const Step1 = ({
+  values,
+  handleChange,
+  errors,
+  touched,
+  setFieldValue,
+  isPatientSelected,
+  FORM_OPTIONS,
   formSubmitted,
-  setSocketTypeDialog  
+  setSocketTypeDialog
 }: any) => {
   const [designVariationDialog, setDesignVariationDialog] = useState({
     open: false,
     options: []
   });
-  
+
   const [modelDialog, setModelDialog] = useState({
     open: false,
     options: []
@@ -470,12 +471,12 @@ const Step1 = ({
       ...option,
     }));
   }, [FORM_OPTIONS?.socket_type]);
-  
+
   // Enhanced design variation options
   const designVariationOptions = useMemo(() => {
     if (!values.socket_type) return [];
     const baseOptions = FORM_OPTIONS[values.socket_type + '_design_variation'] || [];
-    
+
     return baseOptions.map((option: { value: string; label: string }) => ({
       ...option,
     }));
@@ -483,8 +484,8 @@ const Step1 = ({
 
   const modelOptions = useMemo(() => {
     if (!values.socket_type || !values.design_variation) return [];
-    const baseOptions  = FORM_OPTIONS[values.socket_type + '_' + values.design_variation +'_'+'model_name'] || [];
-    
+    const baseOptions = FORM_OPTIONS[values.socket_type + '_' + values.design_variation + '_' + 'model_name'] || [];
+
     return baseOptions.map((option: { value: string; label: string }) => ({
       ...option,
     }));
@@ -493,7 +494,7 @@ const Step1 = ({
   return (
     <div className="flex flex-col gap-6">
       <h3 className="font-semibold text-lg  text-primary">Basic Details</h3>
-      <div className="grid grid-cols-3 gap-4"> 
+      <div className="grid grid-cols-3 gap-4">
         <PatientPicker
           label="Patient Name"
           placeholder="Patient Name"
@@ -513,7 +514,7 @@ const Step1 = ({
             required
             inVaild={shouldShowError('date_of_birth', true)}
             error={errors.date_of_birth}
-            
+
           />
           <Input
             placeholder="65"
@@ -576,7 +577,7 @@ const Step1 = ({
           onChange={handleChange('amputation_date')}
         />
         <SelectBox
-          options={FORM_OPTIONS?.amputated_hand|| []}
+          options={FORM_OPTIONS?.amputated_hand || []}
           label="Amputation Hand"
           value={values.amputated_hand}
           onValueChange={handleChange('amputated_hand')}
@@ -626,7 +627,7 @@ const Step1 = ({
                   options: designVariationOptions
                 })}
               >
-                {values.design_variation 
+                {values.design_variation
                   ? designVariationOptions.find((opt: { value: string }) => opt.value === values.design_variation)?.label
                   : "Select Design Variation"}
               </Button>
@@ -655,7 +656,7 @@ const Step1 = ({
                   options: modelOptions
                 })}
               >
-                {values.model_name 
+                {values.model_name
                   ? modelOptions.find((opt: { value: string }) => opt.value === values.model_name)?.label
                   : "Select Model"}
               </Button>
@@ -676,7 +677,7 @@ const Step1 = ({
 
       <h3 className="font-semibold text-lg text-primary">Measurements</h3>
       <p></p>
-        Fig 1 - Sound Hand Measurements
+      Fig 1 - Sound Hand Measurements
       <div className="grid grid-cols-3 gap-4 items-center ml-1 mt-[-20px]">
         <div>
           <Image
@@ -698,19 +699,19 @@ const Step1 = ({
               </label>
               <div className='mt-1'>
 
-              <Input
-                placeholder="10"
-                value={values.shoulder_joint}
-                onChange={handleChange('shoulder_joint')}
-                required
-                inVaild={shouldShowError('shoulder_joint', true)}
-                error={errors.shoulder_joint}
+                <Input
+                  placeholder="10"
+                  value={values.shoulder_joint}
+                  onChange={handleChange('shoulder_joint')}
+                  required
+                  inVaild={shouldShowError('shoulder_joint', true)}
+                  error={errors.shoulder_joint}
                 />
-                </div>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-[200px]">
-        </div>
+          </div>
 
         </div>
       </div>
@@ -731,9 +732,9 @@ const Step1 = ({
           Fig 2 - Amputed Hand Measurements
 
         </div>
-        <div className="flex flex-col col-span-2 gap-2"> 
+        <div className="flex flex-col col-span-2 gap-2">
           <p className='text-xs'>Value <strong>B</strong> - Stump Circumference every 5 (cm)
-          Please mark 0 on the stump before scan </p>
+            Please mark 0 on the stump before scan </p>
           <div className="grid grid-cols-2 gap-3 ">
             <div className="grid sm:col-span-4 xl:col-span-2 gap-0">
               <div className="grid grid-cols-3">
@@ -770,7 +771,7 @@ const Step1 = ({
                   <Input />
                 </div>
                 <div className="grid col-span-2">
-                <div className="flex gap-2 items-center ml-[10px]">
+                  <div className="flex gap-2 items-center ml-[10px]">
                     <p className="text-[10px]">20 Cm</p>
                     <Input />
                   </div>
@@ -784,7 +785,7 @@ const Step1 = ({
                   <Input />
                 </div>
                 <div className="grid col-span-2">
-                <div className="flex gap-2 items-center ml-[10px]">
+                  <div className="flex gap-2 items-center ml-[10px]">
                     <p className="text-[10px]">35 Cm</p>
                     <Input />
                   </div>
@@ -799,15 +800,15 @@ const Step1 = ({
               </label>
               <div className='mt-1'>
 
-              <Input
-                placeholder="10"
-                value={values.stump_length}
-                onChange={handleChange('stump_length')}
-                required
-                inVaild={shouldShowError('stump_length', true)}
-                error={errors.stump_length}
+                <Input
+                  placeholder="10"
+                  value={values.stump_length}
+                  onChange={handleChange('stump_length')}
+                  required
+                  inVaild={shouldShowError('stump_length', true)}
+                  error={errors.stump_length}
                 />
-                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -816,7 +817,7 @@ const Step1 = ({
 
       <DesignVariationDialog
         open={designVariationDialog.open}
-        onOpenChange={(open) => setDesignVariationDialog(prev => ({...prev, open}))}
+        onOpenChange={(open) => setDesignVariationDialog(prev => ({ ...prev, open }))}
         options={designVariationOptions}
         onSelect={(value) => setFieldValue('design_variation', value)}
         socketType={values.socket_type}
@@ -824,32 +825,32 @@ const Step1 = ({
 
       <ModelDialog
         open={modelDialog.open}
-        onOpenChange={(open) => setModelDialog(prev => ({...prev, open}))}
+        onOpenChange={(open) => setModelDialog(prev => ({ ...prev, open }))}
         options={modelOptions}
         onSelect={(value) => setFieldValue('model_name', value)}
         socketType={values.socket_type}
-        // designVariation={values.design_variation}
+      // designVariation={values.design_variation}
       />
     </div>
   );
 };
 
-const Step2 = ({ 
-  values, 
-  handleChange, 
-  errors, 
-  touched, 
-  setFieldValue, 
+const Step2 = ({
+  values,
+  handleChange,
+  errors,
+  touched,
+  setFieldValue,
   FORM_OPTIONS,
-  formSubmitted 
+  formSubmitted
 }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
     if (!isRequired && !values[fieldName]) {
       return false;
-    }    
+    }
     if (isRequired && (formSubmitted || touched[fieldName])) {
       return !!errors[fieldName];
-    }    
+    }
     return !!(touched[fieldName] && errors[fieldName]);
   };
 
@@ -936,7 +937,7 @@ const Step2 = ({
             <StlFilePicker
               label="Upload STL file (Rgiht hand)"
               buttonText="Right Hand"
-              
+
               onFileSelect={(file) => console.log('Model A selected:', file?.name)}
             />
           </div>
@@ -954,7 +955,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 1"
-            onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+          // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
           />
         </div>
         <div className="w-fit ml-2">
@@ -963,7 +964,7 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 2"
-            onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+          // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
           />
         </div>
       </div>
@@ -992,79 +993,80 @@ const Step2 = ({
 const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
   console.log(errors);
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    const fieldValue = fieldName.includes('[') 
-    ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
+    const fieldValue = fieldName.includes('[')
+      ? fieldName.split(/[\[\].]+/).reduce((obj, key) =>
         obj && obj[key], values)
-    : values[fieldName];
+      : values[fieldName];
 
-  if (!fieldValue) {
-    if (!isRequired) return false;
-    return formSubmitted || touched[fieldName];
-  }
-  const fieldError = fieldName.includes('[')
-  ? fieldName.split(/[\[\].]+/).reduce((obj, key) => 
-      obj && obj[key], errors)
-  : errors[fieldName];
-  
-return !!fieldError && (touched[fieldName] || formSubmitted);
-};
-  
+    if (!fieldValue) {
+      if (!isRequired) return false;
+      return formSubmitted || touched[fieldName];
+    }
+    const fieldError = fieldName.includes('[')
+      ? fieldName.split(/[\[\].]+/).reduce((obj, key) =>
+        obj && obj[key], errors)
+      : errors[fieldName];
+
+    return !!fieldError && (touched[fieldName] || formSubmitted);
+  };
+
   return (
     <>
-    <div>
-          <p className="text-xs mt-2">
+      <div>
+        <p className="text-xs mt-2">
           Please mark the below points on the stump along with the Trimline before the Scan. Please also
-mention extra pressure / relief (in mm) at below points. (- for pressure and + for relief)
-          </p>
-          <div className="flex justify-center p-2 mr-20">
-                        <div className='mt-30'>
+          mention extra pressure / relief (in mm) at below points. (- for pressure and + for relief)
+        </p>
+        <div className="flex justify-center p-2 mr-20">
+          <div className='mt-30'>
             <Image
               src={'/assets/order-forms/below-elbow/4(1).png'}
               alt="Design Modications"
               width={520}
               height={400}
               className="object-cover"
-              />
-              </div>
-              <div>
-                
-                 <div className='mt-10 ml-10'>
-                 <CustomTable
-      columns={[
-        { header: 'Area.', accessorKey: 'area' },
-        { header: 'Area Name', accessorKey: 'point_name' },
-        { header: 'Modifications ( mm)', accessorKey: 'modifications_mm' }
-      ]}
-      data={values?.table_zbib?.map((item: any, index: number) => ({
-        id: index,
-        area: item?.area,
-        point_name: item?.point_name,
-        modifications_mm: (
-          <Input
-            name={`table_zbib[${index}].modifications_mm`}
-            value={item?.modifications_mm||'' }
-            onChange={handleChange}
-            style={{ height: '35px', width: '200px' }}
-            type="text"
-            placeholder={`Default ${item?.default_mm}`}
-            className="w-full placeholder:text-[12px]"
-            inVaild={shouldShowError(`table_zbib[${index}].modifications_mm`)}
-            error={errors?.table_zbib?.[index]?.modifications_mm || ''}
-          />
-        ),
-      }))}
-    />
-  </div>
+            />
+          </div>
+          <div>
 
-              </div>
+            <div className='mt-10 ml-10'>
+              <CustomTable
+                columns={[
+                  { header: 'Area.', accessorKey: 'area' },
+                  { header: 'Area Name', accessorKey: 'point_name' },
+                  { header: 'Modifications ( mm)', accessorKey: 'modifications_mm' }
+                ]}
+                data={values?.table_zbib?.map((item: any, index: number) => ({
+                  id: index,
+                  area: item?.area,
+                  point_name: item?.point_name,
+                  modifications_mm: (
+                    <Input
+                      name={`table_zbib[${index}].modifications_mm`}
+                      value={item?.modifications_mm || ''}
+                      onChange={handleChange}
+                      style={{ height: '35px', width: '200px' }}
+                      type="text"
+                      placeholder={`Default ${item?.default_mm}`}
+                      className="w-full placeholder:text-[12px]"
+                      inVaild={shouldShowError(`table_zbib[${index}].modifications_mm`)}
+                      error={errors?.table_zbib?.[index]?.modifications_mm || ''}
+                    />
+                  ),
+                }))}
+              />
+            </div>
+
           </div>
         </div>
+      </div>
     </>
   );
 };
 
 export default function BEOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
+  // console.log("useGetFormSettingsQuery", data);
   const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
   const [selectedItem, setSelectedItem] = React.useState<string>('');
@@ -1111,7 +1113,7 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
     };
     const itemCode = await getItemCodeByValues(payload);
     setSelectedItem(itemCode);
-    
+
     // Submit the final form
     const orderPayload = {
       item_type: 'BK',
@@ -1206,16 +1208,16 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
 
   return (
     <div className="pb-16 relative">
-      <Formik 
-        initialValues={initialValues} 
-        onSubmit={OnSubmit} 
+      <Formik
+        initialValues={initialValues}
+        onSubmit={OnSubmit}
         validationSchema={
-          currentStep === 1 ? step1Validation : 
-          currentStep === 2 ? step2Validation : 
-          currentStep === 3 ? step3Validation :
-          currentStep === 4 ? step4Validation :
-          currentStep === 5 ? step5Validation : 
-          null
+          currentStep === 1 ? step1Validation :
+            currentStep === 2 ? step2Validation :
+              currentStep === 3 ? step3Validation :
+                currentStep === 4 ? step4Validation :
+                  currentStep === 5 ? step5Validation :
+                    null
         }
         validateOnChange={true}
         validateOnBlur={true}
@@ -1224,22 +1226,22 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
         {({ values, handleChange, handleSubmit, errors, touched, setFieldValue, setErrors, isValid }) => (
           <div className="flex flex-col gap-6">
             <WatchFieldReset />
-             {/* Socket Type Dialog */}
-             <SocketTypeDialog
+            {/* Socket Type Dialog */}
+            <SocketTypeDialog
               open={socketTypeDialog.open}
-              onOpenChange={(open) => setSocketTypeDialog(prev => ({...prev, open}))}
+              onOpenChange={(open) => setSocketTypeDialog(prev => ({ ...prev, open }))}
               data={socketTypeDialog.data}
             />
             {/* Step indicator */}
             <div className="flex justify-center mb-8">
               <div className="flex items-center gap-2">
                 {[
-                 { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
-                 { step: 2, name: 'Scan', icon: '📁' },
-                 { step: 3, name: 'Components', icon: '🔒' },
-                 { step: 4, name: 'Modifications', icon: '✏️' },
-                 { step: 5, name: 'Finishing', icon: '🎨' }
-                 ].map(({step, name, icon}) => (
+                  { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
+                  { step: 2, name: 'Scan', icon: '📁' },
+                  { step: 3, name: 'Components', icon: '🔒' },
+                  { step: 4, name: 'Modifications', icon: '✏️' },
+                  { step: 5, name: 'Finished', icon: '🎨' }
+                ].map(({ step, name, icon }) => (
                   <React.Fragment key={step}>
                     <button
                       type="button"
@@ -1256,13 +1258,12 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
                       className="flex flex-col items-center gap-1"
                     >
                       <div
-                        className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${
-                          currentStep === step
-                            ? "bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4"
-                            : completedSteps.includes(step)
+                        className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${currentStep === step
+                          ? "bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4"
+                          : completedSteps.includes(step)
                             ? "bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4"
                             : "bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4"
-                        } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                          } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       >
                         <span className="flex items-center gap-2">
                           {currentStep === step && (
@@ -1297,11 +1298,10 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
                             strokeWidth={1.5}
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className={`transition-all duration-500 ${
-                              completedSteps.includes(step) 
-                                ? 'stroke-primary' 
-                                : 'stroke-gray-300'
-                            }`}
+                            className={`transition-all duration-500 ${completedSteps.includes(step)
+                              ? 'stroke-primary'
+                              : 'stroke-gray-300'
+                              }`}
                           />
                         </svg>
                       </div>
@@ -1336,17 +1336,17 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
             )}
             {currentStep === 3 && (
               <Step3
-              values={values}
-              handleChange={handleChange}
-              errors={errors}
-              touched={touched}
-              setFieldValue={setFieldValue}
-              FORM_OPTIONS={FORM_OPTIONS}
-              formSubmitted={formSubmitted}
+                values={values}
+                handleChange={handleChange}
+                errors={errors}
+                touched={touched}
+                setFieldValue={setFieldValue}
+                FORM_OPTIONS={FORM_OPTIONS}
+                formSubmitted={formSubmitted}
               />
             )}
             {currentStep === 4 && (
-              <Step4 
+              <Step4
                 values={values}
                 handleChange={handleChange}
                 errors={errors}
@@ -1357,7 +1357,7 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
               />
             )}
             {currentStep === 5 && (
-              <Step5 
+              <Step5
                 values={values}
                 handleChange={handleChange}
                 errors={errors}
@@ -1372,8 +1372,8 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
             <div className="sticky bottom-4 left-0 flex justify-between bg-white p-2 rounded-lg shadow-md">
               <div>
                 {currentStep > 1 && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={prevStep}
                     type="button"
                   >
@@ -1383,8 +1383,8 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
               </div>
               <div>
                 {currentStep < 5 ? (
-                  <Button 
-                    className="shadow-2xl" 
+                  <Button
+                    className="shadow-2xl"
                     onClick={async () => {
                       await nextStep(values, setErrors);
                     }}
@@ -1393,8 +1393,8 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
                     Next
                   </Button>
                 ) : (
-                  <Button 
-                    className="shadow-2xl" 
+                  <Button
+                    className="shadow-2xl"
                     onClick={() => handleSubmit()}
                     type="submit"
                   >
@@ -1406,9 +1406,9 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
           </div>
         )}
       </Formik>
-      
+
       {/* Confirmation dialog after Step 1 */}
-      <ConfirmOrderDialog 
+      <ConfirmOrderDialog
         open={showStep1Confirmation}
         onOpenChange={setShowStep1Confirmation}
         formValues={{
@@ -1423,9 +1423,9 @@ export default function BEOrderForm({ item_type }: { item_type: string }): React
         onConfirm={handleStep1Confirmation}
         showContinueButton={true}
       />
-      
+
       {/* Final submission dialog (hidden in this case since we're submitting directly) */}
-      <ConfirmOrderDialog 
+      <ConfirmOrderDialog
         open={modelOpen}
         onOpenChange={setModelOpen}
         formValues={{

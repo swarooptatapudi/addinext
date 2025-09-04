@@ -6,6 +6,7 @@ import { Formik } from 'formik';
 import React, { useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function SignIn(): React.JSX.Element {
   const [login, { isSuccess, isLoading }] = useLoginMutation();
@@ -60,6 +61,9 @@ export default function SignIn(): React.JSX.Element {
           </Formik>
         </div>
       </div>
+      <div className="flex justify-end text-sm text-blue-600 hover:underline cursor-pointer">
+  <Link href="/auth/forgot-password">Forgot Password?</Link>
+</div>
     </div>
   );
 }

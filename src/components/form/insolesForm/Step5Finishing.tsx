@@ -35,6 +35,11 @@ export const Step5 = ({
   const isAddiEaseEco = values.model_name === 'AddiEaseEco';
   const showFinishOptions = isAddiEase || isAddiEaseEco;
 
+//   const isDesignBySelf = values.Design_by === 'Self';
+// const isPrintBySelf = values.Print_by === 'Self';
+// const hideLaticesAndFinish = isDesignBySelf && isPrintBySelf;
+
+
   const LAYERING_IMAGES: Record<LayeringImagesKey, LayeringImageType> = {
     'city-comfort': {
       standard: '/assets/order-forms/insoles/City_Standard.png',
@@ -100,7 +105,7 @@ export const Step5 = ({
   };
 
   const getFinishOptions = () => {
-    if (isAddiEase) {
+    if (isAddiEase ) {
       return [
         { value: 'bead-blasting', label: 'Bead Blasting', color: 'bg-gray-500 text-gray-700' },
         { value: 'black-dye', label: 'Black Dye', color: 'bg-black text-black' },
@@ -124,11 +129,9 @@ export const Step5 = ({
     { value: 'sports', label: 'Sports', imgSrc: '/assets/order-forms/insoles/Sports.png' },
     { value: 'diabetic', label: 'Diabetic', imgSrc: '/assets/order-forms/insoles/Diabetics.png' },
   ];
-
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-lg font-semibold mt-5 text-primary">Design & Printing</h3>
-      
       {/* Design By Section */}
       <div className="grid md:grid-cols-2 gap-6 mt-5">
         <div className="flex items-center">
@@ -147,7 +150,6 @@ export const Step5 = ({
           </div>
         </div>
       </div>
-
       <div className="grid md:grid-cols-2 gap-6 mt-2">
         <div className="flex items-center">
           <label className="font-medium min-w-[100px] text-sm">Print by :</label>

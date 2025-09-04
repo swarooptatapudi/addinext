@@ -4,9 +4,12 @@ import { OrbitControls, Html, Grid, Environment, Bounds } from '@react-three/dre
 import { Suspense, useState, useRef } from 'react';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import * as THREE from "three";
+
 import {
   Dialog,
   DialogContent,
@@ -15,26 +18,75 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-
-function Model({ url, fileType }: { url: string; fileType: string }) {
+import { TextureLoader } from 'three';
+ 
+function Model({ url, fileType, mtlUrl, textureUrl }: { 
+  url: string; 
+  fileType: string; 
+  mtlUrl?: string;     // optional .mtl file if .obj is used
+  textureUrl?: string;
+    // optional .jpg/.png texture
+}) {
   switch (fileType) {
-    case '.stl':
+    case ".stl": {
       const stl = useLoader(STLLoader, url);
       return (
         <mesh geometry={stl} scale={0.5} castShadow receiveShadow>
           <meshStandardMaterial color="#ccc" />
         </mesh>
       );
-    case '.obj':
-      const obj = useLoader(OBJLoader, url);
-      return <primitive object={obj} scale={0.5} />;
-    case '.ply':
+    }
+
+    case ".obj": {
+  // If .mtl is provided, preload materials
+  if (mtlUrl) {
+    const materials = useLoader(MTLLoader, mtlUrl);
+    materials.preload();
+
+    const obj = useLoader(OBJLoader, url, (loader) => {
+      loader.setMaterials(materials);
+    });
+    return <primitive object={obj} scale={0.5} />;
+  }
+
+  // If no MTL, just load the OBJ and give it a default colored material
+  const obj = useLoader(OBJLoader, url);
+
+  obj.traverse((child: any) => {
+    if (child.isMesh) {
+      child.material = new THREE.MeshStandardMaterial({
+        color: "",   // 👈 nice blue default color
+        metalness: 0.3,
+        roughness: 0.6,
+      });
+    }
+  });
+
+  return <primitive object={obj} scale={0.5} />;
+}
+
+
+    case ".ply": {
       const ply = useLoader(PLYLoader, url);
       return (
         <mesh geometry={ply} scale={0.5} castShadow receiveShadow>
           <meshStandardMaterial color="#ccc" />
         </mesh>
       );
+    }
+
+    case ".jpg":
+    case ".png": {
+      const texture = useLoader(TextureLoader, url);
+      return (
+        <mesh scale={0.5}>
+          {/* Simple plane preview for image */}
+          <planeGeometry args={[3, 3]} />
+          <meshStandardMaterial map={texture} />
+        </mesh>
+      );
+    }
+
     default:
       return null;
   }
@@ -100,65 +152,96 @@ type ModelFilePickerProps = {
   label?: string;
   buttonText?: string;
   onFileSelect?: (file: File | null) => void;
+   allowedExtensions?: string[];
+     accept?: string[]; 
 };
 
 export default function ModelFilePicker({
   label = 'Select Scan',
   buttonText = 'Upload Scan File',
-  
   onFileSelect,
+  allowedExtensions = ['.stl', '.ply','.obj', '.mtl','jpg'],
+  accept, // 👈 default
 }: ModelFilePickerProps) {
   const [file, setFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    setError(null);
+const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
 
-    if (!f) return;
+ const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const f = e.target.files?.[0];
+  setError(null);
+  if (!f) return;
 
-    const allowedExtensions = ['.stl', '.obj', '.ply', '.zip'];
-    const fileExtension = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+  const fileExtension = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+  if (!extensions.includes(fileExtension)) {
+    setError(`Invalid file type. Please upload one of: ${extensions.join(', ')}`);
+    return;
+  }
 
-    if (!allowedExtensions.includes(fileExtension)) {
-      setError('Invalid file type. Please upload .stl, .obj, or .ply files.');
-      return;
-    }
+  const maxSize = 25 * 1024 * 1024; // 25MB
+  if (f.size > maxSize) {
+    setError('File size exceeds 25MB limit.');
+    return;
+  }
 
-    const maxSize = 25 * 1024 * 1024; // 25MB
-    if (f.size > maxSize) {
-      setError('File size exceeds 25MB limit.');
-      return;
-    }
+  setFile(f);
+  setFileType(fileExtension);
 
-    setFile(f);
-    setFileType(fileExtension);
-    if (fileExtension !== '.zip') {
+  if (fileExtension !== '.zip') {
     setFileUrl(URL.createObjectURL(f));
   } else {
-    setFileUrl(null); // No preview for ZIP files
+    setFileUrl(null);
   }
-    onFileSelect?.(f);
-  };
+
+  // ✅ Upload file to backend
+  try {
+    const formData = new FormData();
+    formData.append("file", f);
+
+    const res = await fetch("https://uaterp.addiwise.com/api/method/addiwise.apis.order_types.bk_order.create_bk_order", {
+  method: "POST",
+  body: formData,
+});
+
+
+    if (!res.ok) throw new Error("Upload failed");
+
+    console.log("Response status:", res.status);
+console.log("Response text:", await res.text());
+    const data = await res.json();
+    console.log("Upload success:", data);
+  } catch (err) {
+    console.error("Error uploading file:", err);
+    setError("Upload failed");
+  }
+
+  onFileSelect?.(f);
+};
+
 
   return (
     <div className="space-y-2 pl-4 pr-4 pb-4 w-[200px] sm:w-[150px] md:w-[150px] lg:w-[145px] xl:w-[170px]">
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" className='w-full'>
-            {file ? <p className="truncate ">{file?.name}</p> : buttonText}
+          <Button variant="outline" className="w-full">
+            {file ? <p className="truncate">{file?.name}</p> : buttonText}
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{file ? `Preview ${fileType.toUpperCase()} File` : buttonText}</DialogTitle>
+            <DialogTitle>
+              {file ? `Preview ${fileType.toUpperCase()} File` : buttonText}
+            </DialogTitle>
           </DialogHeader>
 
           {file ? (
             <div>
-              <p className="text-xs text-muted-foreground truncate max-w-[500px]">{file.name}</p>
+              <p className="text-xs text-muted-foreground truncate max-w-[500px]">
+                {file.name}
+              </p>
               <div className="flex items-center gap-4 mt-4">
                 <Button
                   variant="outline"
@@ -179,20 +262,33 @@ export default function ModelFilePicker({
           ) : (
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="picture">{label}</Label>
-              <Input id="picture" type="file" onChange={handleChange} accept=".stl,.obj,.ply,.zip" />
+              {/* ✅ generate accept dynamically */}
+              <Input
+                id="picture"
+                type="file"
+
+
+
+                
+                onChange={handleChange}
+                accept={extensions.join(',')} 
+              />
               {error && <p className="text-sm text-red-500">{error}</p>}
               <p className="text-xs text-muted-foreground">
-                Max file size: 25MB | Allowed types: .stl, .obj, .ply, .zip
+                Max file size: 25MB | Allowed types: {extensions.join(', ')}
               </p>
             </div>
           )}
 
-          {fileUrl && fileType !== '.zip' && <ModelViewerR3F fileUrl={fileUrl} fileType={fileType} />}
+          {fileUrl && fileType !== '.zip' && (
+            <ModelViewerR3F fileUrl={fileUrl} fileType={fileType} />
+          )}
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+
 
 // ------------it is working ----------------------
 // 'use client';
