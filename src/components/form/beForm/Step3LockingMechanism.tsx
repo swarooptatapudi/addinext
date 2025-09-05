@@ -149,7 +149,7 @@ export const Step3 = ({
                                 label="Select File"
                                 buttonText="Upload File"
                                   onFileSelect={(fileUrl) => {
-    console.log("Got file URL for locking system:", fileUrl);
+    // console.log("Got file URL for locking system:", fileUrl);
     // store fileUrl in form / state / send to API
   }}
                                 // error={shouldShowError('locking_system_file')}

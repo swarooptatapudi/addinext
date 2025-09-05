@@ -131,7 +131,7 @@ export default function Orders(): React.JSX.Element {
         name: 'Addiwise Company',
         description: `Payment for Order ${response.data.so_order_id || order.order_id}`,
         handler: async function (razorpayResponse: any) {
-          console.log('✅ Payment Success (from Razorpay):', razorpayResponse);
+          // console.log('✅ Payment Success (from Razorpay):', razorpayResponse);
 
           const backendPayload = {
             order_id: order.order_id,
@@ -140,16 +140,16 @@ export default function Orders(): React.JSX.Element {
             payment_status: 'Paid',
           };
 
-          console.log("📤 Sending payload to backend:", backendPayload);
+          // console.log("📤 Sending payload to backend:", backendPayload);
 
           try {
             const res = await getOrderDetailIds(backendPayload).unwrap();
-            console.log("✅ Backend response:", res);
+            // console.log("✅ Backend response:", res);
 
             toast.success('Payment Successfull');
             refetch();
           } catch (err) {
-            console.error('Failed to update backend:', err);
+            // console.error('Failed to update backend:', err);
             toast.error('Payment success but backend update failed');
           }
         },
@@ -173,7 +173,7 @@ export default function Orders(): React.JSX.Element {
       });
       rzp.open();
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       toast.error('Failed to process payment');
     }
   };
@@ -181,7 +181,7 @@ export default function Orders(): React.JSX.Element {
   // navigate on order click
   const handleOrderIdClick = (order: Order) => {
     if (order.device_type === 'BK Orders') {
-      console.log('Selected Order:', order.order_id, order.device_type);
+      // console.log('Selected Order:', order.order_id, order.device_type);
       setSelectedOrder(order);
       router.push(
         `/orders/new-order/BK?${new URLSearchParams({

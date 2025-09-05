@@ -310,7 +310,7 @@ export const ordersApi = createApi({
         body: data
       }),
       transformResponse: (response: SalesOrdersResponse) => {
-        console.log("create_bk_order", response);
+        // console.log("create_bk_order", response);
         return response;
       }
     }),
@@ -364,7 +364,7 @@ export const ordersApi = createApi({
         body: data
       }),
       transformResponse: (response: SalesOrdersResponse) => {
-        console.log("create_bk_order", response);
+        // console.log("create_bk_order", response);
         return response;
       }
     }),

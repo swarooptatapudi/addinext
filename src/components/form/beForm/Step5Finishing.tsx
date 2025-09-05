@@ -19,7 +19,7 @@ export const Step5 = ({
         { value: 'black-dye', label: 'Black Dye', color: 'bg-black text-black' },
         { value: 'colour', label: 'colour', color: 'bg-neutral-500 text-neutral-100' },
       ];
-    } 
+    }
     return [];
   };
 
@@ -28,7 +28,7 @@ export const Step5 = ({
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-lg font-semibold mt-5 text-primary">Design & Printing</h3>
-      
+
       {/* Design By Section */}
       <div className="grid md:grid-cols-2 gap-6 mt-5">
         <div className="flex items-center">
@@ -65,7 +65,7 @@ export const Step5 = ({
             )}
           </div>
         </div>
-        
+
       </div>
 
       {/* Lattices Section (Only for AddiEase) */}
@@ -85,10 +85,10 @@ export const Step5 = ({
       )}
 
       {/* Finish Section */}
-          {showFinishOptions ? (
-      <div className="space-y-4 mt-5">
-        <label className="font-medium text-sm">Finish:</label>
-        <div className="ml-10 mb-5">
+      {showFinishOptions ? (
+        <div className="space-y-4 mt-5">
+          <label className="font-medium text-sm">Finish:</label>
+          <div className="ml-10 mb-5">
             <div className="flex items-center gap-10 -mt-7 ml-8">
               {finishOptions.map((option) => (
                 <label key={option.value} className="flex flex-col items-center cursor-pointer">
@@ -100,26 +100,25 @@ export const Step5 = ({
                     onChange={() => setFieldValue('finish_type', option.value)}
                     className="sr-only peer"
                   />
-                  <div className={`w-8 h-8 rounded-full border-2 ${option.color} ${
-                    values.finish_type === option.value 
-                      ? 'border-blue-200 ring-2 ring-blue-300' 
+                  <div className={`w-8 h-8 rounded-full border-2 ${option.color} ${values.finish_type === option.value
+                      ? 'border-blue-200 ring-2 ring-blue-300'
                       : 'border-gray-300'
-                  }`} />
+                    }`} />
                   <span className="text-sm mt-1 capitalize">
                     {option.label}
                   </span>
                 </label>
               ))}
             </div>
-          
-          {errors.finish_type && touched.finish_type && (
-            <p className="text-red-500 text-xs mt-1">{errors.finish_type}</p>
-          )}
+
+            {errors.finish_type && touched.finish_type && (
+              <p className="text-red-500 text-xs mt-1">{errors.finish_type}</p>
+            )}
+          </div>
         </div>
-      </div>
-        ) : (
-          <div className="ml-26 text-gray-500"></div>
-        )}
+      ) : (
+        <div className="ml-26 text-gray-500"></div>
+      )}
     </div>
   );
 };

@@ -87,13 +87,13 @@ export default function BuyScannersPage ({ params }: { params: Promise<{ product
   const { data }: { data?: RateAndDiscountData } = useGetRateAndDiscountsQuery({
     customer: user?.customer_id,
   });
-  console.log("rate dd:",data);
-    console.log("user  dd:",user);
+  // console.log("rate dd:",data);
+  //   console.log("user  dd:",user);
   
   const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
     customer: user?.customer_id,
   });
-  console.log("transactionHistory dd:",user);
+  // console.log("transactionHistory dd:",user);
   const [initPayment, { isLoading }] = useBuyCoinsInitiatePaymentMutation();
   const [buyCoins, { isLoading: isPaymentSuccessLoading }] = useBuyCoinsAfterPaymentMutation();
   const [buyAddiNxtCoin, { isLoading: isBuyingCoins }] = useBuyAddiNxtCoinMutation(); 
@@ -132,12 +132,12 @@ const [couponCode, setCouponCode] = useState('');
       // const payload = { coupon_code: couponCode };
       try {
         const response = await validateCoupon({ coupon_code: couponCode }).unwrap();
-        console.log('Coupon Validation Response:', response);
+        // console.log('Coupon Validation Response:', response);
         setCouponData(response.message);
       } catch (error: any) {
         setCouponData(null);
-        console.error('Coupon Validation Error:', error);
-        toast.error(error.data?.message || 'Invalid coupon code');
+        // console.error('Coupon Validation Error:', error);
+        toast.error(error.data?.message || '' );
       } finally {
         setIsValidatingCoupon(false);
       }
@@ -231,7 +231,7 @@ const [couponCode, setCouponCode] = useState('');
         // order_id: "ddd",
         app_name:'addiwise customer portal',
         handler: async function(response: any) {
-          console.log('Payment response:', response);
+          // console.log('Payment response:', response);
           try {
             const payload = {
               buy_coin: buyQuantity,
@@ -252,7 +252,7 @@ const [couponCode, setCouponCode] = useState('');
             // }
           } catch (err) {
             toast.error('Payment verification failed');
-            console.error('Verification error:', err);
+            // console.error('Verification error:', err);
           }
         },
         prefill: {
@@ -270,14 +270,14 @@ const [couponCode, setCouponCode] = useState('');
           color: '#3399cc',
         },
       };
-      console.log('Razorpay options:', options);
+      // console.log('Razorpay options:', options);
       // Open Razorpay payment modal
       const rzp = new window.Razorpay(options);
       rzp.open();
       
       rzp.on('payment.failed', function(response: any) {
         toast.error('Payment failed. Please try again.');
-        console.error('Payment failed:', response.error);
+        // console.error('Payment failed:', response.error);
       });
 
     } catch (err) {
@@ -307,8 +307,8 @@ const calculateBasicRate = (coins: number): number => {
   if (!coins || coins === 0) return 0;
   const baseAmount = coins * COIN_BASE_PRICE;
   const discountAmount = baseAmount * (DISCOUNT_PERCENTAGE / 100);
-  console.log('Base Amount:', baseAmount);
-  console.log('Discount Amount:', discountAmount);
+  // console.log('Base Amount:', baseAmount);
+  // console.log('Discount Amount:', discountAmount);
   if (couponData?.discount_percentage) {
     const finalDiscountAmount = discountAmount * (couponData?.discount_percentage / 100);
     return discountAmount - finalDiscountAmount; 

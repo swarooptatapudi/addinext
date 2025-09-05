@@ -80,13 +80,13 @@ export default function Addicoins(): React.JSX.Element {
   const { data }: { data?: RateAndDiscountData } = useGetRateAndDiscountsQuery({
     customer: user?.customer_id,
   });
-  console.log("rate dd:", data);
-  console.log("user  dd:", user);
+  // console.log("rate dd:", data);
+  // console.log("user  dd:", user);
 
   const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
     customer: user?.customer_id,
   });
-  console.log("transactionHistory dd:", user);
+  // console.log("transactionHistory dd:", user);
   const [initPayment, { isLoading }] = useBuyCoinsInitiatePaymentMutation();
   const [buyCoins, { isLoading: isPaymentSuccessLoading }] = useBuyCoinsAfterPaymentMutation();
   const [buyAddiNxtCoin, { isLoading: isBuyingCoins }] = useBuyAddiNxtCoinMutation();
@@ -204,7 +204,7 @@ export default function Addicoins(): React.JSX.Element {
         // order_id: "ddd",
         app_name: 'addiwise customer portal',
         handler: async function (response: any) {
-          console.log('Payment response:', response);
+          // console.log('Payment response:', response);
           try {
             const payload = {
               buy_coin: buyQuantity,
@@ -214,7 +214,7 @@ export default function Addicoins(): React.JSX.Element {
             };
 
             const result = await buyAddiNxtCoin(payload).unwrap();
-            console.log('Payment result:', result);
+            // console.log('Payment result:', result);
             toast.success('Coins purchased successfully!');
             refetchTransactions();
             // if (result.success) {
@@ -225,7 +225,7 @@ export default function Addicoins(): React.JSX.Element {
             // }
           } catch (err) {
             toast.error('Payment verification failed');
-            console.error('Verification error:', err);
+            // console.error('Verification error:', err);
           }
         },
         prefill: {
@@ -243,14 +243,14 @@ export default function Addicoins(): React.JSX.Element {
           color: '#3399cc',
         },
       };
-      console.log('Razorpay options:', options);
+      // console.log('Razorpay options:', options);
       // Open Razorpay payment modal
       const rzp = new window.Razorpay(options);
       rzp.open();
 
       rzp.on('payment.failed', function (response: any) {
         toast.error('Payment failed. Please try again.');
-        console.error('Payment failed:', response.error);
+        // console.error('Payment failed:', response.error);
       });
 
     } catch (err) {
@@ -281,8 +281,8 @@ export default function Addicoins(): React.JSX.Element {
     if (!coins || coins === 0) return 0;
     const baseAmount = coins * coinRate;
     const discountAmount = baseAmount * (standardDiscount / 100);
-    console.log('Base Amount:', baseAmount);
-    console.log('Discount Amount:', discountAmount);
+    // console.log('Base Amount:', baseAmount);
+    // console.log('Discount Amount:', discountAmount);
     if (couponData?.discount_percentage) {
       const finalDiscountAmount = (baseAmount - discountAmount) * (couponData?.discount_percentage / 100);
       return discountAmount - finalDiscountAmount;

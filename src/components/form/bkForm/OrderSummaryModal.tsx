@@ -86,7 +86,7 @@ interface OrderSummaryModalProps {
 }
 
 const OrderSummaryModal: React.FC<OrderSummaryModalProps> = ({ open, onOpenChange, orderData,selectedItem }) => {
-  console.log("orderData:", orderData);
+  // console.log("orderData:", orderData);
 
   const formatValue = (value: any): string => {
     if (value === null || value === undefined || value === "") {

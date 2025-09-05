@@ -209,12 +209,12 @@ const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
 
     if (!res.ok) throw new Error("Upload failed");
 
-    console.log("Response status:", res.status);
-console.log("Response text:", await res.text());
+//     console.log("Response status:", res.status);
+// console.log("Response text:", await res.text());
     const data = await res.json();
-    console.log("Upload success:", data);
+    // console.log("Upload success:", data);
   } catch (err) {
-    console.error("Error uploading file:", err);
+    // console.error("Error uploading file:", err);
     setError("Upload failed");
   }
 

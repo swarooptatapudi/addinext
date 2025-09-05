@@ -101,7 +101,7 @@ function PatientPortal({ onClose }: { onClose: () => void }) {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     // Here you would typically send the form data to your backend
-    console.log('Form submitted:', formData);
+    // console.log('Form submitted:', formData);
     // Show success message and optionally switch to chat tab
     setActiveTab('chat');
   };

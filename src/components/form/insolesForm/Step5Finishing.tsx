@@ -3,6 +3,8 @@ import { SelectBox } from "@/components/ui/selectbox";
 import { ImageCheckbox } from "./ImgproCheck";
 import { useState } from "react";
 
+import {thicknessToUsageMap,usageToThicknessMap} from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
+
 type LayeringImageType = {
   standard: string;
   premium: string;
@@ -121,6 +123,10 @@ export const Step5 = ({
     return [];
   };
 
+ // Define mapping (string thickness → usage option)
+
+
+  
   const finishOptions = getFinishOptions();
   const options: FinishOption[] = [
     { value: 'city-comfort', label: 'City Comfort', imgSrc: '/assets/order-forms/insoles/City_Comfort.png' },
@@ -190,8 +196,43 @@ export const Step5 = ({
             <Input 
               placeholder="Thickness number"
               value={values.thickness}
-              onChange={(e) => setFieldValue('thickness', e.target.value)}
+              
             />
+      {/* <Input
+     placeholder="Thickness number"
+              value={values.thickness}
+              onChange={(e) => setFieldValue('thickness', e.target.value)}
+      /> */}
+      </div>
+        </div>
+      </div>
+      <div className="grid md:grid-cols-2 gap-6 mt-2">
+        <div className="flex items-center">
+          <label className="font-medium min-w-[100px] text-sm">Insole Type</label>
+          <div className="w-[250px]">
+           <Input
+  placeholder=""
+  value={thicknessToUsageMap[values.thickness] || ""}   // show text instead of number
+  onChange={(e) => {
+    const newText = e.target.value;
+
+    // find the number (key) for this usage text
+    const matchingThickness = Object.entries(thicknessToUsageMap)
+      .find(([key, usage]) => usage === newText)?.[0];
+
+    if (matchingThickness) {
+      setFieldValue("thickness", matchingThickness); // store number internally
+      setFieldValue("usage", newText);              // store text for usage
+    } else {
+      // if no match, allow free text (optional)
+      setFieldValue("thickness", "");
+      setFieldValue("usage", "");
+    }
+  }}
+/>
+
+
+            
           </div>
         </div>
       </div>

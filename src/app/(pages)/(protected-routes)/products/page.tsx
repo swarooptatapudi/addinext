@@ -9,7 +9,7 @@ import InsolesOrderForm from '../orders/new-order/_child/InsolesOrderForm';
 export default function Products(): React.JSX.Element {
 
   const { data: products, isLoading, error } = useGetProductsListQuery();
-  console.log("products", products);
+  // console.log("products", products);
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load products</p>;
 
@@ -74,7 +74,7 @@ export default function Products(): React.JSX.Element {
               src={orthotic.image || "/assets/placeholder.jpg"}
               label={orthotic.item_name}
               href={
-                orthotic.item_name === "Insole"
+                orthotic.item_name === "AddiSole (Insole)"
                   ? "/orders/new-order/Insoles"   // 👈 route for Insole
                   : ""   // 👈 route for others
               }

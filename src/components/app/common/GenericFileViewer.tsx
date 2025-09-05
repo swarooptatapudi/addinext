@@ -5,7 +5,7 @@ import { Suspense, useState } from 'react';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -154,7 +154,7 @@ export function GenericFileViewer({
                   Remove File
                 </Button>
 
-                <Button
+                {/* <Button
                   disabled={disabled || loading}
                   onClick={async () => {
                     if (file) {
@@ -168,7 +168,22 @@ export function GenericFileViewer({
                   }}
                 >
                   {loading ? 'Uploading...' : 'Confirm'}
-                </Button>
+                </Button> */}
+                <DialogClose asChild>
+  <Button
+    disabled={disabled || loading}
+    onClick={() => {
+      if (file) {
+        onFileSelect?.(fileUrl || null);
+      } else {
+        setError("Please select a file before confirming.");
+      }
+    }}
+  >
+    {loading ? 'Uploading...' : 'Confirm'}
+  </Button>
+</DialogClose>
+
               </div>
             </>
           ) : (

@@ -72,7 +72,7 @@ export default function Profile() {
         window.location.reload();
       }, 500);
     } catch (error) {
-      console.error('Image upload error:', error);
+      // console.error('Image upload error:', error);
       setError('Failed to upload image. Please try again.');
     } finally {
       setIsUploading(false);

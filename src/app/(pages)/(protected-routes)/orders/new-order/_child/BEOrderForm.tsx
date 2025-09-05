@@ -991,7 +991,7 @@ const Step2 = ({
 };
 
 const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) => {
-  console.log(errors);
+  // console.log(errors);
   const shouldShowError = (fieldName: string, isRequired = false) => {
     const fieldValue = fieldName.includes('[')
       ? fieldName.split(/[\[\].]+/).reduce((obj, key) =>

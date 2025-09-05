@@ -47,7 +47,7 @@ export default function BuyPlan({ params }: { params: Promise<{ plan_id: string 
       router.refresh(); 
     } catch (err) {
       toast.error('Failed to activate subscription');
-      console.error('Subscription error:', err);
+      // console.error('Subscription error:', err);
     }
   };
 

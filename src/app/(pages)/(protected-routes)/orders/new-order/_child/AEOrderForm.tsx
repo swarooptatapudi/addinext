@@ -434,7 +434,7 @@ const Step1 = ({
   formSubmitted,
   setSocketTypeDialog
 }: any) => {
-  console.log(':::>>', errors);
+  // console.log(':::>>', errors);
 
   const [designVariationDialog, setDesignVariationDialog] = useState({
     open: false,

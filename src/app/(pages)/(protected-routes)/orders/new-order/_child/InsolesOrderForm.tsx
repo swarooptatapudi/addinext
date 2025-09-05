@@ -37,6 +37,7 @@ import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 import { AKINSOLES_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/insolesForm/Step5Finishing';
 import { CheckboxGroup } from '@/components/app/common/foot-complaints-form';
+import { thicknessToUsageMap, usageToThicknessMap } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
 import Link from 'next/link';
 
 const step1Validation = Yup.object().shape({
@@ -45,6 +46,7 @@ const step1Validation = Yup.object().shape({
     .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
     .required(FORMIK_ERRORS.REQUIRED),
   socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  usage: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   insole_model: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   height: Yup.string()
@@ -71,13 +73,13 @@ const step1Validation = Yup.object().shape({
     .matches(/^\d+$/, 'Must contain only digits')
     .test(
       'min-value',
-      'Size must be at least 0',
-      (value) => parseInt(value) >= 0
+      'Size must be at least 20',
+      (value) => parseInt(value) >= 20
     )
     .test(
       'max-value',
       'Size must be no more than 60',
-      (value) => parseInt(value) <= 60
+      (value) => parseInt(value) <= 45
     ),
   foot_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
@@ -103,7 +105,7 @@ const step1Validation = Yup.object().shape({
     .test(
       'max-value',
       'metatarsal length must be no more than 45',
-      (value) => parseInt(value) >= 25
+      (value) => parseInt(value) <= 45
     ),
   metatarsal_width: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
@@ -141,7 +143,7 @@ const step1Validation = Yup.object().shape({
 });
 
 const step2Validation = Yup.object().shape({
-  images_link: Yup.string()
+  custom_upload_link_with_photos: Yup.string()
     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
     .nullable(),
   direct_body: Yup.string().required('Scan condition is required'),
@@ -483,6 +485,7 @@ const ModelDialog = ({
   );
 };
 
+
 const WatchFieldReset = () => {
   const { values, setFieldValue } = useFormikContext<any>();
 
@@ -505,6 +508,8 @@ const Step1 = ({
   formSubmitted,
   setSocketTypeDialog
 }: any) => {
+
+
 
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
@@ -538,8 +543,8 @@ const Step1 = ({
   }, [FORM_OPTIONS]);
 
   useEffect(() => {
-    console.log("Available insole models:", FORM_OPTIONS['insole_model']);
-    console.log("Current insole model value:", values.insole_model);
+    // console.log("Available insole models:", FORM_OPTIONS['insole_model']);
+    // console.log("Current insole model value:", values.insole_model);
   }, [FORM_OPTIONS, values.insole_model]);
 
 
@@ -551,6 +556,8 @@ const Step1 = ({
       ...option,
     }));
   }, [values.socket_type, values.design_variation, FORM_OPTIONS]);
+
+
 
   return (
     <div className="flex flex-col gap-6">
@@ -645,7 +652,7 @@ const Step1 = ({
             </a>
           </Link> */}
           <a
-            href="https://uaterp.addiwise.com/files/AT_IN_SHOE%20SIZES_v.1.pdf"
+            href="https://uaterp.addiwise.com/files/AT_IN_SHOE%20SIZES_v.1%20(1).pdf"
             target="_blank"
             rel="noopener noreferrer"
 
@@ -676,13 +683,20 @@ const Step1 = ({
           ]}
           label="Usage"
           placeholder="Choose your comfort need"
-          value={values.gender}
-          onValueChange={handleChange('gender')}
-          inVaild={shouldShowError('gender', true)}
-          required
-          error={errors.gender}
+          value={values.usage}
+          onValueChange={(selectedUsage) => {
+            setFieldValue("usage", selectedUsage);
 
+            // Auto-set thickness if mapping exists
+            if (usageToThicknessMap[selectedUsage]) {
+              setFieldValue("thickness", usageToThicknessMap[selectedUsage]);
+            }
+          }}
+          inVaild={shouldShowError('usage', true)}
+          required
+          error={errors.usage}
         />
+
         <div className="flex flex-col">
           <label className="block text-xs font-medium text-black mb-1">
             Insoles Model <span className="text-red-500">*</span>
@@ -795,7 +809,7 @@ const Step1 = ({
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
         <div className='ml-5' >
           <Image
-            src={'/assets/order-forms/bk-order/6(2).png'}
+            src='/assets/order-forms/insoles/addisoleimage.png'
             alt="measurements"
             width={400}
             height={100}
@@ -942,101 +956,81 @@ const Step2 = ({
           <h3 className="font-semibold text-lg text-primary ">Scan Condition</h3>
           <SelectBox
             options={[
-              { label: 'Direct Body', value: 'Direct_Body ' },
-              { label: 'With Liner', value: 'With_Liner' },
+              { label: 'Image', value: 'image' },
+              { label: '3D Scan', value: '3D_scan' },
             ]}
-            label="Direct Body"
+            label="Scan Type"
             required={true}
-            value={values.direct_body}
-            onValueChange={handleChange('direct_body')}
-            inVaild={shouldShowError('direct_body', true)}
-            error={errors.direct_body}
+            value={values.scan_type}
+            onValueChange={handleChange('scan_type')}
+            inVaild={shouldShowError('scan_type', true)}
+            error={errors.scan_type}
           />
-          {values.direct_body === 'With_Liner' && (
-            <div style={{ marginBottom: '55px' }}></div>
-          )}
         </div>
-        <div>
-          <div className="grid grid-cols gap-4">
-            {values.direct_body === 'With_Liner' && (
-              <>
-                <SelectBox
-                  options={FORM_OPTIONS['liner_thickness'] ?? []}
-                  label="Liner Thickness"
-                  value={values.liner_thickness}
-                  onValueChange={handleChange('liner_thickness')}
+      </div>
+
+      {/* Show only if Scan Type = 3D Scan */}
+      {values.scan_type === '3D_scan' && (
+        <>
+          <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
+          <div className="grid grid-cols-8 gap-4">
+            <div className="col-span-3">
+              <div className="grid grid-cols-2">
+                <p className="mb-1 text-[14px]  flex items-center">Upload Scan</p>
+                <div className="w-[190px] ml-8">
+                  <SelectBox
+                    options={[{ value: 'Both', label: 'Left Foot/Right Foot ' }]}
+                    value={values.foot_Amputation}
+                    onValueChange={handleChange('foot_Amputation')}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
+              <div className="w-fit justify-center">
+                <StlFilePicker
+                  label="Upload STL file (left foot)"
+                  buttonText="Left Foot"
+                  accept={['.stl']}
+                  onFileSelect={(file) => console.log('Left Foot STL selected:', file?.name)}
                 />
-                <div style={{ marginBottom: '55px' }}></div>
-              </>
+              </div>
+            )}
+
+            {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
+              <div className="w-fit">
+                <StlFilePicker
+                  label="Upload STL file (Right foot)"
+                  buttonText="Right Foot"
+                  accept={['.stl']}
+                  onFileSelect={(file) => console.log('Right Foot STL selected:', file?.name)}
+                />
+              </div>
             )}
           </div>
-        </div>
-        <div className="grid grid-cols gap-4">
-          {values.direct_body === 'With_Liner' && (
-            <>
-              <SelectBox
-                options={FORM_OPTIONS[values.liner_thickness + '_' + 'variation'] || []}
-                label="Liner Type"
-                value={values.liner_type}
-                onValueChange={handleChange('liner_type')}
-              />
-              <div style={{ marginBottom: '55px' }}></div>
-            </>
-          )}
-        </div>
-      </div>
-      <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
+        </>
+      )}
+
+      {/* Additional files + links remain same for both */}
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
-          <div className="grid grid-cols-2">
-            <p className="mb-1 text-[14px]  flex items-center">Upload Scan</p>
-            <div className="w-[150px] ml-8">
-              <SelectBox
-                options={[
-                  { value: 'Left_Foot', label: 'Left Foot ' },
-                  { value: 'Right_Foot', label: 'Right Foot' },
-                  { value: 'Both', label: 'Both' },
-                ]}
-                value={values.foot_Amputation}
-                onValueChange={handleChange('foot_Amputation')}
-              />
-            </div>
-          </div>
-        </div>
-        {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
-          <div className="w-fit justify-center">
-            <StlFilePicker
-              label="Upload STL file (left foot)"
-              buttonText="Left Foot"
-
-              onFileSelect={(file) => console.log('Model A selected:', file?.name)}
-            />
-          </div>
-        )}
-
-        {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
-          <div className="w-fit">
-            <StlFilePicker
-              label="Upload STL file (Rgiht foot)"
-              buttonText="Right Foot"
-              onFileSelect={(file) => console.log('Model A selected:', file?.name)}
-            />
-          </div>
-        )}
-      </div>
-      <div className="grid grid-cols-8 gap-4">
-        <div className="col-span-3">
-          <p className="mb-0 text-[14px] ">Upload Addtional Files</p>
+          <p className="mb-0 text-[14px] ">Upload Additional Files</p>
           <span className="mb-1 text-[12px] ">(Design / Rough calculations etc.)</span>
         </div>
-
         <div className="w-fit">
           <GenericFileViewer
             allowedTypes={['.pdf', '.png', '.jpg', '.jpeg']}
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 1"
-          // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+            onFileSelect={(fileUrl) => {
+              if (fileUrl) {
+                console.log(" File selected:", fileUrl);
+              } else {
+                console.log("No file selected or file removed");
+              }
+            }}
           />
         </div>
         <div className="w-fit ml-2">
@@ -1045,10 +1039,17 @@ const Step2 = ({
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 2"
-          // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+            onFileSelect={(fileUrl) => {
+              if (fileUrl) {
+                console.log(" File selected:", fileUrl);
+              } else {
+                console.log("No file selected or file removed");
+              }
+            }}
           />
         </div>
       </div>
+
       <div className="flex flex-col-6 gap-4">
         <div className="col-span-3">
           <p className="mb-1 text-[14px]  ">Upload Link with Photos</p>
@@ -1060,14 +1061,23 @@ const Step2 = ({
           <Input
             placeholder="https://drive.google.com/..."
             className="mt-3 min-w-max ml-0 w-[410px]"
-            value={values.images_link}
-            onChange={handleChange('images_link')}
-            inVaild={shouldShowError('images_link')}
-            error={errors.images_link}
+            value={values.custom_upload_link_with_photos}
+            onChange={handleChange('custom_upload_link_with_photos')}
+            inVaild={shouldShowError('custom_upload_link_with_photos')}
+            error={errors.custom_upload_link_with_photos}
           />
         </div>
       </div>
+      <a
+        href="https://www.youtube.com/watch?feature=shared&v=uWJvxQDm8Dk"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 font-semibold hover:underline"
+      >
+        Watch Video
+      </a>
     </div>
+
   );
 };
 
@@ -1167,22 +1177,27 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   };
 
   const OnSubmit = async (values: any) => {
+    console.log("Form values on submit:", values);
     setFormValues(values);
+
     const payload = {
-      item_type: 'BK',
-      socket_type: values.socket_type,
+      item_type: 'Bk',
+      // socket_type: values.socket_type,
+      insole_model: values.insole_model,
       design_variation: values.design_variation,
       activity_level: values.activity_level,
       model_name: values.model_name,
       stump_length: values.stump_length,
       weight: values.weight,
     };
+    console.log("Payload for item code fetch:", payload);
     const itemCode = await getItemCodeByValues(payload);
     setSelectedItem(itemCode);
+    console.log("Final item code:", itemCode);
 
     // Submit the final form
     const orderPayload = {
-      item_type: 'BK',
+      item_type: 'Bk',
       customer: user?.customer_id,
       order_details: values,
       item_code: itemCode,
@@ -1210,10 +1225,13 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
         await step1Validation.validate(values, { abortEarly: false });
       } else if (currentStep === 2) {
         await step2Validation.validate(values, { abortEarly: false });
-      } else if (currentStep === 3) {
+      }
+      else if (currentStep === 3) {
         await step3Validation.validate(values, { abortEarly: false });
-      } else if (currentStep === 4) {
+      }
+      else if (currentStep === 4) {
         await step4Validation.validate(values, { abortEarly: false });
+
       } else if (currentStep === 5) {
         await step5Validation.validate(values, { abortEarly: false });
       }
@@ -1305,9 +1323,9 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                 {[
                   { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
                   { step: 2, name: 'Scan', icon: '📁' },
-                  { step: 3, name: 'Locking Mechanism', icon: '🔒' },
+                  // { step: 3, name: 'Locking Mechanism', icon: '🔒' },
                   { step: 4, name: 'Modifications', icon: '✏️' },
-                  { step: 5, name: 'Finishing', icon: '🎨' }
+                  { step: 5, name: 'Finished', icon: '🎨' }
                 ].map(({ step, name, icon }) => (
                   <React.Fragment key={step}>
                     <button
@@ -1443,7 +1461,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                 {currentStep > 1 && (
                   <Button
                     variant="outline"
-                    onClick={prevStep}
+                    onClick={() => setCurrentStep((prev) => (prev === 4 ? 2 : prev - 1))}
                     type="button"
                   >
                     Back
@@ -1454,9 +1472,17 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                 {currentStep < 5 ? (
                   <Button
                     className="shadow-2xl"
-                    onClick={async () => {
-                      await nextStep(values, setErrors);
-                    }}
+                    // onClick={async () => {
+                    //   await nextStep(values, setErrors);
+                    // }}
+                    onClick={() => {
+                      console.log("👉 Current Step:", currentStep);
+                      console.log("👉 Selected Values:", values);
+                      setCurrentStep((prev) => (prev === 2 ? 4 : prev + 1))
+                    }
+
+
+                    }
                     type="button"
                   >
                     Next

@@ -60,7 +60,7 @@ export default function BuyProductsPage() {
   const selectedProduct = products?.find(
     (item: any) => item.item_name === productName
   );
-  console.log("selectedProduct", selectedProduct);
+  // console.log("selectedProduct", selectedProduct);
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
       const script = document.createElement('script');
@@ -100,7 +100,7 @@ export default function BuyProductsPage() {
 
         // 👉 Only ONE handler function
         handler: async function (response: any) {
-          console.log("Payment response:", response);
+          // console.log("Payment response:", response);
 
           try {
             // Build order payload
@@ -116,19 +116,19 @@ export default function BuyProductsPage() {
               },
             };
 
-            console.log("Order Payload (object):", orderPayload);
+            // console.log("Order Payload (object):", orderPayload);
 
             // 🟢 Logs as raw JSON string (exact body you send)
-            console.log("Order Payload (JSON):", JSON.stringify(orderPayload, null, 2));
+            // console.log("Order Payload (JSON):", JSON.stringify(orderPayload, null, 2));
             // Call your API
             const orderRes = await createProductOrder(orderPayload).unwrap();
 
             toast.success("Order placed successfully!");
-            console.log("Order Response:", orderRes);
+            // console.log("Order Response:", orderRes);
             router.push(`/transcations`);
           } catch (err) {
             toast.error("Failed to create order after payment");
-            console.error("Create Order Error:", err);
+            // console.error("Create Order Error:", err);
           }
         },
 
@@ -152,11 +152,11 @@ export default function BuyProductsPage() {
 
       rzp.on("payment.failed", function (response: any) {
         toast.error("Payment failed. Please try again.");
-        console.error("Payment failed:", response.error);
+        // console.error("Payment failed:", response.error);
       });
     } catch (err) {
       toast.error("An error occurred during payment process");
-      console.error(err);
+      // console.error(err);
     }
   };
 
@@ -165,7 +165,7 @@ export default function BuyProductsPage() {
   const description = selectedProduct?.description || "";
   // ✅ MRP & Discount come from selected product
   const mrp = selectedProduct?.mrp || 0;
-  console.log("mrp", mrp);
+  // console.log("mrp", mrp);
   const discountAmount = selectedProduct?.standard_discount || 0;
   // console.log("discountAmount", discountAmount);
 
@@ -184,13 +184,13 @@ export default function BuyProductsPage() {
     setIsValidatingCoupon(true);
     try {
       const response = await validateCoupon({ coupon_code: couponCode }).unwrap();
-      console.log("Coupon Validation Response:", response);
+      // console.log("Coupon Validation Response:", response);
       setCouponData(response.message);
       toast.success("Coupon applied successfully!");
     } catch (error: any) {
       setCouponData(null);
       setTimeout(() => { toast.error(error.data?.message || "Invalid coupon code"); }, 10000);
-      console.error("Coupon Validation Error:", error);
+      // console.error("Coupon Validation Error:", error);
 
     } finally {
       setIsValidatingCoupon(false);
@@ -236,7 +236,7 @@ export default function BuyProductsPage() {
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="text-sm text-gray-700">
+          <CardContent className="text-sm text-gray-700" >
             {/* Fluctuations in limb size can cause discomfort, instability, and
             frequent device replacements. AddiStud-P provides seamless
             adjustment for Trans-Tibial & Trans-Femoral sockets, training, and
@@ -255,8 +255,13 @@ export default function BuyProductsPage() {
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="text-sm text-gray-700">
-            {description}
+          <CardContent className="text-sm text-gray-700" >
+            {/* {description} */}
+            {description.includes("<a") ? (
+              <div dangerouslySetInnerHTML={{ __html: description }} />
+            ) : (
+              description
+            )}
           </CardContent>
         </Card>
       );

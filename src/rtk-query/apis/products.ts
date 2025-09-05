@@ -49,7 +49,7 @@ export const productsApi = createApi({
         // params: customer ? { customer } : undefined, // ✅ pass query param
       }),
       transformResponse: (response: any) => {
-        console.log("Full API Response >>>", response); // 🔍 debug
+        // console.log("Full API Response >>>", response); // 🔍 debug
         return response?.data?.sales_orders ?? [];
       },
     }),

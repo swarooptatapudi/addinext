@@ -87,13 +87,13 @@ export default function BuyPrintersPage ({ params }: { params: Promise<{ product
   const { data }: { data?: RateAndDiscountData } = useGetRateAndDiscountsQuery({
     customer: user?.customer_id,
   });
-  console.log("rate dd:",data);
-    console.log("user  dd:",user);
+  // console.log("rate dd:",data);
+  //   console.log("user  dd:",user);
   
   const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
     customer: user?.customer_id,
   });
-  console.log("transactionHistory dd:",user);
+  // console.log("transactionHistory dd:",user);
   const [initPayment, { isLoading }] = useBuyCoinsInitiatePaymentMutation();
   const [buyCoins, { isLoading: isPaymentSuccessLoading }] = useBuyCoinsAfterPaymentMutation();
   const [buyAddiNxtCoin, { isLoading: isBuyingCoins }] = useBuyAddiNxtCoinMutation(); 
@@ -132,11 +132,11 @@ const [couponCode, setCouponCode] = useState('');
       // const payload = { coupon_code: couponCode };
       try {
         const response = await validateCoupon({ coupon_code: couponCode }).unwrap();
-        console.log('Coupon Validation Response:', response);
+        // console.log('Coupon Validation Response:', response);
         setCouponData(response.message);
       } catch (error: any) {
         setCouponData(null);
-        console.error('Coupon Validation Error:', error);
+        // console.error('Coupon Validation Error:', error);
         toast.error(error.data?.message || 'Invalid coupon code');
       } finally {
         setIsValidatingCoupon(false);
@@ -231,7 +231,7 @@ const [couponCode, setCouponCode] = useState('');
         // order_id: "ddd",
         app_name:'addiwise customer portal',
         handler: async function(response: any) {
-          console.log('Payment response:', response);
+          // console.log('Payment response:', response);
           try {
             const payload = {
               buy_coin: buyQuantity,
@@ -241,7 +241,7 @@ const [couponCode, setCouponCode] = useState('');
             };
             
             const result = await buyAddiNxtCoin(payload).unwrap();
-            console.log('Payment result:', result);
+            // console.log('Payment result:', result);
             toast.success('product purchased successfully!');
             refetchTransactions(); 
             // if (result.success) {

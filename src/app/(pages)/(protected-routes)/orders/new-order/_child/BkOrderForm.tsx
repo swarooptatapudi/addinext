@@ -884,10 +884,12 @@ const Step1 = ({
                 disabled={isViewMode}
                 className="w-full text-left justify-start h-10"
                 onClick={() =>
+
                   setModelDialog({
                     open: true,
                     options: modelOptions
                   })
+
                 }
               >
                 {values.model_name
@@ -1145,6 +1147,8 @@ const Step1 = ({
         options={modelOptions}
         onSelect={(value) => setFieldValue('model_name', value)}
         socketType={values.socket_type}
+
+
 
       // designVariation={values.design_variation}
       />
@@ -1671,7 +1675,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const mode = searchParams.get('mode'); // "view" or null
   useEffect(() => {
     if (orderId && deviceTypeId) {
-      console.log('orderId%%deviceTypeId=>', orderId, deviceTypeId)
+      // console.log('orderId%%deviceTypeId=>', orderId, deviceTypeId)
       getOrderDetails({
         order_type: deviceTypeId,
         order_id: orderId,
@@ -1680,14 +1684,14 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
 
         .unwrap()
         .then((response) => {
-          console.log("Full API response =>", response);
-          console.log("API Keys =>", Object.keys(response.data));
+          // console.log("Full API response =>", response);
+          // console.log("API Keys =>", Object.keys(response.data));
 
-          console.log("Fetched order details =>", response.data);
+          // console.log("Fetched order details =>", response.data);
 
-          // 👇 If you want to check specific nested keys
-          console.log("value_c_details =>", response.data?.value_c_details);
-          console.log("socket_design_details =>", response.data?.socket_design_details);
+          // // 👇 If you want to check specific nested keys
+          // console.log("value_c_details =>", response.data?.value_c_details);
+          // console.log("socket_design_details =>", response.data?.socket_design_details);
 
           const transformedData = {
             ...initialValues,
@@ -1830,7 +1834,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
         name: 'Addiwise Company',
         description: `Payment for BK Order`,
         handler: async function (response: any) {
-          console.log('Payment Success:', response);
+          // console.log('Payment Success:', response);
 
           try {
             // After successful payment, create the order with payment details
@@ -1857,7 +1861,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
               throw new Error(orderResponse?.message?.message || 'Order creation failed');
             }
           } catch (orderError) {
-            console.error('Order creation error:', orderError);
+            // console.error('Order creation error:', orderError);
             toast.error(
               'Payment successful but order creation failed. Please contact support with payment ID: ' +
               response.razorpay_payment_id
@@ -1886,14 +1890,14 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       const rzp = new window.Razorpay(options);
 
       rzp.on('payment.failed', function (response: any) {
-        console.error('Payment failed:', response);
+        // console.error('Payment failed:', response);
         setIsPaymentProcessing(false);
         toast.error(`Payment failed: ${response.error.description}`);
       });
 
       rzp.open();
     } catch (error) {
-      console.error('Payment preparation error:', error);
+      // console.error('Payment preparation error:', error);
       setIsPaymentProcessing(false);
       toast.error('Failed to prepare payment. Please try again.');
     }
@@ -1935,7 +1939,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       addicoins: parseInt(values.addicoins)
     };
 
-    console.log("Create Order orderPayload:'", orderPayload);
+    // console.log("Create Order orderPayload:'", orderPayload);
 
     try {
       const res = await createOrder(orderPayload).unwrap();
@@ -1951,7 +1955,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
         toast.error(` ${res?.message?.message || 'Order creation failed'}`);
       }
     } catch (err) {
-      console.error('Mutation error:', err);
+      // console.error('Mutation error:', err);
       toast.error('Server error. Please try again.');
     }
   };
@@ -2288,7 +2292,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 ) : (
                   <>
                     {/* @ts-ignore */}
-                    {values.Design_by === 'Self' && values.Print_by === 'Self' ? (
+                    {values.design_by === 'Self' && values.print_by === 'Self' ? (
                       <div className="flex gap-2.5">
                         <Button
                           className="shadow-2xl"

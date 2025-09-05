@@ -178,7 +178,7 @@ export default function Transcations(): React.JSX.Element {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error(' Error downloading PDF:', error);
+      // console.error(' Error downloading PDF:', error);
       alert('Unable to download PDF. Please try again.');
     }
   };
