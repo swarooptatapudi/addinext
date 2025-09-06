@@ -17,6 +17,8 @@ interface ConfirmOrderDialogProps {
         design_variation: string;
         model_name: string;
         activity_level: string;
+        insole_model?: string; // Added optional insole_model
+        usage?: string; // Added optional usage
     };
     selectedItem: string;
     isItemFetching: boolean;

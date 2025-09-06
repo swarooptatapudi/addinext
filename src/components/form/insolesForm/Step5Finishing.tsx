@@ -32,6 +32,9 @@ export const Step5 = ({
   FORM_OPTIONS,
 }: any) => {
   const [selectedFinishOptions, setSelectedFinishOptions] = useState<SelectedFinishOption[]>([]);
+ 
+const [selectedType, setSelectedType] = useState<'standard' | 'premium'>('standard');
+
 
   const isAddiEase = values.model_name === 'AddiEase';
   const isAddiEaseEco = values.model_name === 'AddiEaseEco';
@@ -86,6 +89,8 @@ export const Step5 = ({
     );
   };
 
+  
+
   const handleFinishOptionSelect = (option: FinishOption) => {
     setSelectedFinishOptions(prev => {
       const exists = prev.find(item => item.value === option.value);
@@ -123,6 +128,8 @@ export const Step5 = ({
     return [];
   };
 
+
+  
  // Define mapping (string thickness → usage option)
 
 
@@ -135,6 +142,7 @@ export const Step5 = ({
     { value: 'sports', label: 'Sports', imgSrc: '/assets/order-forms/insoles/Sports.png' },
     { value: 'diabetic', label: 'Diabetic', imgSrc: '/assets/order-forms/insoles/Diabetics.png' },
   ];
+   const selectedInsole = options.find(option => option.label === values.usage);
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-lg font-semibold mt-5 text-primary">Design & Printing</h3>
@@ -191,19 +199,20 @@ export const Step5 = ({
 
       <div className="grid md:grid-cols-2 gap-6 mt-2">
         <div className="flex items-center">
-          <label className="font-medium min-w-[100px] text-sm">Thickness:</label>
-          <div className="w-[250px]">
-            <Input 
-              placeholder="Thickness number"
-              value={values.thickness}
-              
-            />
-      {/* <Input
-     placeholder="Thickness number"
-              value={values.thickness}
-              onChange={(e) => setFieldValue('thickness', e.target.value)}
-      /> */}
-      </div>
+          <div className="grid md:grid-cols-2 gap-6 mt-2"> 
+         <div className="flex items-center">
+  <label className="font-medium min-w-[100px] text-sm">Thickness:</label>
+  <input
+    type="text"
+    name="thickness"
+    className="border rounded px-2 py-1 w-[350px] rounded-md"
+    placeholder="Enter thickness"
+   
+  />
+</div>
+
+          </div>
+         
         </div>
       </div>
       <div className="grid md:grid-cols-2 gap-6 mt-2">
@@ -409,7 +418,7 @@ export const Step5 = ({
              </div>
             </div>
           )}
-              <div className="mt-20">
+              {/* <div className="mt-20">
                 <h3 className="text-lg font-medium mb-[-40px]">Finish/ Usage</h3>
                 <div className="ml-45">
                 <ImageCheckbox 
@@ -427,7 +436,78 @@ export const Step5 = ({
           }}
         />
         </div>
-      </div>
+      </div> */}
+  <div className="mt-20">
+  {/* <p className="text-lg font-semibold mb-4 ml-5">Standard/ Premium options</p> */}
+
+  <div className="flex flex-col gap-6 ml-5">
+    {/* Standard */}
+   {/* Standard */}
+<label className="flex items-start gap-3 cursor-pointer">
+  <input
+    type="radio"
+    name="insoleType"  // must match Formik field
+    checked={values.insoleType === "standard"}
+    onChange={() => setFieldValue("insoleType", "standard")}
+    className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 mt-1"
+  />
+  <div className="flex flex-col md:flex-row md:items-center gap-4">
+    <div>
+      <span className="text-base font-medium">Standard</span>
+      {values.insoleType === "standard" && (
+        <p className="mt-1 text-sm text-gray-600 leading-relaxed max-w-md">
+          Functional cushioning designed for regular use. Provides reliable
+          comfort and support for the intended purpose of the insole
+          (walking, endurance, sports, or medical use).
+        </p>
+      )}
+    </div>
+    {values.insoleType === "standard" && selectedInsole && (
+      <img
+        src={selectedInsole.imgSrc}
+        alt={selectedInsole.label}
+        className="w-[160px] h-auto border rounded-xl shadow-md"
+      />
+    )}
+  </div>
+</label>
+
+{/* Premium */}
+<label className="flex items-start gap-3 cursor-pointer">
+  <input
+    type="radio"
+    name="insoleType"
+    checked={values.insoleType === "premium"}
+    onChange={() => setFieldValue("insoleType", "premium")}
+    className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 mt-1"
+  />
+  <div className="flex flex-col md:flex-row md:items-center gap-4">
+    <div>
+      <span className="text-base font-medium">Premium</span>
+      {values.insoleType === "premium" && (
+        <p className="mt-1 text-sm text-gray-600 leading-relaxed max-w-md">
+          Advanced cushioning with enhanced softness, shock absorption, and
+          pressure distribution. Recommended for sensitive feet, extended
+          usage hours, or patients needing higher protection and comfort.
+        </p>
+      )}
+    </div>
+    {values.insoleType === "premium" && selectedInsole && (
+      <img
+        src={selectedInsole.imgSrc}
+        alt={selectedInsole.label}
+        className="w-[160px] h-auto border rounded-xl shadow-md"
+      />
+    )}
+  </div>
+</label>
+
+  </div>
+</div>
+
+
+
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mt-2 ml-45">
         {selectedFinishOptions.map((option, index) => {
@@ -505,10 +585,13 @@ export const Step5 = ({
               {/* <div className="mt-2 text-sm font-medium">
                 Selected: <span className="text-blue-600">{option.type === 'standard' ? 'Standard' : 'Premium'}</span>
               </div> */}
-            </div>
+</div>
           );
         })}
       </div>
+                    <p>Disclaimer : Actual product may vary in appearance from the images shown, without compromising on quality or functionality</p>
+             <p>The color of the insole padding may vary depending on material availability.
+</p>
     </div>
   );
 };

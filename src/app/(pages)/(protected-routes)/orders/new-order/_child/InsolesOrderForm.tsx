@@ -46,7 +46,8 @@ const step1Validation = Yup.object().shape({
     .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
     .required(FORMIK_ERRORS.REQUIRED),
   socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
-  usage: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  usage: Yup.string(),
+
   insole_model: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   height: Yup.string()
@@ -120,19 +121,19 @@ const step1Validation = Yup.object().shape({
       'metatarsal width must be no more than 25',
       (value) => parseInt(value) <= 25
     ),
-  shoe_width: Yup.string()
-    .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, 'Must contain only digits')
-    .test(
-      'min-value',
-      'Size must be at least 0',
-      (value) => parseInt(value) >= 0
-    )
-    .test(
-      'max-value',
-      'Size must be no more than 25',
-      (value) => parseInt(value) <= 25
-    ),
+  // shoe_width: Yup.string()
+  //   .required(FORMIK_ERRORS.REQUIRED)
+  //   .matches(/^\d+$/, 'Must contain only digits')
+  //   .test(
+  //     'min-value',
+  //     'Size must be at least 0',
+  //     (value) => parseInt(value) >= 0
+  //   )
+  //   .test(
+  //     'max-value',
+  //     'Size must be no more than 25',
+  //     (value) => parseInt(value) <= 25
+  //   ),
   flexion_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Flexion angle must be ≤ 60', (value) => !value || Number(value) <= 60),
@@ -146,8 +147,33 @@ const step2Validation = Yup.object().shape({
   custom_upload_link_with_photos: Yup.string()
     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
     .nullable(),
-  direct_body: Yup.string().required('Scan condition is required'),
+  scan_type: Yup.string().required('Scan condition is required'),
+  foot_Amputation: Yup.string().required('Foot amputation is required'),
+
 });
+// const step2Validation = Yup.object()
+//   .shape({
+//     custom_upload_link_with_photos: Yup.string().url('Must be a valid URL').nullable(),
+//     scan_type: Yup.string().required('Scan condition is required'),
+//     foot_Amputation: Yup.string().required('Foot amputation is required'),
+//     left_foot_file: Yup.mixed().nullable(),
+//     right_foot_file: Yup.mixed().nullable(),
+//   })
+//   .test(
+//     'files-or-link',
+//     'Both files or a link is required',
+//     function (value) {
+//       const { left_foot_file, right_foot_file, custom_upload_link_with_photos } = value;
+//       if ((left_foot_file && right_foot_file) || (custom_upload_link_with_photos && custom_upload_link_with_photos.trim())) {
+//         return true;
+//       }
+//       return this.createError({
+//         path: 'left_foot_file', // you can attach error to either file or link
+//         message: 'Both Left and Right foot files or a photo link is required'
+//       });
+//     }
+//   );
+
 const step4Validation = Yup.object().shape({
   global_volume_reduction: Yup.string()
     .nullable()
@@ -696,7 +722,6 @@ const Step1 = ({
           required
           error={errors.usage}
         />
-
         <div className="flex flex-col">
           <label className="block text-xs font-medium text-black mb-1">
             Insoles Model <span className="text-red-500">*</span>
@@ -982,7 +1007,10 @@ const Step2 = ({
                     options={[{ value: 'Both', label: 'Left Foot/Right Foot ' }]}
                     value={values.foot_Amputation}
                     onValueChange={handleChange('foot_Amputation')}
-                  />
+
+                  />{shouldShowError('foot_Amputation', true) && (
+                    <p className="text-xs text-red-500 mt-1">{errors.foot_Amputation}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -993,6 +1021,7 @@ const Step2 = ({
                   label="Upload STL file (left foot)"
                   buttonText="Left Foot"
                   accept={['.stl']}
+
                   onFileSelect={(file) => console.log('Left Foot STL selected:', file?.name)}
                 />
               </div>
@@ -1063,6 +1092,7 @@ const Step2 = ({
             className="mt-3 min-w-max ml-0 w-[410px]"
             value={values.custom_upload_link_with_photos}
             onChange={handleChange('custom_upload_link_with_photos')}
+            required
             inVaild={shouldShowError('custom_upload_link_with_photos')}
             error={errors.custom_upload_link_with_photos}
           />
@@ -1168,7 +1198,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
 
   const handleConfirmOrder = () => {
     const payload: any = {};
-    payload.item_type = 'BK';
+    payload.item_type = 'IN';
     payload.customer = user?.customer_id;
     payload.order_details = formValues;
     payload.item_code = selectedItem;
@@ -1181,7 +1211,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
     setFormValues(values);
 
     const payload = {
-      item_type: 'Bk',
+      item_type: 'IN',
       // socket_type: values.socket_type,
       insole_model: values.insole_model,
       design_variation: values.design_variation,
@@ -1189,6 +1219,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
       model_name: values.model_name,
       stump_length: values.stump_length,
       weight: values.weight,
+      usage: values.usage,
+      insoletype: values.insoleType,
     };
     console.log("Payload for item code fetch:", payload);
     const itemCode = await getItemCodeByValues(payload);
@@ -1197,7 +1229,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
 
     // Submit the final form
     const orderPayload = {
-      item_type: 'Bk',
+      item_type: 'IN',
       customer: user?.customer_id,
       order_details: values,
       item_code: itemCode,
@@ -1249,35 +1281,55 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
     }
   };
 
-  const nextStep = async (values: any, setErrors: any) => {
+  // const nextStep = async (values: any, setErrors: any) => {
 
+  //   setFormSubmitted(true);
+  //   const errors = await validateCurrentStep(values);
+  //   if (Object.keys(errors).length === 0) {
+  //     if (currentStep === 1) {
+  //       // Show confirmation dialog after Step 1
+  //       setFormValues(values);
+  //       const itemPayload = {
+  //         item_type: 'BK',
+  //         // socket_type: values.socket_type,
+  //         insole_model: values.insole_model,
+  //         design_variation: values.design_variation,
+  //         activity_level: values.activity_level,
+  //         model_name: values.model_name,
+  //         stump_length: values.stump_length,
+  //         weight: values.weight,
+  //         itemCode: selectedItem
+  //       };
+  //       console.log("Item payload for code fetch:", itemPayload);
+  //       const itemCode = await getItemCodeByValues(itemPayload);
+  //       setSelectedItem(itemCode);
+  //       setShowStep1Confirmation(true);
+  //     } else {
+  //       setCompletedSteps([...completedSteps, currentStep]);
+  //       setCurrentStep(currentStep + 1);
+  //       setFormSubmitted(false);
+  //     }
+  //   } else {
+  //     setErrors(errors);
+  //   }
+  // };
+
+
+  const nextStep = async (values: any, setErrors: any): Promise<boolean> => {
+    console.log("Next step called with values:", values);
     setFormSubmitted(true);
     const errors = await validateCurrentStep(values);
+
     if (Object.keys(errors).length === 0) {
-      if (currentStep === 1) {
-        // Show confirmation dialog after Step 1
-        setFormValues(values);
-        const itemPayload = {
-          item_type: 'BK',
-          socket_type: values.socket_type,
-          design_variation: values.design_variation,
-          activity_level: values.activity_level,
-          model_name: values.model_name,
-          stump_length: values.stump_length,
-          weight: values.weight,
-        };
-        const itemCode = await getItemCodeByValues(itemPayload);
-        setSelectedItem(itemCode);
-        setShowStep1Confirmation(true);
-      } else {
-        setCompletedSteps([...completedSteps, currentStep]);
-        setCurrentStep(currentStep + 1);
-        setFormSubmitted(false);
-      }
+      setCompletedSteps([...completedSteps, currentStep]);
+      setFormSubmitted(false);
+      return true; // ✅ validation passed
     } else {
       setErrors(errors);
+      return false; // ❌ validation failed
     }
   };
+
 
   const prevStep = () => {
     setFormSubmitted(false);
@@ -1290,6 +1342,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
     setCurrentStep(2);
     setFormSubmitted(false);
   };
+
 
   return (
     <div className="pb-16 relative">
@@ -1324,7 +1377,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                   { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
                   { step: 2, name: 'Scan', icon: '📁' },
                   // { step: 3, name: 'Locking Mechanism', icon: '🔒' },
-                  { step: 4, name: 'Modifications', icon: '✏️' },
+                  // { step: 4, name: 'Modifications', icon: '✏️' },
                   { step: 5, name: 'Finished', icon: '🎨' }
                 ].map(({ step, name, icon }) => (
                   <React.Fragment key={step}>
@@ -1445,6 +1498,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
 
               <Step5
                 values={values}
+
                 handleChange={handleChange}
                 errors={errors}
                 touched={touched}
@@ -1454,14 +1508,17 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                 setSelectedOptions={setSelectedOptions}
                 selectedOptions={selectedOptions}
               />
+
+
             )}
+
 
             <div className="sticky bottom-4 left-0 flex justify-between bg-white p-2 rounded-lg shadow-md">
               <div>
                 {currentStep > 1 && (
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentStep((prev) => (prev === 4 ? 2 : prev - 1))}
+                    onClick={() => setCurrentStep((prev) => (prev === 5 ? 2 : prev - 1))}
                     type="button"
                   >
                     Back
@@ -1470,27 +1527,48 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
               </div>
               <div>
                 {currentStep < 5 ? (
+                  // <Button
+                  //   className="shadow-2xl"
+                  //   onClick={async () => {
+                  //     console.log("👉 Current Step:", currentStep);
+                  //     console.log("👉 Selected Values:", values);
+                  //     await nextStep(values, setErrors);
+                  //     setCurrentStep((prev) => (prev === 2 ? 4 : prev + 1))
+                  //   }}
+                  //   // onClick={() => {
+                  //   //   console.log("👉 Current Step:", currentStep);
+                  //   //   console.log("👉 Selected Values:", values);
+                  //   //   setCurrentStep((prev) => (prev === 2 ? 4 : prev + 1))
+                  //   // }
+                  //   // }
+                  //   type="button"
+                  // >
+                  //   Next
+                  // </Button>
+
                   <Button
-                    className="shadow-2xl"
-                    // onClick={async () => {
-                    //   await nextStep(values, setErrors);
-                    // }}
-                    onClick={() => {
-                      console.log("👉 Current Step:", currentStep);
-                      console.log("👉 Selected Values:", values);
-                      setCurrentStep((prev) => (prev === 2 ? 4 : prev + 1))
-                    }
-
-
-                    }
                     type="button"
+                    onClick={async () => {
+                      const isValid = await nextStep(values, setErrors); // returns true only if valid
+                      if (isValid) {
+                        setCurrentStep(prev => (prev === 2 ? 5 : prev + 1)); // skip Step3 if needed
+                      }
+                    }}
                   >
                     Next
                   </Button>
+
+
+
                 ) : (
                   <Button
                     className="shadow-2xl"
-                    onClick={() => handleSubmit()}
+                    onClick={() => {
+                      console.log("Submitting...")
+                      console.log("Insole Type in parent:", values);
+                      handleSubmit()
+                        ;
+                    }}
                     type="submit"
                   >
                     Submit
@@ -1508,6 +1586,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
         onOpenChange={setShowStep1Confirmation}
         formValues={{
           socket_type: formValues.socket_type,
+          // usage: formValues.usage,
+          insole_model: formValues.insole_model,
           design_variation: formValues.design_variation,
           model_name: formValues.model_name,
           activity_level: formValues.activity_level,
