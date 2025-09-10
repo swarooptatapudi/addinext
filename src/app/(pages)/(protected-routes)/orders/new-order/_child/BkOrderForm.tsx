@@ -2107,6 +2107,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
           handleSubmit,
 
           errors,
+
           touched,
           setFieldValue,
           setErrors,
@@ -2128,7 +2129,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                   { step: 2, name: 'Scan', icon: '📁' },
                   { step: 3, name: 'Locking Mechanism', icon: '🔒' },
                   { step: 4, name: 'Modifications', icon: '✏️' },
-                  { step: 5, name: 'Finished', icon: '🎨' }
+                  { step: 5, name: 'Finish', icon: '🎨' }
                 ].map(({ step, name, icon }) => (
                   <React.Fragment key={step}>
                     <button

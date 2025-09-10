@@ -24,7 +24,7 @@ export function GenericFileViewer({
   label = 'Select File',
   buttonText = 'Upload File',
   onFileSelect,
-  allowedTypes = ['.png', '.jpg', '.jpeg', '.pdf', '.obj', '.mtl'],
+  allowedTypes = ['.png', '.jpg', '.jpeg', '.pdf', '.obj', '.mtl', '.zip'],
   maxSizeMB = 25,
   disabled = false,
 }: FileViewerProps) {
@@ -122,7 +122,7 @@ export function GenericFileViewer({
       );
     }
 
-    return <div>Unsupported file format</div>;
+    return <div>File Selected</div>;
   };
 
   return (
@@ -170,19 +170,19 @@ export function GenericFileViewer({
                   {loading ? 'Uploading...' : 'Confirm'}
                 </Button> */}
                 <DialogClose asChild>
-  <Button
-    disabled={disabled || loading}
-    onClick={() => {
-      if (file) {
-        onFileSelect?.(fileUrl || null);
-      } else {
-        setError("Please select a file before confirming.");
-      }
-    }}
-  >
-    {loading ? 'Uploading...' : 'Confirm'}
-  </Button>
-</DialogClose>
+                  <Button
+                    disabled={disabled || loading}
+                    onClick={() => {
+                      if (file) {
+                        onFileSelect?.(fileUrl || null);
+                      } else {
+                        setError("Please select a file before confirming.");
+                      }
+                    }}
+                  >
+                    {loading ? 'Uploading...' : 'Confirm'}
+                  </Button>
+                </DialogClose>
 
               </div>
             </>

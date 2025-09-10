@@ -445,17 +445,17 @@ export const AKB_FORM_INITIAL_VALUES = {
 
 
 // src/utils/constants.ts
-export const thicknessToUsageMap: Record<string, string> = {
+export const thicknessToinsoletypeMap: Record<string, string> = {
   "1": "City Comfort",
   "2": "Endurance",
   "3": "Sensitive",
   "4": "Sports",
-  "5": "Diabetes",
+  "5": "Diabetics",
 };
 
 
-export const usageToThicknessMap: Record<string, string> = Object.fromEntries(
-  Object.entries(thicknessToUsageMap).map(([thickness, usage]) => [usage, thickness])
+export const insoletypeToThicknessMap: Record<string, string> = Object.fromEntries(
+  Object.entries(thicknessToinsoletypeMap).map(([thickness, insoletype]) => [insoletype, thickness])
 );
 export const AKINSOLES_FORM_INITIAL_VALUES = {
   patient_name: '',
@@ -484,6 +484,8 @@ export const AKINSOLES_FORM_INITIAL_VALUES = {
   abductionadduction_angle: '',
   liner_type: '',
   liner_thickness: '',
+  thicknessss: '',
+  thickness: '', // thickness
   direct_body: '',
   activity_level: '',
   adapter_type: '',
@@ -492,7 +494,9 @@ export const AKINSOLES_FORM_INITIAL_VALUES = {
   model_name: '',
   additional_customization_requirements: '',
   foot_Amputation: 'Both',
+  selectedinsoletype: '',
   images_link: '',
+  insoletype: '',
   custom_upload_link_with_photos: '',
   global_volume_reduction: '',
   shoe_width: '',

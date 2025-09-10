@@ -314,6 +314,17 @@ export const ordersApi = createApi({
         return response;
       }
     }),
+    createInsoleOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.bk_order.create_insole_order',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        // console.log("create_bk_order", response);
+        return response;
+      }
+    }),
     getOrders: builder.query({
       query: () => ({
         url: `/method/addiwise.apis.order.get_sales_order`,
@@ -378,6 +389,7 @@ export const {
   useGetBKEstimateMutation,
   useValidateCouponMutation,
   useGetOrderDetailIdsMutation,
-  useCreateProductOrderMutation
+  useCreateProductOrderMutation,
+  useCreateInsoleOrderMutation,
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;

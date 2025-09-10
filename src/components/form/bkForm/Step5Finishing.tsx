@@ -165,6 +165,7 @@ export const Step5 = ({
       setShowEstimateCard(false);
       setEstimateData(null);
       setInitialLoad(true);
+
     }
   }, [isActiveStep]);
 
@@ -373,7 +374,6 @@ export const Step5 = ({
       setIsEstimating(false);
     }
   };
-
   const handleCouponValidation = async () => {
     if (!couponCode.trim()) {
       setCouponData(null);
@@ -594,13 +594,15 @@ export const Step5 = ({
             )}
 
             {showPreviwButton && (
-              <Button
-                className="w-[350px] mt-4 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
-                onClick={() => setIsOrderSummaryOpen(true)}
-                disabled={isEstimating}
-              >
-                Show Order Summary
-              </Button>
+              <div className="block">
+                <Button
+                  className="w-[350px] mt-4 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+                  onClick={() => setIsOrderSummaryOpen(true)}
+                  disabled={isEstimating}
+                >
+                  Show Order Summary
+                </Button>
+              </div>
             )}
           </div>
 

@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { Formik, useFormikContext } from 'formik';
 import * as Yup from 'yup';
 
+
 // Components
 import StlFilePicker from '@/components/app/common/StlPreviewer';
 import { Button } from '@/components/ui/button';
@@ -27,8 +28,8 @@ import {
 } from '@/components/ui/dialog';
 // API Hooks
 import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
-import { useCreateOrderMutation } from '@/rtk-query/apis/orders';
-import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
+import { useCreateInsoleOrderMutation } from '@/rtk-query/apis/orders';
+import { useGetItemNameInByDetailsMutation } from '@/rtk-query/apis/products';
 
 // Constants & Utils
 import { BK_FORM_TYPE, USER } from '@/uttils/Types';
@@ -37,8 +38,18 @@ import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 import { AKINSOLES_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/insolesForm/Step5Finishing';
 import { CheckboxGroup } from '@/components/app/common/foot-complaints-form';
-import { thicknessToUsageMap, usageToThicknessMap } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
+import { getThickness } from "@/uttils/thicknessChart";
+import { mapActivityLevel, getThicknessCode, finishMap, layeringMap, modelMap } from "@/uttils/insoleUtils";
+
+import { thicknessToinsoletypeMap, insoletypeToThicknessMap } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
 import Link from 'next/link';
+
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
@@ -46,7 +57,7 @@ const step1Validation = Yup.object().shape({
     .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
     .required(FORMIK_ERRORS.REQUIRED),
   socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
-  usage: Yup.string(),
+  insoletype: Yup.string(),
 
   insole_model: Yup.string().required(FORMIK_ERRORS.REQUIRED),
   activity_level: Yup.string().required(FORMIK_ERRORS.REQUIRED),
@@ -71,7 +82,7 @@ const step1Validation = Yup.object().shape({
   //   .test('min-value', 'stupm length must be at least 1', (value) => Number(value) >= 1),
   shoe_size: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, 'Must contain only digits')
+    .matches(/^\d+(\.\d+)?$/, 'Must contain only digits')
     .test(
       'min-value',
       'Size must be at least 20',
@@ -143,14 +154,92 @@ const step1Validation = Yup.object().shape({
   date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
 });
 
+
 const step2Validation = Yup.object().shape({
   custom_upload_link_with_photos: Yup.string()
     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
     .nullable(),
-  scan_type: Yup.string().required('Scan condition is required'),
-  foot_Amputation: Yup.string().required('Foot amputation is required'),
 
-});
+  scan_type: Yup.string().required('Scan condition is required'),
+
+  foot_Amputation: Yup.string().when('scan_type', {
+    is: '3D_scan',
+    then: (schema) => schema.required('Foot amputation is required'),
+    otherwise: (schema) => schema.nullable(),
+  }),
+
+  left_foot_file: Yup.mixed().nullable(),
+  right_foot_file: Yup.mixed().nullable(),
+  additional_file_1: Yup.mixed().nullable(),
+  additional_file_2: Yup.mixed().nullable(),
+})
+
+  // 🔹 Test 1 → STL files or Link (only if scan_type === "3D_scan")
+  .test(
+    'files-or-link',
+    'Upload required: Either a valid link OR the necessary STL file(s).',
+    function (value) {
+      const {
+        scan_type,
+        left_foot_file,
+        right_foot_file,
+        custom_upload_link_with_photos,
+        foot_Amputation,
+      } = value;
+
+      if (scan_type !== '3D_scan') return true; // ✅ Skip when not 3D scan
+
+      if (custom_upload_link_with_photos && custom_upload_link_with_photos.trim()) {
+        return true;
+      }
+
+      // If amputation is specified, check respective file
+      if (foot_Amputation === 'Left_Foot' && left_foot_file) return true;
+      if (foot_Amputation === 'Right_Foot' && right_foot_file) return true;
+
+      // Or require both
+      if (left_foot_file && right_foot_file) return true;
+
+      return this.createError({
+        path: 'left_foot_file',
+        message: 'Please upload the STL file(s) or provide a link.',
+      });
+    }
+  )
+
+  // 🔹 Test 2 → Additional files validation (only if scan_type === "image")
+  .test(
+    'validate-additional-files',
+    'Both Left and Right Leg files are required',
+    function (value) {
+      const { scan_type, additional_file_1, additional_file_2 } = value;
+
+      if (scan_type !== 'image') return true; // ✅ Skip when not image
+
+      if (additional_file_1 && additional_file_2) {
+        return true;
+      }
+
+      return this.createError({
+        path: !additional_file_1 ? 'additional_file_1' : 'additional_file_2',
+        message: 'Please upload both Left and Right Leg files.',
+      });
+    }
+  );
+
+
+
+
+
+
+// const step2Validation = Yup.object().shape({
+//   custom_upload_link_with_photos: Yup.string()
+//     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
+//     .nullable(),
+//   scan_type: Yup.string().required('Scan condition is required'),
+//   foot_Amputation: Yup.string().required('Foot amputation is required'),
+
+// });
 // const step2Validation = Yup.object()
 //   .shape({
 //     custom_upload_link_with_photos: Yup.string().url('Must be a valid URL').nullable(),
@@ -346,7 +435,7 @@ const InsolesDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl  max-h-[100vh] ">
         <DialogHeader>
           <DialogTitle>Select Insoles Model</DialogTitle>
           <DialogDescription>
@@ -518,6 +607,7 @@ const WatchFieldReset = () => {
   useEffect(() => {
     setFieldValue('design_variation', '');
     setFieldValue('model_name', '');
+
   }, [values.socket_type]);
 
   return null;
@@ -567,6 +657,23 @@ const Step1 = ({
   const designVariationOptions = useMemo(() => {
     return FORM_OPTIONS['insole_model'] || [];
   }, [FORM_OPTIONS]);
+
+  // useEffect(() => {
+  //   console.log("Form Values Updated:", values);
+  //   const activityLevel: ActivityLevel = mapActivityLevel(values.activity_level);
+
+  //   const thicknessStr = getThickness(
+  //     values.insole_model,
+  //     parseFloat(values.weight),
+  //     activityLevel
+  //   );
+  //   //@ts-ignore
+  //   setThickness(thicknessStr);
+  //   console.log("Calculated Thickness:", thicknessStr);
+  // }, [values]);
+
+
+
 
   useEffect(() => {
     // console.log("Available insole models:", FORM_OPTIONS['insole_model']);
@@ -691,7 +798,7 @@ const Step1 = ({
 
 
         {/* <Input
-          label="Usage"
+          label="insoletype"
           placeholder="Choose your comfort need"
           value={values.shoe_width}
           onChange={handleChange('shoe_width')}
@@ -700,27 +807,28 @@ const Step1 = ({
           error={errors.shoe_width}
         /> */}
         <SelectBox
-          options={[
-            { value: 'City Comfort', label: 'Daily comfort for urban walking' },
-            { value: 'Endurance', label: 'Support for long hours on foot' },
-            { value: 'Sensitive', label: 'Extra soft cushioning support' },
-            { value: 'Sports', label: 'Sports stability and shock absorption' },
-            { value: 'Diabetes', label: 'Diabetic foot pressure protection' }
-          ]}
+          // options={[
+          //   { value: 'City Comfort', label: 'Daily comfort for urban walking' },
+          //   { value: 'Endurance', label: 'Support for long hours on foot' },
+          //   { value: 'Sensitive', label: 'Extra soft cushioning support' },
+          //   { value: 'Sports', label: 'Sports stability and shock absorption' },
+          //   { value: 'Diabetics', label: 'Diabetic foot pressure protection' }
+          // ]}
+          options={insoleOptions}
           label="Usage"
           placeholder="Choose your comfort need"
-          value={values.usage}
-          onValueChange={(selectedUsage) => {
-            setFieldValue("usage", selectedUsage);
+          value={values.insoletype}
+          onValueChange={(selectedinsoletype) => {
+            setFieldValue("insoletype", selectedinsoletype);
 
             // Auto-set thickness if mapping exists
-            if (usageToThicknessMap[selectedUsage]) {
-              setFieldValue("thickness", usageToThicknessMap[selectedUsage]);
+            if (insoletypeToThicknessMap[selectedinsoletype]) {
+              setFieldValue("thickness", insoletypeToThicknessMap[selectedinsoletype]);
             }
           }}
-          inVaild={shouldShowError('usage', true)}
+          inVaild={shouldShowError('insoletype', true)}
           required
-          error={errors.usage}
+          error={errors.insoletype}
         />
         <div className="flex flex-col">
           <label className="block text-xs font-medium text-black mb-1">
@@ -1003,14 +1111,16 @@ const Step2 = ({
               <div className="grid grid-cols-2">
                 <p className="mb-1 text-[14px]  flex items-center">Upload Scan</p>
                 <div className="w-[190px] ml-8">
-                  <SelectBox
-                    options={[{ value: 'Both', label: 'Left Foot/Right Foot ' }]}
+                  {/* <SelectBox
+                    options={[{ 
+                      value: 'Both', label: 'Left Foot/Right Foot '
+                     }]}
                     value={values.foot_Amputation}
                     onValueChange={handleChange('foot_Amputation')}
 
                   />{shouldShowError('foot_Amputation', true) && (
                     <p className="text-xs text-red-500 mt-1">{errors.foot_Amputation}</p>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>
@@ -1018,66 +1128,127 @@ const Step2 = ({
             {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
               <div className="w-fit justify-center">
                 <StlFilePicker
-                  label="Upload STL file (left foot)"
+                  label="Upload  file (left foot)"
                   buttonText="Left Foot"
                   accept={['.stl']}
-
-                  onFileSelect={(file) => console.log('Left Foot STL selected:', file?.name)}
-                />
+                  onFileSelect={(fileUrl) => {
+                    if (fileUrl) {
+                      setFieldValue("left_foot_file", fileUrl);  // ✅ update formik
+                    } else {
+                      setFieldValue("left_foot_file", null);     // ✅ clear if removed
+                    }
+                  }}
+                // onFileSelect={(file) => console.log('Left Foot STL selected:', file?.name)}
+                /> {shouldShowError('left_foot_file', true) && (
+                  <p className="text-xs text-red-500 mt-1">{errors.left_foot_file}</p>
+                )}
               </div>
             )}
 
             {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
               <div className="w-fit">
                 <StlFilePicker
-                  label="Upload STL file (Right foot)"
+                  label="Upload  file (Right foot)"
                   buttonText="Right Foot"
                   accept={['.stl']}
-                  onFileSelect={(file) => console.log('Right Foot STL selected:', file?.name)}
-                />
+                  onFileSelect={(fileUrl) => {
+                    if (fileUrl) {
+                      setFieldValue("right_foot_file", fileUrl);  // ✅ update formik
+                    } else {
+                      setFieldValue("right_foot_file", null);     // ✅ clear if removed
+                    }
+                  }}
+                // onFileSelect={(file) => console.log('Right Foot STL selected:', file?.name)}
+                /> {shouldShowError('left_foot_file', true) && (
+                  <p className="text-xs text-red-500 mt-1">{errors.left_foot_file}</p>
+                )}
               </div>
             )}
+          </div>
+          <div className="grid grid-cols-8 gap-4">
+            <div className="col-span-3">
+              <p className="mb-0 text-[14px] ">Upload Additional Files</p>
+              <span className="mb-1 text-[12px] ">(Design / Rough calculations etc.)</span>
+            </div>
+            <div className="w-fit">
+              <GenericFileViewer
+                allowedTypes={['.zip']}
+                maxSizeMB={50}
+                label="Select Image"
+                buttonText="Left Leg"
+                onFileSelect={(fileUrl) => {
+                  if (fileUrl) {
+                    console.log(" File selected:", fileUrl);
+                  } else {
+                    console.log("No file selected or file removed");
+                  }
+                }}
+              />
+            </div>
+            <div className="w-fit ml-2">
+              <GenericFileViewer
+                allowedTypes={['.zip']}
+                maxSizeMB={50}
+                label="Select Image"
+                buttonText="Right Leg"
+                onFileSelect={(fileUrl) => {
+                  if (fileUrl) {
+                    console.log(" File selected:", fileUrl);
+                  } else {
+                    console.log("No file selected or file removed");
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </>
+      )}
+      {values.scan_type === 'image' && (
+        <>
+          <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
+          <div className="grid grid-cols-8 gap-4">
+            <div className="col-span-3">
+              <p className="mb-0 text-[14px] ">Upload Additional Files</p>
+              <span className="mb-1 text-[12px] ">(Design / Rough calculations etc.)</span>
+            </div>
+            {/* Left Leg Upload */}
+            <div className="w-fit">
+              <GenericFileViewer
+                allowedTypes={['.zip']}
+                maxSizeMB={50}
+                label="Select Image"
+                buttonText="Left Leg"
+                onFileSelect={(fileUrl) => {
+                  setFieldValue("additional_file_1", fileUrl || null);
+                }}
+              />
+              {shouldShowError("additional_file_1", true) && (
+                <p className="text-xs text-red-500 mt-1">{errors.additional_file_1}</p>
+              )}
+            </div>
+
+            {/* Right Leg Upload */}
+            <div className="w-fit ml-2">
+              <GenericFileViewer
+                allowedTypes={['.zip']}
+                maxSizeMB={50}
+                label="Select Image"
+                buttonText="Right Leg"
+                onFileSelect={(fileUrl) => {
+                  setFieldValue("additional_file_2", fileUrl || null);
+                }}
+              />
+              {shouldShowError("additional_file_2", true) && (
+                <p className="text-xs text-red-500 mt-1">{errors.additional_file_2}</p>
+              )}
+            </div>
+
           </div>
         </>
       )}
 
-      {/* Additional files + links remain same for both */}
-      <div className="grid grid-cols-8 gap-4">
-        <div className="col-span-3">
-          <p className="mb-0 text-[14px] ">Upload Additional Files</p>
-          <span className="mb-1 text-[12px] ">(Design / Rough calculations etc.)</span>
-        </div>
-        <div className="w-fit">
-          <GenericFileViewer
-            allowedTypes={['.pdf', '.png', '.jpg', '.jpeg']}
-            maxSizeMB={5}
-            label="Select Image"
-            buttonText="File 1"
-            onFileSelect={(fileUrl) => {
-              if (fileUrl) {
-                console.log(" File selected:", fileUrl);
-              } else {
-                console.log("No file selected or file removed");
-              }
-            }}
-          />
-        </div>
-        <div className="w-fit ml-2">
-          <GenericFileViewer
-            allowedTypes={['.pdf', '.png', '.jpg', '.jpeg']}
-            maxSizeMB={5}
-            label="Select Image"
-            buttonText="File 2"
-            onFileSelect={(fileUrl) => {
-              if (fileUrl) {
-                console.log(" File selected:", fileUrl);
-              } else {
-                console.log("No file selected or file removed");
-              }
-            }}
-          />
-        </div>
-      </div>
+
+
 
       <div className="flex flex-col-6 gap-4">
         <div className="col-span-3">
@@ -1104,7 +1275,7 @@ const Step2 = ({
         rel="noopener noreferrer"
         className="text-blue-600 font-semibold hover:underline"
       >
-        Watch Video
+        How to use  Watch Video
       </a>
     </div>
 
@@ -1168,13 +1339,20 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
     </div>
   );
 };
-
-export default function InsolesOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
+const insoleOptions = [
+  { value: 'City Comfort', label: 'Daily comfort for urban walking' },
+  { value: 'Endurance', label: 'Support for long hours on foot' },
+  { value: 'Sensitive', label: 'Extra soft cushioning support' },
+  { value: 'Sports', label: 'Sports stability and shock absorption' },
+  { value: 'Diabetics', label: 'Diabetic foot pressure protection' },
+];
+export default function InsolesOrderForm({ item_type, }: { item_type: string, }): React.JSX.Element {
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
-  const [createOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateOrderMutation();
+  const [createInsoleOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateInsoleOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
   const [selectedItem, setSelectedItem] = React.useState<string>('');
-  const [getItem, { isLoading: isItemFetching }] = useGetItemNameByDetailsMutation();
+  const [getItem, { isLoading: isItemFetching }] = useGetItemNameInByDetailsMutation();
+  console.log("Selected Item Code:", selectedItem);
   const [formValues, setFormValues] = useState(initialValues);
   const [modelOpen, setModelOpen] = useState(false);
   const router = useRouter();
@@ -1186,7 +1364,32 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
     data: null
   });
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
+  const [showStep5Confirmation, setShowStep5Confirmation] = useState(false);
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+  const [thicknests, setThickness] = useState<string>('');
+  // const { values, setFieldValue } = useFormikContext<any>(); // ✅ Formik hook
+
+  //payment states 
+  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
+  useEffect(() => {
+    console.log("Form Values Updated:", formValues);
+    const activityLevel = mapActivityLevel(formValues.activity_level);
+    const t = getThickness(
+      formValues.insole_model,
+      Number(formValues.weight) || 0,
+      formValues.activity_level as "K1" | "K2" | "K3" | "K4",
+    );
+    console.log("Calculated Thickness (from getThickness):", t, typeof t);
+    setThickness(String(t)); // convert number to string
+    // if using Formik, also sync the form value:
+    // formik.setFieldValue('thickness', t);
+
+  }, [formValues.insole_model, formValues.weight, formValues.activity_level /* add formik if used */]);
+
+
 
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
@@ -1203,12 +1406,70 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
     payload.order_details = formValues;
     payload.item_code = selectedItem;
 
-    createOrder(payload);
+    createInsoleOrder(payload);
   };
+
+  // const OnSubmit = async (values: any) => {
+  //   console.log("Form values on submit:", values);
+  //   setFormValues(values);
+
+
+  //   const payload = {
+  //     item_type: 'IN',
+  //     // socket_type: values.socket_type,
+  //     insole_model: values.insole_model,
+  //     design_variation: values.design_variation,
+  //     activity_level: values.activity_level,
+  //     model_name: values.model_name,
+  //     stump_length: values.stump_length,
+  //     weight: values.weight,
+  //     insoletype: values.insoletype,
+  //     // insoletype: values.insoleType,
+  //     insole_design_variation: values.insole_design_variation,
+  //   };
+  //   console.log("Payload for item code fetch:", payload);
+  //   const itemCode = await getItemCodeByValues(payload);
+  //   setSelectedItem(itemCode);
+  //   console.log("Final item code:", itemCode);
+
+  //   // Submit the final form
+  //   const orderPayload = {
+  //     item_type: 'IN',
+  //     customer: user?.customer_id,
+  //     order_details: values,
+  //     item_code: itemCode,
+  //   };
+  //   createOrder(orderPayload);
+  // };
+
+
 
   const OnSubmit = async (values: any) => {
     console.log("Form values on submit:", values);
     setFormValues(values);
+
+    // // 1. Map activity level
+    // const activityLevel: ActivityLevel = mapActivityLevel(values.activity_level);
+
+    // // 2. Get thickness string (e.g., "3.5 MM")
+    // const thicknessStr = getThickness(
+    //   values.insole_model,
+    //   parseFloat(values.weight),
+    //   activityLevel
+    // );
+    // setThickness(thicknessStr);
+    // // 3. Get thickness code (T1/T2)
+    // const thicknessCode = getThicknessCode(thicknessStr);
+
+    // // 4. Build item code
+    // const materialCode = modelMap[values.insole_model] || "AS";
+    // const finishCode = finishMap[values.finish] || "CC";
+    // const layeringCode = layeringMap[values.layering] || "S";
+
+
+
+    // console.log("Calculated Thickness:", thicknessStr);
+    // console.log("Generated Item Code:", itemCode);
 
     const payload = {
       item_type: 'IN',
@@ -1219,26 +1480,35 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
       model_name: values.model_name,
       stump_length: values.stump_length,
       weight: values.weight,
-      usage: values.usage,
-      insoletype: values.insoleType,
+      insoletype: values.insoletype,
+      // insoletype: values.insoleType,
+      insole_design_variation: values.insole_design_variation,
+      thickness: thicknests  //e.g. "3.5 MM"
     };
     console.log("Payload for item code fetch:", payload);
+
     const itemCode = await getItemCodeByValues(payload);
     setSelectedItem(itemCode);
-    console.log("Final item code:", itemCode);
-
-    // Submit the final form
+    // ✅ Final payload
     const orderPayload = {
-      item_type: 'IN',
+      item_type: "IN",
       customer: user?.customer_id,
-      order_details: values,
+      order_details: {
+        ...values,
+        thickness: thicknests, // e.g. "3.5 MM"
+      },
       item_code: itemCode,
     };
-    createOrder(orderPayload);
+
+    console.log("Final Order Payload:", orderPayload);
+    console.log("Generated Item Code:", itemCode);
+    createInsoleOrder(orderPayload);
   };
+
 
   const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
+    console.log("Item code fetch response:", res);
     return res?.data?.item_code;
   };
 
@@ -1342,7 +1612,16 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
     setCurrentStep(2);
     setFormSubmitted(false);
   };
+  const handleStep5Confirmation = () => {
+    // when user confirms
+    // handleSubmit();// 🔹 actually submit form here
+    setShowStep5Confirmation(false);
 
+    // step tracking logic
+    setCompletedSteps([...completedSteps, 5]);
+    setCurrentStep(5);
+    setFormSubmitted(false);
+  };
 
   return (
     <div className="pb-16 relative">
@@ -1362,6 +1641,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
         enableReinitialize
       >
         {({ values, handleChange, handleSubmit, errors, touched, setFieldValue, setErrors, isValid }) => (
+
+
           <div className="flex flex-col gap-6">
             <WatchFieldReset />
             {/* Socket Type Dialog */}
@@ -1378,7 +1659,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                   { step: 2, name: 'Scan', icon: '📁' },
                   // { step: 3, name: 'Locking Mechanism', icon: '🔒' },
                   // { step: 4, name: 'Modifications', icon: '✏️' },
-                  { step: 5, name: 'Finished', icon: '🎨' }
+                  { step: 5, name: 'Finish', icon: '🎨' }
                 ].map(({ step, name, icon }) => (
                   <React.Fragment key={step}>
                     <button
@@ -1498,8 +1779,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
 
               <Step5
                 values={values}
-
-                handleChange={handleChange}
+                thicknests={thicknests}
+                selectedItem={selectedItem}
                 errors={errors}
                 touched={touched}
                 setFieldValue={setFieldValue}
@@ -1561,15 +1842,19 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
 
 
                 ) : (
+                  // Step 5 Submit Button
                   <Button
                     className="shadow-2xl"
                     onClick={() => {
-                      console.log("Submitting...")
+                      console.log("Submitting...");
                       console.log("Insole Type in parent:", values);
-                      handleSubmit()
-                        ;
+                      handleSubmit();
+                      setFormValues(values);
+                      setFormSubmitted(true);
+                      // 🔹 open confirm dialog instead of submitting directly
+                      setShowStep5Confirmation(true);
                     }}
-                    type="submit"
+                    type="button" // prevent direct submit
                   >
                     Submit
                   </Button>
@@ -1581,12 +1866,12 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
       </Formik>
 
       {/* Confirmation dialog after Step 1 */}
-      <ConfirmOrderDialog
+      {/* <ConfirmOrderDialog
         open={showStep1Confirmation}
-        onOpenChange={setShowStep1Confirmation}
+        onOpenChange={setShowStep5Confirmation}
         formValues={{
           socket_type: formValues.socket_type,
-          // usage: formValues.usage,
+          // insoletype: formValues.insoletype,
           insole_model: formValues.insole_model,
           design_variation: formValues.design_variation,
           model_name: formValues.model_name,
@@ -1595,10 +1880,28 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
         selectedItem={selectedItem}
         isItemFetching={isItemFetching}
         isOrderCreating={isOrderCreating}
-        onConfirm={handleStep1Confirmation}
+        onConfirm={handleStep5Confirmation}
+        showContinueButton={true}
+      /> */}
+      <ConfirmOrderDialog
+        open={showStep5Confirmation} // ✅ fixed
+        onOpenChange={setShowStep5Confirmation}
+        formValues={{
+          // socket_type: formValues.socket_type,
+          insoletype: formValues.insoletype,
+          selectedinsoletype: formValues.selectedinsoletype,
+          insole_model: formValues.insole_model,
+          // design_variation: formValues.design_variation,
+          // model_name: formValues.model_name,
+          activity_level: formValues.activity_level,
+        }}
+        insoleOptions={insoleOptions}
+        selectedItem={selectedItem}
+        isItemFetching={isItemFetching}
+        isOrderCreating={isOrderCreating}
+        onConfirm={handleStep5Confirmation} // ✅ wired properly
         showContinueButton={true}
       />
-
       {/* Final submission dialog (hidden in this case since we're submitting directly) */}
       <ConfirmOrderDialog
         open={modelOpen}
