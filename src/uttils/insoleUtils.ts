@@ -1,4 +1,4 @@
-import { ActivityLevel } from "@/uttils/thicknessChart";
+type ActivityLevel = "LOW" | "MID" | "HIGH";
 
 // ✅ Map K1/K2/K3 → LOW/MID/HIGH
 export function mapActivityLevel(level: string): ActivityLevel {

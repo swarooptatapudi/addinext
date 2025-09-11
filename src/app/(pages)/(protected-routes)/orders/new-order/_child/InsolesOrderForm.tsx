@@ -35,7 +35,7 @@ import { useGetItemNameInByDetailsMutation } from '@/rtk-query/apis/products';
 import { BK_FORM_TYPE, USER } from '@/uttils/Types';
 import { getFormOptionsObject } from '@/uttils/UttilFuncations';
 import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
-import { AKINSOLES_FORM_INITIAL_VALUES } from './constants';
+import { INSOLES_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/insolesForm/Step5Finishing';
 import { CheckboxGroup } from '@/components/app/common/foot-complaints-form';
 import { getThickness } from "@/uttils/thicknessChart";
@@ -56,7 +56,7 @@ const step1Validation = Yup.object().shape({
     .min(FORMIK_ERRORS.MIN_2.VALUE, FORMIK_ERRORS.MIN_2.MESSAGE)
     .max(FORMIK_ERRORS.MAX_50.VALUE, FORMIK_ERRORS.MAX_50.MESSAGE)
     .required(FORMIK_ERRORS.REQUIRED),
-  socket_type: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+
   insoletype: Yup.string(),
 
   insole_model: Yup.string().required(FORMIK_ERRORS.REQUIRED),
@@ -305,7 +305,7 @@ const step5Validation = Yup.object().shape({
   delivery_date: Yup.string(),
 });
 
-const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
+const initialValues = INSOLES_FORM_INITIAL_VALUES;
 
 const SocketTypeDialog = ({
   open,
@@ -1350,6 +1350,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
   const [createInsoleOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateInsoleOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
+  console.log(" Logged-in user from Redux:", user);
   const [selectedItem, setSelectedItem] = React.useState<string>('');
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameInByDetailsMutation();
   console.log("Selected Item Code:", selectedItem);
@@ -1444,36 +1445,49 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
 
 
 
+  // const OnSubmit = async (values: any) => {
+  //   console.log("Form values on submit:", values);
+  //   setFormValues(values);
+  //   const payload = {
+  //     item_type: 'IN',
+  //     // socket_type: values.socket_type,
+  //     insole_model: values.insole_model,
+  //     design_variation: values.design_variation,
+  //     activity_level: values.activity_level,
+  //     model_name: values.model_name,
+  //     stump_length: values.stump_length,
+  //     weight: values.weight,
+  //     insoletype: values.insoletype,
+  //     // insoletype: values.insoleType,
+  //     insole_design_variation: values.insole_design_variation,
+  //     thickness: thicknests  //e.g. "3.5 MM"
+  //   };
+  //   console.log("Payload for item code fetch:", payload);
+
+  //   const itemCode = await getItemCodeByValues(payload);
+  //   setSelectedItem(itemCode);
+  //   // ✅ Final payload
+  //   const orderPayload = {
+  //     item_type: "IN",
+  //     customer: user?.customer_id,
+  //     order_details: {
+  //       ...values,
+  //       thickness: thicknests, // e.g. "3.5 MM"
+  //     },
+  //     item_code: itemCode,
+  //   };
+
+  //   console.log("Final Order Payload:", orderPayload);
+  //   console.log("Generated Item Code:", itemCode);
+  //   createInsoleOrder(orderPayload);
+  // };
+
   const OnSubmit = async (values: any) => {
     console.log("Form values on submit:", values);
     setFormValues(values);
 
-    // // 1. Map activity level
-    // const activityLevel: ActivityLevel = mapActivityLevel(values.activity_level);
-
-    // // 2. Get thickness string (e.g., "3.5 MM")
-    // const thicknessStr = getThickness(
-    //   values.insole_model,
-    //   parseFloat(values.weight),
-    //   activityLevel
-    // );
-    // setThickness(thicknessStr);
-    // // 3. Get thickness code (T1/T2)
-    // const thicknessCode = getThicknessCode(thicknessStr);
-
-    // // 4. Build item code
-    // const materialCode = modelMap[values.insole_model] || "AS";
-    // const finishCode = finishMap[values.finish] || "CC";
-    // const layeringCode = layeringMap[values.layering] || "S";
-
-
-
-    // console.log("Calculated Thickness:", thicknessStr);
-    // console.log("Generated Item Code:", itemCode);
-
     const payload = {
-      item_type: 'IN',
-      // socket_type: values.socket_type,
+      item_type: "IN",
       insole_model: values.insole_model,
       design_variation: values.design_variation,
       activity_level: values.activity_level,
@@ -1481,28 +1495,31 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
       stump_length: values.stump_length,
       weight: values.weight,
       insoletype: values.insoletype,
-      // insoletype: values.insoleType,
       insole_design_variation: values.insole_design_variation,
-      thickness: thicknests  //e.g. "3.5 MM"
+      thickness: thicknests, // e.g. "3.5 MM"
     };
+
     console.log("Payload for item code fetch:", payload);
 
     const itemCode = await getItemCodeByValues(payload);
     setSelectedItem(itemCode);
-    // ✅ Final payload
+
+    console.log("Generated Item Code:", itemCode);
+
+    // ❌ Don't create the order here
+    // ✅ Just prepare and store payload for later
     const orderPayload = {
       item_type: "IN",
       customer: user?.customer_id,
       order_details: {
         ...values,
-        thickness: thicknests, // e.g. "3.5 MM"
+        thickness: thicknests,
       },
       item_code: itemCode,
     };
 
-    console.log("Final Order Payload:", orderPayload);
-    console.log("Generated Item Code:", itemCode);
-    createInsoleOrder(orderPayload);
+    // createInsoleOrder(orderPayload); // store for later payment step
+    setShowStep5Confirmation(true); // open confirmation dialog
   };
 
 
@@ -1907,7 +1924,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
         open={modelOpen}
         onOpenChange={setModelOpen}
         formValues={{
-          socket_type: formValues.socket_type,
+
           design_variation: formValues.design_variation,
           model_name: formValues.model_name,
           activity_level: formValues.activity_level,

@@ -58,6 +58,7 @@ export type Order = {
 
 export default function Orders(): React.JSX.Element {
   const { data, isLoading, error, refetch } = useGetOrdersQuery('');
+  console.log("salesorderdetails", data)
   const [getOrderDetails, { isLoading: isPaymentLoading }] =
     useGetOrderDetailsMutation();
   const [getOrderDetailIds] = useGetOrderDetailIdsMutation();
@@ -180,11 +181,19 @@ export default function Orders(): React.JSX.Element {
 
   // navigate on order click
   const handleOrderIdClick = (order: Order) => {
-    if (order.device_type === 'BK Orders') {
-      // console.log('Selected Order:', order.order_id, order.device_type);
-      setSelectedOrder(order);
+    setSelectedOrder(order);
+
+    if (order.device_type === "BK Orders") {
       router.push(
         `/orders/new-order/BK?${new URLSearchParams({
+          orderId: order.order_id,
+          deviceType: order.device_type,
+          paid: order.status,
+        }).toString()}`
+      );
+    } else if (order.device_type === "Insole Orders") {
+      router.push(
+        `/orders/new-order/IN?${new URLSearchParams({
           orderId: order.order_id,
           deviceType: order.device_type,
           paid: order.status,
@@ -201,7 +210,10 @@ export default function Orders(): React.JSX.Element {
       cell: ({ row }) => (
         <span
           className="cursor-pointer hover:underline hover:text-blue-500"
-          onClick={() => handleOrderIdClick(row.original)}
+          onClick={() => {
+            console.log("🟢 Row data clicked:", row.original);
+            handleOrderIdClick(row.original);
+          }}
         >
           {row.original.order_id}
         </span>

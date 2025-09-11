@@ -256,6 +256,14 @@ interface BKEstimateRequest {
   discount_per: number;
   discount_amt: number;
 }
+interface INEstimateRequest {
+  item_code: string;
+  design_by: string;
+  print_by: string;
+  discount_per: number;
+  discount_amt: number;
+  coupon_code?: string;
+}
 
 interface BKEstimateResponse {
   message: string;
@@ -273,6 +281,27 @@ interface BKEstimateResponse {
     gst_18: number;
     gst_5: number;
     total_price: number;
+  };
+}
+interface INEstimateResponse {
+  message: {
+    status: number;
+    message: string;
+    data: {
+      design: string;
+      print: string;
+      estimate_price: string;
+      item_discount: string;
+      additional_discount: string;
+      discounted_price: string;
+      discounted_price_18: string;
+      discounted_price_5: string;
+      gst_18: string;
+      gst_5: string;
+      total_price: string;
+      customer_available_coins: string;
+      design_coin_use: string;
+    };
   };
 }
 
@@ -316,7 +345,7 @@ export const ordersApi = createApi({
     }),
     createInsoleOrder: builder.mutation({
       query: (data) => ({
-        url: '/method/addiwise.apis.order_types.bk_order.create_insole_order',
+        url: '/method/addiwise.apis.order_types.insole_order.create_insole_order',
         method: 'POST',
         body: data
       }),
@@ -347,6 +376,14 @@ export const ordersApi = createApi({
         body: data
       }),
       transformResponse: (response: BKEstimateResponse) => response
+    }),
+    getINEstimate: builder.mutation<INEstimateResponse, INEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.insole_order.get_insole_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: INEstimateResponse) => response
     }),
     validateCoupon: builder.mutation<CouponResponse, CouponRequest>({
       query: (data) => ({
@@ -391,5 +428,6 @@ export const {
   useGetOrderDetailIdsMutation,
   useCreateProductOrderMutation,
   useCreateInsoleOrderMutation,
+  useGetINEstimateMutation,
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;

@@ -2,19 +2,21 @@ import { Input } from "@/components/ui/input";
 import { SelectBox } from "@/components/ui/selectbox";
 import { ImageCheckbox } from "./ImgproCheck";
 import { useState, useCallback, useEffect } from "react";
-import { useCreateOrderMutation, useGetOrderDetailIdsMutation } from '@/rtk-query/apis/orders';
+import { useCreateInsoleOrderMutation, useGetOrderDetailIdsMutation } from '@/rtk-query/apis/orders';
 import { thicknessToinsoletypeMap, insoletypeToThicknessMap } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
-import { useGetBKEstimateMutation, useValidateCouponMutation } from "@/rtk-query/apis/orders";
+import {  useGetINEstimateMutation, useValidateCouponMutation } from "@/rtk-query/apis/orders";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
+import { BK_FORM_TYPE, USER } from '@/uttils/Types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BookmarkIcon, CoinsIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import React from "react";
 import { useGetItemNameInByDetailsMutation } from '@/rtk-query/apis/products';
-import { AKINSOLES_FORM_INITIAL_VALUES } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
-import router from "next/router";
+import { INSOLES_FORM_INITIAL_VALUES } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
+import { useRouter } from 'next/navigation';
+import { useSelector } from "react-redux";
 type LayeringImageType = {
   Standard: string;
   Premium: string;
@@ -34,6 +36,8 @@ type SelectedFinishOption = {
   type: 'Standard' | 'Premium';
 };
 
+
+
 export const Step5 = ({
   values,
   errors,
@@ -44,7 +48,6 @@ export const Step5 = ({
   setFieldValue,
   FORM_OPTIONS,
   handleSubmit,
-  user,
   orderId,
   deviceTypeId,
   isAddiSoleL,
@@ -52,15 +55,19 @@ export const Step5 = ({
 }: any) => {
   const [selectedFinishOptions, setSelectedFinishOptions] = useState<SelectedFinishOption[]>([]);
   // const [thickness, setThickness] = useState("");
+  const router = useRouter();
 
   const [selectedType, setSelectedType] = useState<'Standard' | 'Premium'>('Standard');
   const [showEstimateCard, setShowEstimateCard] = useState(false);
   const [estimateConform, setEstimateConform] = useState(false);
-    const [createOrder, { isLoading: isOrderCreating }] = useCreateOrderMutation();
+   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
+    const [createInsoleOrder, { isLoading: isOrderCreating }] = useCreateInsoleOrderMutation();
   const [estimateData, setEstimateData] = useState<any>(null);
   const [estimateDataLabel, setEstimateDataLabel] = useState<any>('');
   const [isEstimating, setIsEstimating] = useState(false);
-  const [getBKEstimate] = useGetBKEstimateMutation();
+const [getINEstimate, { isLoading, isError, data }] = useGetINEstimateMutation();
+
+  
   const [prevValues, setPrevValues] = useState(values);
   const [isEstimateAccepted, setIsEstimateAccepted] = useState(false);
   const [isEstimateStale, setIsEstimateStale] = useState(false);
@@ -84,7 +91,7 @@ export const Step5 = ({
   const [showAddicoinsCard, setShowAddicoinsCard] = useState(false);
     const [formDisable, setFormDisable] = useState(false)
   
-const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
+const initialValues = INSOLES_FORM_INITIAL_VALUES;
 
   const isAddiSole = values.model_name === 'AddiEase';
   const isAddiSoleEco = values.model_name === 'AddiEaseEco';
@@ -127,9 +134,117 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
     loadRazorpayScript();
   }, []);
 
-   const handlePayAndPlaceOrder = async (values: any) => {
+//    const handlePayAndPlaceOrder = async (values: any) => {
+//   if (!razorpayKey || !isRazorpayLoaded) {
+//     toast.error('Payment gateway is not available. Please try again.');
+//     return;
+//   }
+
+//   setIsPaymentProcessing(true);
+//   setFormValues(values);
+
+//   try {
+//     // 🔹 Step 1: Prepare payload for item code (IN specific)
+//     const payload = {
+//       item_type: 'IN',
+//       insole_model: values.insole_model,
+//       design_variation: values.design_variation,
+//       activity_level: values.activity_level,
+//       model_name: values.model_name,
+//       stump_length: values.stump_length,
+//       weight: values.weight,
+//       insoletype: values.insoletype,
+//       insole_design_variation: values.insole_design_variation,
+//       thickness: thicknests // e.g. "3.5 MM"
+//     };
+
+//     const itemCode = await getItemCodeByValues(payload);
+//     setSelectedItemcode(itemCode);
+
+//     // 🔹 Step 2: Build the order payload
+//     const orderPayload = {
+//       item_type: 'IN',
+//       customer: user?.customer_id,
+//       order_details: {
+//         ...values,
+//         thickness: thicknests // add calculated thickness
+//       },
+//       item_code: itemCode,
+//       addicoins: parseInt(values.addicoins) || 0
+//     };
+// console.log("orderPayload>>",orderPayload)
+//     // 🔹 Step 3: (Optional) Fetch order amount from API instead of hardcoded
+//     // const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
+//     // if (orderAmountResponse?.status !== "success") {
+//     //   throw new Error(orderAmountResponse?.message || "Failed to calculate order amount");
+//     // }
+//     // const orderAmount = orderAmountResponse.data.order_amount;
+//     const amountInPaise = 100000; // 🔹 Replace with dynamic orderAmount * 100
+
+//     // 🔹 Step 4: Configure Razorpay
+//     const options = {
+//       key: razorpayKey,
+//       amount: amountInPaise.toString(),
+//       currency: 'INR',
+//       name: 'Addiwise Company',
+//       description: `Payment for IN Order`,
+//       handler: async function (response: any) {
+//         try {
+//           // 🔹 Step 5: After payment success → Create order
+//           const finalOrderPayload = {
+//             ...orderPayload,
+//             custom_payment_reference_id: response.razorpay_payment_id
+//           };
+
+//           console.log('Final Insole Order Payload:', finalOrderPayload);
+//           const orderResponse = await createInsoleOrder(finalOrderPayload).unwrap();
+
+//           // @ts-ignore
+//           if (orderResponse?.message?.status === 'success') {
+//             toast.success('Payment successful! Insole order created successfully.');
+//             setSelectedItemcode('');
+//             setIsPaymentProcessing(false);
+//             setFormDisable(true);
+//             router.push('/orders');
+//           } else {
+//             // @ts-ignore
+//             throw new Error(orderResponse?.message?.message || 'Order creation failed');
+//           }
+//         } catch (orderError) {
+//           toast.error(
+//             'Payment successful but order creation failed. Please contact support with payment ID: ' +
+//             response.razorpay_payment_id
+//           );
+//           setIsPaymentProcessing(false);
+//         }
+//       },
+//       theme: { color: '#3399cc' },
+//       modal: {
+//         ondismiss: function () {
+//           setIsPaymentProcessing(false);
+//           toast.info('Payment cancelled');
+//         }
+//       }
+//     };
+
+//     const rzp = new window.Razorpay(options);
+
+//     rzp.on('payment.failed', function (response: any) {
+//       setIsPaymentProcessing(false);
+//       toast.error(`Payment failed: ${response.error.description}`);
+//     });
+
+//     rzp.open();
+//   } catch (error) {
+//     setIsPaymentProcessing(false);
+//     toast.error('Failed to prepare payment. Please try again.');
+//   }
+// };
+
+
+const handlePayAndPlaceOrder = async (values: any) => {
   if (!razorpayKey || !isRazorpayLoaded) {
-    toast.error('Payment gateway is not available. Please try again.');
+    toast.error("Payment gateway is not available. Please try again.");
     return;
   }
 
@@ -137,9 +252,11 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
   setFormValues(values);
 
   try {
-    // 🔹 Step 1: Prepare payload for item code (IN specific)
+    // 🔹 Step 1: Prepare payload for item code
+ 
+
     const payload = {
-      item_type: 'IN',
+      item_type: "IN",
       insole_model: values.insole_model,
       design_variation: values.design_variation,
       activity_level: values.activity_level,
@@ -148,7 +265,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
       weight: values.weight,
       insoletype: values.insoletype,
       insole_design_variation: values.insole_design_variation,
-      thickness: thicknests // e.g. "3.5 MM"
+      thickness: thicknests, // e.g. "3.5 MM"
     };
 
     const itemCode = await getItemCodeByValues(payload);
@@ -156,81 +273,103 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
 
     // 🔹 Step 2: Build the order payload
     const orderPayload = {
-      item_type: 'IN',
-      customer: user?.customer_id,
+      item_type: "IN",
+      customer: user?.customer_id, // Make sure this is an ID, not just a name
       order_details: {
         ...values,
-        thickness: thicknests // add calculated thickness
+        thickness: thicknests, // add calculated thickness
       },
       item_code: itemCode,
-      addicoins: parseInt(values.addicoins) || 0
+      addicoins: parseInt(values.addicoins) || 0,
     };
 
-    // 🔹 Step 3: (Optional) Fetch order amount from API instead of hardcoded
-    // const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
-    // if (orderAmountResponse?.status !== "success") {
-    //   throw new Error(orderAmountResponse?.message || "Failed to calculate order amount");
-    // }
-    // const orderAmount = orderAmountResponse.data.order_amount;
-    const amountInPaise = 100000; // 🔹 Replace with dynamic orderAmount * 100
+    console.log("📦 Base Order Payload:", orderPayload);
+
+    // 🔹 Step 3: Payment amount (hardcoded for now)
+    const amountInPaise = 100000; // Replace later with API order amount * 100
 
     // 🔹 Step 4: Configure Razorpay
     const options = {
       key: razorpayKey,
       amount: amountInPaise.toString(),
-      currency: 'INR',
-      name: 'Addiwise Company',
+      currency: "INR",
+      name: "Addiwise Company",
       description: `Payment for IN Order`,
+
       handler: async function (response: any) {
         try {
           // 🔹 Step 5: After payment success → Create order
-          const finalOrderPayload = {
-            ...orderPayload,
-            custom_payment_reference_id: response.razorpay_payment_id
-          };
+             const finalOrderPayload = {
+  ...orderPayload,
+  razorpay_payment_id: response.razorpay_payment_id,
+        custom_payment_reference_id: response.razorpay_payment_id,
+  razorpay_order_id: response.razorpay_order_id,
+  razorpay_signature: response.razorpay_signature,
+};
 
-          console.log('Final Insole Order Payload:', finalOrderPayload);
-          const orderResponse = await createOrder(finalOrderPayload).unwrap();
+          console.log("📤 Final Insole Order Payload:", finalOrderPayload);
+
+          const orderResponse = await createInsoleOrder(finalOrderPayload).unwrap();
+          console.log("✅ Order Response:", orderResponse);
 
           // @ts-ignore
-          if (orderResponse?.message?.status === 'success') {
-            toast.success('Payment successful! Insole order created successfully.');
-            setSelectedItemcode('');
+          if (orderResponse?.message?.status === "success") {
+            toast.success("Payment successful! Insole order created successfully.");
+            setSelectedItemcode("");
             setIsPaymentProcessing(false);
             setFormDisable(true);
-            router.push('/orders');
+             router.push("/orders");
           } else {
             // @ts-ignore
-            throw new Error(orderResponse?.message?.message || 'Order creation failed');
+            throw new Error(orderResponse?.message?.message || "Order creation failed");
           }
-        } catch (orderError) {
-          toast.error(
-            'Payment successful but order creation failed. Please contact support with payment ID: ' +
-            response.razorpay_payment_id
-          );
+        } catch (orderError: any) {
+          console.error("❌ Order creation failed:", orderError);
+
+          if (orderError?.data) {
+            console.error("🔎 Backend error response:", orderError.data);
+            toast.error(
+              `Payment successful but order creation failed: ${
+                orderError.data.message || "Unknown error"
+              } (Payment ID: ${response.razorpay_payment_id})`
+            );
+          } else {
+            toast.error(
+              "Payment successful but order creation failed. Please contact support with payment ID: " +
+                response.razorpay_payment_id
+            );
+          }
+
           setIsPaymentProcessing(false);
         }
       },
-      theme: { color: '#3399cc' },
+
+      theme: { color: "#3399cc" },
       modal: {
         ondismiss: function () {
           setIsPaymentProcessing(false);
-          toast.info('Payment cancelled');
-        }
-      }
+          toast.info("Payment cancelled");
+        },
+      },
     };
 
     const rzp = new window.Razorpay(options);
 
-    rzp.on('payment.failed', function (response: any) {
+    rzp.on("payment.failed", function (response: any) {
       setIsPaymentProcessing(false);
       toast.error(`Payment failed: ${response.error.description}`);
     });
 
     rzp.open();
-  } catch (error) {
+  } catch (orderError: any) {
+    console.error(" Unexpected error before payment:", orderError);
+
+    if (orderError?.data) {
+      console.error(" Backend error response:", orderError.data);
+    }
+
+    toast.error("Failed to prepare payment. Please try again.");
     setIsPaymentProcessing(false);
-    toast.error('Failed to prepare payment. Please try again.');
   }
 };
  const getItemCodeByValues = async (payload: any) => {
@@ -318,48 +457,132 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
     return true;
   };
 
+  // const handleEstimateClick = async () => {
+  //   const designByRes = values.Design_by || '';
+  //   const printByRes = values.Print_by || '';
+  //   const isDesignSelfRes = designByRes === 'Self';
+  //   const isPrintSelfRes = printByRes === 'Self';
+
+  //   const getBasePriceLabel = () => {
+  //     const designBy = values.Design_by || '';
+  //     const printBy = values.Print_by || '';
+
+  //     const isDesignAddiwise = designBy === 'Addiwise';
+  //     const isPrintAddiwise = printBy === 'Addiwise';
+  //     const isDesignSelf = designBy === 'Self';
+  //     const isPrintSelf = printBy === 'Self';
+
+  //     if (isDesignAddiwise && isPrintAddiwise) {
+  //       return 'Design + Print';
+  //     }
+  //     if (isDesignAddiwise) {
+  //       return 'Design';
+  //     }
+  //     if (isPrintAddiwise) {
+  //       return 'Print';
+  //     }
+
+  //     if (isDesignSelf && isPrintSelf) {
+  //       return '';
+  //     }
+  //     if (isDesignSelf) {
+  //       return 'Self Design';
+  //     }
+  //     if (isPrintSelf) {
+  //       return 'Self Print';
+  //     }
+
+  //     return 'Base';
+  //   };
+  //   setEstimateDataLabel(getBasePriceLabel());
+
+  //   if (!validateBeforeAction()) return;
+
+  //   setIsEstimating(true);
+
+  //   const estimatePayload = {
+  //     item_code: selectedItem,
+  //     design_by: values.Design_by,
+  //     print_by: values.Print_by,
+  //     discount_per: couponData?.discount_percentage || 0,
+  //     discount_amt: couponData?.discount_amount || 0,
+  //     coupon_code: couponCode.trim()
+  //   };
+
+  //   console.log('Estimate Payload:', estimatePayload);
+
+  //   try {
+  //     const response = await getINEstimate(estimatePayload).unwrap();
+  //     console.log('Estimate Response:', response);
+  //     const apiRes = response?.message?.data || {};
+  //     // Parse coins to numbers for comparison
+
+  //     // @ts-ignore
+  //     const availableCoins = parseFloat(response.data.customer_available_coins.replace(/,/g, ''));
+  //     // @ts-ignore
+  //     const requiredCoins = parseFloat(response.data.design_coin_use.replace(/,/g, ''));
+  //     // console.log('Available Coins , Required Coins:', availableCoins, requiredCoins);
+
+  //     // @ts-ignore
+  //     setAvailableAddicoins(response.data.customer_available_coins);
+  //     // @ts-ignore
+  //     setRequiredAddicoins(response.data.design_coin_use);
+
+  //     if (isDesignSelf && isPrintSelf && availableCoins < requiredCoins) {
+  //       setShowInsufficientCoinsModal(true);
+  //       setIsEstimating(false);
+  //       return;
+  //     }
+
+  //     if (isDesignSelf && !isPrintSelf && availableCoins < requiredCoins) {
+  //       setShowInsufficientCoinsModal(true);
+  //       setIsEstimating(false);
+  //       return;
+  //     }
+
+  //     setEstimateData({
+  //       ...estimatePayload,
+  //       apiResponse: apiRes
+  //     });
+  //     setFieldValue('gst_5', response.data.gst_5 || '0.00');
+  //     setFieldValue('gst_18', response.data.gst_18 || '0.00');
+  //     setFieldValue('item_discount', response.data.item_discount || '0.00');
+  //     setFieldValue('additional_discount', response.data.additional_discount || '0.00');
+  //     // @ts-ignore
+  //     setFieldValue('addicoins', response.data.design_coin_use || '0.00');
+
+  //     setShowEstimateCard(true);
+  //     setIsEstimateStale(false);
+  //     setIsEstimateAccepted(false);
+  //     if (isDesignSelf && isPrintSelf) {
+  //       setEstimateConform(true);
+  //     }
+  //     // Construct and store orderPayload in local storage
+  //     const orderPayload = {
+  //       item_type: 'IN',
+  //       customer: user?.customer_id || 'Not specified', // Use user prop
+  //       order_details: values
+  //     };
+  //     // @ts--ignore
+  //     // console.log('orderPayload MOdal', orderPayload);
+  //     setOrderData(orderPayload);
+  //     setShowPreviwButton(true);
+  //   } catch (error: any) {
+  //     toast.error(error.data?.message || 'Failed to get estimate');
+  //     console.error('Estimate error:', error);
+  //   } finally {
+  //     setIsEstimating(false);
+  //   }
+  // };
+  
+  
+  
+  
   const handleEstimateClick = async () => {
-    const designByRes = values.Design_by || '';
-    const printByRes = values.Print_by || '';
-    const isDesignSelfRes = designByRes === 'Self';
-    const isPrintSelfRes = printByRes === 'Self';
 
-    const getBasePriceLabel = () => {
-      const designBy = values.Design_by || '';
-      const printBy = values.Print_by || '';
 
-      const isDesignAddiwise = designBy === 'Addiwise';
-      const isPrintAddiwise = printBy === 'Addiwise';
-      const isDesignSelf = designBy === 'Self';
-      const isPrintSelf = printBy === 'Self';
 
-      if (isDesignAddiwise && isPrintAddiwise) {
-        return 'Design + Print';
-      }
-      if (isDesignAddiwise) {
-        return 'Design';
-      }
-      if (isPrintAddiwise) {
-        return 'Print';
-      }
 
-      if (isDesignSelf && isPrintSelf) {
-        return '';
-      }
-      if (isDesignSelf) {
-        return 'Self Design';
-      }
-      if (isPrintSelf) {
-        return 'Self Print';
-      }
-
-      return 'Base';
-    };
-    setEstimateDataLabel(getBasePriceLabel());
-
-    if (!validateBeforeAction()) return;
-
-    setIsEstimating(true);
 
     const estimatePayload = {
       item_code: selectedItem,
@@ -372,68 +595,66 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
 
     console.log('Estimate Payload:', estimatePayload);
 
-    try {
-      const response = await getBKEstimate(estimatePayload).unwrap();
-      console.log('Estimate Response:', response);
-      // Parse coins to numbers for comparison
+  try {
+    const response = await getINEstimate(estimatePayload).unwrap();
+    console.log("Estimate Response:", response);
 
-      // @ts-ignore
-      const availableCoins = parseFloat(response.data.customer_available_coins.replace(/,/g, ''));
-      // @ts-ignore
-      const requiredCoins = parseFloat(response.data.design_coin_use.replace(/,/g, ''));
-      // console.log('Available Coins , Required Coins:', availableCoins, requiredCoins);
+    // ✅ Correct extraction
+    const apiRes = response?.message?.data || {};
 
-      // @ts-ignore
-      setAvailableAddicoins(response.data.customer_available_coins);
-      // @ts-ignore
-      setRequiredAddicoins(response.data.design_coin_use);
+    // Parse coins safely
+    const availableCoins = parseFloat(apiRes.customer_available_coins?.replace(/,/g, "") || "0");
+    const requiredCoins = parseFloat(apiRes.design_coin_use?.replace(/,/g, "") || "0");
 
-      if (isDesignSelf && isPrintSelf && availableCoins < requiredCoins) {
-        setShowInsufficientCoinsModal(true);
-        setIsEstimating(false);
-        return;
-      }
+    setAvailableAddicoins(apiRes.customer_available_coins || "0.00");
+    setRequiredAddicoins(apiRes.design_coin_use || "0.00");
 
-      if (isDesignSelf && !isPrintSelf && availableCoins < requiredCoins) {
-        setShowInsufficientCoinsModal(true);
-        setIsEstimating(false);
-        return;
-      }
-
-      setEstimateData({
-        ...estimatePayload,
-        apiResponse: response.data
-      });
-      setFieldValue('gst_5', response.data.gst_5 || '0.00');
-      setFieldValue('gst_18', response.data.gst_18 || '0.00');
-      setFieldValue('item_discount', response.data.item_discount || '0.00');
-      setFieldValue('additional_discount', response.data.additional_discount || '0.00');
-      // @ts-ignore
-      setFieldValue('addicoins', response.data.design_coin_use || '0.00');
-
-      setShowEstimateCard(true);
-      setIsEstimateStale(false);
-      setIsEstimateAccepted(false);
-      if (isDesignSelf && isPrintSelf) {
-        setEstimateConform(true);
-      }
-      // Construct and store orderPayload in local storage
-      const orderPayload = {
-        item_type: 'IN',
-        customer: user?.customer_id || 'Not specified', // Use user prop
-        order_details: values
-      };
-      // @ts--ignore
-      // console.log('orderPayload MOdal', orderPayload);
-      setOrderData(orderPayload);
-      setShowPreviwButton(true);
-    } catch (error: any) {
-      toast.error(error.data?.message || 'Failed to get estimate');
-      console.error('Estimate error:', error);
-    } finally {
+    if (isDesignSelf && availableCoins < requiredCoins) {
+      setShowInsufficientCoinsModal(true);
       setIsEstimating(false);
+      return;
     }
-  };
+
+    // ✅ store API response in state
+    setEstimateData({
+      ...estimatePayload,
+      apiResponse: apiRes,
+    });
+
+    // ✅ set form values from apiRes
+    setFieldValue("gst_5", apiRes.gst_5 || "0.00");
+    setFieldValue("gst_18", apiRes.gst_18 || "0.00");
+    setFieldValue("item_discount", apiRes.item_discount || "0.00");
+    setFieldValue("additional_discount", apiRes.additional_discount || "0.00");
+    setFieldValue("addicoins", apiRes.design_coin_use || "0.00");
+
+    setShowEstimateCard(true);
+    setIsEstimateStale(false);
+    setIsEstimateAccepted(false);
+
+    if (isDesignSelf && isPrintSelf) {
+      setEstimateConform(true);
+    }
+
+    // Store payload
+    const orderPayload = {
+      item_type: "IN",
+      customer: user?.customer_id || "Not specified",
+      order_details: values,
+    };
+    setOrderData(orderPayload);
+    setShowPreviwButton(true);
+  } catch (error: any) {
+    toast.error(error.data?.message || "Failed to get estimate");
+    console.error("Estimate error:", error);
+  } finally {
+    setIsEstimating(false);
+  }
+};
+
+  
+  
+  
   const handleCouponValidation = async () => {
     if (!couponCode.trim()) {
       setCouponData(null);
@@ -1103,7 +1324,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
       </CardHeader>
       <CardContent className="pt-2">
         <ul className="text-sm space-y-2.5">
-          {/* {parseFloat(estimateData.apiResponse.design.replace(/,/g, "")) > 0 && (
+           {parseFloat(estimateData?.apiResponse?.design?.replace(/,/g, "")) > 0 && (
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
               <div className="flex justify-between w-full">
@@ -1114,49 +1335,29 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
               </div>
             </li>
           )}
-          {parseFloat(estimateData.apiResponse.print.replace(/,/g, "")) > 0 && (
+          {parseFloat(estimateData?.apiResponse?.print?.replace(/,/g, "")) > 0 && (
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
               <div className="flex justify-between w-full">
                 <span className="font-medium text-gray-700">Print</span>
                 <span className="text-gray-700">
-                  ₹{estimateData.apiResponse.print}
+                  ₹{estimateData?.apiResponse?.print}
                 </span>
               </div>
             </li>
           )}
-          {parseFloat(estimateData.apiResponse.laticess.replace(/,/g, "")) > 0 && (
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-              <div className="flex justify-between w-full">
-                <span className="font-medium text-gray-700">Latices</span>
-                <span className="text-gray-700">
-                  ₹{estimateData.apiResponse.laticess}
-                </span>
-              </div>
-            </li>
-          )}
-          {parseFloat(estimateData.apiResponse.finish.replace(/,/g, "")) > 0 && (
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-              <div className="flex justify-between w-full">
-                <span className="font-medium text-gray-700">Finish</span>
-                <span className="text-gray-700">
-                  ₹{estimateData.apiResponse.finish}
-                </span>
-              </div>
-            </li>
-          )}
+          
           <li className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
             <div className="flex justify-between w-full">
               <span className="font-medium text-gray-700">Subtotal</span>
               <span className="text-gray-700">
-                ₹{estimateData.apiResponse.estimate_price}
+                ₹{estimateData?.apiResponse?.estimate_price || "0.00"}
+
               </span>
             </div>
           </li>
-          {parseFloat(estimateData.apiResponse.item_discount.replace(/,/g, "")) >
+          {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, "")) >
             0 && (
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
@@ -1169,7 +1370,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
               </li>
             )}
           {parseFloat(
-            estimateData.apiResponse.additional_discount.replace(/,/g, "")
+            estimateData?.apiResponse?.additional_discount?.replace(/,/g, "")
           ) > 0 && (
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
@@ -1181,7 +1382,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
               </div>
             </li>
           )}
-          {parseFloat(estimateData.apiResponse.gst_5.replace(/,/g, "")) > 0 && (
+          {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, "")) > 0 && (
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
               <div className="flex justify-between w-full">
@@ -1192,7 +1393,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
               </div>
             </li>
           )}
-          {parseFloat(estimateData.apiResponse.gst_18.replace(/,/g, "")) > 0 && (
+          {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, "")) > 0 && (
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
               <div className="flex justify-between w-full">
@@ -1202,11 +1403,11 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                 </span>
               </div>
             </li>
-          )} */}
+          )} 
           <div className="border-t border-gray-200 my-2"></div>
           <div className="flex justify-between text-base font-bold text-primary">
             <span>Total Amount</span>
-            {/* <span>₹{estimateData.apiResponse.total_price}</span> */}
+            <span>₹{estimateData?.apiResponse?.total_price}</span>
           </div>
         </ul>
         {!isDesignSelf && !isPrintSelf && (
@@ -1303,7 +1504,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
             </CardHeader>
             <CardContent className="pt-2">
               <ul className="text-sm space-y-2.5">
-                {/* {parseFloat(estimateData.apiResponse.design.replace(/,/g, '')) > 0 && (
+                 {parseFloat(estimateData?.apiResponse?.design.replace(/,/g, '')) > 0 && (
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                     <div className="flex justify-between w-full">
@@ -1314,7 +1515,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                     </div>
                   </li>
                 )}
-                {parseFloat(estimateData.apiResponse.print.replace(/,/g, '')) > 0 && (
+                {parseFloat(estimateData?.apiResponse?.print.replace(/,/g, '')) > 0 && (
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                     <div className="flex justify-between w-full">
@@ -1325,28 +1526,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                     </div>
                   </li>
                 )}
-                {parseFloat(estimateData.apiResponse.laticess.replace(/,/g, '')) > 0 && (
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Latices</span>
-                      <span className="text-gray-700">
-                        ₹{estimateData.apiResponse.laticess}
-                      </span>
-                    </div>
-                  </li>
-                )}
-                {parseFloat(estimateData.apiResponse.finish.replace(/,/g, '')) > 0 && (
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Finish</span>
-                      <span className="text-gray-700">
-                        ₹{estimateData.apiResponse.finish}
-                      </span>
-                    </div>
-                  </li>
-                )}
+                
                 <li className="flex items-start gap-2">
                   <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                   <div className="flex justify-between w-full">
@@ -1356,20 +1536,20 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                     </span>
                   </div>
                 </li>
-                {parseFloat(estimateData.apiResponse.item_discount.replace(/,/g, '')) >
+                {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, '')) >
                   0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
                         <span className="font-medium text-gray-700">Item Discount</span>
                         <span className="text-gray-700">
-                          -₹{estimateData.apiResponse.item_discount}
+                          -₹{estimateData?.apiResponse?.item_discount}
                         </span>
                       </div>
                     </li>
                   )}
                 {parseFloat(
-                  estimateData.apiResponse.additional_discount.replace(/,/g, '')
+                  estimateData?.apiResponse?.additional_discount.replace(/,/g, '')
                 ) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
@@ -1381,7 +1561,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                       </div>
                     </li>
                   )}
-                {parseFloat(estimateData.apiResponse.gst_5.replace(/,/g, '')) > 0 && (
+                {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                     <div className="flex justify-between w-full">
@@ -1392,7 +1572,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                     </div>
                   </li>
                 )}
-                {parseFloat(estimateData.apiResponse.gst_18.replace(/,/g, '')) > 0 && (
+                {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, '')) > 0 && (
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                     <div className="flex justify-between w-full">
@@ -1402,7 +1582,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                       </span>
                     </div>
                   </li>
-                )} */}
+                )} 
                 <div
                   className={`border-t ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} my-2`}
                 ></div>
@@ -1410,7 +1590,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                   className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'}`}
                 >
                   <span>Total Amount</span>
-                  {/* <span>₹{estimateData.apiResponse.total_price}</span> */}
+                  <span>₹{estimateData.apiResponse.total_price}</span>
                 </div>
               </ul>
               {!isDesignSelf && !isPrintSelf && (
@@ -1458,7 +1638,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
             </CardHeader>
             <CardContent className="pt-2">
               <ul className="text-sm space-y-2.5">
-                {/* {parseFloat(estimateData.apiResponse.design.replace(/,/g, '')) > 0 && (
+                {parseFloat(estimateData?.apiResponse?.design.replace(/,/g, '')) > 0 && (
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                     <div className="flex justify-between w-full">
@@ -1469,7 +1649,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                     </div>
                   </li>
                 )}
-                {parseFloat(estimateData.apiResponse.print.replace(/,/g, '')) > 0 && (
+                {parseFloat(estimateData?.apiResponse?.print.replace(/,/g, '')) > 0 && (
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                     <div className="flex justify-between w-full">
@@ -1480,28 +1660,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                     </div>
                   </li>
                 )}
-                {parseFloat(estimateData.apiResponse.laticess.replace(/,/g, '')) > 0 && (
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Latices</span>
-                      <span className="text-gray-700">
-                        ₹{estimateData.apiResponse.laticess}
-                      </span>
-                    </div>
-                  </li>
-                )}
-                {parseFloat(estimateData.apiResponse.finish.replace(/,/g, '')) > 0 && (
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Finish</span>
-                      <span className="text-gray-700">
-                        ₹{estimateData.apiResponse.finish}
-                      </span>
-                    </div>
-                  </li>
-                )}
+               
                 <li className="flex items-start gap-2">
                   <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                   <div className="flex justify-between w-full">
@@ -1511,7 +1670,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                     </span>
                   </div>
                 </li>
-                {parseFloat(estimateData.apiResponse.item_discount.replace(/,/g, '')) >
+                {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, '')) >
                   0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
@@ -1524,7 +1683,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                     </li>
                   )}
                 {parseFloat(
-                  estimateData.apiResponse.additional_discount.replace(/,/g, '')
+                  estimateData?.apiResponse?.additional_discount.replace(/,/g, '')
                 ) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
@@ -1536,7 +1695,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                       </div>
                     </li>
                   )}
-                {parseFloat(estimateData.apiResponse.gst_5.replace(/,/g, '')) > 0 && (
+                {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                     <div className="flex justify-between w-full">
@@ -1557,7 +1716,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                       </span>
                     </div>
                   </li>
-                )} */}
+                )} 
                 <div
                   className={`border-t ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} my-2`}
                 ></div>
@@ -1565,7 +1724,7 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
                   className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'}`}
                 >
                   <span>Total Amount</span>
-                  {/* <span>₹{estimateData.apiResponse.total_price}</span> */}
+                  <span>₹{estimateData.apiResponse.total_price}</span>
                 </div>
               </ul>
               {!isDesignSelf && !isPrintSelf && (
@@ -1597,20 +1756,19 @@ const initialValues = AKINSOLES_FORM_INITIAL_VALUES;
           </Card>
 
         )} 
-          <Button
-          className="w-[350px] mt-40 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
-          onClick={() => {
-            handleEstimateClick(); // existing estimate logic
-            setShowAddicoinsCard(true); // show Addicoins card after click
-          }}
-          disabled={isEstimating}
-        >
-          {isEstimating
-            ? 'Estimating...'
-            : isEstimateStale
-              ? 'Update Estimate'
-              : 'Estimate Now'}
-        </Button>
+         {!orderId && !deviceTypeId && (
+              <Button
+                className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+                onClick={handleEstimateClick}
+                disabled={isEstimating}
+              >
+                {isEstimating
+                  ? 'Estimating...'
+                  : isEstimateStale
+                    ? 'Update Estimate'
+                    : 'Estimate Now'}
+              </Button>
+            )}
          <div className="flex gap-2.5">
                                 <Button
                                   className="shadow-2xl"
