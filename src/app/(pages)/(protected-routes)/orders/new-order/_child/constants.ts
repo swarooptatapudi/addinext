@@ -467,6 +467,9 @@ export const INSOLES_FORM_INITIAL_VALUES = {
   email: '',
   authorized_representative: '',
   locking_system: '',
+  custom_metatarsal_to_heel_length: '',
+  custom_metatarsal_width_cm: '',
+  custom_insoles_model: '',
   scan_condition: '',
   scan_markings: '',
   foot_type: '',
@@ -486,12 +489,14 @@ export const INSOLES_FORM_INITIAL_VALUES = {
   insoletype: '',
   custom_upload_link_with_photos: '',
   global_volume_reduction: '',
-  shoe_width: '',
   foot_length: '',
+  usage: '',
+  layers: '',
   metatarsal_length: '',
   metatarsal_width: '',
   insole_model: '',
 
+  print_by: '',
   table_zbib: [
     {
       point_name: 'Ischial Tuberosity (IT)',

@@ -58,7 +58,7 @@ export type Order = {
 
 export default function Orders(): React.JSX.Element {
   const { data, isLoading, error, refetch } = useGetOrdersQuery('');
-  console.log("salesorderdetails", data)
+  // console.log("salesorderdetails", data)
   const [getOrderDetails, { isLoading: isPaymentLoading }] =
     useGetOrderDetailsMutation();
   const [getOrderDetailIds] = useGetOrderDetailIdsMutation();
@@ -184,19 +184,22 @@ export default function Orders(): React.JSX.Element {
     setSelectedOrder(order);
 
     if (order.device_type === "BK Orders") {
+      // console.log("BK Orders..>", order.order_id, order.device_type)
       router.push(
         `/orders/new-order/BK?${new URLSearchParams({
           orderId: order.order_id,
           deviceType: order.device_type,
           paid: order.status,
+          isEdit: "true"
         }).toString()}`
       );
-    } else if (order.device_type === "Insole Orders") {
+    }
+    else if (order.device_type === "Insole Orders") {
+      // console.log("IN Orders..>", order.order_id, order.device_type)
       router.push(
-        `/orders/new-order/IN?${new URLSearchParams({
+        `/orders/new-order/Insoles?${new URLSearchParams({
           orderId: order.order_id,
           deviceType: order.device_type,
-          paid: order.status,
         }).toString()}`
       );
     }

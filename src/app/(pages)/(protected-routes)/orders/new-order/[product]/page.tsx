@@ -20,15 +20,15 @@ export default function NewOrderController({
 
   }
   else if (product?.toLowerCase()?.includes('in')) {
-    return <InsolesOrderForm item_type={product}/>
+    return <InsolesOrderForm item_type={product} />
 
-  } 
+  }
   else if (product?.toLowerCase()?.includes('be')) {
-    return <BEOrderForm item_type={product}/>
+    return <BEOrderForm item_type={product} />
 
   }
   else if (product?.toLowerCase()?.includes('ae')) {
-    return <AEOrderForm item_type={product}/>
+    return <AEOrderForm item_type={product} />
 
   }
   else {

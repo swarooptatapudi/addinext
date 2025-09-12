@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { Formik, useFormikContext } from 'formik';
@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/dialog';
 // API Hooks
 import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
-import { useCreateInsoleOrderMutation } from '@/rtk-query/apis/orders';
+import { useCreateInsoleOrderMutation, useGetOrderDetailsMutation, useGetOrderDetailIdsMutation } from '@/rtk-query/apis/orders';
 import { useGetItemNameInByDetailsMutation } from '@/rtk-query/apis/products';
 
 // Constants & Utils
@@ -106,7 +106,7 @@ const step1Validation = Yup.object().shape({
       'foot length must be no more than 50',
       (value) => parseInt(value) <= 25
     ),
-  metatarsal_length: Yup.string()
+  custom_metatarsal_to_heel_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
     .test(
@@ -119,7 +119,7 @@ const step1Validation = Yup.object().shape({
       'metatarsal length must be no more than 45',
       (value) => parseInt(value) <= 45
     ),
-  metatarsal_width: Yup.string()
+  custom_metatarsal_width_cm: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
     .test(
@@ -980,11 +980,11 @@ const Step1 = ({
 
                 <Input
                   placeholder="10"
-                  value={values.metatarsal_length}
-                  onChange={handleChange('metatarsal_length')}
+                  value={values.custom_metatarsal_to_heel_length}
+                  onChange={handleChange('custom_metatarsal_to_heel_length')}
                   required
-                  inVaild={shouldShowError('metatarsal_length', true)}
-                  error={errors.metatarsal_length}
+                  inVaild={shouldShowError('custom_metatarsal_to_heel_length', true)}
+                  error={errors.custom_metatarsal_to_heel_length}
                 />
 
               </div>
@@ -998,11 +998,11 @@ const Step1 = ({
               <div className=' mt-1'>
                 <Input
                   placeholder="10"
-                  value={values.metatarsal_width}
-                  onChange={handleChange('metatarsal_width')}
+                  value={values.custom_metatarsal_width_cm}
+                  onChange={handleChange('custom_metatarsal_width_cm')}
                   required
-                  inVaild={shouldShowError('metatarsal_width', true)}
-                  error={errors.metatarsal_width}
+                  inVaild={shouldShowError('custom_metatarsal_width_cm', true)}
+                  error={errors.custom_metatarsal_width_cm}
                 />
               </div>
 
@@ -1350,10 +1350,13 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
   const [createInsoleOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateInsoleOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
-  console.log(" Logged-in user from Redux:", user);
+  // console.log(" Logged-in user from Redux:", user);
   const [selectedItem, setSelectedItem] = React.useState<string>('');
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameInByDetailsMutation();
-  console.log("Selected Item Code:", selectedItem);
+  // console.log("Selected Item Code:", selectedItem);
+  const [getOrderDetails, { data: orderDetails, isLoading: isOrderDetailsLoading }] =
+    useGetOrderDetailsMutation();
+  // console.log("orderDetails>>yyy", data)
   const [formValues, setFormValues] = useState(initialValues);
   const [modelOpen, setModelOpen] = useState(false);
   const router = useRouter();
@@ -1364,6 +1367,10 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
     open: false,
     data: null
   });
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('orderId');
+  const deviceTypeId = searchParams.get('deviceType');
+  const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
   const [showStep5Confirmation, setShowStep5Confirmation] = useState(false);
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
@@ -1374,6 +1381,172 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
+
+
+  useEffect(() => {
+    if (orderId && deviceTypeId) {
+      getOrderDetails({
+        order_type: deviceTypeId,
+        order_id: orderId,
+      })
+        .unwrap()
+        .then((response) => {
+          // console.log("Full API response =>", response);
+
+          if (response.data) {
+            // console.log("API Keys =>", Object.keys(response.data));
+            const insoleOptions = [
+              { value: 'City Comfort', label: 'Daily comfort for urban walking' },
+              { value: 'Endurance', label: 'Support for long hours on foot' },
+              { value: 'Sensitive', label: 'Extra soft cushioning support' },
+              { value: 'Sports', label: 'Sports stability and shock absorption' },
+              { value: 'Diabetics', label: 'Diabetic foot pressure protection' },
+            ];
+            const matchedUsage = insoleOptions.find(opt => opt.value === response.data.usage);
+            // console.log("✅ Matched Usage Option:", matchedUsage);
+
+            const transformedData = {
+              ...INSOLES_FORM_INITIAL_VALUES,
+              patient_name: response.data.patient_name || "",
+              gender: response.data.gender || "",
+              activity_level: response.data.activity || "",
+              date_of_birth: response.data.dob || "",
+              height: response.data.custom_height ?? "",
+              weight: response.data.weight ?? "",
+              mobile_no: response.data.custom_mobile_no || "",
+              email: response.data.custom_email || "",
+              insole_model: response.data.custom_insoles_model || "",
+              shoe_size: response.data.shoe_size_eu ?? "",
+              foot_length: response.data.foot_length_cm ?? "",
+              custom_metatarsal_to_heel_length: response.data.custom_metatarsal_to_heel_length ?? "",
+              custom_metatarsal_width_cm: response.data.custom_metatarsal_width_cm ?? "",
+              thickness: response.data.thickness_mm ?? "",
+              insoletype: matchedUsage ? matchedUsage.value : "",
+              layers: response.data.layers || "",
+              design_variation: response.data.custom_design_by || "",
+              print_by: response.data.custom_print_by || "",
+              table_zbib: response.data.table_zbib?.length
+                ? response.data.table_zbib.map((item: any) => ({
+                  point_name: item.point_name || "",
+                  pressure_mm: item.pressure_mm || "",
+                }))
+                : [{ point_name: "", pressure_mm: "" }],
+              selected_foot_conditions: response.data.selected_foot_conditions?.length
+                ? response.data.selected_foot_conditions
+                : [""],
+
+            };
+
+            // console.log("Transformed Insole Data =>", transformedData);
+            setFormValues(transformedData);
+
+            if (response.data.item_code) {
+              setSelectedItem(response.data.item_code);
+            }
+
+            setIsInitialDataLoaded(true);
+          } else {
+            // console.error("API returned no data");
+            setIsInitialDataLoaded(false);
+          }
+        })
+        .catch((error) => {
+          // console.error("Failed to load insole order details:", error);
+          setIsInitialDataLoaded(false);
+        });
+    }
+  }, [orderId, deviceTypeId]);
+
+
+
+
+
+  // useEffect(() => {
+  //   if (orderId && deviceTypeId) {
+  //     getOrderDetails({
+  //       order_type: deviceTypeId,
+  //       order_id: orderId,
+  //     })
+  //       .unwrap()
+  //       .then((response) => {
+  //         const apiData = response.data || {};
+
+  //         const transformedData = {
+  //           ...INSOLES_FORM_INITIAL_VALUES,
+
+  //           patient_name: apiData.patient_name || "",
+  //           gender: apiData.gender || "",
+  //           date_of_birth: apiData.dob || "",
+  //           height: apiData.custom_height || "",
+  //           weight: apiData.weight || "",
+  //           mobile_no: apiData.custom_mobile_no || "",
+  //           email: apiData.custom_email || "",
+  //           shoe_size: apiData.shoe_size_eu || "",
+  //           shoe_width: apiData.foot_width_cm || "",
+  //           foot_length: apiData.foot_length_cm || "",
+  //           thickness: apiData.thickness_mm || "",
+  //           design_variation: apiData.custom_design_by || "",
+  //           print_by: apiData.custom_print_by || "",
+  //           usage: apiData.usage || "",
+  //           layers: apiData.layers || "",
+  //         };
+
+  //         setFormValues(transformedData);
+  //         setIsInitialDataLoaded(true);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Failed to load insole order details:", error);
+  //         setIsInitialDataLoaded(false);
+  //       });
+  //   }
+  // }, [orderId, deviceTypeId]);
+
+
+  useEffect(() => {
+    if (orderDetails?.data) {
+      const apiData = orderDetails.data;
+      const insoleOptions = [
+        { value: 'City Comfort', label: 'Daily comfort for urban walking' },
+        { value: 'Endurance', label: 'Support for long hours on foot' },
+        { value: 'Sensitive', label: 'Extra soft cushioning support' },
+        { value: 'Sports', label: 'Sports stability and shock absorption' },
+        { value: 'Diabetics', label: 'Diabetic foot pressure protection' },
+      ];
+      const matchedUsage = insoleOptions.find(opt => opt.value === apiData.usage);
+      // console.log("✅ Matched Usages Option:", matchedUsage);
+
+      setFormValues({
+        ...INSOLES_FORM_INITIAL_VALUES,
+        patient_name: apiData.patient_name || "",
+        gender: apiData.gender || "",
+        date_of_birth: apiData.dob || "",
+        height: apiData.custom_height || "",
+        activity_level: apiData.activity || "",
+        weight: apiData.weight || "",
+        mobile_no: apiData.custom_mobile_no || "",
+        email: apiData.custom_email || "",
+        shoe_size: apiData.shoe_size_eu || "",
+        custom_metatarsal_to_heel_length: apiData.custom_metatarsal_to_heel_length ?? "",
+        custom_metatarsal_width_cm: apiData.custom_metatarsal_width_cm ?? "",
+        foot_length: apiData.foot_length_cm || "",
+        insoletype: matchedUsage ? matchedUsage.value : "",
+        thickness: apiData.thickness_mm || "",
+        design_variation: apiData.custom_design_by || "",
+        print_by: apiData.custom_print_by || "",
+        insole_model: apiData.custom_insoles_model || "",
+        layers: apiData.layers || "",
+        table_zbib:
+          apiData.table_zbib?.map((item: { point_name: string; pressure_mm: string }) => ({
+            point_name: item.point_name || "",
+            pressure_mm: item.pressure_mm || "",
+          })) || INSOLES_FORM_INITIAL_VALUES.table_zbib,
+        selected_foot_conditions:
+          apiData.selected_foot_conditions || INSOLES_FORM_INITIAL_VALUES.selected_foot_conditions,
+      });
+    }
+  }, [orderDetails]);
+
 
   useEffect(() => {
     console.log("Form Values Updated:", formValues);
@@ -1483,7 +1656,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
   // };
 
   const OnSubmit = async (values: any) => {
-    console.log("Form values on submit:", values);
+    // console.log("Form values on submit:", values);
     setFormValues(values);
 
     const payload = {
@@ -1499,12 +1672,12 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
       thickness: thicknests, // e.g. "3.5 MM"
     };
 
-    console.log("Payload for item code fetch:", payload);
+    // console.log("Payload for item code fetch:", payload);
 
     const itemCode = await getItemCodeByValues(payload);
     setSelectedItem(itemCode);
 
-    console.log("Generated Item Code:", itemCode);
+    // console.log("Generated Item Code:", itemCode);
 
     // ❌ Don't create the order here
     // ✅ Just prepare and store payload for later
@@ -1525,7 +1698,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
 
   const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
-    console.log("Item code fetch response:", res);
+    // console.log("Item code fetch response:", res);
     return res?.data?.item_code;
   };
 
@@ -1643,7 +1816,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
   return (
     <div className="pb-16 relative">
       <Formik
-        initialValues={initialValues}
+        initialValues={isInitialDataLoaded ? formValues : initialValues}
         onSubmit={OnSubmit}
         validationSchema={
           currentStep === 1 ? step1Validation :
@@ -1863,8 +2036,8 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
                   <Button
                     className="shadow-2xl"
                     onClick={() => {
-                      console.log("Submitting...");
-                      console.log("Insole Type in parent:", values);
+                      // console.log("Submitting...");
+                      // console.log("Insole Type in parent:", values);
                       handleSubmit();
                       setFormValues(values);
                       setFormSubmitted(true);

@@ -1664,6 +1664,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const deviceTypeId = searchParams.get('deviceType');
   const paid = searchParams.get('paid');
   const isPaid = paid === "Paid"
+  const isEdit = searchParams.get("isEdit") === "true";
 
   const isViewMode = !!(deviceTypeId && orderId && isPaid);
 
@@ -1714,11 +1715,11 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
               ) || initialValues.socket_design_details
           };
 
-          console.log("InitialValues =>", initialValues);
-          console.log("API Response (response.data) =>", response.data);
-          console.log("Merged/Transformed =>", transformedData);
+          // console.log("InitialValues =>", initialValues);
+          // console.log("API Response (response.data) =>", response.data);
+          // console.log("Merged/Transformed =>", transformedData);
 
-          console.log("Transformed Data =>", transformedData);
+          // console.log("Transformed Data =>", transformedData);
 
           setFormValues(transformedData);
           if (response.data.item_code) {
@@ -1727,7 +1728,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
           setIsInitialDataLoaded(true); // Set to true after data is loaded
         })
         .catch((error) => {
-          console.error('Failed to load order details:', error);
+          // console.error('Failed to load order details:', error);
           setIsInitialDataLoaded(false); // Ensure it’s false on failure
         });
     }

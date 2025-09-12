@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { BK_FORM_TYPE, USER } from '@/uttils/Types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { BookmarkIcon, CoinsIcon } from "lucide-react";
+import { BookmarkIcon, CoinsIcon, Check,Loader,X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import React from "react";
@@ -265,7 +265,8 @@ const handlePayAndPlaceOrder = async (values: any) => {
       weight: values.weight,
       insoletype: values.insoletype,
       insole_design_variation: values.insole_design_variation,
-      thickness: thicknests, // e.g. "3.5 MM"
+      thickness: thicknests,
+       // e.g. "3.5 MM"
     };
 
     const itemCode = await getItemCodeByValues(payload);
@@ -281,6 +282,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
       },
       item_code: itemCode,
       addicoins: parseInt(values.addicoins) || 0,
+       total_price: estimateData?.apiResponse?.total_price ?? 0 
     };
 
     console.log("📦 Base Order Payload:", orderPayload);
@@ -591,6 +593,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
       discount_per: couponData?.discount_percentage || 0,
       discount_amt: couponData?.discount_amount || 0,
       coupon_code: couponCode.trim()
+
     };
 
     console.log('Estimate Payload:', estimatePayload);
@@ -907,6 +910,45 @@ const handlePayAndPlaceOrder = async (values: any) => {
             </div>
           </div>
         </div>
+
+
+        <div className="space-y-2 mt-0">
+                      <div className="relative w-[350px]">
+                        <Input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
+                          placeholder="Enter coupon code"
+                          className={`w-full pr-10 ${couponCode.length >= 5 && !couponData && !isValidatingCoupon
+                            ? 'border-orange-200'
+                            : couponData
+                              ? 'border-green-200'
+                              : ''
+                            }`}
+                        />
+                        <div className="absolute right-3 top-2">
+                          {isValidatingCoupon ? (
+                            <Loader className="h-4 w-4 animate-spin" />
+                          ) : couponCode.length >= 5 ? (
+                            couponData ? (
+                              <Check className="h-5 w-5 text-green-500" />
+                            ) : (
+                              <X className="h-5 w-5 text-red-500" />
+                            )
+                          ) : null}
+                        </div>
+                      </div>
+                      {couponData && (
+                        <div className="text-sm text-green-700 mt-1 ml-5">
+                          {couponData.coupon_name} ({couponData.discount_percentage}% off)
+                          {couponData.valid_upto && (
+                            <span className="text-gray-500 ml-6">
+                              valid date {new Date(couponData.valid_upto).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
         {/* {values.insole_model !=='AddiSole' ?(<>
           <div className="flex gap-8 mb-8 -mt-[230px] ml-[416px]">
            <div>
