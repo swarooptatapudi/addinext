@@ -1423,9 +1423,10 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
               custom_metatarsal_width_cm: response.data.custom_metatarsal_width_cm ?? "",
               thickness: response.data.thickness_mm ?? "",
               insoletype: matchedUsage ? matchedUsage.value : "",
-              layers: response.data.layers || "",
+              insole_design_variation: response.data.layers || "",
+              Design_by: response.data.custom_print_by || "",
               design_variation: response.data.custom_design_by || "",
-              print_by: response.data.custom_print_by || "",
+              Print_by: response.data.custom_print_by || "",
               table_zbib: response.data.table_zbib?.length
                 ? response.data.table_zbib.map((item: any) => ({
                   point_name: item.point_name || "",
@@ -1527,15 +1528,17 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
         mobile_no: apiData.custom_mobile_no || "",
         email: apiData.custom_email || "",
         shoe_size: apiData.shoe_size_eu || "",
+        Design_by: apiData.custom_print_by || "",
         custom_metatarsal_to_heel_length: apiData.custom_metatarsal_to_heel_length ?? "",
         custom_metatarsal_width_cm: apiData.custom_metatarsal_width_cm ?? "",
         foot_length: apiData.foot_length_cm || "",
         insoletype: matchedUsage ? matchedUsage.value : "",
         thickness: apiData.thickness_mm || "",
+
         design_variation: apiData.custom_design_by || "",
-        print_by: apiData.custom_print_by || "",
+        Print_by: apiData.custom_print_by || "",
         insole_model: apiData.custom_insoles_model || "",
-        layers: apiData.layers || "",
+        insole_design_variation: apiData.layers || "",
         table_zbib:
           apiData.table_zbib?.map((item: { point_name: string; pressure_mm: string }) => ({
             point_name: item.point_name || "",

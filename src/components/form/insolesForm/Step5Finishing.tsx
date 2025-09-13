@@ -1574,7 +1574,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
                   <div className="flex justify-between w-full">
                     <span className="font-medium text-gray-700">Subtotal</span>
                     <span className="text-gray-700">
-                      ₹{estimateData.apiResponse.estimate_price}
+                      ₹{estimateData?.apiResponse?.estimate_price}
                     </span>
                   </div>
                 </li>
@@ -1632,7 +1632,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
                   className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'}`}
                 >
                   <span>Total Amount</span>
-                  <span>₹{estimateData.apiResponse.total_price}</span>
+                  <span>₹{estimateData?.apiResponse?.total_price}</span>
                 </div>
               </ul>
               {!isDesignSelf && !isPrintSelf && (
