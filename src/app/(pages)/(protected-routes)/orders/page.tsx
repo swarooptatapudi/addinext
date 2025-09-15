@@ -181,6 +181,7 @@ export default function Orders(): React.JSX.Element {
 
   // navigate on order click
   const handleOrderIdClick = (order: Order) => {
+    console.log("order>>>",order);
     setSelectedOrder(order);
 
     if (order.device_type === "BK Orders") {

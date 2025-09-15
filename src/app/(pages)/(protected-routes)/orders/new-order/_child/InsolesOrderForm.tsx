@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 import { Formik, useFormikContext } from 'formik';
 import * as Yup from 'yup';
 
-
 // Components
 import StlFilePicker from '@/components/app/common/StlPreviewer';
 import { Button } from '@/components/ui/button';
@@ -24,11 +23,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogDescription,
+  DialogDescription
 } from '@/components/ui/dialog';
 // API Hooks
 import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
-import { useCreateInsoleOrderMutation, useGetOrderDetailsMutation, useGetOrderDetailIdsMutation } from '@/rtk-query/apis/orders';
+import {
+  useCreateInsoleOrderMutation,
+  useGetOrderDetailsMutation,
+  useGetOrderDetailIdsMutation
+} from '@/rtk-query/apis/orders';
 import { useGetItemNameInByDetailsMutation } from '@/rtk-query/apis/products';
 
 // Constants & Utils
@@ -38,12 +41,20 @@ import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 import { INSOLES_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/insolesForm/Step5Finishing';
 import { CheckboxGroup } from '@/components/app/common/foot-complaints-form';
-import { getThickness } from "@/uttils/thicknessChart";
-import { mapActivityLevel, getThicknessCode, finishMap, layeringMap, modelMap } from "@/uttils/insoleUtils";
+import { getThickness } from '@/uttils/thicknessChart';
+import {
+  mapActivityLevel,
+  getThicknessCode,
+  finishMap,
+  layeringMap,
+  modelMap
+} from '@/uttils/insoleUtils';
 
-import { thicknessToinsoletypeMap, insoletypeToThicknessMap } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
+import {
+  thicknessToinsoletypeMap,
+  insoletypeToThicknessMap
+} from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
 import Link from 'next/link';
-
 
 declare global {
   interface Window {
@@ -64,15 +75,19 @@ const step1Validation = Yup.object().shape({
   height: Yup.string()
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 92.57 or 95)',
-      excludeEmptyString: true,
+      excludeEmptyString: true
     })
     .test('min-height', 'Minimum height is 91cm', (value) => !value || parseFloat(value) >= 91)
-    .test('max-height', 'Maximum height is 213.00cm', (value) => !value || parseFloat(value) <= 213.0),
+    .test(
+      'max-height',
+      'Maximum height is 213.00cm',
+      (value) => !value || parseFloat(value) <= 213.0
+    ),
   weight: Yup.string()
     .required('Weight is required')
     .matches(/^\d+(\.\d{1,2})?$/, {
       message: 'Must be a number (e.g. 65.5 or 70)',
-      excludeEmptyString: false,
+      excludeEmptyString: false
     })
     .test('min-weight', 'Minimum weight is 10kg', (value) => parseFloat(value) >= 10)
     .test('max-weight', 'Maximum weight is 180kg', (value) => parseFloat(value) <= 180),
@@ -83,37 +98,17 @@ const step1Validation = Yup.object().shape({
   shoe_size: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+(\.\d+)?$/, 'Must contain only digits')
-    .test(
-      'min-value',
-      'Size must be at least 20',
-      (value) => parseInt(value) >= 20
-    )
-    .test(
-      'max-value',
-      'Size must be no more than 60',
-      (value) => parseInt(value) <= 45
-    ),
+    .test('min-value', 'Size must be at least 20', (value) => parseInt(value) >= 20)
+    .test('max-value', 'Size must be no more than 60', (value) => parseInt(value) <= 45),
   foot_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
-    .test(
-      'min-value',
-      'foot length must be at least 5',
-      (value) => parseInt(value) >= 5
-    )
-    .test(
-      'max-value',
-      'foot length must be no more than 50',
-      (value) => parseInt(value) <= 25
-    ),
+    .test('min-value', 'foot length must be at least 5', (value) => parseInt(value) >= 5)
+    .test('max-value', 'foot length must be no more than 50', (value) => parseInt(value) <= 25),
   custom_metatarsal_to_heel_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
-    .test(
-      'min-value',
-      'metatarsal length must be at least 3',
-      (value) => parseInt(value) >= 3
-    )
+    .test('min-value', 'metatarsal length must be at least 3', (value) => parseInt(value) >= 3)
     .test(
       'max-value',
       'metatarsal length must be no more than 45',
@@ -122,11 +117,7 @@ const step1Validation = Yup.object().shape({
   custom_metatarsal_width_cm: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
-    .test(
-      'min-value',
-      'metatarsal width must be at least 3',
-      (value) => parseInt(value) >= 3
-    )
+    .test('min-value', 'metatarsal width must be at least 3', (value) => parseInt(value) >= 3)
     .test(
       'max-value',
       'metatarsal width must be no more than 25',
@@ -151,28 +142,28 @@ const step1Validation = Yup.object().shape({
   abductionadduction_angle: Yup.string()
     .matches(/^\d*$/, 'Must contain only numbers')
     .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
-  date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED),
+  date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED)
 });
 
+const step2Validation = Yup.object()
+  .shape({
+    custom_upload_link_with_photos: Yup.string()
+      .url('Must be a valid URL (e.g., https://drive.google.com/...)')
+      .nullable(),
 
-const step2Validation = Yup.object().shape({
-  custom_upload_link_with_photos: Yup.string()
-    .url('Must be a valid URL (e.g., https://drive.google.com/...)')
-    .nullable(),
+    scan_type: Yup.string().required('Scan condition is required'),
 
-  scan_type: Yup.string().required('Scan condition is required'),
+    foot_Amputation: Yup.string().when('scan_type', {
+      is: '3D_scan',
+      then: (schema) => schema.required('Foot amputation is required'),
+      otherwise: (schema) => schema.nullable()
+    }),
 
-  foot_Amputation: Yup.string().when('scan_type', {
-    is: '3D_scan',
-    then: (schema) => schema.required('Foot amputation is required'),
-    otherwise: (schema) => schema.nullable(),
-  }),
-
-  left_foot_file: Yup.mixed().nullable(),
-  right_foot_file: Yup.mixed().nullable(),
-  additional_file_1: Yup.mixed().nullable(),
-  additional_file_2: Yup.mixed().nullable(),
-})
+    left_foot_file: Yup.mixed().nullable(),
+    right_foot_file: Yup.mixed().nullable(),
+    additional_file_1: Yup.mixed().nullable(),
+    additional_file_2: Yup.mixed().nullable()
+  })
 
   // 🔹 Test 1 → STL files or Link (only if scan_type === "3D_scan")
   .test(
@@ -184,7 +175,7 @@ const step2Validation = Yup.object().shape({
         left_foot_file,
         right_foot_file,
         custom_upload_link_with_photos,
-        foot_Amputation,
+        foot_Amputation
       } = value;
 
       if (scan_type !== '3D_scan') return true; // ✅ Skip when not 3D scan
@@ -202,7 +193,7 @@ const step2Validation = Yup.object().shape({
 
       return this.createError({
         path: 'left_foot_file',
-        message: 'Please upload the STL file(s) or provide a link.',
+        message: 'Please upload the STL file(s) or provide a link.'
       });
     }
   )
@@ -222,15 +213,10 @@ const step2Validation = Yup.object().shape({
 
       return this.createError({
         path: !additional_file_1 ? 'additional_file_1' : 'additional_file_2',
-        message: 'Please upload both Left and Right Leg files.',
+        message: 'Please upload both Left and Right Leg files.'
       });
     }
   );
-
-
-
-
-
 
 // const step2Validation = Yup.object().shape({
 //   custom_upload_link_with_photos: Yup.string()
@@ -266,43 +252,38 @@ const step2Validation = Yup.object().shape({
 const step4Validation = Yup.object().shape({
   global_volume_reduction: Yup.string()
     .nullable()
-    .test(
-      'is-valid-percentage',
-      'Must be a percentage between 0% and 5% (e.g. 2%)',
-      (value) => {
-        if (!value) return true;
+    .test('is-valid-percentage', 'Must be a percentage between 0% and 5% (e.g. 2%)', (value) => {
+      if (!value) return true;
 
-        const regex = /^\d{1,2}%$/;
-        if (!regex.test(value)) return false;
+      const regex = /^\d{1,2}%$/;
+      if (!regex.test(value)) return false;
 
-        const num = parseInt(value.replace('%', ''));
-        return num >= 0 && num <= 5;
-      }
-    ),
+      const num = parseInt(value.replace('%', ''));
+      return num >= 0 && num <= 5;
+    }),
   socket_design_details: Yup.array().of(
     Yup.object().shape({
-      cpo_input_mm: Yup.string()
-        .test(
-          'is-valid-number',
-          'Must be a number between -20 and +20',
-          (value) => {
-            if (!value || value.trim() === '') return true; // Allow empty
-            if (!/^-?\d+$/.test(value)) return false;
-            const num = parseInt(value, 10);
-            return num >= -20 && num <= 20;
-          }
-        )
+      cpo_input_mm: Yup.string().test(
+        'is-valid-number',
+        'Must be a number between -20 and +20',
+        (value) => {
+          if (!value || value.trim() === '') return true; // Allow empty
+          if (!/^-?\d+$/.test(value)) return false;
+          const num = parseInt(value, 10);
+          return num >= -20 && num <= 20;
+        }
+      )
     })
   )
 });
 
 const step3Validation = Yup.object().shape({
-  locking_mechanism: Yup.string(),
+  locking_mechanism: Yup.string()
 });
 
 const step5Validation = Yup.object().shape({
   finishing_type: Yup.string(),
-  delivery_date: Yup.string(),
+  delivery_date: Yup.string()
 });
 
 const initialValues = INSOLES_FORM_INITIAL_VALUES;
@@ -314,7 +295,7 @@ const SocketTypeDialog = ({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  data: any
+  data: any;
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -328,9 +309,7 @@ const SocketTypeDialog = ({
             <>
               <div>
                 <h4 className="font-medium text-lg">{data.label}</h4>
-                <p className="text-sm text-gray-600 mt-2">
-                  {data.description || ''}
-                </p>
+                <p className="text-sm text-gray-600 mt-2">{data.description || ''}</p>
               </div>
 
               {data.image && (
@@ -360,9 +339,7 @@ const SocketTypeDialog = ({
         </div>
 
         <DialogFooter>
-          <Button onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
+          <Button onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -387,21 +364,21 @@ const InsolesDialog = ({
     const normalizedVariation = variation.trim();
 
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
-      'AddiSole': {
+      AddiSole: {
         title: 'AddiSole',
         description: 'Premium Insole printed on HP-MJF',
         image: '/assets/order-forms/insoles/AddiSole.png'
       },
-      'AddiSoleL': {
+      AddiSoleL: {
         title: 'AddiSoleL',
         description: 'Insoles printed on SLS Printer ',
         image: '/assets/order-forms/insoles/AddiSole.png'
       },
-      'AddiSoleEco': {
+      AddiSoleEco: {
         title: 'AddiSoleEco',
         description: 'Standard Insoles printed on FDM Printer',
         image: '/assets/order-forms/insoles/AddiSoleEco.png'
-      },
+      }
     };
 
     if (contentMap[normalizedVariation]) {
@@ -409,8 +386,8 @@ const InsolesDialog = ({
     }
 
     const lowerCaseVariation = normalizedVariation.toLowerCase();
-    const caseInsensitiveMatch = Object.entries(contentMap).find(([key]) =>
-      key.toLowerCase() === lowerCaseVariation
+    const caseInsensitiveMatch = Object.entries(contentMap).find(
+      ([key]) => key.toLowerCase() === lowerCaseVariation
     );
 
     if (caseInsensitiveMatch) {
@@ -418,9 +395,7 @@ const InsolesDialog = ({
     }
 
     const baseVariation = normalizedVariation.split(' (')[0].trim();
-    const partialMatch = Object.entries(contentMap).find(([key]) =>
-      key === baseVariation
-    );
+    const partialMatch = Object.entries(contentMap).find(([key]) => key === baseVariation);
 
     if (partialMatch) {
       return partialMatch[1];
@@ -496,24 +471,21 @@ const ModelDialog = ({
   onSelect: (value: string) => void;
   socketType: string;
 }) => {
-
   const getDynamicContent = (variation: string) => {
-
     const normalizedVariation = variation.trim().toLowerCase();
 
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
-      'addieaseeco': {
+      addieaseeco: {
         title: 'AddiEaseEco',
         description: 'Economy Definitive & Check Sockets Printed on FDM Printer',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseEco.png'
       },
-      'addiease': {
+      addiease: {
         title: 'AddiEase',
         description: 'Premium Definitive Sockets Printed on HP-MJF',
         image: '/assets/order-forms/bk-order/foot-type/AddiEase.png'
-
       },
-      'addieasemould': {
+      addieasemould: {
         title: 'AddiEaseMould',
         description: 'Moulds Printed on FDM Printe',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould.png'
@@ -523,8 +495,7 @@ const ModelDialog = ({
         title: 'AddiEaseMould-HR',
         description: 'Heat Resistant Moulds Printed on FDM Printer',
         image: '/assets/order-forms/bk-order/foot-type/AddiEaseMould-HR.png'
-
-      },
+      }
     };
 
     // Try exact match first
@@ -534,9 +505,7 @@ const ModelDialog = ({
 
     // Try partial match (without parentheses)
     const baseVariation = normalizedVariation.split(' (')[0];
-    const partialMatch = Object.entries(contentMap).find(([key]) =>
-      key.startsWith(baseVariation)
-    );
+    const partialMatch = Object.entries(contentMap).find(([key]) => key.startsWith(baseVariation));
 
     if (partialMatch) {
       return partialMatch[1];
@@ -600,14 +569,12 @@ const ModelDialog = ({
   );
 };
 
-
 const WatchFieldReset = () => {
   const { values, setFieldValue } = useFormikContext<any>();
 
   useEffect(() => {
     setFieldValue('design_variation', '');
     setFieldValue('model_name', '');
-
   }, [values.socket_type]);
 
   return null;
@@ -624,9 +591,6 @@ const Step1 = ({
   formSubmitted,
   setSocketTypeDialog
 }: any) => {
-
-
-
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   const [insoleDialog, setInsoleDialog] = useState({
@@ -649,10 +613,9 @@ const Step1 = ({
 
   const socketTypeOptions = useMemo(() => {
     return (FORM_OPTIONS?.socket_type || []).map((option: { value: any }) => ({
-      ...option,
+      ...option
     }));
   }, [FORM_OPTIONS?.socket_type]);
-
 
   const designVariationOptions = useMemo(() => {
     return FORM_OPTIONS['insole_model'] || [];
@@ -672,25 +635,22 @@ const Step1 = ({
   //   console.log("Calculated Thickness:", thicknessStr);
   // }, [values]);
 
-
-
-
   useEffect(() => {
     // console.log("Available insole models:", FORM_OPTIONS['insole_model']);
     // console.log("Current insole model value:", values.insole_model);
   }, [FORM_OPTIONS, values.insole_model]);
 
-
   const modelOptions = useMemo(() => {
     if (!values.socket_type || !values.design_variation) return [];
-    const baseOptions = FORM_OPTIONS[values.socket_type + '_' + values.design_variation + '_' + '_design_variation'] || [];
+    const baseOptions =
+      FORM_OPTIONS[
+        values.socket_type + '_' + values.design_variation + '_' + '_design_variation'
+      ] || [];
 
     return baseOptions.map((option: { value: string; label: string }) => ({
-      ...option,
+      ...option
     }));
   }, [values.socket_type, values.design_variation, FORM_OPTIONS]);
-
-
 
   return (
     <div className="flex flex-col gap-6">
@@ -756,7 +716,7 @@ const Step1 = ({
         <SelectBox
           options={[
             { value: 'Male', label: 'Male' },
-            { value: 'Female', label: 'Female' },
+            { value: 'Female', label: 'Female' }
           ]}
           label="Gender"
           value={values.gender}
@@ -770,15 +730,16 @@ const Step1 = ({
       <div className="divider"></div>
 
       <div className="grid grid-cols-4 gap-4">
-        <div><Input
-          label='Shoe Size (European) '
-          placeholder="10"
-          value={values.shoe_size}
-          onChange={handleChange('shoe_size')}
-          required
-          inVaild={shouldShowError('shoe_size', true)}
-          error={errors.shoe_size}
-        />
+        <div>
+          <Input
+            label="Shoe Size (European) "
+            placeholder="10"
+            value={values.shoe_size}
+            onChange={handleChange('shoe_size')}
+            required
+            inVaild={shouldShowError('shoe_size', true)}
+            error={errors.shoe_size}
+          />
           {/* <Link href="https://sarainfoway.bitrix24.in/online/?IM_DIALOG=chat34952&IM_MESSAGE=2209348" target="_blank" rel="noopener noreferrer">
             <a className="text-blue-600 underline hover:text-blue-800">
               Verify shoe size
@@ -788,14 +749,11 @@ const Step1 = ({
             href="https://uaterp.addiwise.com/files/AT_IN_SHOE%20SIZES_v.1%20(1).pdf"
             target="_blank"
             rel="noopener noreferrer"
-
             className="text-blue-600 underline"
           >
             Verify shoe size
           </a>
         </div>
-
-
 
         {/* <Input
           label="insoletype"
@@ -819,11 +777,11 @@ const Step1 = ({
           placeholder="Choose your comfort need"
           value={values.insoletype}
           onValueChange={(selectedinsoletype) => {
-            setFieldValue("insoletype", selectedinsoletype);
+            setFieldValue('insoletype', selectedinsoletype);
 
             // Auto-set thickness if mapping exists
             if (insoletypeToThicknessMap[selectedinsoletype]) {
-              setFieldValue("thickness", insoletypeToThicknessMap[selectedinsoletype]);
+              setFieldValue('thickness', insoletypeToThicknessMap[selectedinsoletype]);
             }
           }}
           inVaild={shouldShowError('insoletype', true)}
@@ -835,24 +793,26 @@ const Step1 = ({
             Insoles Model <span className="text-red-500">*</span>
           </label>
           <div>
-
             <Button
               variant="outline"
               className="w-full text-left justify-start h-10"
-              onClick={() => setInsoleDialog({
-                open: true,
-                options: designVariationOptions
-              })}
+              onClick={() =>
+                setInsoleDialog({
+                  open: true,
+                  options: designVariationOptions
+                })
+              }
             >
               {values.insole_model
-                ? designVariationOptions.find((opt: { value: string }) => opt.value === values.insole_model)?.label
-                : "Select Insole Model"}
+                ? designVariationOptions.find(
+                    (opt: { value: string }) => opt.value === values.insole_model
+                  )?.label
+                : 'Select Insole Model'}
             </Button>
             {shouldShowError('insole_model', true) && (
               <p className="text-xs text-red-500 mt-1">{errors.insole_model}</p>
             )}
           </div>
-
         </div>
         <SelectBox
           options={FORM_OPTIONS?.activity_level || []}
@@ -940,9 +900,9 @@ const Step1 = ({
 
       <h3 className="font-semibold text-lg  text-primary">Measurements</h3>
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
-        <div className='ml-5' >
+        <div className="ml-5">
           <Image
-            src='/assets/order-forms/insoles/addisoleimage.png'
+            src="/assets/order-forms/insoles/addisoleimage.png"
             alt="measurements"
             width={400}
             height={100}
@@ -958,8 +918,7 @@ const Step1 = ({
               <label className="block text-xs font-medium text-black">
                 <strong>A</strong> - Foot Length (cm) <span className="text-red-500">*</span>
               </label>
-              <div className=' mt-1'>
-
+              <div className=" mt-1">
                 <Input
                   placeholder="10"
                   value={values.foot_length}
@@ -974,10 +933,10 @@ const Step1 = ({
           <div className="grid grid-cols-2 gap-4 ">
             <div className="mb-0 ">
               <label className="block text-xs font-medium text-black">
-                <strong>B</strong> - Metatarsal to heel length (cm) <span className="text-red-500">*</span>
+                <strong>B</strong> - Metatarsal to heel length (cm){' '}
+                <span className="text-red-500">*</span>
               </label>
-              <div className='mt-1'>
-
+              <div className="mt-1">
                 <Input
                   placeholder="10"
                   value={values.custom_metatarsal_to_heel_length}
@@ -986,7 +945,6 @@ const Step1 = ({
                   inVaild={shouldShowError('custom_metatarsal_to_heel_length', true)}
                   error={errors.custom_metatarsal_to_heel_length}
                 />
-
               </div>
             </div>
           </div>
@@ -995,7 +953,7 @@ const Step1 = ({
               <label className="block text-xs font-medium text-black">
                 <strong>C</strong> - Metatarsal width (cm) <span className="text-red-500">*</span>
               </label>
-              <div className=' mt-1'>
+              <div className=" mt-1">
                 <Input
                   placeholder="10"
                   value={values.custom_metatarsal_width_cm}
@@ -1005,14 +963,14 @@ const Step1 = ({
                   error={errors.custom_metatarsal_width_cm}
                 />
               </div>
-
             </div>
           </div>
-
         </div>
       </div>
       <div className="ml-1 space-y-4">
-        <h6 className="text-2xl font-bold text-[16px] ml-5 text-primary">FOOT COMPLAINTS/ PROBLEMS</h6>
+        <h6 className="text-2xl font-bold text-[16px] ml-5 text-primary">
+          FOOT COMPLAINTS/ PROBLEMS
+        </h6>
         <div className="grid grid-cols-2 gap-4 mr-40 mb-5">
           <CheckboxGroup
             options={[
@@ -1030,7 +988,7 @@ const Step1 = ({
               { id: 'achiles-tendonitis', label: 'Achilles Tendonitis', group: 'Ach Tend.' },
               { id: 'neuroma', label: 'Neuroma', group: 'Diabetic' },
               { id: 'shin-pain', label: 'Shin Pain', group: 'Shin Splint' },
-              { id: 'high-arches', label: 'High Arches', group: 'Lateral Foot Pain' },
+              { id: 'high-arches', label: 'High Arches', group: 'Lateral Foot Pain' }
             ]}
             selectedOptions={selectedOptions}
             onChange={(newSelectedOptions) => {
@@ -1043,7 +1001,7 @@ const Step1 = ({
 
       <InsolesDialog
         open={insoleDialog.open}
-        onOpenChange={(open) => setInsoleDialog(prev => ({ ...prev, open }))}
+        onOpenChange={(open) => setInsoleDialog((prev) => ({ ...prev, open }))}
         options={designVariationOptions}
         onSelect={(value) => {
           setFieldValue('insole_model', value);
@@ -1053,11 +1011,11 @@ const Step1 = ({
 
       <ModelDialog
         open={modelDialog.open}
-        onOpenChange={(open) => setModelDialog(prev => ({ ...prev, open }))}
+        onOpenChange={(open) => setModelDialog((prev) => ({ ...prev, open }))}
         options={modelOptions}
         onSelect={(value) => setFieldValue('model_name', value)}
         socketType={values.socket_type}
-      // designVariation={values.design_variation}
+        // designVariation={values.design_variation}
       />
     </div>
   );
@@ -1090,7 +1048,7 @@ const Step2 = ({
           <SelectBox
             options={[
               { label: 'Image', value: 'image' },
-              { label: '3D Scan', value: '3D_scan' },
+              { label: '3D Scan', value: '3D_scan' }
             ]}
             label="Scan Type"
             required={true}
@@ -1133,13 +1091,14 @@ const Step2 = ({
                   accept={['.stl']}
                   onFileSelect={(fileUrl) => {
                     if (fileUrl) {
-                      setFieldValue("left_foot_file", fileUrl);  // ✅ update formik
+                      setFieldValue('left_foot_file', fileUrl); // ✅ update formik
                     } else {
-                      setFieldValue("left_foot_file", null);     // ✅ clear if removed
+                      setFieldValue('left_foot_file', null); // ✅ clear if removed
                     }
                   }}
-                // onFileSelect={(file) => console.log('Left Foot STL selected:', file?.name)}
-                /> {shouldShowError('left_foot_file', true) && (
+                  // onFileSelect={(file) => console.log('Left Foot STL selected:', file?.name)}
+                />{' '}
+                {shouldShowError('left_foot_file', true) && (
                   <p className="text-xs text-red-500 mt-1">{errors.left_foot_file}</p>
                 )}
               </div>
@@ -1153,13 +1112,14 @@ const Step2 = ({
                   accept={['.stl']}
                   onFileSelect={(fileUrl) => {
                     if (fileUrl) {
-                      setFieldValue("right_foot_file", fileUrl);  // ✅ update formik
+                      setFieldValue('right_foot_file', fileUrl); // ✅ update formik
                     } else {
-                      setFieldValue("right_foot_file", null);     // ✅ clear if removed
+                      setFieldValue('right_foot_file', null); // ✅ clear if removed
                     }
                   }}
-                // onFileSelect={(file) => console.log('Right Foot STL selected:', file?.name)}
-                /> {shouldShowError('left_foot_file', true) && (
+                  // onFileSelect={(file) => console.log('Right Foot STL selected:', file?.name)}
+                />{' '}
+                {shouldShowError('left_foot_file', true) && (
                   <p className="text-xs text-red-500 mt-1">{errors.left_foot_file}</p>
                 )}
               </div>
@@ -1178,9 +1138,9 @@ const Step2 = ({
                 buttonText="Left Leg"
                 onFileSelect={(fileUrl) => {
                   if (fileUrl) {
-                    console.log(" File selected:", fileUrl);
+                    console.log(' File selected:', fileUrl);
                   } else {
-                    console.log("No file selected or file removed");
+                    console.log('No file selected or file removed');
                   }
                 }}
               />
@@ -1193,9 +1153,9 @@ const Step2 = ({
                 buttonText="Right Leg"
                 onFileSelect={(fileUrl) => {
                   if (fileUrl) {
-                    console.log(" File selected:", fileUrl);
+                    console.log(' File selected:', fileUrl);
                   } else {
-                    console.log("No file selected or file removed");
+                    console.log('No file selected or file removed');
                   }
                 }}
               />
@@ -1219,10 +1179,10 @@ const Step2 = ({
                 label="Select Image"
                 buttonText="Left Leg"
                 onFileSelect={(fileUrl) => {
-                  setFieldValue("additional_file_1", fileUrl || null);
+                  setFieldValue('additional_file_1', fileUrl || null);
                 }}
               />
-              {shouldShowError("additional_file_1", true) && (
+              {shouldShowError('additional_file_1', true) && (
                 <p className="text-xs text-red-500 mt-1">{errors.additional_file_1}</p>
               )}
             </div>
@@ -1235,20 +1195,16 @@ const Step2 = ({
                 label="Select Image"
                 buttonText="Right Leg"
                 onFileSelect={(fileUrl) => {
-                  setFieldValue("additional_file_2", fileUrl || null);
+                  setFieldValue('additional_file_2', fileUrl || null);
                 }}
               />
-              {shouldShowError("additional_file_2", true) && (
+              {shouldShowError('additional_file_2', true) && (
                 <p className="text-xs text-red-500 mt-1">{errors.additional_file_2}</p>
               )}
             </div>
-
           </div>
         </>
       )}
-
-
-
 
       <div className="flex flex-col-6 gap-4">
         <div className="col-span-3">
@@ -1275,10 +1231,9 @@ const Step2 = ({
         rel="noopener noreferrer"
         className="text-blue-600 font-semibold hover:underline"
       >
-        How to use  Watch Video
+        How to use Watch Video
       </a>
     </div>
-
   );
 };
 
@@ -1286,8 +1241,9 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
   const shouldShowError = (fieldName: string, isRequired = false) => {
     // Handle nested fields like socket_design_details[0].cpo_input_mm
     const fieldValue = fieldName.includes('.')
-      ? fieldName.split('.').reduce((obj, key) =>
-        obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+      ? fieldName
+          .split('.')
+          .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
       : values[fieldName];
 
     if (!fieldValue) {
@@ -1295,8 +1251,9 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
       return formSubmitted || touched[fieldName];
     }
     const fieldError = fieldName.includes('.')
-      ? fieldName.split('.').reduce((obj, key) =>
-        obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+      ? fieldName
+          .split('.')
+          .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
       : errors[fieldName];
 
     return !!fieldError && (touched[fieldName] || formSubmitted);
@@ -1305,18 +1262,18 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted }: any) =>
     <div>
       {/* <h3 className="font-semibold text-lg">Stump Condition</h3> */}
       <p className="text-xs mt-2">
-        Please specify the design considerations for each point from A to N. Use "-" to
-        indicate Apply pressure (Reduction) and "+" to indicate Relief at the particular
-        area. All values should be in millimetres (mm). For eg for applying reduction of 6 mm
-        at Patela Tendon, please specify -6
+        Please specify the design considerations for each point from A to N. Use "-" to indicate
+        Apply pressure (Reduction) and "+" to indicate Relief at the particular area. All values
+        should be in millimetres (mm). For eg for applying reduction of 6 mm at Patela Tendon,
+        please specify -6
       </p>
       <div className="grid grid-cols-3 gap-4 mt-8">
         <div className="mb-6">
           <p className="text-xs">
             {' '}
             <span className="text-sm"> Global Volume Reduction </span>
-            <br /> (please specify the percentage reduction in Volume without reducing the
-            length of the socket)
+            <br /> (please specify the percentage reduction in Volume without reducing the length of
+            the socket)
           </p>
         </div>
         <Input
@@ -1344,11 +1301,12 @@ const insoleOptions = [
   { value: 'Endurance', label: 'Support for long hours on foot' },
   { value: 'Sensitive', label: 'Extra soft cushioning support' },
   { value: 'Sports', label: 'Sports stability and shock absorption' },
-  { value: 'Diabetics', label: 'Diabetic foot pressure protection' },
+  { value: 'Diabetics', label: 'Diabetic foot pressure protection' }
 ];
-export default function InsolesOrderForm({ item_type, }: { item_type: string, }): React.JSX.Element {
+export default function InsolesOrderForm({ item_type }: { item_type: string }): React.JSX.Element {
   const { data, isLoading: isFormOptionsLoading } = useGetFormSettingsQuery(item_type);
-  const [createInsoleOrder, { isLoading: isOrderCreating, isSuccess }] = useCreateInsoleOrderMutation();
+  const [createInsoleOrder, { isLoading: isOrderCreating, isSuccess }] =
+    useCreateInsoleOrderMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
   // console.log(" Logged-in user from Redux:", user);
   const [selectedItem, setSelectedItem] = React.useState<string>('');
@@ -1375,15 +1333,13 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
   const [showStep5Confirmation, setShowStep5Confirmation] = useState(false);
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
   const [thicknests, setThickness] = useState<string>('');
-  const skipValidation = searchParams.get("skipValidation") === "true";
+  const skipValidation = searchParams.get('skipValidation') === 'true';
   // const { values, setFieldValue } = useFormikContext<any>(); // ✅ Formik hook
 
-  //payment states 
+  //payment states
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-
-
 
   useEffect(() => {
     // if (skipValidation) {
@@ -1393,7 +1349,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
     if (orderId && deviceTypeId) {
       getOrderDetails({
         order_type: deviceTypeId,
-        order_id: orderId,
+        order_id: orderId
       })
         .unwrap()
         .then((response) => {
@@ -1406,42 +1362,42 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
               { value: 'Endurance', label: 'Support for long hours on foot' },
               { value: 'Sensitive', label: 'Extra soft cushioning support' },
               { value: 'Sports', label: 'Sports stability and shock absorption' },
-              { value: 'Diabetics', label: 'Diabetic foot pressure protection' },
+              { value: 'Diabetics', label: 'Diabetic foot pressure protection' }
             ];
-            const matchedUsage = insoleOptions.find(opt => opt.value === response.data.usage);
+            const matchedUsage = insoleOptions.find((opt) => opt.value === response.data.usage);
             // console.log("✅ Matched Usage Option:", matchedUsage);
 
             const transformedData = {
               ...INSOLES_FORM_INITIAL_VALUES,
-              patient_name: response.data.patient_name || "",
-              gender: response.data.gender || "",
-              activity_level: response.data.activity || "",
-              date_of_birth: response.data.dob || "",
-              height: response.data.custom_height ?? "",
-              weight: response.data.weight ?? "",
-              mobile_no: response.data.custom_mobile_no || "",
-              email: response.data.custom_email || "",
-              insole_model: response.data.custom_insoles_model || "",
-              shoe_size: response.data.shoe_size_eu ?? "",
-              foot_length: response.data.foot_length_cm ?? "",
-              custom_metatarsal_to_heel_length: response.data.custom_metatarsal_to_heel_length ?? "",
-              custom_metatarsal_width_cm: response.data.custom_metatarsal_width_cm ?? "",
-              thickness: response.data.thickness_mm ?? "",
-              insoletype: matchedUsage ? matchedUsage.value : "",
-              insole_design_variation: response.data.layers || "",
-              Design_by: response.data.custom_print_by || "",
-              design_variation: response.data.custom_design_by || "",
-              Print_by: response.data.custom_print_by || "",
+              patient_name: response.data.patient_name || '',
+              gender: response.data.gender || '',
+              activity_level: response.data.activity || '',
+              date_of_birth: response.data.dob || '',
+              height: response.data.custom_height ?? '',
+              weight: response.data.weight ?? '',
+              mobile_no: response.data.custom_mobile_no || '',
+              email: response.data.custom_email || '',
+              insole_model: response.data.custom_insoles_model || '',
+              shoe_size: response.data.shoe_size_eu ?? '',
+              foot_length: response.data.foot_length_cm ?? '',
+              custom_metatarsal_to_heel_length:
+                response.data.custom_metatarsal_to_heel_length ?? '',
+              custom_metatarsal_width_cm: response.data.custom_metatarsal_width_cm ?? '',
+              thickness: response.data.thickness_mm ?? '',
+              insoletype: matchedUsage ? matchedUsage.value : '',
+              insole_design_variation: response.data.layers || '',
+              Design_by: response.data.custom_print_by || '',
+              design_variation: response.data.custom_design_by || '',
+              Print_by: response.data.custom_print_by || '',
               table_zbib: response.data.table_zbib?.length
                 ? response.data.table_zbib.map((item: any) => ({
-                  point_name: item.point_name || "",
-                  pressure_mm: item.pressure_mm || "",
-                }))
-                : [{ point_name: "", pressure_mm: "" }],
+                    point_name: item.point_name || '',
+                    pressure_mm: item.pressure_mm || ''
+                  }))
+                : [{ point_name: '', pressure_mm: '' }],
               selected_foot_conditions: response.data.selected_foot_conditions?.length
                 ? response.data.selected_foot_conditions
-                : [""],
-
+                : ['']
             };
 
             // console.log("Transformed Insole Data =>", transformedData);
@@ -1464,10 +1420,6 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
     }
   }, [orderId, deviceTypeId, skipValidation]);
 
-
-
-
-
   useEffect(() => {
     if (orderDetails?.data) {
       // if (skipValidation) {
@@ -1480,61 +1432,61 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
         { value: 'Endurance', label: 'Support for long hours on foot' },
         { value: 'Sensitive', label: 'Extra soft cushioning support' },
         { value: 'Sports', label: 'Sports stability and shock absorption' },
-        { value: 'Diabetics', label: 'Diabetic foot pressure protection' },
+        { value: 'Diabetics', label: 'Diabetic foot pressure protection' }
       ];
-      const matchedUsage = insoleOptions.find(opt => opt.value === apiData.usage);
+      const matchedUsage = insoleOptions.find((opt) => opt.value === apiData.usage);
       // console.log("✅ Matched Usages Option:", matchedUsage);
 
       setFormValues({
         ...INSOLES_FORM_INITIAL_VALUES,
-        patient_name: apiData.patient_name || "",
-        gender: apiData.gender || "",
-        date_of_birth: apiData.dob || "",
-        height: apiData.custom_height || "",
-        activity_level: apiData.activity || "",
-        weight: apiData.weight || "",
-        mobile_no: apiData.custom_mobile_no || "",
-        email: apiData.custom_email || "",
-        shoe_size: apiData.shoe_size_eu || "",
-        Design_by: apiData.custom_print_by || "",
-        custom_metatarsal_to_heel_length: apiData.custom_metatarsal_to_heel_length ?? "",
-        custom_metatarsal_width_cm: apiData.custom_metatarsal_width_cm ?? "",
-        foot_length: apiData.foot_length_cm || "",
-        insoletype: matchedUsage ? matchedUsage.value : "",
-        thickness: apiData.thickness_mm || "",
+        patient_name: apiData.patient_name || '',
+        gender: apiData.gender || '',
+        date_of_birth: apiData.dob || '',
+        height: apiData.custom_height || '',
+        activity_level: apiData.activity || '',
+        weight: apiData.weight || '',
+        mobile_no: apiData.custom_mobile_no || '',
+        email: apiData.custom_email || '',
+        shoe_size: apiData.shoe_size_eu || '',
+        Design_by: apiData.custom_print_by || '',
+        custom_metatarsal_to_heel_length: apiData.custom_metatarsal_to_heel_length ?? '',
+        custom_metatarsal_width_cm: apiData.custom_metatarsal_width_cm ?? '',
+        foot_length: apiData.foot_length_cm || '',
+        insoletype: matchedUsage ? matchedUsage.value : '',
+        thickness: apiData.thickness_mm || '',
 
-        design_variation: apiData.custom_design_by || "",
-        Print_by: apiData.custom_print_by || "",
-        insole_model: apiData.custom_insoles_model || "",
-        insole_design_variation: apiData.layers || "",
+        design_variation: apiData.custom_design_by || '',
+        Print_by: apiData.custom_print_by || '',
+        insole_model: apiData.custom_insoles_model || '',
+        insole_design_variation: apiData.layers || '',
         table_zbib:
           apiData.table_zbib?.map((item: { point_name: string; pressure_mm: string }) => ({
-            point_name: item.point_name || "",
-            pressure_mm: item.pressure_mm || "",
+            point_name: item.point_name || '',
+            pressure_mm: item.pressure_mm || ''
           })) || INSOLES_FORM_INITIAL_VALUES.table_zbib,
         selected_foot_conditions:
-          apiData.selected_foot_conditions || INSOLES_FORM_INITIAL_VALUES.selected_foot_conditions,
+          apiData.selected_foot_conditions || INSOLES_FORM_INITIAL_VALUES.selected_foot_conditions
       });
     }
   }, [orderDetails, skipValidation]);
 
-
   useEffect(() => {
-    console.log("Form Values Updated:", formValues);
+    console.log('Form Values Updated:', formValues);
     const activityLevel = mapActivityLevel(formValues.activity_level);
     const t = getThickness(
       formValues.insole_model,
       Number(formValues.weight) || 0,
-      formValues.activity_level as "K1" | "K2" | "K3" | "K4",
+      formValues.activity_level as 'K1' | 'K2' | 'K3' | 'K4'
     );
-    console.log("Calculated Thickness (from getThickness):", t, typeof t);
+    console.log('Calculated Thickness (from getThickness):', t, typeof t);
     setThickness(String(t)); // convert number to string
     // if using Formik, also sync the form value:
     // formik.setFieldValue('thickness', t);
-
-  }, [formValues.insole_model, formValues.weight, formValues.activity_level /* add formik if used */]);
-
-
+  }, [
+    formValues.insole_model,
+    formValues.weight,
+    formValues.activity_level /* add formik if used */
+  ]);
 
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
@@ -1557,7 +1509,6 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
   // const OnSubmit = async (values: any) => {
   //   console.log("Form values on submit:", values);
   //   setFormValues(values);
-
 
   //   const payload = {
   //     item_type: 'IN',
@@ -1586,8 +1537,6 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
   //   };
   //   createOrder(orderPayload);
   // };
-
-
 
   // const OnSubmit = async (values: any) => {
   //   console.log("Form values on submit:", values);
@@ -1631,7 +1580,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
     setFormValues(values);
 
     const payload = {
-      item_type: "IN",
+      item_type: 'IN',
       insole_model: values.insole_model,
       design_variation: values.design_variation,
       activity_level: values.activity_level,
@@ -1640,7 +1589,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
       weight: values.weight,
       insoletype: values.insoletype,
       insole_design_variation: values.insole_design_variation,
-      thickness: thicknests, // e.g. "3.5 MM"
+      thickness: thicknests // e.g. "3.5 MM"
     };
 
     // console.log("Payload for item code fetch:", payload);
@@ -1653,19 +1602,18 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
     // ❌ Don't create the order here
     // ✅ Just prepare and store payload for later
     const orderPayload = {
-      item_type: "IN",
+      item_type: 'IN',
       customer: user?.customer_id,
       order_details: {
         ...values,
-        thickness: thicknests,
+        thickness: thicknests
       },
-      item_code: itemCode,
+      item_code: itemCode
     };
 
     // createInsoleOrder(orderPayload); // store for later payment step
     setShowStep5Confirmation(true); // open confirmation dialog
   };
-
 
   const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
@@ -1688,13 +1636,10 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
         await step1Validation.validate(values, { abortEarly: false });
       } else if (currentStep === 2) {
         await step2Validation.validate(values, { abortEarly: false });
-      }
-      else if (currentStep === 3) {
+      } else if (currentStep === 3) {
         await step3Validation.validate(values, { abortEarly: false });
-      }
-      else if (currentStep === 4) {
+      } else if (currentStep === 4) {
         await step4Validation.validate(values, { abortEarly: false });
-
       } else if (currentStep === 5) {
         await step5Validation.validate(values, { abortEarly: false });
       }
@@ -1704,7 +1649,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
         return errors.inner.reduce((acc, error) => {
           return {
             ...acc,
-            [error.path || '']: error.message,
+            [error.path || '']: error.message
           };
         }, {});
       }
@@ -1745,9 +1690,8 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
   //   }
   // };
 
-
   const nextStep = async (values: any, setErrors: any): Promise<boolean> => {
-    console.log("Next step called with values:", values);
+    console.log('Next step called with values:', values);
     setFormSubmitted(true);
     const errors = await validateCurrentStep(values);
 
@@ -1760,7 +1704,6 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
       return false; // ❌ validation failed
     }
   };
-
 
   const prevStep = () => {
     setFormSubmitted(false);
@@ -1790,26 +1733,38 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
         initialValues={isInitialDataLoaded ? formValues : initialValues}
         onSubmit={OnSubmit}
         validationSchema={
-          currentStep === 1 ? step1Validation :
-            currentStep === 2 ? step2Validation :
-              currentStep === 3 ? step3Validation :
-                currentStep === 4 ? step4Validation :
-                  currentStep === 5 ? step5Validation :
-                    null
+          currentStep === 1
+            ? step1Validation
+            : currentStep === 2
+              ? step2Validation
+              : currentStep === 3
+                ? step3Validation
+                : currentStep === 4
+                  ? step4Validation
+                  : currentStep === 5
+                    ? step5Validation
+                    : null
         }
         validateOnChange={true}
         validateOnBlur={true}
         enableReinitialize
       >
-        {({ values, handleChange, handleSubmit, errors, touched, setFieldValue, setErrors, isValid }) => (
-
-
+        {({
+          values,
+          handleChange,
+          handleSubmit,
+          errors,
+          touched,
+          setFieldValue,
+          setErrors,
+          isValid
+        }) => (
           <div className="flex flex-col gap-6">
             <WatchFieldReset />
             {/* Socket Type Dialog */}
             <SocketTypeDialog
               open={socketTypeDialog.open}
-              onOpenChange={(open) => setSocketTypeDialog(prev => ({ ...prev, open }))}
+              onOpenChange={(open) => setSocketTypeDialog((prev) => ({ ...prev, open }))}
               data={socketTypeDialog.data}
             />
             {/* Step indicator */}
@@ -1838,17 +1793,16 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
                       className="flex flex-col items-center gap-1"
                     >
                       <div
-                        className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${currentStep === step
-                          ? "bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4"
-                          : completedSteps.includes(step)
-                            ? "bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4"
-                            : "bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4"
-                          } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                        className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${
+                          currentStep === step
+                            ? 'bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4'
+                            : completedSteps.includes(step)
+                              ? 'bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4'
+                              : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4'
+                        } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       >
                         <span className="flex items-center gap-2">
-                          {currentStep === step && (
-                            <></>
-                          )}
+                          {currentStep === step && <></>}
                           {completedSteps.includes(step) && !(currentStep === step) && (
                             <svg
                               className="w-3 h-3 text-gray-500 flex-shrink-0"
@@ -1878,10 +1832,9 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
                             strokeWidth={1.5}
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className={`transition-all duration-500 ${completedSteps.includes(step)
-                              ? 'stroke-primary'
-                              : 'stroke-gray-300'
-                              }`}
+                            className={`transition-all duration-500 ${
+                              completedSteps.includes(step) ? 'stroke-primary' : 'stroke-gray-300'
+                            }`}
                           />
                         </svg>
                       </div>
@@ -1937,7 +1890,6 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
               />
             )}
             {currentStep === 5 && (
-
               <Step5
                 values={values}
                 thicknests={thicknests}
@@ -1950,10 +1902,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
                 setSelectedOptions={setSelectedOptions}
                 selectedOptions={selectedOptions}
               />
-
-
             )}
-
 
             <div className="sticky bottom-4 left-0 flex justify-between bg-white p-2 rounded-lg shadow-md">
               <div>
@@ -1993,15 +1942,12 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
                     onClick={async () => {
                       const isValid = await nextStep(values, setErrors); // returns true only if valid
                       if (isValid) {
-                        setCurrentStep(prev => (prev === 2 ? 5 : prev + 1)); // skip Step3 if needed
+                        setCurrentStep((prev) => (prev === 2 ? 5 : prev + 1)); // skip Step3 if needed
                       }
                     }}
                   >
                     Next
                   </Button>
-
-
-
                 ) : (
                   // Step 5 Submit Button
                   <Button
@@ -2054,7 +2000,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
           insole_model: formValues.insole_model,
           // design_variation: formValues.design_variation,
           // model_name: formValues.model_name,
-          activity_level: formValues.activity_level,
+          activity_level: formValues.activity_level
         }}
         insoleOptions={insoleOptions}
         selectedItem={selectedItem}
@@ -2068,10 +2014,9 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
         open={modelOpen}
         onOpenChange={setModelOpen}
         formValues={{
-
           design_variation: formValues.design_variation,
           model_name: formValues.model_name,
-          activity_level: formValues.activity_level,
+          activity_level: formValues.activity_level
         }}
         selectedItem={selectedItem}
         isItemFetching={isItemFetching}

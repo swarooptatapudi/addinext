@@ -1,22 +1,28 @@
-import { Input } from "@/components/ui/input";
-import { SelectBox } from "@/components/ui/selectbox";
-import { ImageCheckbox } from "./ImgproCheck";
-import { useState, useCallback, useEffect } from "react";
-import { useCreateInsoleOrderMutation, useGetOrderDetailIdsMutation } from '@/rtk-query/apis/orders';
-import { thicknessToinsoletypeMap, insoletypeToThicknessMap } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
-import {  useGetINEstimateMutation, useValidateCouponMutation } from "@/rtk-query/apis/orders";
-import { toast } from "react-toastify";
-import { Button } from "@/components/ui/button";
+import { Input } from '@/components/ui/input';
+import { SelectBox } from '@/components/ui/selectbox';
+import { ImageCheckbox } from './ImgproCheck';
+import { useState, useCallback, useEffect } from 'react';
+import {
+  useCreateInsoleOrderMutation,
+  useGetOrderDetailIdsMutation
+} from '@/rtk-query/apis/orders';
+import {
+  thicknessToinsoletypeMap,
+  insoletypeToThicknessMap
+} from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
+import { useGetINEstimateMutation, useValidateCouponMutation } from '@/rtk-query/apis/orders';
+import { toast } from 'react-toastify';
+import { Button } from '@/components/ui/button';
 import { BK_FORM_TYPE, USER } from '@/uttils/Types';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { BookmarkIcon, CoinsIcon, Check,Loader,X } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import React from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BookmarkIcon, CoinsIcon, Check, Loader, X } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import React from 'react';
 import { useGetItemNameInByDetailsMutation } from '@/rtk-query/apis/products';
 import { INSOLES_FORM_INITIAL_VALUES } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
 import { useRouter } from 'next/navigation';
-import { useSelector } from "react-redux";
+import { useSelector } from 'react-redux';
 type LayeringImageType = {
   Standard: string;
   Premium: string;
@@ -35,8 +41,6 @@ type SelectedFinishOption = {
   value: string;
   type: 'Standard' | 'Premium';
 };
-
-
 
 export const Step5 = ({
   values,
@@ -60,14 +64,13 @@ export const Step5 = ({
   const [selectedType, setSelectedType] = useState<'Standard' | 'Premium'>('Standard');
   const [showEstimateCard, setShowEstimateCard] = useState(false);
   const [estimateConform, setEstimateConform] = useState(false);
-   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
-    const [createInsoleOrder, { isLoading: isOrderCreating }] = useCreateInsoleOrderMutation();
+  const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
+  const [createInsoleOrder, { isLoading: isOrderCreating }] = useCreateInsoleOrderMutation();
   const [estimateData, setEstimateData] = useState<any>(null);
   const [estimateDataLabel, setEstimateDataLabel] = useState<any>('');
   const [isEstimating, setIsEstimating] = useState(false);
-const [getINEstimate, { isLoading, isError, data }] = useGetINEstimateMutation();
+  const [getINEstimate, { isLoading, isError, data }] = useGetINEstimateMutation();
 
-  
   const [prevValues, setPrevValues] = useState(values);
   const [isEstimateAccepted, setIsEstimateAccepted] = useState(false);
   const [isEstimateStale, setIsEstimateStale] = useState(false);
@@ -78,7 +81,7 @@ const [getINEstimate, { isLoading, isError, data }] = useGetINEstimateMutation()
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [validateCoupon] = useValidateCouponMutation();
   const [couponTimeout, setCouponTimeout] = useState<NodeJS.Timeout | null>(null);
-   const [getItem, { isLoading: isItemFetching }] = useGetItemNameInByDetailsMutation();
+  const [getItem, { isLoading: isItemFetching }] = useGetItemNameInByDetailsMutation();
 
   // Coins as strings to match API response
   const [availableAddicoins, setAvailableAddicoins] = useState<string | null>(null);
@@ -89,24 +92,24 @@ const [getINEstimate, { isLoading, isError, data }] = useGetINEstimateMutation()
   const [showPreviwButton, setShowPreviwButton] = useState(false);
   const [orderData, setOrderData] = useState<any | null>({});
   const [showAddicoinsCard, setShowAddicoinsCard] = useState(false);
-    const [formDisable, setFormDisable] = useState(false)
-  
-const initialValues = INSOLES_FORM_INITIAL_VALUES;
+  const [formDisable, setFormDisable] = useState(false);
+
+  const initialValues = INSOLES_FORM_INITIAL_VALUES;
 
   const isAddiSole = values.model_name === 'AddiEase';
   const isAddiSoleEco = values.model_name === 'AddiEaseEco';
   const showFinishOptions = isAddiSole || isAddiSoleEco;
-  const[selectedItemCode ,setSelectedItemcode]=React.useState<string>('');
-   const [formValues, setFormValues] = useState(initialValues);
+  const [selectedItemCode, setSelectedItemcode] = React.useState<string>('');
+  const [formValues, setFormValues] = useState(initialValues);
 
-  {/**payment */}
-   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
-   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
-   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  {
+    /**payment */
+  }
+  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
-
-
-// Add this useEffect to load Razorpay script
+  // Add this useEffect to load Razorpay script
   useEffect(() => {
     const loadRazorpayScript = async () => {
       if (window.Razorpay) {
@@ -134,127 +137,119 @@ const initialValues = INSOLES_FORM_INITIAL_VALUES;
     loadRazorpayScript();
   }, []);
 
-//    const handlePayAndPlaceOrder = async (values: any) => {
-//   if (!razorpayKey || !isRazorpayLoaded) {
-//     toast.error('Payment gateway is not available. Please try again.');
-//     return;
-//   }
+  //    const handlePayAndPlaceOrder = async (values: any) => {
+  //   if (!razorpayKey || !isRazorpayLoaded) {
+  //     toast.error('Payment gateway is not available. Please try again.');
+  //     return;
+  //   }
 
-//   setIsPaymentProcessing(true);
-//   setFormValues(values);
+  //   setIsPaymentProcessing(true);
+  //   setFormValues(values);
 
-//   try {
-//     // 🔹 Step 1: Prepare payload for item code (IN specific)
-//     const payload = {
-//       item_type: 'IN',
-//       insole_model: values.insole_model,
-//       design_variation: values.design_variation,
-//       activity_level: values.activity_level,
-//       model_name: values.model_name,
-//       stump_length: values.stump_length,
-//       weight: values.weight,
-//       insoletype: values.insoletype,
-//       insole_design_variation: values.insole_design_variation,
-//       thickness: thicknests // e.g. "3.5 MM"
-//     };
+  //   try {
+  //     // 🔹 Step 1: Prepare payload for item code (IN specific)
+  //     const payload = {
+  //       item_type: 'IN',
+  //       insole_model: values.insole_model,
+  //       design_variation: values.design_variation,
+  //       activity_level: values.activity_level,
+  //       model_name: values.model_name,
+  //       stump_length: values.stump_length,
+  //       weight: values.weight,
+  //       insoletype: values.insoletype,
+  //       insole_design_variation: values.insole_design_variation,
+  //       thickness: thicknests // e.g. "3.5 MM"
+  //     };
 
-//     const itemCode = await getItemCodeByValues(payload);
-//     setSelectedItemcode(itemCode);
+  //     const itemCode = await getItemCodeByValues(payload);
+  //     setSelectedItemcode(itemCode);
 
-//     // 🔹 Step 2: Build the order payload
-//     const orderPayload = {
-//       item_type: 'IN',
-//       customer: user?.customer_id,
-//       order_details: {
-//         ...values,
-//         thickness: thicknests // add calculated thickness
-//       },
-//       item_code: itemCode,
-//       addicoins: parseInt(values.addicoins) || 0
-//     };
-// console.log("orderPayload>>",orderPayload)
-//     // 🔹 Step 3: (Optional) Fetch order amount from API instead of hardcoded
-//     // const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
-//     // if (orderAmountResponse?.status !== "success") {
-//     //   throw new Error(orderAmountResponse?.message || "Failed to calculate order amount");
-//     // }
-//     // const orderAmount = orderAmountResponse.data.order_amount;
-//     const amountInPaise = 100000; // 🔹 Replace with dynamic orderAmount * 100
+  //     // 🔹 Step 2: Build the order payload
+  //     const orderPayload = {
+  //       item_type: 'IN',
+  //       customer: user?.customer_id,
+  //       order_details: {
+  //         ...values,
+  //         thickness: thicknests // add calculated thickness
+  //       },
+  //       item_code: itemCode,
+  //       addicoins: parseInt(values.addicoins) || 0
+  //     };
+  // console.log("orderPayload>>",orderPayload)
+  //     // 🔹 Step 3: (Optional) Fetch order amount from API instead of hardcoded
+  //     // const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
+  //     // if (orderAmountResponse?.status !== "success") {
+  //     //   throw new Error(orderAmountResponse?.message || "Failed to calculate order amount");
+  //     // }
+  //     // const orderAmount = orderAmountResponse.data.order_amount;
+  //     const amountInPaise = 100000; // 🔹 Replace with dynamic orderAmount * 100
 
-//     // 🔹 Step 4: Configure Razorpay
-//     const options = {
-//       key: razorpayKey,
-//       amount: amountInPaise.toString(),
-//       currency: 'INR',
-//       name: 'Addiwise Company',
-//       description: `Payment for IN Order`,
-//       handler: async function (response: any) {
-//         try {
-//           // 🔹 Step 5: After payment success → Create order
-//           const finalOrderPayload = {
-//             ...orderPayload,
-//             custom_payment_reference_id: response.razorpay_payment_id
-//           };
+  //     // 🔹 Step 4: Configure Razorpay
+  //     const options = {
+  //       key: razorpayKey,
+  //       amount: amountInPaise.toString(),
+  //       currency: 'INR',
+  //       name: 'Addiwise Company',
+  //       description: `Payment for IN Order`,
+  //       handler: async function (response: any) {
+  //         try {
+  //           // 🔹 Step 5: After payment success → Create order
+  //           const finalOrderPayload = {
+  //             ...orderPayload,
+  //             custom_payment_reference_id: response.razorpay_payment_id
+  //           };
 
-//           console.log('Final Insole Order Payload:', finalOrderPayload);
-//           const orderResponse = await createInsoleOrder(finalOrderPayload).unwrap();
+  //           console.log('Final Insole Order Payload:', finalOrderPayload);
+  //           const orderResponse = await createInsoleOrder(finalOrderPayload).unwrap();
 
-//           // @ts-ignore
-//           if (orderResponse?.message?.status === 'success') {
-//             toast.success('Payment successful! Insole order created successfully.');
-//             setSelectedItemcode('');
-//             setIsPaymentProcessing(false);
-//             setFormDisable(true);
-//             router.push('/orders');
-//           } else {
-//             // @ts-ignore
-//             throw new Error(orderResponse?.message?.message || 'Order creation failed');
-//           }
-//         } catch (orderError) {
-//           toast.error(
-//             'Payment successful but order creation failed. Please contact support with payment ID: ' +
-//             response.razorpay_payment_id
-//           );
-//           setIsPaymentProcessing(false);
-//         }
-//       },
-//       theme: { color: '#3399cc' },
-//       modal: {
-//         ondismiss: function () {
-//           setIsPaymentProcessing(false);
-//           toast.info('Payment cancelled');
-//         }
-//       }
-//     };
+  //           // @ts-ignore
+  //           if (orderResponse?.message?.status === 'success') {
+  //             toast.success('Payment successful! Insole order created successfully.');
+  //             setSelectedItemcode('');
+  //             setIsPaymentProcessing(false);
+  //             setFormDisable(true);
+  //             router.push('/orders');
+  //           } else {
+  //             // @ts-ignore
+  //             throw new Error(orderResponse?.message?.message || 'Order creation failed');
+  //           }
+  //         } catch (orderError) {
+  //           toast.error(
+  //             'Payment successful but order creation failed. Please contact support with payment ID: ' +
+  //             response.razorpay_payment_id
+  //           );
+  //           setIsPaymentProcessing(false);
+  //         }
+  //       },
+  //       theme: { color: '#3399cc' },
+  //       modal: {
+  //         ondismiss: function () {
+  //           setIsPaymentProcessing(false);
+  //           toast.info('Payment cancelled');
+  //         }
+  //       }
+  //     };
 
-//     const rzp = new window.Razorpay(options);
+  //     const rzp = new window.Razorpay(options);
 
-//     rzp.on('payment.failed', function (response: any) {
-//       setIsPaymentProcessing(false);
-//       toast.error(`Payment failed: ${response.error.description}`);
-//     });
+  //     rzp.on('payment.failed', function (response: any) {
+  //       setIsPaymentProcessing(false);
+  //       toast.error(`Payment failed: ${response.error.description}`);
+  //     });
 
-//     rzp.open();
-//   } catch (error) {
-//     setIsPaymentProcessing(false);
-//     toast.error('Failed to prepare payment. Please try again.');
-//   }
-// };
+  //     rzp.open();
+  //   } catch (error) {
+  //     setIsPaymentProcessing(false);
+  //     toast.error('Failed to prepare payment. Please try again.');
+  //   }
+  // };
 
-
-const handlePayAndPlaceOrder = async (values: any) => {
-  if (!razorpayKey || !isRazorpayLoaded) {
-    toast.error("Payment gateway is not available. Please try again.");
-    return;
-  }
-
-  setIsPaymentProcessing(true);
-  setFormValues(values);
-
+ const handlePayAndPlaceOrderWithAddicoins = async (values: any) => {
   try {
-    // 🔹 Step 1: Prepare payload for item code
- 
+    setIsPaymentProcessing(true);
+    setFormValues(values);
 
+    // 🔹 Step 1: Prepare payload for item code
     const payload = {
       item_type: "IN",
       insole_model: values.insole_model,
@@ -266,117 +261,183 @@ const handlePayAndPlaceOrder = async (values: any) => {
       insoletype: values.insoletype,
       insole_design_variation: values.insole_design_variation,
       thickness: thicknests,
-       // e.g. "3.5 MM"
     };
 
     const itemCode = await getItemCodeByValues(payload);
     setSelectedItemcode(itemCode);
 
-    // 🔹 Step 2: Build the order payload
+    // 🔹 Step 2: Build order payload (NO Razorpay needed)
     const orderPayload = {
       item_type: "IN",
-      customer: user?.customer_id, // Make sure this is an ID, not just a name
+      customer: user?.customer_id,
       order_details: {
         ...values,
-        thickness: thicknests, // add calculated thickness
+        thickness: thicknests,
       },
       item_code: itemCode,
-      addicoins: parseInt(values.addicoins) || 0,
-       total_price: estimateData?.apiResponse?.total_price ?? 0 
+      addicoins: parseInt(values.addicoins) || 0, // Deduct coins
+      total_price: estimateData?.apiResponse?.total_price ?? 0,
+      payment_method: "ADDICOINS", // mark as coins payment
     };
 
-    console.log("📦 Base Order Payload:", orderPayload);
+    console.log("📦 Base Order Payload (Addicoins):", orderPayload);
 
-    // 🔹 Step 3: Payment amount (hardcoded for now)
-    const amountInPaise = 100000; // Replace later with API order amount * 100
+    // 🔹 Step 3: Call API directly — no Razorpay flow
+    const orderResponse = await createInsoleOrder(orderPayload).unwrap();
+    console.log("✅ Order Response:", orderResponse);
 
-    // 🔹 Step 4: Configure Razorpay
-    const options = {
-      key: razorpayKey,
-      amount: amountInPaise.toString(),
-      currency: "INR",
-      name: "Addiwise Company",
-      description: `Payment for IN Order`,
-
-      handler: async function (response: any) {
-        try {
-          // 🔹 Step 5: After payment success → Create order
-             const finalOrderPayload = {
-  ...orderPayload,
-  razorpay_payment_id: response.razorpay_payment_id,
-        custom_payment_reference_id: response.razorpay_payment_id,
-  razorpay_order_id: response.razorpay_order_id,
-  razorpay_signature: response.razorpay_signature,
-};
-
-          console.log("📤 Final Insole Order Payload:", finalOrderPayload);
-
-          const orderResponse = await createInsoleOrder(finalOrderPayload).unwrap();
-          console.log("✅ Order Response:", orderResponse);
-
-          // @ts-ignore
-          if (orderResponse?.message?.status === "success") {
-            toast.success("Payment successful! Insole order created successfully.");
-            setSelectedItemcode("");
-            setIsPaymentProcessing(false);
-            setFormDisable(true);
-             router.push("/orders");
-          } else {
-            // @ts-ignore
-            throw new Error(orderResponse?.message?.message || "Order creation failed");
-          }
-        } catch (orderError: any) {
-          console.error("❌ Order creation failed:", orderError);
-
-          if (orderError?.data) {
-            console.error("🔎 Backend error response:", orderError.data);
-            toast.error(
-              `Payment successful but order creation failed: ${
-                orderError.data.message || "Unknown error"
-              } (Payment ID: ${response.razorpay_payment_id})`
-            );
-          } else {
-            toast.error(
-              "Payment successful but order creation failed. Please contact support with payment ID: " +
-                response.razorpay_payment_id
-            );
-          }
-
-          setIsPaymentProcessing(false);
-        }
-      },
-
-      theme: { color: "#3399cc" },
-      modal: {
-        ondismiss: function () {
-          setIsPaymentProcessing(false);
-          toast.info("Payment cancelled");
-        },
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-
-    rzp.on("payment.failed", function (response: any) {
+    // @ts-ignore
+    if (orderResponse?.message?.status === "success") {
+      toast.success("✅ Order created successfully using Addicoins!");
+      setSelectedItemcode("");
       setIsPaymentProcessing(false);
-      toast.error(`Payment failed: ${response.error.description}`);
-    });
-
-    rzp.open();
-  } catch (orderError: any) {
-    console.error(" Unexpected error before payment:", orderError);
-
-    if (orderError?.data) {
-      console.error(" Backend error response:", orderError.data);
+      setFormDisable(true);
+      router.push("/orders");
+    } else {
+      // @ts-ignore
+      throw new Error(orderResponse?.message?.message || "Order creation failed");
     }
-
-    toast.error("Failed to prepare payment. Please try again.");
+  } catch (error: any) {
+    console.error("❌ Addicoins order failed:", error);
+    toast.error(error?.message || "Failed to place order using Addicoins");
     setIsPaymentProcessing(false);
   }
 };
- const getItemCodeByValues = async (payload: any) => {
+
+  const handlePayAndPlaceOrder = async (values: any) => {
+    if (!razorpayKey || !isRazorpayLoaded) {
+      toast.error('Payment gateway is not available. Please try again.');
+      return;
+    }
+
+    setIsPaymentProcessing(true);
+    setFormValues(values);
+
+    try {
+      // 🔹 Step 1: Prepare payload for item code
+
+      const payload = {
+        item_type: 'IN',
+        insole_model: values.insole_model,
+        design_variation: values.design_variation,
+        activity_level: values.activity_level,
+        model_name: values.model_name,
+        stump_length: values.stump_length,
+        weight: values.weight,
+        insoletype: values.insoletype,
+        insole_design_variation: values.insole_design_variation,
+        thickness: thicknests
+        // e.g. "3.5 MM"
+      };
+
+      const itemCode = await getItemCodeByValues(payload);
+      setSelectedItemcode(itemCode);
+
+      // 🔹 Step 2: Build the order payload
+      const orderPayload = {
+        item_type: 'IN',
+        customer: user?.customer_id, // Make sure this is an ID, not just a name
+        order_details: {
+          ...values,
+          thickness: thicknests // add calculated thickness
+        },
+        item_code: itemCode,
+        addicoins: parseInt(values.addicoins) || 0,
+        total_price: estimateData?.apiResponse?.total_price ?? 0
+      };
+
+      console.log('📦 Base Order Payload:', orderPayload);
+
+      // 🔹 Step 3: Payment amount (hardcoded for now)
+      const amountInPaise = 100000; // Replace later with API order amount * 100
+
+      // 🔹 Step 4: Configure Razorpay
+      const options = {
+        key: razorpayKey,
+        amount: amountInPaise.toString(),
+        currency: 'INR',
+        name: 'Addiwise Company',
+        description: `Payment for IN Order`,
+
+        handler: async function (response: any) {
+          try {
+            // 🔹 Step 5: After payment success → Create order
+            const finalOrderPayload = {
+              ...orderPayload,
+              razorpay_payment_id: response.razorpay_payment_id,
+              custom_payment_reference_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            };
+
+            console.log('📤 Final Insole Order Payload:', finalOrderPayload);
+
+            const orderResponse = await createInsoleOrder(finalOrderPayload).unwrap();
+            console.log('✅ Order Response:', orderResponse);
+
+            // @ts-ignore
+            if (orderResponse?.message?.status === 'success') {
+              toast.success('Payment successful! Insole order created successfully.');
+              setSelectedItemcode('');
+              setIsPaymentProcessing(false);
+              setFormDisable(true);
+              router.push('/orders');
+            } else {
+              // @ts-ignore
+              throw new Error(orderResponse?.message?.message || 'Order creation failed');
+            }
+          } catch (orderError: any) {
+            console.error('❌ Order creation failed:', orderError);
+
+            if (orderError?.data) {
+              console.error('🔎 Backend error response:', orderError.data);
+              toast.error(
+                `Payment successful but order creation failed: ${
+                  orderError.data.message || 'Unknown error'
+                } (Payment ID: ${response.razorpay_payment_id})`
+              );
+            } else {
+              toast.error(
+                'Payment successful but order creation failed. Please contact support with payment ID: ' +
+                  response.razorpay_payment_id
+              );
+            }
+
+            setIsPaymentProcessing(false);
+          }
+        },
+
+        theme: { color: '#3399cc' },
+        modal: {
+          ondismiss: function () {
+            setIsPaymentProcessing(false);
+            toast.info('Payment cancelled');
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      rzp.on('payment.failed', function (response: any) {
+        setIsPaymentProcessing(false);
+        toast.error(`Payment failed: ${response.error.description}`);
+      });
+
+      rzp.open();
+    } catch (orderError: any) {
+      console.error(' Unexpected error before payment:', orderError);
+
+      if (orderError?.data) {
+        console.error(' Backend error response:', orderError.data);
+      }
+
+      toast.error('Failed to prepare payment. Please try again.');
+      setIsPaymentProcessing(false);
+    }
+  };
+  const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
-    console.log("Item code fetch response:", res);
+    console.log('Item code fetch response:', res);
     return res?.data?.item_code;
   };
 
@@ -423,8 +484,6 @@ const handlePayAndPlaceOrder = async (values: any) => {
     }
   }, [isActiveStep]);
 
-
-
   useEffect(() => {
     if (showEstimateCard && !initialLoad) {
       const relevantFields = ['design_by', 'print_by', 'Latices', 'finish_type'];
@@ -438,9 +497,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
     setPrevValues(values);
   }, [values, showEstimateCard, prevValues, initialLoad]);
 
-
   //color api
-
 
   const validateBeforeAction = () => {
     console.log('Validating before action, selectedItem:', selectedItem, values);
@@ -576,16 +633,8 @@ const handlePayAndPlaceOrder = async (values: any) => {
   //     setIsEstimating(false);
   //   }
   // };
-  
-  
-  
-  
+
   const handleEstimateClick = async () => {
-
-
-
-
-
     const estimatePayload = {
       item_code: selectedItem,
       design_by: values.Design_by,
@@ -593,71 +642,67 @@ const handlePayAndPlaceOrder = async (values: any) => {
       discount_per: couponData?.discount_percentage || 0,
       discount_amt: couponData?.discount_amount || 0,
       coupon_code: couponCode.trim()
-
     };
 
     console.log('Estimate Payload:', estimatePayload);
 
-  try {
-    const response = await getINEstimate(estimatePayload).unwrap();
-    console.log("Estimate Response:", response);
+    try {
+      const response = await getINEstimate(estimatePayload).unwrap();
+      console.log('Estimate Response:', response);
 
-    // ✅ Correct extraction
-    const apiRes = response?.message?.data || {};
+      // ✅ Correct extraction
+      const apiRes = response?.message?.data || {};
 
-    // Parse coins safely
-    const availableCoins = parseFloat(apiRes.customer_available_coins?.replace(/,/g, "") || "0");
-    const requiredCoins = parseFloat(apiRes.design_coin_use?.replace(/,/g, "") || "0");
+      // Parse coins safely
+      const availableCoins = parseFloat(apiRes.customer_available_coins?.replace(/,/g, '') || '0');
+      const requiredCoins = parseFloat(apiRes.design_coin_use?.replace(/,/g, '') || '0');
 
-    setAvailableAddicoins(apiRes.customer_available_coins || "0.00");
-    setRequiredAddicoins(apiRes.design_coin_use || "0.00");
+      setAvailableAddicoins(apiRes.customer_available_coins || '0.00');
+      setRequiredAddicoins(apiRes.design_coin_use || '0.00');
 
-    if (isDesignSelf && availableCoins < requiredCoins) {
-      setShowInsufficientCoinsModal(true);
+      if (isDesignSelf && availableCoins < requiredCoins) {
+        setShowInsufficientCoinsModal(true);
+        setIsEstimating(false);
+        return;
+      }
+
+      // ✅ store API response in state
+      setEstimateData({
+        ...estimatePayload,
+        apiResponse: apiRes
+      });
+
+      // ✅ set form values from apiRes
+      setFieldValue('gst_5', apiRes.gst_5 || '0.00');
+      setFieldValue('gst_18', apiRes.gst_18 || '0.00');
+      setFieldValue('item_discount', apiRes.item_discount || '0.00');
+      setFieldValue('additional_discount', apiRes.additional_discount || '0.00');
+      setFieldValue('addicoins', apiRes.design_coin_use || '0.00');
+
+      setShowEstimateCard(true);
+      setIsEstimateStale(false);
+      setIsEstimateAccepted(false);
+
+      if (isDesignSelf && isPrintSelf) {
+        setEstimateConform(true);
+      }
+
+      // Store payload
+      const orderPayload = {
+        item_type: 'IN',
+        customer: user?.customer_id || 'Not specified',
+        order_details: values
+      };
+      setOrderData(orderPayload);
+      setShowPreviwButton(true);
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Failed to get estimate');
+      console.error('Estimate error:', error);
+    } finally {
       setIsEstimating(false);
-      return;
     }
+  };
 
-    // ✅ store API response in state
-    setEstimateData({
-      ...estimatePayload,
-      apiResponse: apiRes,
-    });
-
-    // ✅ set form values from apiRes
-    setFieldValue("gst_5", apiRes.gst_5 || "0.00");
-    setFieldValue("gst_18", apiRes.gst_18 || "0.00");
-    setFieldValue("item_discount", apiRes.item_discount || "0.00");
-    setFieldValue("additional_discount", apiRes.additional_discount || "0.00");
-    setFieldValue("addicoins", apiRes.design_coin_use || "0.00");
-
-    setShowEstimateCard(true);
-    setIsEstimateStale(false);
-    setIsEstimateAccepted(false);
-
-    if (isDesignSelf && isPrintSelf) {
-      setEstimateConform(true);
-    }
-
-    // Store payload
-    const orderPayload = {
-      item_type: "IN",
-      customer: user?.customer_id || "Not specified",
-      order_details: values,
-    };
-    setOrderData(orderPayload);
-    setShowPreviwButton(true);
-  } catch (error: any) {
-    toast.error(error.data?.message || "Failed to get estimate");
-    console.error("Estimate error:", error);
-  } finally {
-    setIsEstimating(false);
-  }
-};
-
-  
-  
-  
   const handleCouponValidation = async () => {
     if (!couponCode.trim()) {
       setCouponData(null);
@@ -688,29 +733,28 @@ const handlePayAndPlaceOrder = async (values: any) => {
   // const isPrintBySelf = values.Print_by === 'Self';
   // const hideLaticesAndFinish = isDesignBySelf && isPrintBySelf;
 
-
   const LAYERING_IMAGES: Record<LayeringImagesKey, LayeringImageType> = {
     'city-comfort': {
       Standard: '/assets/order-forms/insoles/City_Standard.png',
       Premium: '/assets/order-forms/insoles/City_Premium.png',
       name: 'City Comfort'
     },
-    'endurance': {
+    endurance: {
       Standard: '/assets/order-forms/insoles/Endurance_Standard.png',
       Premium: '/assets/order-forms/insoles/Endurance_Premium.png',
       name: 'Endurance'
     },
-    'sensitive': {
+    sensitive: {
       Standard: '/assets/order-forms/insoles/Sensitive_Standard.png',
       Premium: '/assets/order-forms/insoles/Standard_Premium.png',
       name: 'Sensitive'
     },
-    'sports': {
+    sports: {
       Standard: '/assets/order-forms/insoles/sports_Standard.png',
       Premium: '/assets/order-forms/insoles/sports_Premium.png',
       name: 'Sports'
     },
-    'diabetic': {
+    diabetic: {
       Standard: '/assets/order-forms/insoles/diabetic_Standardpng.png',
       Premium: '/assets/order-forms/insoles/diabetic_Premium.png',
       name: 'Diabetic'
@@ -720,26 +764,22 @@ const handlePayAndPlaceOrder = async (values: any) => {
   const getImageSet = (option: string): LayeringImageType | undefined => {
     if (!option) return undefined;
 
-    const normalizedKey = option.toLowerCase()
-      .replace(/\s+/g, '-')
-      .trim() as LayeringImagesKey;
+    const normalizedKey = option.toLowerCase().replace(/\s+/g, '-').trim() as LayeringImagesKey;
 
     if (LAYERING_IMAGES[normalizedKey]) {
       return LAYERING_IMAGES[normalizedKey];
     }
 
-    return Object.values(LAYERING_IMAGES).find(img =>
-      img.name.toLowerCase() === option?.toLowerCase()
+    return Object.values(LAYERING_IMAGES).find(
+      (img) => img.name.toLowerCase() === option?.toLowerCase()
     );
   };
 
-
-
   const handleFinishOptionSelect = (option: FinishOption) => {
-    setSelectedFinishOptions(prev => {
-      const exists = prev.find(item => item.value === option.value);
+    setSelectedFinishOptions((prev) => {
+      const exists = prev.find((item) => item.value === option.value);
       if (exists) {
-        return prev.filter(item => item.value !== option.value);
+        return prev.filter((item) => item.value !== option.value);
       } else {
         return [...prev, { value: option.value, type: 'Standard' }];
       }
@@ -747,10 +787,8 @@ const handlePayAndPlaceOrder = async (values: any) => {
   };
 
   const handleTypeSelect = (optionValue: string, type: 'Standard' | 'Premium') => {
-    setSelectedFinishOptions(prev =>
-      prev.map(item =>
-        item.value === optionValue ? { ...item, type } : item
-      )
+    setSelectedFinishOptions((prev) =>
+      prev.map((item) => (item.value === optionValue ? { ...item, type } : item))
     );
     setFieldValue(`finish_options.${optionValue}`, type);
   };
@@ -760,7 +798,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
       return [
         { value: 'bead-blasting', label: 'Bead Blasting', color: 'bg-gray-500 text-gray-700' },
         { value: 'black-dye', label: 'Black Dye', color: 'bg-black text-black' },
-        { value: 'colour', label: 'colour', color: 'bg-neutral-500 text-neutral-100' },
+        { value: 'colour', label: 'colour', color: 'bg-neutral-500 text-neutral-100' }
       ];
     } else if (isAddiSoleEco) {
       return [
@@ -772,21 +810,21 @@ const handlePayAndPlaceOrder = async (values: any) => {
     return [];
   };
 
-
-
   // Define mapping (string thickness → insoletype option)
-
-
 
   const finishOptions = getFinishOptions();
   const options: FinishOption[] = [
-    { value: 'city-comfort', label: 'City Comfort', imgSrc: '/assets/order-forms/insoles/City_Comfort.png' },
+    {
+      value: 'city-comfort',
+      label: 'City Comfort',
+      imgSrc: '/assets/order-forms/insoles/City_Comfort.png'
+    },
     { value: 'endurance', label: 'Endurance', imgSrc: '/assets/order-forms/insoles/Endurance.png' },
     { value: 'sensitive', label: 'Sensitive', imgSrc: '/assets/order-forms/insoles/Sensitive.png' },
     { value: 'sports', label: 'Sports', imgSrc: '/assets/order-forms/insoles/Sports.png' },
-    { value: 'diabetic', label: 'Diabetic', imgSrc: '/assets/order-forms/insoles/Diabetics.png' },
+    { value: 'diabetic', label: 'Diabetic', imgSrc: '/assets/order-forms/insoles/Diabetics.png' }
   ];
-  const selectedInsole = options.find(option => option.label === values.insoletype);
+  const selectedInsole = options.find((option) => option.label === values.insoletype);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <div className="flex flex-col gap-4">
@@ -886,69 +924,67 @@ const handlePayAndPlaceOrder = async (values: any) => {
               <Input
                 placeholder=""
                 disabled
-                value={thicknessToinsoletypeMap[values.thickness] || ""}   // show text instead of number
+                value={thicknessToinsoletypeMap[values.thickness] || ''} // show text instead of number
                 onChange={(e) => {
                   const newText = e.target.value;
 
                   // find the number (key) for this insoletype text
-                  const matchingThickness = Object.entries(thicknessToinsoletypeMap)
-                    .find(([key, insoletype]) => insoletype === newText)?.[0];
+                  const matchingThickness = Object.entries(thicknessToinsoletypeMap).find(
+                    ([key, insoletype]) => insoletype === newText
+                  )?.[0];
 
                   if (matchingThickness) {
-                    setFieldValue("thickness", matchingThickness); // store number internally
-                    setFieldValue("insoletype", newText);              // store text for insoletype
+                    setFieldValue('thickness', matchingThickness); // store number internally
+                    setFieldValue('insoletype', newText); // store text for insoletype
                   } else {
                     // if no match, allow free text (optional)
-                    setFieldValue("thickness", "");
-                    setFieldValue("insoletype", "");
+                    setFieldValue('thickness', '');
+                    setFieldValue('insoletype', '');
                   }
                 }}
               />
-
-
-
             </div>
           </div>
         </div>
 
-
         <div className="space-y-2 mt-0">
-                      <div className="relative w-[350px]">
-                        <Input
-                          type="text"
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value)}
-                          placeholder="Enter coupon code"
-                          className={`w-full pr-10 ${couponCode.length >= 5 && !couponData && !isValidatingCoupon
-                            ? 'border-orange-200'
-                            : couponData
-                              ? 'border-green-200'
-                              : ''
-                            }`}
-                        />
-                        <div className="absolute right-3 top-2">
-                          {isValidatingCoupon ? (
-                            <Loader className="h-4 w-4 animate-spin" />
-                          ) : couponCode.length >= 5 ? (
-                            couponData ? (
-                              <Check className="h-5 w-5 text-green-500" />
-                            ) : (
-                              <X className="h-5 w-5 text-red-500" />
-                            )
-                          ) : null}
-                        </div>
-                      </div>
-                      {couponData && (
-                        <div className="text-sm text-green-700 mt-1 ml-5">
-                          {couponData.coupon_name} ({couponData.discount_percentage}% off)
-                          {couponData.valid_upto && (
-                            <span className="text-gray-500 ml-6">
-                              valid date {new Date(couponData.valid_upto).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
+          <div className="relative w-[350px]">
+            <Input
+              type="text"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value)}
+              placeholder="Enter coupon code"
+              className={`w-full pr-10 ${
+                couponCode.length >= 5 && !couponData && !isValidatingCoupon
+                  ? 'border-orange-200'
+                  : couponData
+                    ? 'border-green-200'
+                    : ''
+              }`}
+            />
+            <div className="absolute right-3 top-2">
+              {isValidatingCoupon ? (
+                <Loader className="h-4 w-4 animate-spin" />
+              ) : couponCode.length >= 5 ? (
+                couponData ? (
+                  <Check className="h-5 w-5 text-green-500" />
+                ) : (
+                  <X className="h-5 w-5 text-red-500" />
+                )
+              ) : null}
+            </div>
+          </div>
+          {couponData && (
+            <div className="text-sm text-green-700 mt-1 ml-5">
+              {couponData.coupon_name} ({couponData.discount_percentage}% off)
+              {couponData.valid_upto && (
+                <span className="text-gray-500 ml-6">
+                  valid date {new Date(couponData.valid_upto).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
         {/* {values.insole_model !=='AddiSole' ?(<>
           <div className="flex gap-8 mb-8 -mt-[230px] ml-[416px]">
            <div>
@@ -1087,8 +1123,6 @@ const handlePayAndPlaceOrder = async (values: any) => {
          </div>
          </>} */}
 
-
-
         {/* Finish Section */}
         {showFinishOptions && (
           <div className="space-y-4 mt-5">
@@ -1105,13 +1139,14 @@ const handlePayAndPlaceOrder = async (values: any) => {
                       onChange={() => setFieldValue('finish_type', option.value)}
                       className="sr-only peer"
                     />
-                    <div className={`w-8 h-8 rounded-full border-2 ${option.color} ${values.finish_type === option.value
-                        ? 'border-blue-200 ring-2 ring-blue-300'
-                        : 'border-gray-300'
-                      }`} />
-                    <span className="text-sm mt-1 capitalize">
-                      {option.label}
-                    </span>
+                    <div
+                      className={`w-8 h-8 rounded-full border-2 ${option.color} ${
+                        values.finish_type === option.value
+                          ? 'border-blue-200 ring-2 ring-blue-300'
+                          : 'border-gray-300'
+                      }`}
+                    />
+                    <span className="text-sm mt-1 capitalize">{option.label}</span>
                   </label>
                 ))}
               </div>
@@ -1149,23 +1184,23 @@ const handlePayAndPlaceOrder = async (values: any) => {
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="radio"
-                name="insole_design_variation"  // must match Formik field
-                checked={values.insole_design_variation === "Standard"}
-                onChange={() => setFieldValue("insole_design_variation", "Standard")}
+                name="insole_design_variation" // must match Formik field
+                checked={values.insole_design_variation === 'Standard'}
+                onChange={() => setFieldValue('insole_design_variation', 'Standard')}
                 className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 mt-1"
               />
               <div className="flex flex-col md:flex-row md:items-center gap-4">
                 <div>
                   <span className="text-base font-medium">Standard</span>
-                  {values.insole_design_variation === "Standard" && (
+                  {values.insole_design_variation === 'Standard' && (
                     <p className="mt-1 text-sm text-gray-600 leading-relaxed max-w-md">
-                      Functional cushioning designed for regular use. Provides reliable
-                      comfort and support for the intended purpose of the insole
-                      (walking, endurance, sports, or medical use).
+                      Functional cushioning designed for regular use. Provides reliable comfort and
+                      support for the intended purpose of the insole (walking, endurance, sports, or
+                      medical use).
                     </p>
                   )}
                 </div>
-                {values.insole_design_variation === "Standard" && selectedInsole && (
+                {values.insole_design_variation === 'Standard' && selectedInsole && (
                   <img
                     src={selectedInsole.imgSrc}
                     alt={selectedInsole.label}
@@ -1180,22 +1215,22 @@ const handlePayAndPlaceOrder = async (values: any) => {
               <input
                 type="radio"
                 name="insole_design_variation"
-                checked={values.insole_design_variation === "Premium"}
-                onChange={() => setFieldValue("insole_design_variation", "Premium")}
+                checked={values.insole_design_variation === 'Premium'}
+                onChange={() => setFieldValue('insole_design_variation', 'Premium')}
                 className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 mt-1"
               />
               <div className="flex flex-col md:flex-row md:items-center gap-4">
                 <div>
                   <span className="text-base font-medium">Premium</span>
-                  {values.insole_design_variation === "Premium" && (
+                  {values.insole_design_variation === 'Premium' && (
                     <p className="mt-1 text-sm text-gray-600 leading-relaxed max-w-md">
-                      Advanced cushioning with enhanced softness, shock absorption, and
-                      pressure distribution. Recommended for sensitive feet, extended
-                      insole_design_variation hours, or patients needing higher protection and comfort.
+                      Advanced cushioning with enhanced softness, shock absorption, and pressure
+                      distribution. Recommended for sensitive feet, extended insole_design_variation
+                      hours, or patients needing higher protection and comfort.
                     </p>
                   )}
                 </div>
-                {values.insole_design_variation === "Premium" && selectedInsole && (
+                {values.insole_design_variation === 'Premium' && selectedInsole && (
                   <img
                     src={selectedInsole.imgSrc}
                     alt={selectedInsole.label}
@@ -1204,29 +1239,22 @@ const handlePayAndPlaceOrder = async (values: any) => {
                 )}
               </div>
             </label>
-
           </div>
-
         </div>
-       
-
-
-
-
-
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mt-2 ml-45">
           {selectedFinishOptions.map((option, index) => {
             const imageSet = getImageSet(option.value);
-            const optionData = options.find(opt => opt.value === option.value);
+            const optionData = options.find((opt) => opt.value === option.value);
 
             return (
               <div key={index} className="flex flex-col items-center  border rounded-lg">
                 <h4 className="font-xs">{optionData?.label}</h4>
                 <div className="flex gap-4">
                   <div
-                    className={`flex flex-col items-center p-2 rounded-lg cursor-pointer ${option.type === 'Standard' ? 'bg-blue-50 border border-blue-200' : ''
-                      }`}
+                    className={`flex flex-col items-center p-2 rounded-lg cursor-pointer ${
+                      option.type === 'Standard' ? 'bg-blue-50 border border-blue-200' : ''
+                    }`}
                     onClick={() => handleTypeSelect(option.value, 'Standard')}
                   >
                     <p className="text-xs font-medium mb-1">Standard</p>
@@ -1256,8 +1284,9 @@ const handlePayAndPlaceOrder = async (values: any) => {
                   </div>
 
                   <div
-                    className={`flex flex-col items-center p-2 rounded-lg cursor-pointer ${option.type === 'Premium' ? 'bg-blue-50 border border-blue-200' : ''
-                      }`}
+                    className={`flex flex-col items-center p-2 rounded-lg cursor-pointer ${
+                      option.type === 'Premium' ? 'bg-blue-50 border border-blue-200' : ''
+                    }`}
                     onClick={() => handleTypeSelect(option.value, 'Premium')}
                   >
                     <p className="text-xs font-medium mb-1">Premium</p>
@@ -1293,427 +1322,110 @@ const handlePayAndPlaceOrder = async (values: any) => {
             );
           })}
         </div>
-        <p>Disclaimer : Actual product may vary in appearance from the images shown, without compromising on quality or functionality</p>
-        <p>The color of the insole padding may vary depending on material availability.
+        <p>
+          Disclaimer : Actual product may vary in appearance from the images shown, without
+          compromising on quality or functionality
         </p>
+        <p>The color of the insole padding may vary depending on material availability.</p>
       </div>
       <div className="flex flex-col gap-6">
-         {values.Design_by === "Self" && values.Print_by === "Addiwise" && (
-  <>
-    <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <CoinsIcon className="w-4 h-4 text-blue-600" />
-            </div>
-            <p className="text-sm font-semibold text-gray-700">PAY WITH ADDICOINS</p>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-2">
-        <ul className="text-sm space-y-2.5">
-          <li className="flex items-start gap-2">
-            <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-            <div className="flex justify-between w-full">
-              <span className="font-medium text-gray-700">Available Addicoins</span>
-              <span className="text-gray-700">{availableAddicoins}</span>
-            </div>
-          </li>
-          <li className="flex items-start gap-2">
-            <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-            <div className="flex justify-between w-full">
-              <span className="font-medium text-gray-700">Design will use</span>
-              <span className="text-gray-700">{requiredAddicoins}</span>
-            </div>
-          </li>
-          {parseFloat(availableAddicoins?.replace(/,/g, "") || "0") -
-            parseFloat(requiredAddicoins?.replace(/,/g, "") || "0") >
-            0 && (
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-                <div className="flex justify-between w-full">
-                  <span className="font-medium text-gray-700">Balance after design</span>
-                  <span className="text-gray-700">
-                    {parseFloat(availableAddicoins?.replace(/,/g, "") || "0") -
-                      parseFloat(requiredAddicoins?.replace(/,/g, "") || "0")}
-                  </span>
-                </div>
-              </li>
-            )}
-        </ul>
-      </CardContent>
-    </Card>
+        {values.Design_by === 'Self' && values.Print_by === 'Addiwise' && (
+          <>
+            <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-semibold">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <CoinsIcon className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-700">PAY WITH ADDICOINS</p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <ul className="text-sm space-y-2.5">
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium text-gray-700">Available Addicoins</span>
+                      <span className="text-gray-700">{availableAddicoins}</span>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium text-gray-700">Design will use</span>
+                      <span className="text-gray-700">{requiredAddicoins}</span>
+                    </div>
+                  </li>
+                  {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
+                    parseFloat(requiredAddicoins?.replace(/,/g, '') || '0') >
+                    0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Balance after design</span>
+                        <span className="text-gray-700">
+                          {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
+                            parseFloat(requiredAddicoins?.replace(/,/g, '') || '0')}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                </ul>
+              </CardContent>
+            </Card>
 
-    <Card
-      className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${
-        isEstimateStale ? "border-gray-200" : "border-gray-200"
-      } transition-colors duration-200`}
-    >
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5" />
-            <p
-              className={`text-sm font-semibold ${
-                isEstimateStale ? "text-gray-700" : "text-gray-700"
-              }`}
+            <Card
+              className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${
+                isEstimateStale ? 'border-gray-200' : 'border-gray-200'
+              } transition-colors duration-200`}
             >
-              PRICE SUMMARY {isEstimateStale && "(Stale Estimate)"}
-            </p>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-2">
-        <ul className="text-sm space-y-2.5">
-           {parseFloat(estimateData?.apiResponse?.design?.replace(/,/g, "")) > 0 && (
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-              <div className="flex justify-between w-full">
-                <span className="font-medium text-gray-700">Design</span>
-                <span className="text-gray-700">
-                  ₹{estimateData.apiResponse.design}
-                </span>
-              </div>
-            </li>
-          )}
-          {parseFloat(estimateData?.apiResponse?.print?.replace(/,/g, "")) > 0 && (
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-              <div className="flex justify-between w-full">
-                <span className="font-medium text-gray-700">Print</span>
-                <span className="text-gray-700">
-                  ₹{estimateData?.apiResponse?.print}
-                </span>
-              </div>
-            </li>
-          )}
-          
-          <li className="flex items-start gap-2">
-            <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-            <div className="flex justify-between w-full">
-              <span className="font-medium text-gray-700">Subtotal</span>
-              <span className="text-gray-700">
-                ₹{estimateData?.apiResponse?.estimate_price || "0.00"}
-
-              </span>
-            </div>
-          </li>
-          {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, "")) >
-            0 && (
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                <div className="flex justify-between w-full">
-                  <span className="font-medium text-gray-700">Item Discount</span>
-                  <span className="text-gray-700">
-                    -₹{estimateData.apiResponse.item_discount}
-                  </span>
-                </div>
-              </li>
-            )}
-          {parseFloat(
-            estimateData?.apiResponse?.additional_discount?.replace(/,/g, "")
-          ) > 0 && (
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-              <div className="flex justify-between w-full">
-                <span className="font-medium text-gray-700">Additional Discount</span>
-                <span className="text-gray-700">
-                  (-)₹{estimateData.apiResponse.additional_discount}
-                </span>
-              </div>
-            </li>
-          )}
-          {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, "")) > 0 && (
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-              <div className="flex justify-between w-full">
-                <span className="font-medium text-gray-700">GST (5%)</span>
-                <span className="text-gray-700">
-                  +₹{estimateData.apiResponse.gst_5}
-                </span>
-              </div>
-            </li>
-          )}
-          {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, "")) > 0 && (
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-              <div className="flex justify-between w-full">
-                <span className="font-medium text-gray-700">GST (18%)</span>
-                <span className="text-gray-700">
-                  +₹{estimateData.apiResponse.gst_18}
-                </span>
-              </div>
-            </li>
-          )} 
-          <div className="border-t border-gray-200 my-2"></div>
-          <div className="flex justify-between text-base font-bold text-primary">
-            <span>Total Amount</span>
-            <span>₹{estimateData?.apiResponse?.total_price}</span>
-          </div>
-        </ul>
-        {!isDesignSelf && !isPrintSelf && (
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="enable-submit"
-                onChange={(e) => setEstimateConform(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100"
-              />
-              <Label
-                htmlFor="enable-submit"
-                className="text-sm font-medium leading-none ml-2"
-              >
-                I agree to the{" "}
-                <span
-                  className="text-primary hover:underline cursor-pointer"
-                  onClick={() => window.open("/terms", "_blank")}
-                >
-                  terms and conditions
-                </span>
-              </Label>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  </>
-)}
-
-{values.Design_by === "Self" && values.Print_by === "Self" && (
-  <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
-    <CardHeader className="pb-2">
-      <CardTitle className="text-lg font-semibold">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <CoinsIcon className="w-4 h-4 text-blue-600" />
-          </div>
-          <p className="text-sm font-semibold text-gray-700">PAY WITH ADDICOINS</p>
-        </div>
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="pt-2">
-      <ul className="text-sm space-y-2.5">
-        <li className="flex items-start gap-2">
-          <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-          <div className="flex justify-between w-full">
-            <span className="font-medium text-gray-700">Available Addicoins</span>
-            <span className="text-gray-700">{availableAddicoins}</span>
-          </div>
-        </li>
-        <li className="flex items-start gap-2">
-          <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-          <div className="flex justify-between w-full">
-            <span className="font-medium text-gray-700">Design will use</span>
-            <span className="text-gray-700">{requiredAddicoins}</span>
-          </div>
-        </li>
-        {parseFloat(availableAddicoins?.replace(/,/g, "") || "0") -
-          parseFloat(requiredAddicoins?.replace(/,/g, "") || "0") >
-          0 && (
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-              <div className="flex justify-between w-full">
-                <span className="font-medium text-gray-700">Balance after design</span>
-                <span className="text-gray-700">
-                  {parseFloat(availableAddicoins?.replace(/,/g, "") || "0") -
-                    parseFloat(requiredAddicoins?.replace(/,/g, "") || "0")}
-                </span>
-              </div>
-            </li>
-          )}
-      </ul>
-    </CardContent>
-  </Card>
-)} 
-
-         {values.Design_by === "Addiwise" && values.Print_by === "Addiwise" && (
-          <Card
-            className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} transition-colors duration-200`}
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-semibold">
-                <div className="flex items-center gap-2">
-                  <span className="w-5 h-5" />
-                  <p
-                    className={`text-sm font-semibold ${isEstimateStale ? 'text-gray-700' : 'text-gray-700'}`}
-                  >
-                    PRICE SUMMARY {isEstimateStale && '(Stale Estimate)'}
-                  </p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <ul className="text-sm space-y-2.5">
-                 {parseFloat(estimateData?.apiResponse?.design.replace(/,/g, '')) > 0 && (
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Design</span>
-                      <span className="text-gray-700">
-                        ₹{estimateData.apiResponse.design}
-                      </span>
-                    </div>
-                  </li>
-                )}
-                {parseFloat(estimateData?.apiResponse?.print.replace(/,/g, '')) > 0 && (
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Print</span>
-                      <span className="text-gray-700">
-                        ₹{estimateData.apiResponse.print}
-                      </span>
-                    </div>
-                  </li>
-                )}
-                
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                  <div className="flex justify-between w-full">
-                    <span className="font-medium text-gray-700">Subtotal</span>
-                    <span className="text-gray-700">
-                      ₹{estimateData?.apiResponse?.estimate_price}
-                    </span>
-                  </div>
-                </li>
-                {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, '')) >
-                  0 && (
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Item Discount</span>
-                        <span className="text-gray-700">
-                          -₹{estimateData?.apiResponse?.item_discount}
-                        </span>
-                      </div>
-                    </li>
-                  )}
-                {parseFloat(
-                  estimateData?.apiResponse?.additional_discount.replace(/,/g, '')
-                ) > 0 && (
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Additional Discount</span>
-                        <span className="text-gray-700">
-                          (-)₹{estimateData.apiResponse.additional_discount}
-                        </span>
-                      </div>
-                    </li>
-                  )}
-                {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">GST (5%)</span>
-                      <span className="text-gray-700">
-                        +₹{estimateData.apiResponse.gst_5}
-                      </span>
-                    </div>
-                  </li>
-                )}
-                {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, '')) > 0 && (
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">GST (18%)</span>
-                      <span className="text-gray-700">
-                        +₹{estimateData.apiResponse.gst_18}
-                      </span>
-                    </div>
-                  </li>
-                )} 
-                <div
-                  className={`border-t ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} my-2`}
-                ></div>
-                <div
-                  className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'}`}
-                >
-                  <span>Total Amount</span>
-                  <span>₹{estimateData?.apiResponse?.total_price}</span>
-                </div>
-              </ul>
-              {!isDesignSelf && !isPrintSelf && (
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="enable-submit"
-                      onChange={(e) => setEstimateConform(e.target.checked)}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100" />
-                    <Label
-                      htmlFor="enable-submit"
-                      className="text-sm font-medium leading-none ml-2"
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-semibold">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5" />
+                    <p
+                      className={`text-sm font-semibold ${
+                        isEstimateStale ? 'text-gray-700' : 'text-gray-700'
+                      }`}
                     >
-                      I agree to the{' '}
-                      <span
-                        className="text-primary hover:underline cursor-pointer"
-                        onClick={() => window.open('/terms', '_blank')}
-                      >
-                        terms and conditions
-                      </span>
-                    </Label>
+                      PRICE SUMMARY {isEstimateStale && '(Stale Estimate)'}
+                    </p>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <ul className="text-sm space-y-2.5">
+                  {parseFloat(estimateData?.apiResponse?.design?.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Design</span>
+                        <span className="text-gray-700">₹{estimateData.apiResponse.design}</span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.print?.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Print</span>
+                        <span className="text-gray-700">₹{estimateData?.apiResponse?.print}</span>
+                      </div>
+                    </li>
+                  )}
 
-        )}
-        {values.Design_by === "Addiwise" && values.Print_by === "Self" && (
-          <Card
-            className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} transition-colors duration-200`}
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-semibold">
-                <div className="flex items-center gap-2">
-                  <span className="w-5 h-5" />
-                  <p
-                    className={`text-sm font-semibold ${isEstimateStale ? 'text-gray-700' : 'text-gray-700'}`}
-                  >
-                    PRICE SUMMARY {isEstimateStale && '(Stale Estimate)'}
-                  </p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <ul className="text-sm space-y-2.5">
-                {parseFloat(estimateData?.apiResponse?.design.replace(/,/g, '')) > 0 && (
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                     <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Design</span>
+                      <span className="font-medium text-gray-700">Subtotal</span>
                       <span className="text-gray-700">
-                        ₹{estimateData.apiResponse.design}
+                        ₹{estimateData?.apiResponse?.estimate_price || '0.00'}
                       </span>
                     </div>
                   </li>
-                )}
-                {parseFloat(estimateData?.apiResponse?.print.replace(/,/g, '')) > 0 && (
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Print</span>
-                      <span className="text-gray-700">
-                        ₹{estimateData.apiResponse.print}
-                      </span>
-                    </div>
-                  </li>
-                )}
-               
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                  <div className="flex justify-between w-full">
-                    <span className="font-medium text-gray-700">Subtotal</span>
-                    <span className="text-gray-700">
-                      ₹{estimateData.apiResponse.estimate_price}
-                    </span>
-                  </div>
-                </li>
-                {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, '')) >
-                  0 && (
+                  {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, '')) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -1724,9 +1436,8 @@ const handlePayAndPlaceOrder = async (values: any) => {
                       </div>
                     </li>
                   )}
-                {parseFloat(
-                  estimateData?.apiResponse?.additional_discount.replace(/,/g, '')
-                ) > 0 && (
+                  {parseFloat(estimateData?.apiResponse?.additional_discount?.replace(/,/g, '')) >
+                    0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -1737,46 +1448,133 @@ const handlePayAndPlaceOrder = async (values: any) => {
                       </div>
                     </li>
                   )}
-                {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">GST (5%)</span>
-                      <span className="text-gray-700">
-                        +₹{estimateData.apiResponse.gst_5}
-                      </span>
+                  {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">GST (5%)</span>
+                        <span className="text-gray-700">+₹{estimateData.apiResponse.gst_5}</span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">GST (18%)</span>
+                        <span className="text-gray-700">+₹{estimateData.apiResponse.gst_18}</span>
+                      </div>
+                    </li>
+                  )}
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <div className="flex justify-between text-base font-bold text-primary">
+                    <span>Total Amount</span>
+                    <span>₹{estimateData?.apiResponse?.total_price}</span>
+                  </div>
+                </ul>
+                {!isDesignSelf && !isPrintSelf && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="enable-submit"
+                        onChange={(e) => setEstimateConform(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100"
+                      />
+                      <Label
+                        htmlFor="enable-submit"
+                        className="text-sm font-medium leading-none ml-2"
+                      >
+                        I agree to the{' '}
+                        <span
+                          className="text-primary hover:underline cursor-pointer"
+                          onClick={() => window.open('/terms', '_blank')}
+                        >
+                          terms and conditions
+                        </span>
+                      </Label>
                     </div>
-                  </li>
+                  </div>
                 )}
-                {parseFloat(estimateData.apiResponse.gst_18.replace(/,/g, '')) > 0 && (
+              </CardContent>
+            </Card>
+            <div className="flex gap-2.5">
+              <Button
+                className="shadow-2xl"
+                onClick={() => handlePayAndPlaceOrder(values)}
+                disabled={
+                  !estimateConform ||
+                  isOrderCreating ||
+                  isPaymentProcessing ||
+                  ((values.Design_by !== 'Self' || values.Print_by !== 'Self') && !isRazorpayLoaded)
+                }
+              >
+                {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
+              </Button>
+              <Button
+                className="shadow-2xl"
+                onClick={() => handleSubmit()}
+                type="submit"
+                disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
+              >
+                Pay Later
+              </Button>
+            </div>
+          </>
+        )}
+
+        {values.Design_by === 'Self' && values.Print_by === 'Self' && (
+          <>
+            <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-semibold">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <CoinsIcon className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-700">PAY WITH ADDICOINS</p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <ul className="text-sm space-y-2.5">
                   <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
                     <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">GST (18%)</span>
-                      <span className="text-gray-700">
-                        +₹{estimateData.apiResponse.gst_18}
-                      </span>
+                      <span className="font-medium text-gray-700">Available Addicoins</span>
+                      <span className="text-gray-700">{availableAddicoins}</span>
                     </div>
                   </li>
-                )} 
-                <div
-                  className={`border-t ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} my-2`}
-                ></div>
-                <div
-                  className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'}`}
-                >
-                  <span>Total Amount</span>
-                  <span>₹{estimateData.apiResponse.total_price}</span>
-                </div>
-              </ul>
-              {!isDesignSelf && !isPrintSelf && (
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium text-gray-700">Design will use</span>
+                      <span className="text-gray-700">{requiredAddicoins}</span>
+                    </div>
+                  </li>
+                  {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
+                    parseFloat(requiredAddicoins?.replace(/,/g, '') || '0') >
+                    0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Balance after design</span>
+                        <span className="text-gray-700">
+                          {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
+                            parseFloat(requiredAddicoins?.replace(/,/g, '') || '0')}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                </ul>
                 <div className="mt-4 space-y-3">
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
                       id="enable-submit"
                       onChange={(e) => setEstimateConform(e.target.checked)}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100" />
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100"
+                    />
                     <Label
                       htmlFor="enable-submit"
                       className="text-sm font-medium leading-none ml-2"
@@ -1789,59 +1587,333 @@ const handlePayAndPlaceOrder = async (values: any) => {
                         terms and conditions
                       </span>
                     </Label>
-
                   </div>
                 </div>
-              )}
-            </CardContent>
-           
-          </Card>
+              </CardContent>
+            </Card>
+            <Button
+              className="shadow-2xl"
+              onClick={() => handlePayAndPlaceOrderWithAddicoins(values)}
+              disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
+            >
+              {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
+            </Button>
+          </>
+        )}
 
-        )} 
-         {!orderId && !deviceTypeId && (
+        {values.Design_by === 'Addiwise' && values.Print_by === 'Addiwise' && (
+          <>
+            {' '}
+            <Card
+              className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} transition-colors duration-200`}
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-semibold">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5" />
+                    <p
+                      className={`text-sm font-semibold ${isEstimateStale ? 'text-gray-700' : 'text-gray-700'}`}
+                    >
+                      PRICE SUMMARY {isEstimateStale && '(Stale Estimate)'}
+                    </p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <ul className="text-sm space-y-2.5">
+                  {parseFloat(estimateData?.apiResponse?.design.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Design</span>
+                        <span className="text-gray-700">₹{estimateData.apiResponse.design}</span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.print.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Print</span>
+                        <span className="text-gray-700">₹{estimateData.apiResponse.print}</span>
+                      </div>
+                    </li>
+                  )}
+
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium text-gray-700">Subtotal</span>
+                      <span className="text-gray-700">
+                        ₹{estimateData?.apiResponse?.estimate_price}
+                      </span>
+                    </div>
+                  </li>
+                  {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Item Discount</span>
+                        <span className="text-gray-700">
+                          -₹{estimateData?.apiResponse?.item_discount}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.additional_discount.replace(/,/g, '')) >
+                    0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Additional Discount</span>
+                        <span className="text-gray-700">
+                          (-)₹{estimateData.apiResponse.additional_discount}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">GST (5%)</span>
+                        <span className="text-gray-700">+₹{estimateData.apiResponse.gst_5}</span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">GST (18%)</span>
+                        <span className="text-gray-700">+₹{estimateData.apiResponse.gst_18}</span>
+                      </div>
+                    </li>
+                  )}
+                  <div
+                    className={`border-t ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} my-2`}
+                  ></div>
+                  <div
+                    className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'}`}
+                  >
+                    <span>Total Amount</span>
+                    <span>₹{estimateData?.apiResponse?.total_price}</span>
+                  </div>
+                </ul>
+                {!isDesignSelf && !isPrintSelf && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="enable-submit"
+                        onChange={(e) => setEstimateConform(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100"
+                      />
+                      <Label
+                        htmlFor="enable-submit"
+                        className="text-sm font-medium leading-none ml-2"
+                      >
+                        I agree to the{' '}
+                        <span
+                          className="text-primary hover:underline cursor-pointer"
+                          onClick={() => window.open('/terms', '_blank')}
+                        >
+                          terms and conditions
+                        </span>
+                      </Label>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            <div className="flex gap-2.5">
               <Button
-                className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
-                onClick={handleEstimateClick}
-                disabled={isEstimating}
+                className="shadow-2xl"
+                onClick={() => handlePayAndPlaceOrder(values)}
+                disabled={
+                  !estimateConform ||
+                  isOrderCreating ||
+                  isPaymentProcessing ||
+                  ((values.Design_by !== 'Self' || values.Print_by !== 'Self') && !isRazorpayLoaded)
+                }
               >
-                {isEstimating
-                  ? 'Estimating...'
-                  : isEstimateStale
-                    ? 'Update Estimate'
-                    : 'Estimate Now'}
+                {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
               </Button>
-            )}
-         <div className="flex gap-2.5">
-                                <Button
-                                  className="shadow-2xl"
-                                   onClick={() => handlePayAndPlaceOrder(values)}
-                                  disabled={
-                            !estimateConform ||
-                            isOrderCreating ||
-                            isPaymentProcessing ||
-                            !isRazorpayLoaded
-                          }
-                                >
-                                  {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
-                                </Button>
-                                 <Button
-                                                          className="shadow-2xl"
-                                                          onClick={() => handleSubmit()}
-                                                          type="submit"
-                                                          disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
-                                                        >
-                                                          Pay Later
-                                                        </Button>
-                              </div>
+              <Button
+                className="shadow-2xl"
+                onClick={() => handleSubmit()}
+                type="submit"
+                disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
+              >
+                Pay Later
+              </Button>
+            </div>
+          </>
+        )}
+        {values.Design_by === 'Addiwise' && values.Print_by === 'Self' && (
+          <>
+            <Card
+              className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} transition-colors duration-200`}
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-semibold">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5" />
+                    <p
+                      className={`text-sm font-semibold ${isEstimateStale ? 'text-gray-700' : 'text-gray-700'}`}
+                    >
+                      PRICE SUMMARY {isEstimateStale && '(Stale Estimate)'}
+                    </p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <ul className="text-sm space-y-2.5">
+                  {parseFloat(estimateData?.apiResponse?.design.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Design</span>
+                        <span className="text-gray-700">₹{estimateData.apiResponse.design}</span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.print.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Print</span>
+                        <span className="text-gray-700">₹{estimateData.apiResponse.print}</span>
+                      </div>
+                    </li>
+                  )}
+
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium text-gray-700">Subtotal</span>
+                      <span className="text-gray-700">
+                        ₹{estimateData?.apiResponse?.estimate_price}
+                      </span>
+                    </div>
+                  </li>
+                  {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Item Discount</span>
+                        <span className="text-gray-700">
+                          -₹{estimateData.apiResponse.item_discount}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.additional_discount.replace(/,/g, '')) >
+                    0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Additional Discount</span>
+                        <span className="text-gray-700">
+                          (-)₹{estimateData.apiResponse.additional_discount}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">GST (5%)</span>
+                        <span className="text-gray-700">+₹{estimateData.apiResponse.gst_5}</span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">GST (18%)</span>
+                        <span className="text-gray-700">+₹{estimateData.apiResponse.gst_18}</span>
+                      </div>
+                    </li>
+                  )}
+                  <div
+                    className={`border-t ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} my-2`}
+                  ></div>
+                  <div
+                    className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'}`}
+                  >
+                    <span>Total Amount</span>
+                    <span>₹{estimateData?.apiResponse?.total_price}</span>
+                  </div>
+                </ul>
+                {!isDesignSelf && !isPrintSelf && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="enable-submit"
+                        onChange={(e) => setEstimateConform(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100"
+                      />
+                      <Label
+                        htmlFor="enable-submit"
+                        className="text-sm font-medium leading-none ml-2"
+                      >
+                        I agree to the{' '}
+                        <span
+                          className="text-primary hover:underline cursor-pointer"
+                          onClick={() => window.open('/terms', '_blank')}
+                        >
+                          terms and conditions
+                        </span>
+                      </Label>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            <div className="flex gap-2.5">
+              <Button
+                className="shadow-2xl"
+                onClick={() => handlePayAndPlaceOrder(values)}
+                disabled={
+                  !estimateConform ||
+                  isOrderCreating ||
+                  isPaymentProcessing ||
+                  ((values.Design_by !== 'Self' || values.Print_by !== 'Self') && !isRazorpayLoaded)
+                }
+              >
+                {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
+              </Button>
+              <Button
+                className="shadow-2xl"
+                onClick={() => handleSubmit()}
+                type="submit"
+                disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
+              >
+                Pay Later
+              </Button>
+            </div>
+          </>
+        )}
+        {!orderId && !deviceTypeId && (
+          <Button
+            className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+            onClick={handleEstimateClick}
+            disabled={isEstimating}
+          >
+            {isEstimating ? 'Estimating...' : isEstimateStale ? 'Update Estimate' : 'Estimate Now'}
+          </Button>
+        )}
       </div>
     </div>
-
   );
 };
 
-
 function setEstimateConform(arg0: boolean) {
-  throw new Error("Function not implemented.");
+  throw new Error('Function not implemented.');
 }
 // -----------It is working now ----------------------------
 
@@ -1867,12 +1939,10 @@ function setEstimateConform(arg0: boolean) {
 //   setSelectedOptions,
 //   selectedOptions=[]
 // }: any) => {
-  
- 
+
 //   const isAddiSole = values.model_name === 'AddiEase';
 //   const isAddiSoleEco = values.model_name === 'AddiEaseEco';
 //   const showFinishOptions = isAddiSole || isAddiSoleEco;
-
 
 //     const LAYERING_IMAGES: Record<LayeringImagesKey, LayeringImageType> = {
 
@@ -1904,35 +1974,35 @@ function setEstimateConform(arg0: boolean) {
 //   };
 
 //   const getImageSet = (option: any): LayeringImageType | undefined => {
-    
+
 //     if (!option) {
 //       console.error("No option name provided");
 //       return undefined;
 //     }
-  
+
 //     // Normalize the key (handle multiple spaces if needed)
 //     const normalizedKey = option.toLowerCase()
 //       .replace(/\s+/g, '-')  // Replace all spaces with single hyphen
 //       .trim() as LayeringImagesKey;
-  
+
 //     console.log("Normalized key:", normalizedKey, "Original name:", option);
-  
+
 //     // 1. Try direct key access
 //     if (LAYERING_IMAGES[normalizedKey]) {
 //       console.log("Found by direct key:", normalizedKey);
 //       return LAYERING_IMAGES[normalizedKey];
 //     }
-  
+
 //     // 2. Try case-insensitive name matching
-//     const foundByName = Object.values(LAYERING_IMAGES).find(img => 
+//     const foundByName = Object.values(LAYERING_IMAGES).find(img =>
 //       img.name.toLowerCase() === option?.toLowerCase()
 //     );
-  
+
 //     if (foundByName) {
 //       console.log("Found by name match:", foundByName.name);
 //       return foundByName;
 //     }
-  
+
 //     console.warn("No matching image set found for:", option);
 //     return undefined;
 //   };
@@ -1967,7 +2037,7 @@ function setEstimateConform(arg0: boolean) {
 //   return (
 //     <div className="flex flex-col gap-4">
 //       <h3 className="text-lg font-semibold mt-5">Design & Printing</h3>
-      
+
 //       {/* Design By Section */}
 //       <div className="grid md:grid-cols-2 gap-6 mt-5">
 //         <div className="flex items-center">
@@ -2024,7 +2094,7 @@ function setEstimateConform(arg0: boolean) {
 //           <div className="flex items-center">
 //             <label className="font-medium min-w-[100px] text-sm">Thickness:</label>
 //             <div className="w-[250px]">
-//             <Input 
+//             <Input
 //           placeholder="Thickness number"
 //         />
 //             </div>
@@ -2048,8 +2118,8 @@ function setEstimateConform(arg0: boolean) {
 //                     className="sr-only peer"
 //                   />
 //                   <div className={`w-8 h-8 rounded-full border-2 ${option.color} ${
-//                     values.finish_type === option.value 
-//                       ? 'border-blue-200 ring-2 ring-blue-300' 
+//                     values.finish_type === option.value
+//                       ? 'border-blue-200 ring-2 ring-blue-300'
 //                       : 'border-gray-300'
 //                   }`} />
 //                   <span className="text-sm mt-1 capitalize">
@@ -2058,17 +2128,17 @@ function setEstimateConform(arg0: boolean) {
 //                 </label>
 //               ))}
 //             </div>
-          
+
 //           {errors.finish_type && touched.finish_type && (
 //             <p className="text-red-500 text-xs mt-1">{errors.finish_type}</p>
 //           )}
 //         </div>
-        
+
 //       </div>
 //         ) : (
 //           <div className="ml-26 text-gray-500"></div>
 //         )}
-        
+
 //         {values.insole_model !=='AddiSole' ?(<>
 //          <div className="flex gap-8 mb-8 -mt-[230px] ml-[416px]">
 //           <div>
@@ -2136,7 +2206,7 @@ function setEstimateConform(arg0: boolean) {
 //               </table>
 //             </div>
 //           </div>
-          
+
 //         </div>
 //         </>):<>
 //         <div className="flex gap-8 mb-8 -mt-[230px] ml-[416px]">
@@ -2208,12 +2278,10 @@ function setEstimateConform(arg0: boolean) {
 //         </div>
 //         </>}
 
-        
-         
 //       <div className="mt-10">
 //   <h3 className="text-lg font-medium mb-[-35]">Finish/ insoletype</h3>
 //   <div className="ml-40">
-//     <ImageCheckbox 
+//     <ImageCheckbox
 //        options={options}
 //       value={selectedOptions}
 //       onChange={setSelectedOptions}
@@ -2232,8 +2300,8 @@ function setEstimateConform(arg0: boolean) {
 //                     <p className="text-xs">Standard</p>
 //                     <div className="w-30 h-12 mb-1">
 //                       {imageSet?.Standard ? (
-//                         <img 
-//                           src={imageSet.Standard} 
+//                         <img
+//                           src={imageSet.Standard}
 //                           alt={`${option} Standard`}
 //                           className="w-full h-full object-contain"
 //                         />
@@ -2246,8 +2314,8 @@ function setEstimateConform(arg0: boolean) {
 //                     <p className="text-xs">Premium</p>
 //                     <div className="w-30 h-12 mb-1">
 //                       {imageSet?.Premium ? (
-//                         <img 
-//                           src={imageSet.Premium} 
+//                         <img
+//                           src={imageSet.Premium}
 //                           alt={`${option} Premium`}
 //                           className="w-full h-full object-contain"
 //                         />
