@@ -78,7 +78,7 @@ export default function Header(): React.JSX.Element {
           </Menubar>
 
           <Button asChild className="flex items-center gap-2">
-            <Link href="/orders/new-order">
+            <Link href="/products">
               <PlusIcon />
               New Order
             </Link>

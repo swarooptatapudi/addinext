@@ -190,7 +190,7 @@ export default function Orders(): React.JSX.Element {
           orderId: order.order_id,
           deviceType: order.device_type,
           paid: order.status,
-          isEdit: "true"
+          //  skipValidation: "true"
         }).toString()}`
       );
     }
@@ -200,6 +200,7 @@ export default function Orders(): React.JSX.Element {
         `/orders/new-order/Insoles?${new URLSearchParams({
           orderId: order.order_id,
           deviceType: order.device_type,
+          //  skipValidation: "true"
         }).toString()}`
       );
     }

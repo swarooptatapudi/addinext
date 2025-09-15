@@ -1375,6 +1375,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
   const [showStep5Confirmation, setShowStep5Confirmation] = useState(false);
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
   const [thicknests, setThickness] = useState<string>('');
+  const skipValidation = searchParams.get("skipValidation") === "true";
   // const { values, setFieldValue } = useFormikContext<any>(); // ✅ Formik hook
 
   //payment states 
@@ -1385,6 +1386,10 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
 
 
   useEffect(() => {
+    // if (skipValidation) {
+    //   console.log("Skipping prefill + validation because skipValidation=true");
+    //   return;
+    // }
     if (orderId && deviceTypeId) {
       getOrderDetails({
         order_type: deviceTypeId,
@@ -1457,55 +1462,18 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
           setIsInitialDataLoaded(false);
         });
     }
-  }, [orderId, deviceTypeId]);
+  }, [orderId, deviceTypeId, skipValidation]);
 
 
 
-
-
-  // useEffect(() => {
-  //   if (orderId && deviceTypeId) {
-  //     getOrderDetails({
-  //       order_type: deviceTypeId,
-  //       order_id: orderId,
-  //     })
-  //       .unwrap()
-  //       .then((response) => {
-  //         const apiData = response.data || {};
-
-  //         const transformedData = {
-  //           ...INSOLES_FORM_INITIAL_VALUES,
-
-  //           patient_name: apiData.patient_name || "",
-  //           gender: apiData.gender || "",
-  //           date_of_birth: apiData.dob || "",
-  //           height: apiData.custom_height || "",
-  //           weight: apiData.weight || "",
-  //           mobile_no: apiData.custom_mobile_no || "",
-  //           email: apiData.custom_email || "",
-  //           shoe_size: apiData.shoe_size_eu || "",
-  //           shoe_width: apiData.foot_width_cm || "",
-  //           foot_length: apiData.foot_length_cm || "",
-  //           thickness: apiData.thickness_mm || "",
-  //           design_variation: apiData.custom_design_by || "",
-  //           print_by: apiData.custom_print_by || "",
-  //           usage: apiData.usage || "",
-  //           layers: apiData.layers || "",
-  //         };
-
-  //         setFormValues(transformedData);
-  //         setIsInitialDataLoaded(true);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Failed to load insole order details:", error);
-  //         setIsInitialDataLoaded(false);
-  //       });
-  //   }
-  // }, [orderId, deviceTypeId]);
 
 
   useEffect(() => {
     if (orderDetails?.data) {
+      // if (skipValidation) {
+      //   console.log("Skipping prefill + validation because skipValidation=true");
+      //   return;
+      // }
       const apiData = orderDetails.data;
       const insoleOptions = [
         { value: 'City Comfort', label: 'Daily comfort for urban walking' },
@@ -1548,7 +1516,7 @@ export default function InsolesOrderForm({ item_type, }: { item_type: string, })
           apiData.selected_foot_conditions || INSOLES_FORM_INITIAL_VALUES.selected_foot_conditions,
       });
     }
-  }, [orderDetails]);
+  }, [orderDetails, skipValidation]);
 
 
   useEffect(() => {
