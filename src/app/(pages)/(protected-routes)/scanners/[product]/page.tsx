@@ -27,7 +27,7 @@ import {
   useBuyCoinsInitiatePaymentMutation,
   useGetRateAndDiscountsQuery,
   useGetTransactionHistoryQuery,
-} from '@/rtk-query/apis/addicoins'; 
+} from '@/rtk-query/apis/addicoins';
 import { USER } from '@/uttils/Types';
 import React from 'react';
 import { useState, useEffect, useCallback } from 'react';
@@ -47,19 +47,19 @@ declare global {
 }
 
 interface Props {
-params: {product: string}
+  params: { product: string }
 }
 
 interface Transaction {
   payment_transaction_id: string;
   name: string;
   coins: number;
-  total_amount:string;
-  rate:string;
+  total_amount: string;
+  rate: string;
   transaction_date: string;
   transaction_type: string;
   payment_status: string;
-  base_rate?:string;
+  base_rate?: string;
 }
 
 interface RateAndDiscountData {
@@ -80,7 +80,7 @@ interface RateAndDiscountData {
     };
   };
 }
-export default function BuyScannersPage ({ params }: { params: Promise<{ product: string }> }) {
+export default function BuyScannersPage({ params }: { params: Promise<{ product: string }> }) {
   const { product } = React.use(params);
 
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
@@ -89,60 +89,60 @@ export default function BuyScannersPage ({ params }: { params: Promise<{ product
   });
   // console.log("rate dd:",data);
   //   console.log("user  dd:",user);
-  
+
   const { data: transactionHistory, refetch: refetchTransactions } = useGetTransactionHistoryQuery({
     customer: user?.customer_id,
   });
   // console.log("transactionHistory dd:",user);
   const [initPayment, { isLoading }] = useBuyCoinsInitiatePaymentMutation();
   const [buyCoins, { isLoading: isPaymentSuccessLoading }] = useBuyCoinsAfterPaymentMutation();
-  const [buyAddiNxtCoin, { isLoading: isBuyingCoins }] = useBuyAddiNxtCoinMutation(); 
+  const [buyAddiNxtCoin, { isLoading: isBuyingCoins }] = useBuyAddiNxtCoinMutation();
   const [buyQuantity, setBuyQuantity] = React.useState<number>(0);
   const [payId, setPayId] = React.useState<string>('');
   const [error, setError] = React.useState<string>('');
 
-const coinRules = data?.message?.data?.coin_rules;
-const minCoins =  1;
-const maxCoins = coinRules?.maximum_coin_purchase || Infinity;
-const applyRate = coinRules?.custom_base_rate || 0;
-const taxRate = coinRules?.custom_tax_rate || 18;
-const coinRate = coinRules?.coin_price_per_unit || 0;
-const subscriptionId = coinRules?.addinxt_subscription || "Basic";
-const standardDiscount = data?.message?.data?.subscription_discount || 50;
+  const coinRules = data?.message?.data?.coin_rules;
+  const minCoins = 1;
+  const maxCoins = coinRules?.maximum_coin_purchase || Infinity;
+  const applyRate = coinRules?.custom_base_rate || 0;
+  const taxRate = coinRules?.custom_tax_rate || 18;
+  const coinRate = coinRules?.coin_price_per_unit || 0;
+  const subscriptionId = coinRules?.addinxt_subscription || "Basic";
+  const standardDiscount = data?.message?.data?.subscription_discount || 50;
 
-const [couponCode, setCouponCode] = useState('');
+  const [couponCode, setCouponCode] = useState('');
   const [couponData, setCouponData] = useState<any>(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [validateCoupon] = useValidateCouponMutation();
   const [couponTimeout, setCouponTimeout] = useState<NodeJS.Timeout | null>(null);
- 
+
 
   const handleCouponValidation = async () => {
-      if (!couponCode.trim()) {
-        setCouponData(null);
-        return;
-      }
-  
-      if (couponCode.trim().length < 5) {
-        setCouponData(null);
-        return;
-      }
-  
-      setIsValidatingCoupon(true);
-      // const payload = { coupon_code: couponCode };
-      try {
-        const response = await validateCoupon({ coupon_code: couponCode }).unwrap();
-        // console.log('Coupon Validation Response:', response);
-        setCouponData(response.message);
-      } catch (error: any) {
-        setCouponData(null);
-        // console.error('Coupon Validation Error:', error);
-        toast.error(error.data?.message || '' );
-      } finally {
-        setIsValidatingCoupon(false);
-      }
-    };
- 
+    if (!couponCode.trim()) {
+      setCouponData(null);
+      return;
+    }
+
+    if (couponCode.trim().length < 5) {
+      setCouponData(null);
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    // const payload = { coupon_code: couponCode };
+    try {
+      const response = await validateCoupon({ coupon_code: couponCode }).unwrap();
+      // console.log('Coupon Validation Response:', response);
+      setCouponData(response.message);
+    } catch (error: any) {
+      setCouponData(null);
+      // console.error('Coupon Validation Error:', error);
+      toast.error(error.data?.message || '');
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
   const debouncedCouponValidation = useCallback(() => {
     if (couponTimeout) {
       clearTimeout(couponTimeout);
@@ -189,7 +189,7 @@ const [couponCode, setCouponCode] = useState('');
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value); 
+    const value = Number(e.target.value);
     if (!isNaN(value)) {
       setBuyQuantity(value);
       validateQuantity(value);
@@ -211,26 +211,26 @@ const [couponCode, setCouponCode] = useState('');
 
   const onPayNow = async () => {
     if (!validateQuantity(buyQuantity)) return;
-  
+
     try {
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
         toast.error('Failed to load payment gateway');
         return;
       }
-      
+
       // Set up Razorpay options
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
-        amount:(finalRate * 100).toString(),
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: (finalRate * 100).toString(),
         currency: 'INR',
         name: 'addiwise company',
         description: `Purchase of ${buyQuantity} coins`,
         // order_id: orderResponse.data.order_id,
         // image: '/your-company-logo.png',
         // order_id: "ddd",
-        app_name:'addiwise customer portal',
-        handler: async function(response: any) {
+        app_name: 'addiwise customer portal',
+        handler: async function (response: any) {
           // console.log('Payment response:', response);
           try {
             const payload = {
@@ -239,11 +239,11 @@ const [couponCode, setCouponCode] = useState('');
               payment_id: response.razorpay_payment_id,
               amount: finalRate.toString()
             };
-            
+
             const result = await buyAddiNxtCoin(payload).unwrap();
             console.log('Payment result:', result);
             toast.success('product purchased successfully!');
-            refetchTransactions(); 
+            refetchTransactions();
             // if (result.success) {
             //   toast.success('Payment and coin purchase successful!');
             //   refetchTransactions();
@@ -260,7 +260,7 @@ const [couponCode, setCouponCode] = useState('');
           // email: user?. || '',
           contact: user?.phone_number || '',
         },
-         
+
         notes: {
           customer_id: user?.customer_id,
           coins: buyQuantity.toString(),
@@ -274,8 +274,8 @@ const [couponCode, setCouponCode] = useState('');
       // Open Razorpay payment modal
       const rzp = new window.Razorpay(options);
       rzp.open();
-      
-      rzp.on('payment.failed', function(response: any) {
+
+      rzp.on('payment.failed', function (response: any) {
         toast.error('Payment failed. Please try again.');
         // console.error('Payment failed:', response.error);
       });
@@ -294,7 +294,7 @@ const [couponCode, setCouponCode] = useState('');
 
       if ('data' in res) {
         toast.success(res.data?.message);
-        refetchTransactions(); 
+        refetchTransactions();
       } else {
         toast.error('Failed to complete payment');
       }
@@ -303,38 +303,38 @@ const [couponCode, setCouponCode] = useState('');
     }
   };
 
-const calculateBasicRate = (coins: number): number => {
-  if (!coins || coins === 0) return 0;
-  const baseAmount = coins * COIN_BASE_PRICE;
-  const discountAmount = baseAmount * (DISCOUNT_PERCENTAGE / 100);
-  // console.log('Base Amount:', baseAmount);
-  // console.log('Discount Amount:', discountAmount);
-  if (couponData?.discount_percentage) {
-    const finalDiscountAmount = discountAmount * (couponData?.discount_percentage / 100);
-    return discountAmount - finalDiscountAmount; 
-  } else {
-  return discountAmount; 
-  }
-};
-const COIN_BASE_PRICE = 200; // 1 Addicoins: ₹200
-const DISCOUNT_PERCENTAGE = 50; // Additional Discount: 50%
-const TAX_PERCENTAGE = 18; // Tax Value: 18%
+  const calculateBasicRate = (coins: number): number => {
+    if (!coins || coins === 0) return 0;
+    const baseAmount = coins * COIN_BASE_PRICE;
+    const discountAmount = baseAmount * (DISCOUNT_PERCENTAGE / 100);
+    // console.log('Base Amount:', baseAmount);
+    // console.log('Discount Amount:', discountAmount);
+    if (couponData?.discount_percentage) {
+      const finalDiscountAmount = discountAmount * (couponData?.discount_percentage / 100);
+      return discountAmount - finalDiscountAmount;
+    } else {
+      return discountAmount;
+    }
+  };
+  const COIN_BASE_PRICE = 200; // 1 Addicoins: ₹200
+  const DISCOUNT_PERCENTAGE = 50; // Additional Discount: 50%
+  const TAX_PERCENTAGE = 18; // Tax Value: 18%
 
-const calculateFinalRate = (basicRate: number): number => {
-  if (!basicRate) return 0;
-  const taxAmount = basicRate * (TAX_PERCENTAGE / 100);
-  return basicRate + taxAmount;
-};
+  const calculateFinalRate = (basicRate: number): number => {
+    if (!basicRate) return 0;
+    const taxAmount = basicRate * (TAX_PERCENTAGE / 100);
+    return basicRate + taxAmount;
+  };
   const basicRate = calculateBasicRate(buyQuantity);
-const finalRate = calculateFinalRate(basicRate);
-  
-    return (
-        <>
-        <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Available Coins Card */}
-        <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border border-gray-200 rounded-lg">
-          {/* <CardHeader className="pb-0">
+  const finalRate = calculateFinalRate(basicRate);
+
+  return (
+    <>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Available Coins Card */}
+          <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border border-gray-200 rounded-lg">
+            {/* <CardHeader className="pb-0">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <CoinsIcon className="w-5 h-5 text-blue-600" />
@@ -347,47 +347,46 @@ const finalRate = calculateFinalRate(basicRate);
               </div>
             </div>
           </CardHeader> */}
-          
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 mb-3">
-              <BookmarkIcon className="w-4 h-4 text-gray-500" />
-              <p className="text-sm font-semibold text-primary">Rules</p>
-            </div>
-            
-            <ul className="text-sm space-y-2.5">
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <div>
-                  <span className="font-medium text-gray-700">Quantity: </span>
-                  {/* <span className="text-gray-600">₹{data?.data?.user_rules[0]?.coin_rate}</span> */}
-                  {/* <span className="text-gray-600">₹200</span> */}
-                  {/* <span className="text-gray-600">₹{coinRate}</span> */}
-                   {/* <span className="text-gray-600">₹{rule?.coin_price_per_unit ?? 0}</span> */}
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <div>
-                  <span className="font-medium text-gray-700">Standard Discount:</span>
-                  <span className="text-gray-600">{standardDiscount}%</span>
-                  {/* <span className="text-gray-600">50%</span> */}
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <div>
-                  <span className="font-medium text-gray-700">MRP: </span>
-          
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <div>
-                  <span className="font-medium text-gray-700">Enter Coupon Code: </span>
-                  {/* <span className="text-gray-600">{maxCoins === Infinity ? 'Unlimited' : maxCoins?.toLocaleString()}</span> */}
-                </div>
-              </li>
-              {/* {
+
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <BookmarkIcon className="w-4 h-4 text-gray-500" />
+                <p className="text-sm font-semibold text-primary">Rules</p>
+              </div>
+              <ul className="text-sm space-y-2.5">
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <div>
+                    <span className="font-medium text-gray-700">Quantity: </span>
+                    {/* <span className="text-gray-600">₹{data?.data?.user_rules[0]?.coin_rate}</span> */}
+                    {/* <span className="text-gray-600">₹200</span> */}
+                    {/* <span className="text-gray-600">₹{coinRate}</span> */}
+                    {/* <span className="text-gray-600">₹{rule?.coin_price_per_unit ?? 0}</span> */}
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <div>
+                    <span className="font-medium text-gray-700">Standard Discount:</span>
+                    <span className="text-gray-600">{standardDiscount}%</span>
+                    {/* <span className="text-gray-600">50%</span> */}
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <div>
+                    <span className="font-medium text-gray-700">MRP: </span>
+
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <div>
+                    <span className="font-medium text-gray-700">Enter Coupon Code: </span>
+                    {/* <span className="text-gray-600">{maxCoins === Infinity ? 'Unlimited' : maxCoins?.toLocaleString()}</span> */}
+                  </div>
+                </li>
+                {/* {
                 couponData?.discount_percentage && (
                   <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
@@ -398,138 +397,137 @@ const finalRate = calculateFinalRate(basicRate);
                 </div>
               </li>
                 )} */}
-           <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <div>
-                  <span className="font-medium text-gray-700">Net Amount: </span>
-                  {/* <span className="text-gray-600">{maxCoins === Infinity ? 'Unlimited' : maxCoins?.toLocaleString()}</span> */}
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <div>
-                  <span className="font-medium text-gray-700">Tax Value: </span>
-                  <span className="text-gray-600">{taxRate}%</span>
-                  {/* <span className="text-gray-600">18%</span> */}
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <div>
-                  <span className="font-medium text-gray-700">Final Rate: </span>
-                  {/* <span className="text-gray-600">₹{applyRate}</span> */}
-                  <span className="text-gray-600">₹{finalRate.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
-                </div>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <div>
+                    <span className="font-medium text-gray-700">Net Amount: </span>
+                    {/* <span className="text-gray-600">{maxCoins === Infinity ? 'Unlimited' : maxCoins?.toLocaleString()}</span> */}
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <div>
+                    <span className="font-medium text-gray-700">Tax Value: </span>
+                    <span className="text-gray-600">{taxRate}%</span>
+                    {/* <span className="text-gray-600">18%</span> */}
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 mt-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <div>
+                    <span className="font-medium text-gray-700">Final Rate: </span>
+                    {/* <span className="text-gray-600">₹{applyRate}</span> */}
+                    <span className="text-gray-600">₹{finalRate.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+                  </div>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
 
-        {/* Buy Coins Card */}
-        <Card className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <ShoppingCartIcon className="w-5 h-5 text-blue-600" />
+          {/* Buy Coins Card */}
+          <Card className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <ShoppingCartIcon className="w-5 h-5 text-blue-600" />
+                </div>
+                <CardTitle className="text-xl font-semibold text-primary">Buy {product}</CardTitle>
               </div>
-              <CardTitle className="text-xl font-semibold text-primary">Buy {product}</CardTitle>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="w-full pt-1">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label="Quantity"
-                  placeholder="Enter coin amount"
-                  value={buyQuantity}
-                  onChange={handleQuantityChange}
-                  required
-                  className="[&_input]:text-right [&_input]:text-lg [&_input]:font-medium [&_input]:py-4"
-                />
-                {error && (
-                  <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                    <InfoIcon className="w-4 h-4" />
-                    {error}
+            </CardHeader>
+
+            <CardContent className="w-full pt-1">
+              <div className="space-y-4">
+                <div>
+                  <Input
+                    label="Quantity"
+                    placeholder="Enter coin amount"
+                    value={buyQuantity}
+                    onChange={handleQuantityChange}
+                    required
+                    className="[&_input]:text-right [&_input]:text-lg [&_input]:font-medium [&_input]:py-4"
+                  />
+                  {error && (
+                    <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <InfoIcon className="w-4 h-4" />
+                      {error}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2 mt-3">
+                  <div className="relative w-full">
+                    <Input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="Enter coupon code"
+                      className={`w-full pr-10 ${couponCode.length >= 5 && !couponData && !isValidatingCoupon
+                        ? 'border-orange-200'
+                        : couponData
+                          ? 'border-green-200'
+                          : ''
+                        }`}
+                    />
+                    <div className="absolute right-3 top-2">
+                      {isValidatingCoupon ? (
+                        <Loader className="h-4 w-4 animate-spin" />
+                      ) : couponCode.length >= 5 ? (
+                        couponData ? (
+                          <Check className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <X className="h-5 w-5 text-red-500" />
+                        )
+                      ) : null}
+                    </div>
+                  </div>
+                  {couponData && (
+                    <div className="text-sm text-green-700 mt-1 ml-5">
+                      {couponData.coupon_name} ({couponData.discount_percentage}% off)
+                      {couponData.valid_upto && (
+                        <span className="text-gray-500 ml-6">
+                          valid date {new Date(couponData.valid_upto).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+
+              </div>
+            </CardContent>
+
+            <CardFooter className="flex flex-col space-y-3 pt-0">
+              <div className="w-full flex items-center justify-between py-3 px-1 border-t">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <CreditCardIcon className="w-5 h-5" />
+                  <span className="font-medium">Total Amount:</span>
+                </div>
+                <div className="text-xl font-bold text-blue-800">
+                  ₹{finalRate?.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                </div>
+              </div>
+
+              <Button
+                className="w-full py-6 bg-gradient-to-r from-blue-900 to-blue-900 bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+                disabled={!!error || isLoading || isBuyingCoins || !buyQuantity}
+                onClick={onPayNow}
+              >
+                {(isLoading || isBuyingCoins) ? (
+                  <div className="flex items-center gap-2">
+                    <span className="animate-pulse">Processing...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <ShoppingCartIcon className="w-5 h-5" />
+                    Buy Now
                   </div>
                 )}
-              </div>
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
 
-              <div className="space-y-2 mt-3">
-      <div className="relative w-full">
-        <Input
-          type="text"
-          value={couponCode}
-          onChange={(e) => setCouponCode(e.target.value)}
-          placeholder="Enter coupon code"
-          className={`w-full pr-10 ${
-            couponCode.length >= 5 && !couponData && !isValidatingCoupon
-              ? 'border-orange-200'
-              : couponData
-                ? 'border-green-200'
-                : ''
-          }`}
-        />
-        <div className="absolute right-3 top-2">
-          {isValidatingCoupon ? (
-            <Loader className="h-4 w-4 animate-spin" />
-          ) : couponCode.length >= 5 ? (
-            couponData ? (
-              <Check className="h-5 w-5 text-green-500" />
-            ) : (
-              <X className="h-5 w-5 text-red-500" />
-            )
-          ) : null}
-        </div>
       </div>
-      {couponData && (
-        <div className="text-sm text-green-700 mt-1 ml-5">
-          {couponData.coupon_name} ({couponData.discount_percentage}% off)
-          {couponData.valid_upto && (
-            <span className="text-gray-500 ml-6">
-              valid date {new Date(couponData.valid_upto).toLocaleDateString()}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-              
-             
-            </div>
-          </CardContent>
-          
-          <CardFooter className="flex flex-col space-y-3 pt-0">
-            <div className="w-full flex items-center justify-between py-3 px-1 border-t">
-              <div className="flex items-center gap-2 text-gray-600">
-                <CreditCardIcon className="w-5 h-5" />
-                <span className="font-medium">Total Amount:</span>
-              </div>
-              <div className="text-xl font-bold text-blue-800">
-                ₹{finalRate?.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-              </div>
-            </div>
-            
-            <Button
-              className="w-full py-6 bg-gradient-to-r from-blue-900 to-blue-900 bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
-              disabled={!!error || isLoading || isBuyingCoins || !buyQuantity}
-              onClick={onPayNow}
-            >
-              {(isLoading || isBuyingCoins) ? (
-                <div className="flex items-center gap-2">
-                  <span className="animate-pulse">Processing...</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <ShoppingCartIcon className="w-5 h-5" />
-                  Buy Now
-                </div>
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-     
-        </div>
-        </>
-    )
+    </>
+  )
 }

@@ -110,7 +110,7 @@ export default function Products(): React.JSX.Element {
               key={scanners.name}
               src={scanners.image || "/assets/placeholder.jpg"}
               label={scanners.item_name}
-              href=""
+              href={`/products/buyproducts?name=${encodeURIComponent(scanners.item_name)}`}
             />
           ))}
         </div>
@@ -127,7 +127,7 @@ export default function Products(): React.JSX.Element {
               key={printer.name}
               src={printer.image || "/assets/placeholder.jpg"}
               label={printer.item_name}
-              href=""
+              href={`/products/buyproducts?name=${encodeURIComponent(printer.item_name)}`}
             />
           ))}
         </div>
