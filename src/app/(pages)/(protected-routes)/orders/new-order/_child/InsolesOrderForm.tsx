@@ -964,7 +964,7 @@ const Step1 = ({
                 />
               </div>
             </div>
-          </div>
+          </div> 
         </div>
       </div>
       <div className="ml-1 space-y-4">

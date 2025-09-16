@@ -32,6 +32,8 @@ export default function BuyProductsPage() {
   const [createProductOrder, { isLoading: isOrderCreating }] = useCreateProductOrderMutation();
 
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
+
+  
   const router = useRouter();
 
   // Debounced coupon check
@@ -161,6 +163,8 @@ export default function BuyProductsPage() {
   };
 
 
+const custom_product_image = selectedProduct?.custom_product_image; // Or whatever field holds the image
+console.log("🖼️ custom_product_image:", custom_product_image);
 
   const description = selectedProduct?.description || "";
   // ✅ MRP & Discount come from selected product
@@ -240,7 +244,13 @@ export default function BuyProductsPage() {
             {/* Fluctuations in limb size can cause discomfort, instability, and
             frequent device replacements. AddiStud-P provides seamless
             adjustment for Trans-Tibial & Trans-Femoral sockets, training, and
-            temporary prostheses. */}{description}
+            temporary prostheses. */}{description}{custom_product_image && (
+    <img 
+      src={custom_product_image} 
+      alt="Custom product" 
+      className="mt-3 rounded-md w-full max-w-sm"
+    />
+  )}
           </CardContent>
         </Card>
       );
@@ -261,7 +271,13 @@ export default function BuyProductsPage() {
               <div dangerouslySetInnerHTML={{ __html: description }} />
             ) : (
               description
-            )}
+            )}{custom_product_image && (
+    <img 
+      src={custom_product_image} 
+      alt="Custom product" 
+      className="mt-3 rounded-md w-full max-w-sm"
+    />
+  )}
           </CardContent>
         </Card>
       );
