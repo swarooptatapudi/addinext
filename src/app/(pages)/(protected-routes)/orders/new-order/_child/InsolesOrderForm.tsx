@@ -1334,6 +1334,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
   const [thicknests, setThickness] = useState<string>('');
   const skipValidation = searchParams.get('skipValidation') === 'true';
+  const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
+
   // const { values, setFieldValue } = useFormikContext<any>(); // ✅ Formik hook
 
   //payment states
@@ -1951,19 +1953,20 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                 ) : (
                   // Step 5 Submit Button
                   <Button
-                    className="shadow-2xl"
+                    className="shadow-2xl mr-200"
                     onClick={() => {
                       // console.log("Submitting...");
                       // console.log("Insole Type in parent:", values);
                       handleSubmit();
                       setFormValues(values);
                       setFormSubmitted(true);
+                      setIsEstimateDisabled(true);
                       // 🔹 open confirm dialog instead of submitting directly
                       setShowStep5Confirmation(true);
                     }}
                     type="button" // prevent direct submit
                   >
-                    Submit
+                    Get Product Code
                   </Button>
                 )}
               </div>

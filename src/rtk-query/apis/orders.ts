@@ -268,6 +268,7 @@ interface INEstimateRequest {
 interface BKEstimateResponse {
   message: string;
   data: {
+    item_standard_discount: string;
     design: number;
     print: number;
     laticess: number;

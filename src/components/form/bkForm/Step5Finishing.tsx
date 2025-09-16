@@ -25,7 +25,7 @@ interface EstimateResponse {
   laticess: string;
   finish: string;
   estimate_price: string;
-  item_discount: string;
+  item_standard_discount: string;
   additional_discount: string;
   discounted_price: string;
   discounted_price_18: string;
@@ -314,7 +314,8 @@ export const Step5 = ({
 
     try {
       const response = await getBKEstimate(estimatePayload).unwrap();
-      // console.log('Estimate Response:', response);
+
+      console.log('Estimate Response:', response);
       // Parse coins to numbers for comparison
 
       // @ts-ignore
@@ -346,7 +347,7 @@ export const Step5 = ({
       });
       setFieldValue('gst_5', response.data.gst_5 || '0.00');
       setFieldValue('gst_18', response.data.gst_18 || '0.00');
-      setFieldValue('item_discount', response.data.item_discount || '0.00');
+      setFieldValue('item_standard_discount', response.data.item_standard_discount || '0.00');
       setFieldValue('additional_discount', response.data.additional_discount || '0.00');
       // @ts-ignore
       setFieldValue('addicoins', response.data.design_coin_use || '0.00');
@@ -824,7 +825,7 @@ export const Step5 = ({
                               </span>
                             </div>
                           </li>
-                          {parseFloat(estimateData.apiResponse.item_discount.replace(/,/g, '')) >
+                          {parseFloat(estimateData.apiResponse.item_standard_discount.replace(/,/g, '')) >
                             0 && (
                               <li className="flex items-start gap-2">
                                 <div
@@ -832,9 +833,9 @@ export const Step5 = ({
                                     }`}
                                 ></div>
                                 <div className="flex justify-between w-full">
-                                  <span className="font-medium text-gray-700">Special Discount</span>
+                                  <span className="font-medium text-gray-700">Standard Discount</span>
                                   <span className="text-gray-700">
-                                    (-)₹{estimateData.apiResponse.item_discount}
+                                    (-)₹{estimateData.apiResponse.item_standard_discount}
                                   </span>
                                 </div>
                               </li>
@@ -1077,7 +1078,7 @@ export const Step5 = ({
                                 </div>
                               </li>
                               {parseFloat(
-                                estimateData.apiResponse.item_discount.replace(/,/g, '')
+                                estimateData.apiResponse.item_standard_discount.replace(/,/g, '')
                               ) > 0 && (
                                   <li className="flex items-start gap-2">
                                     <div
@@ -1086,10 +1087,10 @@ export const Step5 = ({
                                     ></div>
                                     <div className="flex justify-between w-full">
                                       <span className="font-medium text-gray-700">
-                                        Special Discount
+                                        Standard Discount
                                       </span>
                                       <span className="text-gray-700">
-                                        (-)₹{estimateData.apiResponse.item_discount}
+                                        (-)₹{estimateData.apiResponse.item_standard_discount}
                                       </span>
                                     </div>
                                   </li>
@@ -1283,7 +1284,7 @@ export const Step5 = ({
                               </span>
                             </div>
                           </li>
-                          {parseFloat(estimateData.apiResponse.item_discount.replace(/,/g, '')) >
+                          {parseFloat(estimateData.apiResponse.item_standard_discount.replace(/,/g, '')) >
                             0 && (
                               <li className="flex items-start gap-2">
                                 <div
@@ -1291,9 +1292,9 @@ export const Step5 = ({
                                     }`}
                                 ></div>
                                 <div className="flex justify-between w-full">
-                                  <span className="font-medium text-gray-700">Special Discount</span>
+                                  <span className="font-medium text-gray-700">Standard Discount</span>
                                   <span className="text-gray-700">
-                                    (-)₹{estimateData.apiResponse.item_discount}
+                                    (-)₹{estimateData.apiResponse.item_standard_discount}
                                   </span>
                                 </div>
                               </li>
@@ -1459,14 +1460,14 @@ export const Step5 = ({
                             </span>
                           </div>
                         </li>
-                        {parseFloat(estimateData.apiResponse.item_discount.replace(/,/g, '')) >
+                        {parseFloat(estimateData.apiResponse.item_standard_discount.replace(/,/g, '')) >
                           0 && (
                             <li className="flex items-start gap-2">
                               <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                               <div className="flex justify-between w-full">
                                 <span className="font-medium text-gray-700">Item Discount</span>
                                 <span className="text-gray-700">
-                                  -₹{estimateData.apiResponse.item_discount}
+                                  -₹{estimateData.apiResponse.item_standard_discount}
                                 </span>
                               </div>
                             </li>

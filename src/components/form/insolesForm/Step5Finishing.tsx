@@ -70,6 +70,8 @@ export const Step5 = ({
   const [estimateDataLabel, setEstimateDataLabel] = useState<any>('');
   const [isEstimating, setIsEstimating] = useState(false);
   const [getINEstimate, { isLoading, isError, data }] = useGetINEstimateMutation();
+const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
+
 
   const [prevValues, setPrevValues] = useState(values);
   const [isEstimateAccepted, setIsEstimateAccepted] = useState(false);
@@ -1329,7 +1331,9 @@ export const Step5 = ({
         <p>The color of the insole padding may vary depending on material availability.</p>
       </div>
       <div className="flex flex-col gap-6">
+        
         {values.Design_by === 'Self' && values.Print_by === 'Addiwise' && (
+          
           <>
             <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
               <CardHeader className="pb-2">
@@ -1498,6 +1502,16 @@ export const Step5 = ({
                 )}
               </CardContent>
             </Card>
+ {!orderId && !deviceTypeId && (
+          <Button
+            className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+            onClick={handleEstimateClick}
+            disabled={isEstimating}
+          >
+            {isEstimating ? 'Estimating...' : isEstimateStale ? 'Update Estimate' : 'Estimate Now'}
+          </Button>
+        )}
+            
             <div className="flex gap-2.5">
               <Button
                 className="shadow-2xl"
@@ -1522,7 +1536,7 @@ export const Step5 = ({
             </div>
           </>
         )}
-
+ 
         {values.Design_by === 'Self' && values.Print_by === 'Self' && (
           <>
             <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
@@ -1591,6 +1605,16 @@ export const Step5 = ({
                 </div>
               </CardContent>
             </Card>
+
+                {!orderId && !deviceTypeId && (
+          <Button
+            className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+            onClick={handleEstimateClick}
+            disabled={isEstimating}
+          >
+            {isEstimating ? 'Estimating...' : isEstimateStale ? 'Update Estimate' : 'Estimate Now'}
+          </Button>
+        )}
             <Button
               className="shadow-2xl"
               onClick={() => handlePayAndPlaceOrderWithAddicoins(values)}
@@ -1726,6 +1750,15 @@ export const Step5 = ({
                 )}
               </CardContent>
             </Card>
+                {!orderId && !deviceTypeId && (
+          <Button
+            className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+            onClick={handleEstimateClick}
+            disabled={isEstimating}
+          >
+            {isEstimating ? 'Estimating...' : isEstimateStale ? 'Update Estimate' : 'Estimate Now'}
+          </Button>
+        )}
             <div className="flex gap-2.5">
               <Button
                 className="shadow-2xl"
@@ -1874,6 +1907,15 @@ export const Step5 = ({
                 )}
               </CardContent>
             </Card>
+                {!orderId && !deviceTypeId && (
+          <Button
+            className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+            onClick={handleEstimateClick}
+            disabled={isEstimating}
+          >
+            {isEstimating ? 'Estimating...' : isEstimateStale ? 'Update Estimate' : 'Estimate Now'}
+          </Button>
+        )}
             <div className="flex gap-2.5">
               <Button
                 className="shadow-2xl"
@@ -1898,15 +1940,7 @@ export const Step5 = ({
             </div>
           </>
         )}
-        {!orderId && !deviceTypeId && (
-          <Button
-            className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
-            onClick={handleEstimateClick}
-            disabled={isEstimating}
-          >
-            {isEstimating ? 'Estimating...' : isEstimateStale ? 'Update Estimate' : 'Estimate Now'}
-          </Button>
-        )}
+         
       </div>
     </div>
   );
