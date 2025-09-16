@@ -13,8 +13,8 @@ const nextConfig = {
     ];
   },
   env: {
-    NEXT_PUBLIC_RAZORPAY_KEY_ID: 'rzp_test_46JKVeIJoXgPra',
-    RAZORPAY_KEY_SECRET: 'nyqmEQckDeosGzUua5uXnyzh'
+     NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+    RAZORPAY_KEY_SECRET: process.env.NEXT_PUBLIC_RAZORPAY_KEY_SECRET,
   },
   webpack: (config: { optimization: any; }) => {
     config.optimization = {
