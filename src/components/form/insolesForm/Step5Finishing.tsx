@@ -631,12 +631,15 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
   //   } catch (error: any) {
   //     toast.error(error.data?.message || 'Failed to get estimate');
   //     console.error('Estimate error:', error);
+  
   //   } finally {
   //     setIsEstimating(false);
   //   }
   // };
 
   const handleEstimateClick = async () => {
+
+
     const estimatePayload = {
       item_code: selectedItem,
       design_by: values.Design_by,
@@ -677,7 +680,7 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
       // ✅ set form values from apiRes
       setFieldValue('gst_5', apiRes.gst_5 || '0.00');
       setFieldValue('gst_18', apiRes.gst_18 || '0.00');
-      setFieldValue('item_discount', apiRes.item_discount || '0.00');
+      setFieldValue('item_standard_discount', apiRes.item_standard_discount || '0.00');
       setFieldValue('additional_discount', apiRes.additional_discount || '0.00');
       setFieldValue('addicoins', apiRes.design_coin_use || '0.00');
 
@@ -1429,13 +1432,13 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
                       </span>
                     </div>
                   </li>
-                  {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, '')) > 0 && (
+                  {parseFloat(estimateData?.apiResponse?.item_standard_discount.replace(/,/g, '')) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Item Discount</span>
+                        <span className="font-medium text-gray-700">Standard Discount</span>
                         <span className="text-gray-700">
-                          -₹{estimateData.apiResponse.item_discount}
+                          -₹{estimateData.apiResponse.item_standard_discount}
                         </span>
                       </div>
                     </li>
@@ -1673,13 +1676,13 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
                       </span>
                     </div>
                   </li>
-                  {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, '')) > 0 && (
+                  {parseFloat(estimateData?.apiResponse?.item_standard_discount.replace(/,/g, '')) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Item Discount</span>
+                        <span className="font-medium text-gray-700">Standard Discount</span>
                         <span className="text-gray-700">
-                          -₹{estimateData?.apiResponse?.item_discount}
+                          -₹{estimateData?.apiResponse?.item_standard_discount}
                         </span>
                       </div>
                     </li>
@@ -1830,13 +1833,13 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
                       </span>
                     </div>
                   </li>
-                  {parseFloat(estimateData?.apiResponse?.item_discount.replace(/,/g, '')) > 0 && (
+                  {parseFloat(estimateData?.apiResponse?.item_standard_discount.replace(/,/g, '')) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Item Discount</span>
+                        <span className="font-medium text-gray-700">Standard Discount</span>
                         <span className="text-gray-700">
-                          -₹{estimateData.apiResponse.item_discount}
+                          -₹{estimateData.apiResponse.item_standard_discount}
                         </span>
                       </div>
                     </li>
@@ -1937,6 +1940,8 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
               >
                 Pay Later
               </Button>
+
+              
             </div>
           </>
         )}

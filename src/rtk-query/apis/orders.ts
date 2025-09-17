@@ -289,6 +289,7 @@ interface INEstimateResponse {
     status: number;
     message: string;
     data: {
+      item_standard_discount: string;
       design: string;
       print: string;
       estimate_price: string;

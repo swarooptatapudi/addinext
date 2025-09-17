@@ -636,7 +636,8 @@ const Step1 = ({
   // }, [values]);
 
   useEffect(() => {
-    // console.log("Available insole models:", FORM_OPTIONS['insole_model']);
+    // console.log("Available inso
+    // le models:", FORM_OPTIONS['insole_model']);
     // console.log("Current insole model value:", values.insole_model);
   }, [FORM_OPTIONS, values.insole_model]);
 
