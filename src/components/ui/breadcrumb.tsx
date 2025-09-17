@@ -89,7 +89,7 @@ function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<'span'
       <span className="sr-only">More</span>
     </span>
   );
-}
+} 
 
 export {
   Breadcrumb,

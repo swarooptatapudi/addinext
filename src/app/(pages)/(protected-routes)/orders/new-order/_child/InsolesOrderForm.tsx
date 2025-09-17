@@ -100,7 +100,58 @@ const step1Validation = Yup.object().shape({
     .matches(/^\d+(\.\d+)?$/, 'Must contain only digits')
     .test('min-value', 'Size must be at least 20', (value) => parseInt(value) >= 20)
     .test('max-value', 'Size must be no more than 60', (value) => parseInt(value) <= 45),
-  foot_length: Yup.string()
+  //  foot_length: Yup.string()
+  //   .required(FORMIK_ERRORS.REQUIRED)
+  //   .matches(/^\d+$/, "Must contain only digits")
+  //   .test("min-value", "Foot length must be at least 5", (value) => parseInt(value || "0") >= 5)
+  //   .test("max-value", "Foot length must be no more than 50", (value) => parseInt(value || "0") <= 50)
+  //   .test(
+  //     "greater-than-heel",
+  //     "Foot length must be greater than heel length",
+  //     function (value) {
+  //       const { custom_metatarsal_to_heel_length } = this.parent;
+  //       if (!value || !custom_metatarsal_to_heel_length) return true; // Skip if empty (handled by required)
+  //       return parseInt(value) > parseInt(custom_metatarsal_to_heel_length);
+  //     }
+  //   ),
+
+  // custom_metatarsal_to_heel_length: Yup.string()
+  //   .required(FORMIK_ERRORS.REQUIRED)
+  //   .matches(/^\d+$/, "Must contain only digits")
+  //   .test(
+  //     "min-value",
+  //     "Metatarsal length must be at least 3",
+  //     (value) => parseInt(value || "0") >= 3
+  //   )
+  //   .test(
+  //     "max-value",
+  //     "Metatarsal length must be no more than 45",
+  //     (value) => parseInt(value || "0") <= 45
+  //   )
+  //   .test(
+  //     "greater-than-width",
+  //     "Heel length must be greater than metatarsal width",
+  //     function (value) {
+  //       const { custom_metatarsal_width_cm } = this.parent;
+  //       if (!value || !custom_metatarsal_width_cm) return true;
+  //       return parseInt(value) > parseInt(custom_metatarsal_width_cm);
+  //     }
+  //   ),
+
+  // custom_metatarsal_width_cm: Yup.string()
+  //   .required(FORMIK_ERRORS.REQUIRED)
+  //   .matches(/^\d+$/, "Must contain only digits")
+  //   .test(
+  //     "min-value",
+  //     "Metatarsal width must be at least 3",
+  //     (value) => parseInt(value || "0") >= 3
+  //   )
+  //   .test(
+  //     "max-value",
+  //     "Metatarsal width must be no more than 25",
+  //     (value) => parseInt(value || "0") <= 25
+  //   ),
+foot_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+$/, 'Must contain only digits')
     .test('min-value', 'foot length must be at least 5', (value) => parseInt(value) >= 5)
@@ -123,6 +174,7 @@ const step1Validation = Yup.object().shape({
       'metatarsal width must be no more than 25',
       (value) => parseInt(value) <= 25
     ),
+    
   // shoe_width: Yup.string()
   //   .required(FORMIK_ERRORS.REQUIRED)
   //   .matches(/^\d+$/, 'Must contain only digits')

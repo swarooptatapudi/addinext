@@ -251,7 +251,6 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
   try {
     setIsPaymentProcessing(true);
     setFormValues(values);
-
     // 🔹 Step 1: Prepare payload for item code
     const payload = {
       item_type: "IN",
@@ -291,7 +290,7 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
 
     // @ts-ignore
     if (orderResponse?.message?.status === "success") {
-      toast.success("✅ Order created successfully using Addicoins!");
+      toast.success(" Order created successfully ");
       setSelectedItemcode("");
       setIsPaymentProcessing(false);
       setFormDisable(true);
@@ -304,6 +303,67 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
     console.error("❌ Addicoins order failed:", error);
     toast.error(error?.message || "Failed to place order using Addicoins");
     setIsPaymentProcessing(false);
+  }
+};
+const handlePayLater = async (values: any) => {
+  try {
+    setIsPaymentProcessing(true); // ✅ Start processing (was false before)
+    setFormValues(values);
+
+    // 🟢 Step 1: Prepare payload for item code
+    const payload = {
+      item_type: "IN",
+      insole_model: values.insole_model,
+      design_variation: values.design_variation,
+      activity_level: values.activity_level,
+      model_name: values.model_name,
+      stump_length: values.stump_length,
+      weight: values.weight,
+      insoletype: values.insoletype,
+      insole_design_variation: values.insole_design_variation,
+      thickness: thicknests,
+    };
+
+    // Fetch item code
+    const itemCode = await getItemCodeByValues(payload);
+    if (!itemCode) {
+      throw new Error("Failed to fetch item code. Please try again.");
+    }
+    setSelectedItemcode(itemCode);
+
+    // 🟢 Step 2: Build order payload
+    const orderPayload = {
+      item_type: "IN",
+      customer: user?.customer_id,
+      order_details: {
+        ...values,
+        thickness: thicknests,
+      },
+      item_code: itemCode,
+      addicoins: parseInt(values.addicoins) || 0, // Deduct coins
+      total_price: estimateData?.apiResponse?.total_price ?? 0,
+    };
+
+    console.log("📝 Pay Later Order Payload:", orderPayload);
+
+    // 🟢 Step 3: Call API directly — no Razorpay flow
+    const orderResponse = await createInsoleOrder(orderPayload).unwrap();
+    console.log("✅ Order Response:", orderResponse);
+ // @ts-ignore
+    if (orderResponse?.message?.status === "success") {
+      toast.success("Order created successfully");
+      setSelectedItemcode("");
+      setFormDisable(true);
+      router.push("/orders");
+    } else {
+       // @ts-ignore
+      throw new Error(orderResponse?.message?.message || "Order creation failed");
+    }
+  } catch (error: any) {
+    console.error("Order creation failed:", error);
+    toast.error(error?.message || "Failed to place order using Addicoins");
+  } finally {
+    setIsPaymentProcessing(false); // ✅ Always stop loader
   }
 };
 
@@ -1580,6 +1640,27 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
                 </div>
               </CardContent>
             </Card>
+             {!orderId && !deviceTypeId && (
+          <Button
+            className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+            onClick={handleEstimateClick}
+            disabled={isEstimating}
+          >
+            {isEstimating ? 'Estimating...' : isEstimateStale ? 'Update Estimate' : 'Estimate Now'}
+          </Button>
+        )}
+        <Button
+                className="shadow-2xl w-88"
+                onClick={() => handlePayAndPlaceOrderWithAddicoins(values)}
+                disabled={
+                  !estimateConform ||
+                  isOrderCreating ||
+                  isPaymentProcessing ||
+                  ((values.Design_by !== 'Self' || values.Print_by !== 'Self') && !isRazorpayLoaded)
+                }
+              >
+                {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
+              </Button>
           </>
         )}
 
@@ -1860,7 +1941,7 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
               </Button>
               <Button
                 className="shadow-2xl"
-                onClick={() => handleSubmit()}
+                onClick={() => handlePayLater(values)}
                 type="submit"
                 disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
               >
