@@ -61,7 +61,6 @@ declare global {
     Razorpay: any;
   }
 }
-
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
     .min(FORMIK_ERRORS.MIN_2.VALUE, FORMIK_ERRORS.MIN_2.MESSAGE)
@@ -100,7 +99,31 @@ const step1Validation = Yup.object().shape({
     .matches(/^\d+(\.\d+)?$/, 'Must contain only digits')
     .test('min-value', 'Size must be at least 20', (value) => parseInt(value) >= 20)
     .test('max-value', 'Size must be no more than 60', (value) => parseInt(value) <= 45),
-  //  foot_length: Yup.string()
+ 
+foot_length: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+$/, 'Must contain only digits')
+    .test('min-value', 'foot length must be at least 5', (value) => parseInt(value) >= 5)
+    .test('max-value', 'foot length must be no more than 50', (value) => parseInt(value) <= 25),
+  custom_metatarsal_to_heel_length: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+$/, 'Must contain only digits')
+    .test('min-value', 'metatarsal length must be at least 3', (value) => parseInt(value) >= 3)
+    .test(
+      'max-value',
+      'metatarsal length must be no more than 45',
+      (value) => parseInt(value) <= 45
+    ),
+  custom_metatarsal_width_cm: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(/^\d+$/, 'Must contain only digits')
+    .test('min-value', 'metatarsal width must be at least 3', (value) => parseInt(value) >= 3)
+    .test(
+      'max-value',
+      'metatarsal width must be no more than 25',
+      (value) => parseInt(value) <= 25
+    ),
+  //    foot_length: Yup.string()
   //   .required(FORMIK_ERRORS.REQUIRED)
   //   .matches(/^\d+$/, "Must contain only digits")
   //   .test("min-value", "Foot length must be at least 5", (value) => parseInt(value || "0") >= 5)
@@ -151,30 +174,6 @@ const step1Validation = Yup.object().shape({
   //     "Metatarsal width must be no more than 25",
   //     (value) => parseInt(value || "0") <= 25
   //   ),
-foot_length: Yup.string()
-    .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, 'Must contain only digits')
-    .test('min-value', 'foot length must be at least 5', (value) => parseInt(value) >= 5)
-    .test('max-value', 'foot length must be no more than 50', (value) => parseInt(value) <= 25),
-  custom_metatarsal_to_heel_length: Yup.string()
-    .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, 'Must contain only digits')
-    .test('min-value', 'metatarsal length must be at least 3', (value) => parseInt(value) >= 3)
-    .test(
-      'max-value',
-      'metatarsal length must be no more than 45',
-      (value) => parseInt(value) <= 45
-    ),
-  custom_metatarsal_width_cm: Yup.string()
-    .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, 'Must contain only digits')
-    .test('min-value', 'metatarsal width must be at least 3', (value) => parseInt(value) >= 3)
-    .test(
-      'max-value',
-      'metatarsal width must be no more than 25',
-      (value) => parseInt(value) <= 25
-    ),
-    
   // shoe_width: Yup.string()
   //   .required(FORMIK_ERRORS.REQUIRED)
   //   .matches(/^\d+$/, 'Must contain only digits')
@@ -196,21 +195,17 @@ foot_length: Yup.string()
     .test('value-range', 'Abd/adduct angle must be ≤ 60', (value) => !value || Number(value) <= 60),
   date_of_birth: Yup.string().required(FORMIK_ERRORS.REQUIRED)
 });
-
 const step2Validation = Yup.object()
   .shape({
     custom_upload_link_with_photos: Yup.string()
       .url('Must be a valid URL (e.g., https://drive.google.com/...)')
       .nullable(),
-
     scan_type: Yup.string().required('Scan condition is required'),
-
     foot_Amputation: Yup.string().when('scan_type', {
       is: '3D_scan',
       then: (schema) => schema.required('Foot amputation is required'),
       otherwise: (schema) => schema.nullable()
     }),
-
     left_foot_file: Yup.mixed().nullable(),
     right_foot_file: Yup.mixed().nullable(),
     additional_file_1: Yup.mixed().nullable(),
@@ -1371,7 +1366,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   const [formValues, setFormValues] = useState(initialValues);
   const [modelOpen, setModelOpen] = useState(false);
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1);1
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [socketTypeDialog, setSocketTypeDialog] = useState({
@@ -1666,6 +1661,76 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
       },
       item_code: itemCode
     };
+ // Create FormData for multipart/form-data
+  const formData = new FormData();
+  
+  // Add the main data as JSON string
+  formData.append('data', JSON.stringify(orderPayload));
+  
+  // Extract and append file uploads
+  const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+    for (const key in obj) {
+      if (obj[key] && typeof obj[key] === 'object') {
+        if (obj[key] instanceof File) {
+          // Handle File objects directly
+          if (key.includes('left_foot') || key.includes('scan_file_left')) {
+            formData.append('scan_file_left', obj[key]);
+          } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
+            formData.append('scan_file_right', obj[key]);
+          } else if (key.includes('obj_file')) {
+            formData.append(`obj_file_${key}`, obj[key]);
+          } else if (key.includes('additional_file')) {
+            formData.append(`additional_file_${key}`, obj[key]);
+          } else {
+            // Default to scan file if not specified
+            formData.append('scan_file_left', obj[key]);
+          }
+        } else if (obj[key].constructor === FileList) {
+          // Handle FileList objects
+          Array.from(obj[key]).forEach((file: File, index: number) => {
+            if (key.includes('left_foot')) {
+              formData.append('scan_file_left', file);
+            } else if (key.includes('right_foot')) {
+              formData.append('scan_file_right', file);
+            } else {
+              formData.append(`scan_file_${index}`, file);
+            }
+          });
+        } else if (Array.isArray(obj[key])) {
+          // Handle arrays (like scan_items)
+          obj[key].forEach((item: any, index: number) => {
+            extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+          });
+        } else {
+          // Recursively check nested objects
+          extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+        }
+      }
+    }
+  };
+  
+  // Extract files from the values object
+  extractAndAppendFiles(values);
+  
+  // Also check for direct file fields in values
+  if (values.left_foot_file && values.left_foot_file instanceof File) {
+    formData.append('scan_file_left', values.left_foot_file);
+  }
+  if (values.right_foot_file && values.right_foot_file instanceof File) {
+    formData.append('scan_file_right', values.right_foot_file);
+  }
+  
+  // Check scan_items for files
+  if (values.scan_items && Array.isArray(values.scan_items)) {
+    values.scan_items.forEach((item: any, index: number) => {
+      if (item.left_foot_file && item.left_foot_file instanceof File) {
+        formData.append('scan_file_left', item.left_foot_file);
+      }
+      if (item.right_foot_file && item.right_foot_file instanceof File) {
+        formData.append('scan_file_right', item.right_foot_file);
+      }
+    });
+  }
 
     // createInsoleOrder(orderPayload); // store for later payment step
     setShowStep5Confirmation(true); // open confirmation dialog

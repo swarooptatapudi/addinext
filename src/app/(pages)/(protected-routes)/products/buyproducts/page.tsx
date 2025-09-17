@@ -313,7 +313,7 @@ console.log("🖼️ custom_product_image:", custom_product_image);
               {/* <li>Taxes @ 18%: ₹{tax.toFixed(2)}</li> */}
               <li>Taxes @ 18%</li>
               <li className="font-bold text-primary">
-                Total Payable: ₹{finalAmount.toFixed(2)}
+                Total Amount: ₹{finalAmount.toFixed(2)}
               </li>
             </ul>
           </CardContent>

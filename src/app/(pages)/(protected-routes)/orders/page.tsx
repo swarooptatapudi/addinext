@@ -251,7 +251,7 @@ export default function Orders(): React.JSX.Element {
       header: 'Status',
       cell: ({ row }) => {
         const order = row.original;
-        console.log('Order Status:', order);
+        // console.log('Order Status:', order);
         let status = order.status;
         if (
           status === 'Draft' &&

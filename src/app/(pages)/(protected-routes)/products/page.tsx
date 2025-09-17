@@ -110,8 +110,8 @@ export default function Products(): React.JSX.Element {
               key={scanners.name}
               src={scanners.image || "/assets/placeholder.jpg"}
               label={scanners.item_name}
-              // href={`/products/buyproducts?name=${encodeURIComponent(scanners.item_name)}`}
-              href=''
+              href={`/products/buyproducts?name=${encodeURIComponent(scanners.item_name)}`}
+           
             />
           ))}
         </div>

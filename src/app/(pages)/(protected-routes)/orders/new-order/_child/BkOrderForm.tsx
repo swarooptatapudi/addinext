@@ -1656,6 +1656,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     open: false,
     data: null
   });
+  // const totalDiscount = data.total_distcounted_price;
+  // console.log("totalDiscount",totalDiscount)
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
   const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
   const [formDisable, setFormDisable] = useState(false)
@@ -1809,12 +1811,17 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       const orderPayload = {
         item_type: 'BK',
         customer: user?.customer_id,
-        order_details: values,
+         order_details: {
+    ...values,
+    totalDiscount: values.totalDiscount || 0 // ✅ safely include it
+  },
         item_code: itemCode,
-        addicoins: parseInt(values.addicoins)
+        addicoins: parseInt(values.addicoins),
+        
+        
       };
 
-      // console.log("handlePayAndPlaceOrder", orderPayload)
+      console.log("handlePayAndPlaceOrder", orderPayload)
 
       // You'll need to create an API endpoint that calculates order amount
       // This should return the order amount for payment
@@ -1927,12 +1934,16 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   };
   const itemCode = await getItemCodeByValues(payload);
   setSelectedItem(itemCode);
-  
+  const totalDiscount = Number(values.item_discount || 0) + Number(values.additional_discount || 0);
+  console.log("totalDiscount",totalDiscount)
   // Submit the final form
   const orderPayload = {
     item_type: 'BK',
     customer: user?.customer_id,
-    order_details: values,
+    order_details: {
+    ...values,
+    totalDiscount: values.totalDiscount || 0// ✅ passed here
+  },
     item_code: itemCode,
     // @ts-ignore
     addicoins: parseInt(values.addicoins)

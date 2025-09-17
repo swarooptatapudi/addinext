@@ -1399,274 +1399,13 @@ const handlePayLater = async (values: any) => {
       {
         showPriceSummary && (
           <div className="flex flex-col gap-6">
-        {values.Design_by === 'Self' && values.Print_by === 'Addiwise' && (
-          
-          <>
-            <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-semibold">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <CoinsIcon className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <p className="text-sm font-semibold text-gray-700">PAY WITH ADDICOINS</p>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <ul className="text-sm space-y-2.5">
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Available Addicoins</span>
-                      <span className="text-gray-700">{availableAddicoins}</span>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Design will use</span>
-                      <span className="text-gray-700">{requiredAddicoins}</span>
-                    </div>
-                  </li>
-                  {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
-                    parseFloat(requiredAddicoins?.replace(/,/g, '') || '0') >
-                    0 && (
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Balance after design</span>
-                        <span className="text-gray-700">
-                          {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
-                            parseFloat(requiredAddicoins?.replace(/,/g, '') || '0')}
-                        </span>
-                      </div>
-                    </li>
-                  )}
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card
-              className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${
-                isEstimateStale ? 'border-gray-200' : 'border-gray-200'
-              } transition-colors duration-200`}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-semibold">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5" />
-                    <p
-                      className={`text-sm font-semibold ${
-                        isEstimateStale ? 'text-gray-700' : 'text-gray-700'
-                      }`}
-                    >
-                      PRICE SUMMARY {isEstimateStale && '(Stale Estimate)'}
-                    </p>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <ul className="text-sm space-y-2.5">
-                  {parseFloat(estimateData?.apiResponse?.design?.replace(/,/g, '')) > 0 && (
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Design</span>
-                        <span className="text-gray-700">₹{estimateData.apiResponse.design}</span>
-                      </div>
-                    </li>
-                  )}
-                  {parseFloat(estimateData?.apiResponse?.print?.replace(/,/g, '')) > 0 && (
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Print</span>
-                        <span className="text-gray-700">₹{estimateData?.apiResponse?.print}</span>
-                      </div>
-                    </li>
-                  )}
-
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Subtotal</span>
-                      <span className="text-gray-700">
-                        ₹{estimateData?.apiResponse?.estimate_price || '0.00'}
-                      </span>
-                    </div>
-                  </li>
-                  {parseFloat(estimateData?.apiResponse?.item_standard_discount.replace(/,/g, '')) > 0 && (
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Standard Discount</span>
-                        <span className="text-gray-700">
-                          -₹{estimateData.apiResponse.item_standard_discount}
-                        </span>
-                      </div>
-                    </li>
-                  )}
-                  {parseFloat(estimateData?.apiResponse?.additional_discount?.replace(/,/g, '')) >
-                    0 && (
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Additional Discount</span>
-                        <span className="text-gray-700">
-                          (-)₹{estimateData.apiResponse.additional_discount}
-                        </span>
-                      </div>
-                    </li>
-                  )}
-                  {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">GST (5%)</span>
-                        <span className="text-gray-700">+₹{estimateData.apiResponse.gst_5}</span>
-                      </div>
-                    </li>
-                  )}
-                  {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, '')) > 0 && (
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">GST (18%)</span>
-                        <span className="text-gray-700">+₹{estimateData.apiResponse.gst_18}</span>
-                      </div>
-                    </li>
-                  )}
-                  <div className="border-t border-gray-200 my-2"></div>
-                  <div className="flex justify-between text-base font-bold text-primary">
-                    <span>Total Amount</span>
-                    <span>₹{estimateData?.apiResponse?.total_price}</span>
-                  </div>
-                </ul>
-                {!isDesignSelf && !isPrintSelf && (
-                  <div className="mt-4 space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="enable-submit"
-                        onChange={(e) => setEstimateConform(e.target.checked)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100"
-                      />
-                      <Label
-                        htmlFor="enable-submit"
-                        className="text-sm font-medium leading-none ml-2"
-                      >
-                        I agree to the{' '}
-                        <span
-                          className="text-primary hover:underline cursor-pointer"
-                          onClick={() => window.open('/terms', '_blank')}
-                        >
-                          terms and conditions
-                        </span>
-                      </Label>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </>
-        )}
+       
  
-        {values.Design_by === 'Self' && values.Print_by === 'Self' && (
-          <>
-            <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-semibold">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <CoinsIcon className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <p className="text-sm font-semibold text-gray-700">PAY WITH ADDICOINS</p>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <ul className="text-sm space-y-2.5">
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Available Addicoins</span>
-                      <span className="text-gray-700">{availableAddicoins}</span>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-                    <div className="flex justify-between w-full">
-                      <span className="font-medium text-gray-700">Design will use</span>
-                      <span className="text-gray-700">{requiredAddicoins}</span>
-                    </div>
-                  </li>
-                  {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
-                    parseFloat(requiredAddicoins?.replace(/,/g, '') || '0') >
-                    0 && (
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium text-gray-700">Balance after design</span>
-                        <span className="text-gray-700">
-                          {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
-                            parseFloat(requiredAddicoins?.replace(/,/g, '') || '0')}
-                        </span>
-                      </div>
-                    </li>
-                  )}
-                </ul>
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="enable-submit"
-                      onChange={(e) => setEstimateConform(e.target.checked)}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100"
-                    />
-                    <Label
-                      htmlFor="enable-submit"
-                      className="text-sm font-medium leading-none ml-2"
-                    >
-                      I agree to the{' '}
-                      <span
-                        className="text-primary hover:underline cursor-pointer"
-                        onClick={() => window.open('/terms', '_blank')}
-                      >
-                        terms and conditions
-                      </span>
-                    </Label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-             {!orderId && !deviceTypeId && (
-          <Button
-            className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
-            onClick={handleEstimateClick}
-            disabled={isEstimating}
-          >
-            {isEstimating ? 'Estimating...' : isEstimateStale ? 'Update Estimate' : 'Estimate Now'}
-          </Button>
-        )}
-        <Button
-                className="shadow-2xl w-88"
-                onClick={() => handlePayAndPlaceOrderWithAddicoins(values)}
-                disabled={
-                  !estimateConform ||
-                  isOrderCreating ||
-                  isPaymentProcessing ||
-                  ((values.Design_by !== 'Self' || values.Print_by !== 'Self') && !isRazorpayLoaded)
-                }
-              >
-                {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
-              </Button>
-          </>
-        )}
+        
 
         {values.Design_by === 'Addiwise' && values.Print_by === 'Addiwise' && (
           <>
-            {' '}
+          
             <Card
               className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} transition-colors duration-200`}
             >
@@ -1917,7 +1656,247 @@ const handlePayLater = async (values: any) => {
             </Card>
           </>
         )}
-        {!orderId && !deviceTypeId && (
+         {values.Design_by === 'Self' && values.Print_by === 'Addiwise' && (
+          
+          <>
+            <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-semibold">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <CoinsIcon className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-700">PAY WITH ADDICOINS</p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <ul className="text-sm space-y-2.5">
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium text-gray-700">Available Addicoins</span>
+                      <span className="text-gray-700">{availableAddicoins}</span>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium text-gray-700">Design will use</span>
+                      <span className="text-gray-700">{requiredAddicoins}</span>
+                    </div>
+                  </li>
+                  {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
+                    parseFloat(requiredAddicoins?.replace(/,/g, '') || '0') >
+                    0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Balance after design</span>
+                        <span className="text-gray-700">
+                          {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
+                            parseFloat(requiredAddicoins?.replace(/,/g, '') || '0')}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card
+              className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${
+                isEstimateStale ? 'border-gray-200' : 'border-gray-200'
+              } transition-colors duration-200`}
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-semibold">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5" />
+                    <p
+                      className={`text-sm font-semibold ${
+                        isEstimateStale ? 'text-gray-700' : 'text-gray-700'
+                      }`}
+                    >
+                      PRICE SUMMARY {isEstimateStale && '(Stale Estimate)'}
+                    </p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <ul className="text-sm space-y-2.5">
+                  {parseFloat(estimateData?.apiResponse?.design?.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Design</span>
+                        <span className="text-gray-700">₹{estimateData.apiResponse.design}</span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.print?.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Print</span>
+                        <span className="text-gray-700">₹{estimateData?.apiResponse?.print}</span>
+                      </div>
+                    </li>
+                  )}
+
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium text-gray-700">Subtotal</span>
+                      <span className="text-gray-700">
+                        ₹{estimateData?.apiResponse?.estimate_price || '0.00'}
+                      </span>
+                    </div>
+                  </li>
+                  {parseFloat(estimateData?.apiResponse?.item_standard_discount.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Standard Discount</span>
+                        <span className="text-gray-700">
+                          -₹{estimateData.apiResponse.item_standard_discount}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.additional_discount?.replace(/,/g, '')) >
+                    0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Additional Discount</span>
+                        <span className="text-gray-700">
+                          (-)₹{estimateData.apiResponse.additional_discount}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">GST (5%)</span>
+                        <span className="text-gray-700">+₹{estimateData.apiResponse.gst_5}</span>
+                      </div>
+                    </li>
+                  )}
+                  {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, '')) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">GST (18%)</span>
+                        <span className="text-gray-700">+₹{estimateData.apiResponse.gst_18}</span>
+                      </div>
+                    </li>
+                  )}
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <div className="flex justify-between text-base font-bold text-primary">
+                    <span>Total Amount</span>
+                    <span>₹{estimateData?.apiResponse?.total_price}</span>
+                  </div>
+                </ul>
+                {!isDesignSelf && !isPrintSelf && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="enable-submit"
+                        onChange={(e) => setEstimateConform(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100"
+                      />
+                      <Label
+                        htmlFor="enable-submit"
+                        className="text-sm font-medium leading-none ml-2"
+                      >
+                        I agree to the{' '}
+                        <span
+                          className="text-primary hover:underline cursor-pointer"
+                          onClick={() => window.open('/terms', '_blank')}
+                        >
+                          terms and conditions
+                        </span>
+                      </Label>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+        {values.Design_by === 'Self' && values.Print_by === 'Self' && (
+          <>
+            <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-semibold">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <CoinsIcon className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-700">PAY WITH ADDICOINS</p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <ul className="text-sm space-y-2.5">
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium text-gray-700">Available Addicoins</span>
+                      <span className="text-gray-700">{availableAddicoins}</span>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium text-gray-700">Design will use</span>
+                      <span className="text-gray-700">{requiredAddicoins}</span>
+                    </div>
+                  </li>
+                  {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
+                    parseFloat(requiredAddicoins?.replace(/,/g, '') || '0') >
+                    0 && (
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
+                      <div className="flex justify-between w-full">
+                        <span className="font-medium text-gray-700">Balance after design</span>
+                        <span className="text-gray-700">
+                          {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
+                            parseFloat(requiredAddicoins?.replace(/,/g, '') || '0')}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                </ul>
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="enable-submit"
+                      onChange={(e) => setEstimateConform(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-100"
+                    />
+                    <Label
+                      htmlFor="enable-submit"
+                      className="text-sm font-medium leading-none ml-2"
+                    >
+                      I agree to the{' '}
+                      <span
+                        className="text-primary hover:underline cursor-pointer"
+                        onClick={() => window.open('/terms', '_blank')}
+                      >
+                        terms and conditions
+                      </span>
+                    </Label>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+             {!orderId && !deviceTypeId && (
           <Button
             className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
             onClick={handleEstimateClick}
@@ -1926,10 +1905,9 @@ const handlePayLater = async (values: any) => {
             {isEstimating ? 'Estimating...' : isEstimateStale ? 'Update Estimate' : 'Estimate Now'}
           </Button>
         )}
-            <div className="flex gap-2.5">
-              <Button
-                className="shadow-2xl"
-                onClick={() => handlePayAndPlaceOrder(values)}
+        <Button
+                className="shadow-2xl w-88"
+                onClick={() => handlePayAndPlaceOrderWithAddicoins(values)}
                 disabled={
                   !estimateConform ||
                   isOrderCreating ||
@@ -1939,17 +1917,55 @@ const handlePayLater = async (values: any) => {
               >
                 {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
               </Button>
-              <Button
-                className="shadow-2xl"
-                onClick={() => handlePayLater(values)}
-                type="submit"
-                disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
-              >
-                Pay Later
-              </Button>
+          </>
+        )}
+       {!orderId && !deviceTypeId && (
+  <>
+    {/* ✅ Show Estimate Button Always */}
+   
 
-              
-            </div>
+    {/* ✅ Show Payment Buttons ONLY if NOT Self/Self */}
+    {!(values.Design_by === 'Self' && values.Print_by === 'Self') && (
+      <> <Button
+      className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+      onClick={handleEstimateClick}
+      disabled={isEstimating}
+    >
+      {isEstimating
+        ? 'Estimating...'
+        : isEstimateStale
+        ? 'Update Estimate'
+        : 'Estimate Now'}
+    </Button> <div className="flex gap-2.5 mt-6">
+        <Button
+          className="shadow-2xl"
+          onClick={() => handlePayAndPlaceOrder(values)}
+          disabled={
+            !estimateConform ||
+            isOrderCreating ||
+            isPaymentProcessing ||
+            !isRazorpayLoaded
+          }
+        >
+          {isPaymentProcessing
+            ? 'Processing Payment...'
+            : 'Pay & Place Order'}
+        </Button>
+
+        <Button
+          className="shadow-2xl"
+          onClick={() => handlePayLater(values)}
+          type="submit"
+          disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
+        >
+          Pay Later
+        </Button>
+      </div></>
+     
+    )}
+  </>
+)}
+
       </div>
         )
       }

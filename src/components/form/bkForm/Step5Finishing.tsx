@@ -56,6 +56,7 @@ export const Step5 = ({
   setEstimateConform,
   orderId,
   deviceTypeId,
+  
   user, // Add user prop to access customer_id
   isViewMode
 
@@ -92,6 +93,7 @@ export const Step5 = ({
 
 
 
+
   const showFinishOptions =
     isAddiEase || isAddiEaseEco || isAddiEaseL || 'AddiEaseMould' || 'AddiEaseMould-HR';
   const showFinishOptionsMould = isAddiEase || isAddiEaseEco || isAddiEaseL;
@@ -108,6 +110,140 @@ export const Step5 = ({
 
   const [getProductColorStep5] = useGetProductColorStep5Mutation();
   const [subColors, setSubColors] = useState<{ label: string; hex: string }[]>([]);
+
+  const handleEstimateClick = async () => {
+    const designByRes = values.design_by || '';
+    const printByRes = values.print_by || '';
+    const isDesignSelfRes = designByRes === 'Self';
+    const isPrintSelfRes = printByRes === 'Self';
+
+    const getBasePriceLabel = () => {
+      const designBy = values.design_by || '';
+      const printBy = values.print_by || '';
+
+      const isDesignAddiwise = designBy === 'Addiwise';
+      const isPrintAddiwise = printBy === 'Addiwise';
+      const isDesignSelf = designBy === 'Self';
+      const isPrintSelf = printBy === 'Self';
+
+      if (isDesignAddiwise && isPrintAddiwise) {
+        return 'Design + Print';
+      }
+      if (isDesignAddiwise) {
+        return 'Design';
+      }
+      if (isPrintAddiwise) {
+        return 'Print';
+      }
+
+      if (isDesignSelf && isPrintSelf) {
+        return '';
+      }
+      if (isDesignSelf) {
+        return 'Self Design';
+      }
+      if (isPrintSelf) {
+        return 'Self Print';
+      }
+
+      return 'Base';
+    };
+    setEstimateDataLabel(getBasePriceLabel());
+
+    if (!validateBeforeAction()) return;
+
+    setIsEstimating(true);
+
+    const estimatePayload = {
+      item_code: selectedItem,
+      design_by: values.design_by,
+      print_by: values.print_by,
+      laticess: (isAddiEase || isAddiEaseL) && !isDesignSelf ? values.Latices : 'No',
+      finish: !isPrintSelf ? values.finish_type : '0',
+      discount_per: couponData?.discount_percentage || 0,
+      // totaldistamount:couponData?.discount_amount + additional_discount ,
+      discount_amt: couponData?.discount_amount || 0,
+      
+      coupon_code: couponCode.trim()
+    };
+
+    console.log('Estimate Payload:', estimatePayload);
+
+    try {
+      const response = await getBKEstimate(estimatePayload).unwrap();
+
+      console.log('Estimate Response:', response);
+      // Parse coins to numbers for comparison
+       const data = response.data;
+
+    // ✅ Safely parse and calculate combined discount
+    
+    
+   
+;
+
+      // @ts-ignore
+      const availableCoins = parseFloat(response.data.customer_available_coins.replace(/,/g, ''));
+      // @ts-ignore
+      const requiredCoins = parseFloat(response.data.design_coin_use.replace(/,/g, ''));
+      // console.log('Available Coins , Required Coins:', availableCoins, requiredCoins);
+
+      // @ts-ignore
+      setAvailableAddicoins(response.data.customer_available_coins);
+      // @ts-ignore
+      setRequiredAddicoins(response.data.design_coin_use);
+
+      if (isDesignSelf && isPrintSelf && availableCoins < requiredCoins) {
+        setShowInsufficientCoinsModal(true);
+        setIsEstimating(false);
+        return;
+      }
+
+      if (isDesignSelf && !isPrintSelf && availableCoins < requiredCoins) {
+        setShowInsufficientCoinsModal(true);
+        setIsEstimating(false);
+        return;
+      }
+
+      setEstimateData({
+        ...estimatePayload,
+        apiResponse: response.data
+      });
+      setFieldValue('gst_5', response.data.gst_5 || '0.00');
+      setFieldValue('gst_18', response.data.gst_18 || '0.00');
+      setFieldValue('item_standard_discount', response.data.item_standard_discount || '0.00');
+      setFieldValue('additional_discount', response.data.additional_discount || '0.00');
+      // @ts-ignore
+      setFieldValue('addicoins', response.data.design_coin_use || '0.00');
+
+      setShowEstimateCard(true);
+      setIsEstimateStale(false);
+      setIsEstimateAccepted(false);
+      if (isDesignSelf && isPrintSelf) {
+        setEstimateConform(true);
+      }
+      // Construct and store orderPayload in local storage
+      const totalDiscount = data.total_distcounted_price;
+      const orderPayload = {
+        item_type: 'BK',
+        customer: user?.customer_id || 'Not specified', // Use user prop
+         order_details: {
+    ...values, // keep all form values
+    totalDiscount: totalDiscount // add totalDiscount inside order_details
+  }
+      };
+      console.log("orderPayload>>",orderPayload)
+      // @ts--ignore
+      // console.log('orderPayload MOdal', orderPayload);
+      setOrderData(orderPayload);
+      setShowPreviwButton(true);
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Failed to get estimate');
+      // console.error('Estimate error:', error);
+    } finally {
+      setIsEstimating(false);
+    }
+  };
 
   const getTailwindColorClass = (name: string) => {
     const safe = name.toLowerCase();
@@ -256,125 +392,7 @@ export const Step5 = ({
     return true;
   };
 
-  const handleEstimateClick = async () => {
-    const designByRes = values.design_by || '';
-    const printByRes = values.print_by || '';
-    const isDesignSelfRes = designByRes === 'Self';
-    const isPrintSelfRes = printByRes === 'Self';
-
-    const getBasePriceLabel = () => {
-      const designBy = values.design_by || '';
-      const printBy = values.print_by || '';
-
-      const isDesignAddiwise = designBy === 'Addiwise';
-      const isPrintAddiwise = printBy === 'Addiwise';
-      const isDesignSelf = designBy === 'Self';
-      const isPrintSelf = printBy === 'Self';
-
-      if (isDesignAddiwise && isPrintAddiwise) {
-        return 'Design + Print';
-      }
-      if (isDesignAddiwise) {
-        return 'Design';
-      }
-      if (isPrintAddiwise) {
-        return 'Print';
-      }
-
-      if (isDesignSelf && isPrintSelf) {
-        return '';
-      }
-      if (isDesignSelf) {
-        return 'Self Design';
-      }
-      if (isPrintSelf) {
-        return 'Self Print';
-      }
-
-      return 'Base';
-    };
-    setEstimateDataLabel(getBasePriceLabel());
-
-    if (!validateBeforeAction()) return;
-
-    setIsEstimating(true);
-
-    const estimatePayload = {
-      item_code: selectedItem,
-      design_by: values.design_by,
-      print_by: values.print_by,
-      laticess: (isAddiEase || isAddiEaseL) && !isDesignSelf ? values.Latices : 'No',
-      finish: !isPrintSelf ? values.finish_type : '0',
-      discount_per: couponData?.discount_percentage || 0,
-      discount_amt: couponData?.discount_amount || 0,
-      coupon_code: couponCode.trim()
-    };
-
-    console.log('Estimate Payload:', estimatePayload);
-
-    try {
-      const response = await getBKEstimate(estimatePayload).unwrap();
-
-      console.log('Estimate Response:', response);
-      // Parse coins to numbers for comparison
-
-      // @ts-ignore
-      const availableCoins = parseFloat(response.data.customer_available_coins.replace(/,/g, ''));
-      // @ts-ignore
-      const requiredCoins = parseFloat(response.data.design_coin_use.replace(/,/g, ''));
-      // console.log('Available Coins , Required Coins:', availableCoins, requiredCoins);
-
-      // @ts-ignore
-      setAvailableAddicoins(response.data.customer_available_coins);
-      // @ts-ignore
-      setRequiredAddicoins(response.data.design_coin_use);
-
-      if (isDesignSelf && isPrintSelf && availableCoins < requiredCoins) {
-        setShowInsufficientCoinsModal(true);
-        setIsEstimating(false);
-        return;
-      }
-
-      if (isDesignSelf && !isPrintSelf && availableCoins < requiredCoins) {
-        setShowInsufficientCoinsModal(true);
-        setIsEstimating(false);
-        return;
-      }
-
-      setEstimateData({
-        ...estimatePayload,
-        apiResponse: response.data
-      });
-      setFieldValue('gst_5', response.data.gst_5 || '0.00');
-      setFieldValue('gst_18', response.data.gst_18 || '0.00');
-      setFieldValue('item_standard_discount', response.data.item_standard_discount || '0.00');
-      setFieldValue('additional_discount', response.data.additional_discount || '0.00');
-      // @ts-ignore
-      setFieldValue('addicoins', response.data.design_coin_use || '0.00');
-
-      setShowEstimateCard(true);
-      setIsEstimateStale(false);
-      setIsEstimateAccepted(false);
-      if (isDesignSelf && isPrintSelf) {
-        setEstimateConform(true);
-      }
-      // Construct and store orderPayload in local storage
-      const orderPayload = {
-        item_type: 'BK',
-        customer: user?.customer_id || 'Not specified', // Use user prop
-        order_details: values
-      };
-      // @ts--ignore
-      // console.log('orderPayload MOdal', orderPayload);
-      setOrderData(orderPayload);
-      setShowPreviwButton(true);
-    } catch (error: any) {
-      toast.error(error.data?.message || 'Failed to get estimate');
-      // console.error('Estimate error:', error);
-    } finally {
-      setIsEstimating(false);
-    }
-  };
+  
   const handleCouponValidation = async () => {
     if (!couponCode.trim()) {
       setCouponData(null);
