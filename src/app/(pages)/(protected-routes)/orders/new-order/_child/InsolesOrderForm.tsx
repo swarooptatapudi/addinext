@@ -1332,6 +1332,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
   const [showStep5Confirmation, setShowStep5Confirmation] = useState(false);
+  const [showPriceSummary, setShowPriceSummary] = useState(false);
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
   const [thicknests, setThickness] = useState<string>('');
   const skipValidation = searchParams.get('skipValidation') === 'true';
@@ -1579,7 +1580,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   // };
 
   const OnSubmit = async (values: any) => {
-    // console.log("Form values on submit:", values);
+    console.log("Form values on submit:");
     setFormValues(values);
 
     const payload = {
@@ -1616,6 +1617,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
 
     // createInsoleOrder(orderPayload); // store for later payment step
     setShowStep5Confirmation(true); // open confirmation dialog
+    setShowPriceSummary(true); // show price summary
+    
   };
 
   const getItemCodeByValues = async (payload: any) => {
@@ -1904,6 +1907,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                 formSubmitted={formSubmitted}
                 setSelectedOptions={setSelectedOptions}
                 selectedOptions={selectedOptions}
+                showPriceSummary={showPriceSummary}
+                handleSubmit={handleSubmit}
               />
             )}
 
