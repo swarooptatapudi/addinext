@@ -1825,10 +1825,81 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
         item_code: itemCode,
         addicoins: parseInt(values.addicoins),
         totalPrice:totalPrice,
-        totalDiscount:totalDiscount,
+        discount_amount:totalDiscount,
       };
 
       console.log("handlePayAndPlaceOrder", orderPayload)
+        // Create FormData for multipart/form-data
+  const formData = new FormData();
+  
+  // Add the main data as JSON string
+  formData.append('data', JSON.stringify(orderPayload));
+  
+  // Extract and append file uploads
+  const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+    for (const key in obj) {
+      if (obj[key] && typeof obj[key] === 'object') {
+        if (obj[key] instanceof File) {
+          // Handle File objects directly
+          if (key.includes('left_foot') || key.includes('scan_file_left')) {
+            formData.append('scan_file_left', obj[key]);
+          } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
+            formData.append('scan_file_right', obj[key]);
+          } else if (key.includes('obj_file')) {
+            formData.append(`obj_file_${key}`, obj[key]);
+          } else if (key.includes('additional_file')) {
+            formData.append(`additional_file_${key}`, obj[key]);
+          } else {
+            // Default to scan file if not specified
+            formData.append('scan_file_left', obj[key]);
+          }
+        } else if (obj[key].constructor === FileList) {
+          // Handle FileList objects
+          Array.from(obj[key]).forEach((file: File, index: number) => {
+            if (key.includes('left_foot')) {
+              formData.append('scan_file_left', file);
+            } else if (key.includes('right_foot')) {
+              formData.append('scan_file_right', file);
+            } else {
+              formData.append(`scan_file_${index}`, file);
+            }
+          });
+        } else if (Array.isArray(obj[key])) {
+          // Handle arrays (like scan_items)
+          obj[key].forEach((item: any, index: number) => {
+            extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+          });
+        } else {
+          // Recursively check nested objects
+          extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+        }
+      }
+    }
+  };
+  
+  // Extract files from the values object
+  extractAndAppendFiles(values);
+  
+  // Also check for direct file fields in values
+  if (values.left_foot_file && values.left_foot_file instanceof File) {
+    formData.append('scan_file_left', values.left_foot_file);
+  }
+  if (values.right_foot_file && values.right_foot_file instanceof File) {
+    formData.append('scan_file_right', values.right_foot_file);
+  }
+  
+  // Check scan_items for files
+  if (values.scan_items && Array.isArray(values.scan_items)) {
+    values.scan_items.forEach((item: any, index: number) => {
+      if (item.left_foot_file && item.left_foot_file instanceof File) {
+        formData.append('scan_file_left', item.left_foot_file);
+      }
+      if (item.right_foot_file && item.right_foot_file instanceof File) {
+        formData.append('scan_file_right', item.right_foot_file);
+      }
+    });
+  }
+
 
       // You'll need to create an API endpoint that calculates order amount
       // This should return the order amount for payment
@@ -1857,7 +1928,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
               ...orderPayload,
               custom_payment_reference_id: response.razorpay_payment_id,
                totalPrice:totalPrice,
-        discount_amount:totalDiscount,
+              discount_amount:totalDiscount,
               // razorpay_order_id: response.razorpay_order_id,
               // razorpay_signature: response.razorpay_signature,
               // payment_status: 'paid'
@@ -1943,15 +2014,13 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   };
   const itemCode = await getItemCodeByValues(payload);
   setSelectedItem(itemCode);
-  const totalDiscount = Number(values.item_discount || 0) + Number(values.additional_discount || 0);
-  console.log("totalDiscount",totalDiscount)
+ 
   // Submit the final form
   const orderPayload = {
     item_type: 'BK',
     customer: user?.customer_id,
     order_details: {
     ...values,
-    totalDiscount: values.totalDiscount || 0// ✅ passed here
   },
     item_code: itemCode,
     // @ts-ignore
@@ -2170,8 +2239,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     return <div className="flex justify-center p-8">Loading order data...</div>;
   }
 
-  console.log("totalDiscount",totalDiscount);
-  console.log("totalPrice",totalPrice);
+  // console.log("totalDiscount",totalDiscount);
+  // console.log("totalPrice",totalPrice);
 
   return (
     <div className="pb-16 relative">

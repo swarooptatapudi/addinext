@@ -40,6 +40,7 @@ export const BK_FORM_INITIAL_VALUES = {
   custom_upload_link_with_photos: '',
   item_code: '',
   global_volume_reduction: '',
+ 
   gst_5: 0.0,
   gst_18: 0.0,
   item_discount: 0.0,
