@@ -1820,12 +1820,12 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
         customer: user?.customer_id,
          order_details: {
     ...values,
-    totalDiscount: values.totalDiscount || 0 // ✅ safely include it
+    // totalDiscount: values.totalDiscount || 0 // ✅ safely include it
   },
         item_code: itemCode,
         addicoins: parseInt(values.addicoins),
         totalPrice:totalPrice,
-        discount_amount:totalDiscount,
+        totalDiscount:totalDiscount,
       };
 
       console.log("handlePayAndPlaceOrder", orderPayload)
