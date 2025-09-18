@@ -167,6 +167,7 @@ const custom_product_image = selectedProduct?.custom_product_image; // Or whatev
 console.log("🖼️ custom_product_image:", custom_product_image);
 
   const description = selectedProduct?.description || "";
+  console.log("description",description)
   // ✅ MRP & Discount come from selected product
   const mrp = selectedProduct?.mrp || 0;
   // console.log("mrp", mrp);
@@ -227,63 +228,44 @@ console.log("🖼️ custom_product_image:", custom_product_image);
     return <p>No product selected</p>; // conditions go *after* hooks
   }
 
+  
   // 📌 AddiStud Description
-  const getAddiStudDescription = () => {
-    if (productName === "AddiStud-P") {
-      return (
-        <Card className="border border-blue-200 bg-blue-50 shadow-sm rounded-lg mb-6">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <InfoIcon className="w-5 h-5 text-primary" />
-              <CardTitle className="text-lg font-semibold text-primary">
-                AddiStud-P: Adjustable Dial for Prosthetics
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="text-sm text-gray-700" >
-            {/* Fluctuations in limb size can cause discomfort, instability, and
-            frequent device replacements. AddiStud-P provides seamless
-            adjustment for Trans-Tibial & Trans-Femoral sockets, training, and
-            temporary prostheses. */}{description}{custom_product_image && (
-    <img 
-      src={custom_product_image} 
-      alt="Custom product" 
-      className="mt-3 rounded-md w-full max-w-sm"
-    />
-  )}
-          </CardContent>
-        </Card>
-      );
-    } else if (productName === "AddiStud-O") {
-      return (
-        <Card className="border border-green-200 bg-green-50 shadow-sm rounded-lg mb-6">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <InfoIcon className="w-5 h-5 text-green-600" />
-              <CardTitle className="text-lg font-semibold text-green-800">
-                AddiStud-O: Adjustable Dial for Orthotics
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="text-sm text-gray-700" >
-            {/* {description} */}
-            {description.includes("<a") ? (
-              <div dangerouslySetInnerHTML={{ __html: description }} />
-            ) : (
-              description
-            )}{custom_product_image && (
-    <img 
-      src={custom_product_image} 
-      alt="Custom product" 
-      className="mt-3 rounded-md w-full max-w-sm"
-    />
-  )}
-          </CardContent>
-        </Card>
-      );
-    }
-    return null;
-  };
+ const getProductDescriptionCard = () => {
+  if (!selectedProduct) return null;
+
+  // Handle HTML safely if the description contains tags
+  const safeDescription =
+    description?.includes("<a") || description?.includes("<p")
+      ? <div dangerouslySetInnerHTML={{ __html: description }} />
+      : <p>{description}</p>;
+
+  return (
+    <Card className="border border-gray-200 bg-gray-50 shadow-sm rounded-lg mb-6">
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2">
+          <InfoIcon className="w-5 h-5 text-primary" />
+          <CardTitle className="text-lg font-semibold text-primary">
+            {selectedProduct.item_name}
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="text-sm text-gray-700">
+        {safeDescription}
+
+        {/* ✅ Product image (if exists) */}
+        {custom_product_image && (
+          <img
+            src={custom_product_image}
+            alt={selectedProduct.item_name}
+            className="mt-3 rounded-md w-full max-w-sm"
+          />
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
@@ -318,7 +300,7 @@ console.log("🖼️ custom_product_image:", custom_product_image);
             </ul>
           </CardContent>
         </Card>
-        {getAddiStudDescription()}
+        {getProductDescriptionCard()}
       </div>
 
       {/* RIGHT COLUMN: Buy Card */}

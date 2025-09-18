@@ -9,7 +9,7 @@ import InsolesOrderForm from '../orders/new-order/_child/InsolesOrderForm';
 export default function Products(): React.JSX.Element {
 
   const { data: products, isLoading, error } = useGetProductsListQuery();
-  // console.log("products", products);
+  console.log("products", products);
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load products</p>;
 

@@ -33,6 +33,7 @@ interface EstimateResponse {
   gst_18: string;
   gst_5: string;
   total_price: string;
+  totalDiscount:string;
   customer_available_coins: string;
   design_coin_use: string;
 }
@@ -56,9 +57,10 @@ export const Step5 = ({
   setEstimateConform,
   orderId,
   deviceTypeId,
-  
   user, // Add user prop to access customer_id
-  isViewMode
+  isViewMode,
+  setTotalDiscount,
+  setTotalPrice
 
 }: any) => {
   const [showEstimateCard, setShowEstimateCard] = useState(false);
@@ -173,8 +175,12 @@ export const Step5 = ({
       const response = await getBKEstimate(estimatePayload).unwrap();
 
       console.log('Estimate Response:', response);
+      setTotalDiscount(response?.data?.total_distcounted_price);
+      setTotalPrice(response?.data?.total_price);
       // Parse coins to numbers for comparison
        const data = response.data;
+      
+
 
     // ✅ Safely parse and calculate combined discount
     
@@ -223,7 +229,8 @@ export const Step5 = ({
         setEstimateConform(true);
       }
       // Construct and store orderPayload in local storage
-      const totalDiscount = data.total_distcounted_price;
+      const totalDiscount = data?.total_distcounted_price ?? 0;
+
       const orderPayload = {
         item_type: 'BK',
         customer: user?.customer_id || 'Not specified', // Use user prop

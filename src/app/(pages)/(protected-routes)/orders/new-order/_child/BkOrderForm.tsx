@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/dialog';
 // API Hooks
 import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
-import { useCreateOrderMutation, useGetOrderDetailIdsMutation } from '@/rtk-query/apis/orders';
+import { useCreateOrderMutation, useGetOrderDetailIdsMutation ,useGetBKEstimateMutation} from '@/rtk-query/apis/orders';
 import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
 
 // Constants & Utils
@@ -1640,6 +1640,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [createOrder, { isLoading: isOrderCreating }] = useCreateOrderMutation();
   const [getOrderDetails, { data: orderDetails, isLoading: isOrderDetailsLoading }] =
     useGetOrderDetailIdsMutation();
+      const [getBKEstimate] = useGetBKEstimateMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
   const [selectedItem, setSelectedItem] = React.useState<string>('');
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameByDetailsMutation();
@@ -1656,7 +1657,9 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     open: false,
     data: null
   });
-  // const totalDiscount = data.total_distcounted_price;
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [totalDiscount, setTotalDiscount] = useState(0);
+
   // console.log("totalDiscount",totalDiscount)
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
   const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
@@ -1676,6 +1679,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
   const mode = searchParams.get('mode'); // "view" or null
+
+  
   useEffect(() => {
     if (orderId && deviceTypeId) {
       // console.log('orderId%%deviceTypeId=>', orderId, deviceTypeId)
@@ -1807,6 +1812,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
       const itemCode = await getItemCodeByValues(payload);
       setSelectedItem(itemCode);
 
+
+      
       // Create order payload
       const orderPayload = {
         item_type: 'BK',
@@ -1817,8 +1824,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   },
         item_code: itemCode,
         addicoins: parseInt(values.addicoins),
-        
-        
+        totalPrice:totalPrice,
+        discount_amount:totalDiscount,
       };
 
       console.log("handlePayAndPlaceOrder", orderPayload)
@@ -1848,7 +1855,9 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
             // After successful payment, create the order with payment details
             const finalOrderPayload = {
               ...orderPayload,
-              custom_payment_reference_id: response.razorpay_payment_id
+              custom_payment_reference_id: response.razorpay_payment_id,
+               totalPrice:totalPrice,
+        discount_amount:totalDiscount,
               // razorpay_order_id: response.razorpay_order_id,
               // razorpay_signature: response.razorpay_signature,
               // payment_status: 'paid'
@@ -2161,6 +2170,9 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     return <div className="flex justify-center p-8">Loading order data...</div>;
   }
 
+  console.log("totalDiscount",totalDiscount);
+  console.log("totalPrice",totalPrice);
+
   return (
     <div className="pb-16 relative">
       <Formik
@@ -2344,6 +2356,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 setEstimateConform={setEstimateConform}
                 user={user}
                 isViewMode={isViewMode}
+                setTotalDiscount={setTotalDiscount}
+                setTotalPrice={setTotalPrice}
               />
             )}
 

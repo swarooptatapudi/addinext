@@ -249,6 +249,7 @@ interface SalesOrderDetailsResponse {
 
 interface BKEstimateRequest {
   item_code: string;
+
   design_by: string;
   print_by: string;
   laticess: string;
