@@ -282,11 +282,79 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
       payment_method: "ADDICOINS", // mark as coins payment
     };
 
-    console.log("📦 Base Order Payload (Addicoins):", orderPayload);
+    // console.log("📦 Base Order Payload (Addicoins):", orderPayload);
 
+         const createFormDataWithFiles = (finalOrderPayload: any) => {
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(finalOrderPayload));
+      
+      // Extract and append file uploads
+      const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+        for (const key in obj) {
+          if (obj[key] && typeof obj[key] === 'object') {
+            if (obj[key] instanceof File) {
+              if (key.includes('left_foot') || key.includes('left_foot_file')) {
+                formData.append('left_foot_file', obj[key]);
+              } else if (key.includes('right_foot') || key.includes('right_foot_file')) {
+                formData.append('right_foot_file', obj[key]);
+              } else if (key.includes('obj_file')) {
+                formData.append(`obj_file_${key}`, obj[key]);
+              } else if (key.includes('additional_file')) {
+                formData.append(`additional_file_${key}`, obj[key]);
+              } else {
+                formData.append('left_foot_file', obj[key]);
+              }
+            } else if (obj[key].constructor === FileList) {
+              Array.from(obj[key]).forEach((file: File, index: number) => {
+                if (key.includes('left_foot')) {
+                  formData.append('left_foot_file', file);
+                } else if (key.includes('right_foot')) {
+                  formData.append('right_foot_file', file);
+                } else {
+                  formData.append(`scan_file_${index}`, file);
+                }
+              });
+            } else if (Array.isArray(obj[key])) {
+              obj[key].forEach((item: any, index: number) => {
+                extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+              });
+            } else {
+              extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+            }
+          }
+        }
+      };
+
+      // Extract files from the values object
+      extractAndAppendFiles(values);
+      
+      // Also check for direct file fields in values
+      if (values.left_foot_file && values.left_foot_file instanceof File) {
+        formData.append('left_foot_file', values.left_foot_file);
+      }
+      if (values.right_foot_file && values.right_foot_file instanceof File) {
+        formData.append('right_foot_file', values.right_foot_file);
+      }
+      
+      // Check scan_items for files
+      if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
+        values.scan_items.forEach((item: any, index: number) => {
+          if (item.left_foot_file && item.left_foot_file instanceof File) {
+            formData.append('left_foot_file', item.left_foot_file);
+          }
+          if (item.right_foot_file && item.right_foot_file instanceof File) {
+            formData.append('right_foot_file', item.right_foot_file);
+          }
+        });
+      }
+      
+      return formData;
+    };
+    // 🟢 Step 3: Call API directly — no Razorpay flow
+    const finalFormData = createFormDataWithFiles(orderPayload);
     // 🔹 Step 3: Call API directly — no Razorpay flow
-    const orderResponse = await createInsoleOrder(orderPayload).unwrap();
-    console.log("✅ Order Response:", orderResponse);
+    const orderResponse = await createInsoleOrder(finalFormData).unwrap();
+    // console.log("✅ Order Response:", orderResponse);
 
     // @ts-ignore
     if (orderResponse?.message?.status === "success") {
@@ -300,7 +368,7 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
       throw new Error(orderResponse?.message?.message || "Order creation failed");
     }
   } catch (error: any) {
-    console.error("❌ Addicoins order failed:", error);
+    // console.error(" Addicoins order failed:", error);
     toast.error(error?.message || "Failed to place order using Addicoins");
     setIsPaymentProcessing(false);
   }
@@ -344,11 +412,79 @@ const handlePayLater = async (values: any) => {
       total_price: estimateData?.apiResponse?.total_price ?? 0,
     };
 
-    console.log("📝 Pay Later Order Payload:", orderPayload);
+    // console.log("📝 Pay Later Order Payload:", orderPayload);
 
+     const createFormDataWithFiles = (finalOrderPayload: any) => {
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(finalOrderPayload));
+      
+      // Extract and append file uploads
+      const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+        for (const key in obj) {
+          if (obj[key] && typeof obj[key] === 'object') {
+            if (obj[key] instanceof File) {
+              if (key.includes('left_foot') || key.includes('left_foot_file')) {
+                formData.append('left_foot_file', obj[key]);
+              } else if (key.includes('right_foot') || key.includes('right_foot_file')) {
+                formData.append('right_foot_file', obj[key]);
+              } else if (key.includes('obj_file')) {
+                formData.append(`obj_file_${key}`, obj[key]);
+              } else if (key.includes('additional_file')) {
+                formData.append(`additional_file_${key}`, obj[key]);
+              } else {
+                formData.append('left_foot_file', obj[key]);
+              }
+            } else if (obj[key].constructor === FileList) {
+              Array.from(obj[key]).forEach((file: File, index: number) => {
+                if (key.includes('left_foot')) {
+                  formData.append('left_foot_file', file);
+                } else if (key.includes('right_foot')) {
+                  formData.append('right_foot_file', file);
+                } else {
+                  formData.append(`scan_file_${index}`, file);
+                }
+              });
+            } else if (Array.isArray(obj[key])) {
+              obj[key].forEach((item: any, index: number) => {
+                extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+              });
+            } else {
+              extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+            }
+          }
+        }
+      };
+
+      // Extract files from the values object
+      extractAndAppendFiles(values);
+      
+      // Also check for direct file fields in values
+      if (values.left_foot_file && values.left_foot_file instanceof File) {
+        formData.append('left_foot_file', values.left_foot_file);
+      }
+      if (values.right_foot_file && values.right_foot_file instanceof File) {
+        formData.append('right_foot_file', values.right_foot_file);
+      }
+      
+      // Check scan_items for files
+      if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
+        values.scan_items.forEach((item: any, index: number) => {
+          if (item.left_foot_file && item.left_foot_file instanceof File) {
+            formData.append('left_foot_file', item.left_foot_file);
+          }
+          if (item.right_foot_file && item.right_foot_file instanceof File) {
+            formData.append('right_foot_file', item.right_foot_file);
+          }
+        });
+      }
+      
+      return formData;
+    };
     // 🟢 Step 3: Call API directly — no Razorpay flow
-    const orderResponse = await createInsoleOrder(orderPayload).unwrap();
-    console.log("✅ Order Response:", orderResponse);
+    const finalFormData = createFormDataWithFiles(orderPayload);
+    const orderResponse = await createInsoleOrder(finalFormData).unwrap();
+    // console.log("✅ Order Response:", orderResponse);
+      
  // @ts-ignore
     if (orderResponse?.message?.status === "success") {
       toast.success("Order created successfully");
@@ -360,7 +496,7 @@ const handlePayLater = async (values: any) => {
       throw new Error(orderResponse?.message?.message || "Order creation failed");
     }
   } catch (error: any) {
-    console.error("Order creation failed:", error);
+    // console.error("Order creation failed:", error);
     toast.error(error?.message || "Failed to place order using Addicoins");
   } finally {
     setIsPaymentProcessing(false); // ✅ Always stop loader
@@ -409,7 +545,75 @@ const handlePayLater = async (values: any) => {
         total_price: estimateData?.apiResponse?.total_price ?? 0
       };
 
-      console.log('📦 Base Order Payload:', orderPayload);
+      // console.log('📦 Base Order Payload:', orderPayload);
+
+     const createFormDataWithFiles = (finalOrderPayload: any) => {
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(finalOrderPayload));
+      
+      // Extract and append file uploads
+      const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+        for (const key in obj) {
+          if (obj[key] && typeof obj[key] === 'object') {
+            if (obj[key] instanceof File) {
+              if (key.includes('left_foot') || key.includes('left_foot_file')) {
+                formData.append('left_foot_file', obj[key]);
+              } else if (key.includes('right_foot') || key.includes('right_foot_file')) {
+                formData.append('right_foot_file', obj[key]);
+              } else if (key.includes('obj_file')) {
+                formData.append(`obj_file_${key}`, obj[key]);
+              } else if (key.includes('additional_file')) {
+                formData.append(`additional_file_${key}`, obj[key]);
+              } else {
+                formData.append('left_foot_file', obj[key]);
+              }
+            } else if (obj[key].constructor === FileList) {
+              Array.from(obj[key]).forEach((file: File, index: number) => {
+                if (key.includes('left_foot')) {
+                  formData.append('left_foot_file', file);
+                } else if (key.includes('right_foot')) {
+                  formData.append('right_foot_file', file);
+                } else {
+                  formData.append(`scan_file_${index}`, file);
+                }
+              });
+            } else if (Array.isArray(obj[key])) {
+              obj[key].forEach((item: any, index: number) => {
+                extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+              });
+            } else {
+              extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+            }
+          }
+        }
+      };
+
+      // Extract files from the values object
+      extractAndAppendFiles(values);
+      
+      // Also check for direct file fields in values
+      if (values.left_foot_file && values.left_foot_file instanceof File) {
+        formData.append('left_foot_file', values.left_foot_file);
+      }
+      if (values.right_foot_file && values.right_foot_file instanceof File) {
+        formData.append('right_foot_file', values.right_foot_file);
+      }
+      
+      // Check scan_items for files
+      if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
+        values.scan_items.forEach((item: any, index: number) => {
+          if (item.left_foot_file && item.left_foot_file instanceof File) {
+            formData.append('left_foot_file', item.left_foot_file);
+          }
+          if (item.right_foot_file && item.right_foot_file instanceof File) {
+            formData.append('right_foot_file', item.right_foot_file);
+          }
+        });
+      }
+      
+      return formData;
+    };
+
 
       // 🔹 Step 3: Payment amount (hardcoded for now)
       const amountInPaise = 100000; // Replace later with API order amount * 100
@@ -433,10 +637,10 @@ const handlePayLater = async (values: any) => {
               razorpay_signature: response.razorpay_signature
             };
 
-            console.log('📤 Final Insole Order Payload:', finalOrderPayload);
+            const finalFormData = createFormDataWithFiles(finalOrderPayload);
 
-            const orderResponse = await createInsoleOrder(finalOrderPayload).unwrap();
-            console.log('✅ Order Response:', orderResponse);
+            const orderResponse = await createInsoleOrder(finalFormData).unwrap();
+            // console.log('✅ Order Response:', orderResponse);
 
             // @ts-ignore
             if (orderResponse?.message?.status === 'success') {
@@ -453,7 +657,7 @@ const handlePayLater = async (values: any) => {
             console.error('❌ Order creation failed:', orderError);
 
             if (orderError?.data) {
-              console.error('🔎 Backend error response:', orderError.data);
+              // console.error('🔎 Backend error response:', orderError.data);
               toast.error(
                 `Payment successful but order creation failed: ${
                   orderError.data.message || 'Unknown error'
@@ -500,7 +704,7 @@ const handlePayLater = async (values: any) => {
   };
   const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
-    console.log('Item code fetch response:', res);
+    // console.log('Item code fetch response:', res);
     return res?.data?.item_code;
   };
 

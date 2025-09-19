@@ -217,14 +217,12 @@ const step2Validation = Yup.object().shape({
     left_foot_file: File | null;
     right_foot_file: File | null;
   };
-
   // console.log('Validation Values:', {
   //   foot_side,
   //   custom_upload_link_with_photos,
   //   left_foot_file,
   //   right_foot_file
   // });
-
   // If custom_upload_link_with_photos is provided, validation passes
   if (custom_upload_link_with_photos && custom_upload_link_with_photos.trim()) {
     return true;
@@ -1788,208 +1786,177 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   }, [data, isFormOptionsLoading]);
 
   // Main function for Pay & Place Order
+ // Main function for Pay & Place Order
   const handlePayAndPlaceOrder = async (values: any) => {
-    if (!razorpayKey || !isRazorpayLoaded) {
-      toast.error('Payment gateway is not available. Please try again.');
-      return;
-    }
+  if (!razorpayKey || !isRazorpayLoaded) {
+    toast.error('Payment gateway is not available. Please try again.');
+    return;
+  }
+  setIsPaymentProcessing(true);
+  setFormValues(values);
+  
+  try {
+    // Prepare the order data (same as "Order Now, Pay Later")
+    const payload = {
+      item_type: 'BK',
+      socket_type: values.socket_type,
+      design_variation: values.design_variation,
+      activity_level: values.activity_level,
+      model_name: values.model_name,
+      stump_length: values.stump_length,
+      weight: values.weight
+    };
+    const itemCode = await getItemCodeByValues(payload);
+    setSelectedItem(itemCode);
+    
+    // Create order payload
+    const orderPayload = {
+      item_type: 'BK',
+      customer: user?.customer_id,
+      order_details: {
+        ...values,
+      },
+      item_code: itemCode,
+      addicoins: parseInt(values.addicoins),
+      totalPrice: totalPrice,
+      discount_amount: totalDiscount,
+    };
 
-    setIsPaymentProcessing(true);
-    setFormValues(values);
-
-    try {
-      // Prepare the order data (same as "Order Now, Pay Later")
-      const payload = {
-        item_type: 'BK',
-        socket_type: values.socket_type,
-        design_variation: values.design_variation,
-        activity_level: values.activity_level,
-        model_name: values.model_name,
-        stump_length: values.stump_length,
-        weight: values.weight
-      };
-
-      const itemCode = await getItemCodeByValues(payload);
-      setSelectedItem(itemCode);
-
-
+    // ✅ CREATE FORMDATA FUNCTION (reusable)
+    const createFormDataWithFiles = (basePayload: any) => {
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(basePayload));
       
-      // Create order payload
-      const orderPayload = {
-        item_type: 'BK',
-        customer: user?.customer_id,
-         order_details: {
-    ...values,
-    // totalDiscount: values.totalDiscount || 0 // ✅ safely include it
-  },
-        item_code: itemCode,
-        addicoins: parseInt(values.addicoins),
-        totalPrice:totalPrice,
-        discount_amount:totalDiscount,
+      // Extract and append file uploads
+      const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+        for (const key in obj) {
+          if (obj[key] && typeof obj[key] === 'object') {
+            if (obj[key] instanceof File) {
+              if (key.includes('left_foot') || key.includes('scan_file_left')) {
+                formData.append('scan_file_left', obj[key]);
+              } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
+                formData.append('scan_file_right', obj[key]);
+              } else if (key.includes('obj_file')) {
+                formData.append(`obj_file_${key}`, obj[key]);
+              } else if (key.includes('additional_file')) {
+                formData.append(`additional_file_${key}`, obj[key]);
+              } else {
+                formData.append('scan_file_left', obj[key]);
+              }
+            } else if (obj[key].constructor === FileList) {
+              Array.from(obj[key]).forEach((file: File, index: number) => {
+                if (key.includes('left_foot')) {
+                  formData.append('scan_file_left', file);
+                } else if (key.includes('right_foot')) {
+                  formData.append('scan_file_right', file);
+                } else {
+                  formData.append(`scan_file_${index}`, file);
+                }
+              });
+            } else if (Array.isArray(obj[key])) {
+              obj[key].forEach((item: any, index: number) => {
+                extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+              });
+            } else {
+              extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+            }
+          }
+        }
       };
 
-      console.log("handlePayAndPlaceOrder", orderPayload)
-        // Create FormData for multipart/form-data
-  const formData = new FormData();
-  
-  // Add the main data as JSON string
-  formData.append('data', JSON.stringify(orderPayload));
-  
-  // Extract and append file uploads
-  const extractAndAppendFiles = (obj: any, prefix: string = '') => {
-    for (const key in obj) {
-      if (obj[key] && typeof obj[key] === 'object') {
-        if (obj[key] instanceof File) {
-          // Handle File objects directly
-          if (key.includes('left_foot') || key.includes('scan_file_left')) {
-            formData.append('scan_file_left', obj[key]);
-          } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
-            formData.append('scan_file_right', obj[key]);
-          } else if (key.includes('obj_file')) {
-            formData.append(`obj_file_${key}`, obj[key]);
-          } else if (key.includes('additional_file')) {
-            formData.append(`additional_file_${key}`, obj[key]);
+      // Extract files from the values object
+      extractAndAppendFiles(values);
+      
+      // Also check for direct file fields in values
+      if (values.left_foot_file && values.left_foot_file instanceof File) {
+        formData.append('scan_file_left', values.left_foot_file);
+      }
+      if (values.right_foot_file && values.right_foot_file instanceof File) {
+        formData.append('scan_file_right', values.right_foot_file);
+      }
+      
+      // Check scan_items for files
+      if (values.scan_items && Array.isArray(values.scan_items)) {
+        values.scan_items.forEach((item: any, index: number) => {
+          if (item.left_foot_file && item.left_foot_file instanceof File) {
+            formData.append('scan_file_left', item.left_foot_file);
+          }
+          if (item.right_foot_file && item.right_foot_file instanceof File) {
+            formData.append('scan_file_right', item.right_foot_file);
+          }
+        });
+      }
+      
+      return formData;
+    };
+
+    const amountInPaise = 100000;
+    
+    // Configure Razorpay options
+    const options = {
+      key: razorpayKey,
+      amount: amountInPaise.toString(),
+      currency: 'INR',
+      name: 'Addiwise Company',
+      description: `Payment for BK Order`,
+      handler: async function (response: any) {
+        try {
+          // ✅ Create final payload with payment details
+          const finalOrderPayload = {
+            ...orderPayload,
+            custom_payment_reference_id: response.razorpay_payment_id,
+            totalPrice: totalPrice,
+            discount_amount: totalDiscount,
+          };
+          
+          // ✅ CREATE FORMDATA WITH FILES INSIDE PAYMENT HANDLER
+          const finalFormData = createFormDataWithFiles(finalOrderPayload);
+          
+          console.log('Final Order Payload:', finalOrderPayload);
+          
+          // ✅ SEND FORMDATA (NOT JSON)
+          const orderResponse:any = await createOrder(finalFormData).unwrap();
+          
+          if (orderResponse?.message?.status === 'success') {
+            toast.success('Payment successful! Order created successfully.');
+            setSelectedItem('');
+            setIsPaymentProcessing(false);
+            setFormDisable(true);
+            router.push('/orders');
           } else {
-            // Default to scan file if not specified
-            formData.append('scan_file_left', obj[key]);
+            throw new Error(orderResponse?.message?.message || 'Order creation failed');
           }
-        } else if (obj[key].constructor === FileList) {
-          // Handle FileList objects
-          Array.from(obj[key]).forEach((file: File, index: number) => {
-            if (key.includes('left_foot')) {
-              formData.append('scan_file_left', file);
-            } else if (key.includes('right_foot')) {
-              formData.append('scan_file_right', file);
-            } else {
-              formData.append(`scan_file_${index}`, file);
-            }
-          });
-        } else if (Array.isArray(obj[key])) {
-          // Handle arrays (like scan_items)
-          obj[key].forEach((item: any, index: number) => {
-            extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
-          });
-        } else {
-          // Recursively check nested objects
-          extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+        } catch (orderError) {
+          console.error('Order creation error:', orderError);
+          toast.error(
+            'Payment successful but order creation failed. Please contact support with payment ID: ' +
+            response.razorpay_payment_id
+          );
+          setIsPaymentProcessing(false);
+        }
+      },
+      theme: { color: '#3399cc' },
+      modal: {
+        ondismiss: function () {
+          setIsPaymentProcessing(false);
+          toast.info('Payment cancelled');
         }
       }
-    }
-  };
-  
-  // Extract files from the values object
-  extractAndAppendFiles(values);
-  
-  // Also check for direct file fields in values
-  if (values.left_foot_file && values.left_foot_file instanceof File) {
-    formData.append('scan_file_left', values.left_foot_file);
-  }
-  if (values.right_foot_file && values.right_foot_file instanceof File) {
-    formData.append('scan_file_right', values.right_foot_file);
-  }
-  
-  // Check scan_items for files
-  if (values.scan_items && Array.isArray(values.scan_items)) {
-    values.scan_items.forEach((item: any, index: number) => {
-      if (item.left_foot_file && item.left_foot_file instanceof File) {
-        formData.append('scan_file_left', item.left_foot_file);
-      }
-      if (item.right_foot_file && item.right_foot_file instanceof File) {
-        formData.append('scan_file_right', item.right_foot_file);
-      }
-    });
-  }
+    };
 
-
-      // You'll need to create an API endpoint that calculates order amount
-      // This should return the order amount for payment
-      // const orderAmountResponse = await getOrderAmount(orderPayload).unwrap();
-
-      // if (orderAmountResponse?.status !== "success") {
-      //   throw new Error(orderAmountResponse?.message || "Failed to calculate order amount");
-      // }
-
-      // const orderAmount = orderAmountResponse.data.order_amount;
-      const amountInPaise = 100000;
-
-      // Configure Razorpay options
-      const options = {
-        key: razorpayKey,
-        amount: amountInPaise.toString(),
-        currency: 'INR',
-        name: 'Addiwise Company',
-        description: `Payment for BK Order`,
-        handler: async function (response: any) {
-          // console.log('Payment Success:', response);
-
-          try {
-            // After successful payment, create the order with payment details
-            const finalOrderPayload = {
-              ...orderPayload,
-              custom_payment_reference_id: response.razorpay_payment_id,
-               totalPrice:totalPrice,
-              discount_amount:totalDiscount,
-              // razorpay_order_id: response.razorpay_order_id,
-              // razorpay_signature: response.razorpay_signature,
-              // payment_status: 'paid'
-            };
-
-            console.log('Final Order Payload:', finalOrderPayload);
-            const orderResponse = await createOrder(finalOrderPayload).unwrap();
-            // @ts-ignore
-            if (orderResponse?.message?.status === 'success') {
-              toast.success('Payment successful! Order created successfully.');
-              setSelectedItem('');
-
-              setIsPaymentProcessing(false);
-              setFormDisable(true)
-              router.push('/orders');
-            } else {
-              // @ts-ignore
-              throw new Error(orderResponse?.message?.message || 'Order creation failed');
-            }
-          } catch (orderError) {
-            // console.error('Order creation error:', orderError);
-            toast.error(
-              'Payment successful but order creation failed. Please contact support with payment ID: ' +
-              response.razorpay_payment_id
-            );
-            setIsPaymentProcessing(false);
-          }
-        },
-        // prefill: {
-        //   name: user?.name || '',
-        //   email: user?.email || '',
-        //   contact: user?.mobile || '',
-        // },
-        // notes: {
-        //   item_type: 'BK',
-        //   customer_id: user?.customer_id,
-        // },
-        theme: { color: '#3399cc' },
-        modal: {
-          ondismiss: function () {
-            setIsPaymentProcessing(false);
-            toast.info('Payment cancelled');
-          }
-        }
-      };
-
-      const rzp = new window.Razorpay(options);
-
-      rzp.on('payment.failed', function (response: any) {
-        // console.error('Payment failed:', response);
-        setIsPaymentProcessing(false);
-        toast.error(`Payment failed: ${response.error.description}`);
-      });
-
-      rzp.open();
-    } catch (error) {
-      // console.error('Payment preparation error:', error);
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', function (response: any) {
       setIsPaymentProcessing(false);
-      toast.error('Failed to prepare payment. Please try again.');
-    }
-  };
+      toast.error(`Payment failed: ${response.error.description}`);
+    });
+    rzp.open();
+    
+  } catch (error) {
+    console.error('Payment preparation error:', error);
+    setIsPaymentProcessing(false);
+    toast.error('Failed to prepare payment. Please try again.');
+  }
+};
 
   const handleConfirmOrder = () => {
     const payload: any = {};

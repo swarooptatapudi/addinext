@@ -499,7 +499,7 @@ export const INSOLES_FORM_INITIAL_VALUES = {
   metatarsal_length: '',
   metatarsal_width: '',
   insole_model: '',
-
+custom_scan_type:'',
   print_by: '',
   table_zbib: [
     {

@@ -164,10 +164,10 @@ export default function BuyProductsPage() {
 
 
 const custom_product_image = selectedProduct?.custom_product_image; // Or whatever field holds the image
-console.log("🖼️ custom_product_image:", custom_product_image);
+// console.log("🖼️ custom_product_image:", custom_product_image);
 
   const description = selectedProduct?.description || "";
-  console.log("description",description)
+  // console.log("description",description)
   // ✅ MRP & Discount come from selected product
   const mrp = selectedProduct?.mrp || 0;
   // console.log("mrp", mrp);

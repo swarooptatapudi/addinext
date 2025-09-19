@@ -181,7 +181,7 @@ export default function Orders(): React.JSX.Element {
 
   // navigate on order click
   const handleOrderIdClick = (order: Order) => {
-    console.log("order>>>",order);
+    // console.log("order>>>",order);
     setSelectedOrder(order);
 
     if (order.device_type === "BK Orders") {
@@ -216,7 +216,7 @@ export default function Orders(): React.JSX.Element {
         <span
           className="cursor-pointer hover:underline hover:text-blue-500"
           onClick={() => {
-            console.log("🟢 Row data clicked:", row.original);
+            // console.log("🟢 Row data clicked:", row.original);
             handleOrderIdClick(row.original);
           }}
         >

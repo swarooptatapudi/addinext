@@ -9,7 +9,7 @@ import InsolesOrderForm from '../orders/new-order/_child/InsolesOrderForm';
 export default function Products(): React.JSX.Element {
 
   const { data: products, isLoading, error } = useGetProductsListQuery();
-  console.log("products", products);
+  // console.log("products", products);
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load products</p>;
 
@@ -70,7 +70,7 @@ export default function Products(): React.JSX.Element {
         <div className="flex flex-wrap gap-x-8 gap-y-6">
           {orthotics?.map((orthotic: any) => (
             <ProductItem
-              key={orthotic.name}
+              key={orthotic.item_name}
               src={orthotic.image || "/assets/placeholder.jpg"}
               label={orthotic.item_name}
               href={
@@ -91,7 +91,7 @@ export default function Products(): React.JSX.Element {
         <div className="flex flex-wrap gap-x-8 gap-y-6">
           {offtheself?.map((offtheself: any) => (
             <ProductItem
-              key={offtheself.name}
+              key={offtheself.item_name}
               src={offtheself.image}
               label={offtheself.item_name}
               href={`/products/buyproducts?name=${encodeURIComponent(offtheself.item_name)}`}
@@ -107,7 +107,7 @@ export default function Products(): React.JSX.Element {
         <div className="flex flex-wrap gap-x-8 gap-y-6">
           {scanners?.map((scanners: any) => (
             <ProductItem
-              key={scanners.name}
+              key={scanners.item_name}
               src={scanners.image || "/assets/placeholder.jpg"}
               label={scanners.item_name}
               href={`/products/buyproducts?name=${encodeURIComponent(scanners.item_name)}`}
@@ -125,7 +125,7 @@ export default function Products(): React.JSX.Element {
         <div className="flex flex-wrap gap-x-8 gap-y-6">
           {printer?.map((printer: any) => (
             <ProductItem
-              key={printer.name}
+              key={printer.item_name}
               src={printer.image || "/assets/placeholder.jpg"}
               label={printer.item_name}
               href={`/products/buyproducts?name=${encodeURIComponent(printer.item_name)}`}

@@ -200,32 +200,33 @@ const step2Validation = Yup.object()
     custom_upload_link_with_photos: Yup.string()
       .url('Must be a valid URL (e.g., https://drive.google.com/...)')
       .nullable(),
-    scan_type: Yup.string().required('Scan condition is required'),
-    foot_Amputation: Yup.string().when('scan_type', {
+    custom_scan_type: Yup.string().required('Scan condition is required'),
+    foot_Amputation: Yup.string().when('custom_scan_type', {
       is: '3D_scan',
       then: (schema) => schema.required('Foot amputation is required'),
       otherwise: (schema) => schema.nullable()
     }),
+    
     left_foot_file: Yup.mixed().nullable(),
     right_foot_file: Yup.mixed().nullable(),
     additional_file_1: Yup.mixed().nullable(),
     additional_file_2: Yup.mixed().nullable()
   })
 
-  // 🔹 Test 1 → STL files or Link (only if scan_type === "3D_scan")
+  // 🔹 Test 1 → STL files or Link (only if custom_scan_type === "3D_scan")
   .test(
     'files-or-link',
     'Upload required: Either a valid link OR the necessary STL file(s).',
     function (value) {
       const {
-        scan_type,
+        custom_scan_type,
         left_foot_file,
         right_foot_file,
         custom_upload_link_with_photos,
         foot_Amputation
       } = value;
 
-      if (scan_type !== '3D_scan') return true; // ✅ Skip when not 3D scan
+      if (custom_scan_type !== '3D_scan') return true; // ✅ Skip when not 3D scan
 
       if (custom_upload_link_with_photos && custom_upload_link_with_photos.trim()) {
         return true;
@@ -245,14 +246,14 @@ const step2Validation = Yup.object()
     }
   )
 
-  // 🔹 Test 2 → Additional files validation (only if scan_type === "image")
+  // 🔹 Test 2 → Additional files validation (only if custom_scan_type === "image")
   .test(
     'validate-additional-files',
     'Both Left and Right Leg files are required',
     function (value) {
-      const { scan_type, additional_file_1, additional_file_2 } = value;
+      const { custom_scan_type, additional_file_1, additional_file_2 } = value;
 
-      if (scan_type !== 'image') return true; // ✅ Skip when not image
+      if (custom_scan_type !== 'image') return true; // ✅ Skip when not image
 
       if (additional_file_1 && additional_file_2) {
         return true;
@@ -269,14 +270,14 @@ const step2Validation = Yup.object()
 //   custom_upload_link_with_photos: Yup.string()
 //     .url('Must be a valid URL (e.g., https://drive.google.com/...)')
 //     .nullable(),
-//   scan_type: Yup.string().required('Scan condition is required'),
+//   custom_scan_type: Yup.string().required('Scan condition is required'),
 //   foot_Amputation: Yup.string().required('Foot amputation is required'),
 
 // });
 // const step2Validation = Yup.object()
 //   .shape({
 //     custom_upload_link_with_photos: Yup.string().url('Must be a valid URL').nullable(),
-//     scan_type: Yup.string().required('Scan condition is required'),
+//     custom_scan_type: Yup.string().required('Scan condition is required'),
 //     foot_Amputation: Yup.string().required('Foot amputation is required'),
 //     left_foot_file: Yup.mixed().nullable(),
 //     right_foot_file: Yup.mixed().nullable(),
@@ -1110,16 +1111,16 @@ const Step2 = ({
             ]}
             label="Scan Type"
             required={true}
-            value={values.scan_type}
-            onValueChange={handleChange('scan_type')}
-            inVaild={shouldShowError('scan_type', true)}
-            error={errors.scan_type}
+            value={values.custom_scan_type}
+            onValueChange={handleChange('custom_scan_type')}
+            inVaild={shouldShowError('custom_scan_type', true)}
+            error={errors.custom_scan_type}
           />
         </div>
       </div>
 
       {/* Show only if Scan Type = 3D Scan */}
-      {values.scan_type === '3D_scan' && (
+      {values.custom_scan_type === '3D_scan' && (
         <>
           <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
           <div className="grid grid-cols-8 gap-4">
@@ -1144,18 +1145,18 @@ const Step2 = ({
             {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
               <div className="w-fit justify-center">
                 <StlFilePicker
-                  label="Upload  file (left foot)"
-                  buttonText="Left Foot"
-                  accept={['.stl']}
-                  onFileSelect={(fileUrl) => {
-                    if (fileUrl) {
-                      setFieldValue('left_foot_file', fileUrl); // ✅ update formik
-                    } else {
-                      setFieldValue('left_foot_file', null); // ✅ clear if removed
-                    }
-                  }}
-                  // onFileSelect={(file) => console.log('Left Foot STL selected:', file?.name)}
-                />{' '}
+  label="Upload file (left foot)"
+  buttonText="Left Foot"
+  accept={['.stl']}
+  onFileSelect={(file) => {
+    if (file) {
+      setFieldValue('left_foot_file', file); // ✅ store actual File object
+    } else {
+      setFieldValue('left_foot_file', null);
+    }
+  }}
+/>
+
                 {shouldShowError('left_foot_file', true) && (
                   <p className="text-xs text-red-500 mt-1">{errors.left_foot_file}</p>
                 )}
@@ -1164,19 +1165,18 @@ const Step2 = ({
 
             {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
               <div className="w-fit">
-                <StlFilePicker
-                  label="Upload  file (Right foot)"
-                  buttonText="Right Foot"
-                  accept={['.stl']}
-                  onFileSelect={(fileUrl) => {
-                    if (fileUrl) {
-                      setFieldValue('right_foot_file', fileUrl); // ✅ update formik
-                    } else {
-                      setFieldValue('right_foot_file', null); // ✅ clear if removed
-                    }
-                  }}
-                  // onFileSelect={(file) => console.log('Right Foot STL selected:', file?.name)}
-                />{' '}
+               <StlFilePicker
+  label="Upload file (right foot)"
+  buttonText="Right Foot"
+  accept={['.stl']}
+  onFileSelect={(file) => {
+    if (file) {
+      setFieldValue('right_foot_file', file); // ✅ store actual File object
+    } else {
+      setFieldValue('right_foot_file', null);
+    }
+  }}
+/>
                 {shouldShowError('left_foot_file', true) && (
                   <p className="text-xs text-red-500 mt-1">{errors.left_foot_file}</p>
                 )}
@@ -1196,9 +1196,9 @@ const Step2 = ({
                 buttonText="Left Leg"
                 onFileSelect={(fileUrl) => {
                   if (fileUrl) {
-                    console.log(' File selected:', fileUrl);
+                    // console.log(' File selected:', fileUrl);
                   } else {
-                    console.log('No file selected or file removed');
+                    // console.log('No file selected or file removed');
                   }
                 }}
               />
@@ -1211,7 +1211,7 @@ const Step2 = ({
                 buttonText="Right Leg"
                 onFileSelect={(fileUrl) => {
                   if (fileUrl) {
-                    console.log(' File selected:', fileUrl);
+                    // console.log(' File selected:', fileUrl);
                   } else {
                     console.log('No file selected or file removed');
                   }
@@ -1221,7 +1221,7 @@ const Step2 = ({
           </div>
         </>
       )}
-      {values.scan_type === 'image' && (
+      {values.custom_scan_type === 'image' && (
         <>
           <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
           <div className="grid grid-cols-8 gap-4">
@@ -1531,14 +1531,14 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   }, [orderDetails]);
 
   useEffect(() => {
-    console.log('Form Values Updated:', formValues);
+    // console.log('Form Values Updated:', formValues);
     const activityLevel = mapActivityLevel(formValues.activity_level);
     const t = getThickness(
       formValues.insole_model,
       Number(formValues.weight) || 0,
       formValues.activity_level as 'K1' | 'K2' | 'K3' | 'K4'
     );
-    console.log('Calculated Thickness (from getThickness):', t, typeof t);
+    // console.log('Calculated Thickness (from getThickness):', t, typeof t);
     setThickness(String(t)); // convert number to string
     // if using Formik, also sync the form value:
     // formik.setFieldValue('thickness', t);
@@ -1670,77 +1670,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
       },
       item_code: itemCode
     };
- // Create FormData for multipart/form-data
-  const formData = new FormData();
-  
-  // Add the main data as JSON string
-  formData.append('data', JSON.stringify(orderPayload));
-  
-  // Extract and append file uploads
-  const extractAndAppendFiles = (obj: any, prefix: string = '') => {
-    for (const key in obj) {
-      if (obj[key] && typeof obj[key] === 'object') {
-        if (obj[key] instanceof File) {
-          // Handle File objects directly
-          if (key.includes('left_foot') || key.includes('scan_file_left')) {
-            formData.append('scan_file_left', obj[key]);
-          } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
-            formData.append('scan_file_right', obj[key]);
-          } else if (key.includes('obj_file')) {
-            formData.append(`obj_file_${key}`, obj[key]);
-          } else if (key.includes('additional_file')) {
-            formData.append(`additional_file_${key}`, obj[key]);
-          } else {
-            // Default to scan file if not specified
-            formData.append('scan_file_left', obj[key]);
-          }
-        } else if (obj[key].constructor === FileList) {
-          // Handle FileList objects
-          Array.from(obj[key]).forEach((file: File, index: number) => {
-            if (key.includes('left_foot')) {
-              formData.append('scan_file_left', file);
-            } else if (key.includes('right_foot')) {
-              formData.append('scan_file_right', file);
-            } else {
-              formData.append(`scan_file_${index}`, file);
-            }
-          });
-        } else if (Array.isArray(obj[key])) {
-          // Handle arrays (like scan_items)
-          obj[key].forEach((item: any, index: number) => {
-            extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
-          });
-        } else {
-          // Recursively check nested objects
-          extractAndAppendFiles(obj[key], `${prefix}${key}.`);
-        }
-      }
-    }
-  };
-  
-  // Extract files from the values object
-  extractAndAppendFiles(values);
-  
-  // Also check for direct file fields in values
-  if (values.left_foot_file && values.left_foot_file instanceof File) {
-    formData.append('scan_file_left', values.left_foot_file);
-  }
-  if (values.right_foot_file && values.right_foot_file instanceof File) {
-    formData.append('scan_file_right', values.right_foot_file);
-  }
-  
-  // Check scan_items for files
-  if (values.scan_items && Array.isArray(values.scan_items)) {
-    values.scan_items.forEach((item: any, index: number) => {
-      if (item.left_foot_file && item.left_foot_file instanceof File) {
-        formData.append('scan_file_left', item.left_foot_file);
-      }
-      if (item.right_foot_file && item.right_foot_file instanceof File) {
-        formData.append('scan_file_right', item.right_foot_file);
-      }
-    });
-  }
-
+ 
     // createInsoleOrder(orderPayload); // store for later payment step
     setShowStep5Confirmation(true); // open confirmation dialog
     setShowPriceSummary(true); // show price summary

@@ -184,69 +184,69 @@ export function getThickness(
     weightKg: number,
     activity: "K1" | "K2" | "K3" | "K4"
 ): number {
-    console.log("➡️ getThickness called with:", { model, weightKg, activity });
+    // console.log("➡️ getThickness called with:", { model, weightKg, activity });
 
     if (model === "AddiSole") {
-        console.log("📌 Model: AddiSole");
+        // console.log("📌 Model: AddiSole");
 
         if (weightKg <= 60) {
-            console.log("🔎 Weight range: 0-60", "activity:", activity);
+            // console.log("🔎 Weight range: 0-60", "activity:", activity);
             if (activity === "K1" || activity === "K2") {
-                console.log("✅ Matched K1 or K2 → Thickness = 2.5");
+                // console.log("✅ Matched K1 or K2 → Thickness = 2.5");
                 return 2.5;
             }
             if (activity === "K3") {
-                console.log("✅ Matched K3 → Thickness = 2.5");
+                // console.log("✅ Matched K3 → Thickness = 2.5");
                 return 2.5;
             }
             if (activity === "K4") {
-                console.log("✅ Matched K4 → Thickness = 3");
+                // console.log("✅ Matched K4 → Thickness = 3");
                 return 3;
             }
         }
 
         if (weightKg <= 80) {
-            console.log("🔎 Weight range: 61-80", "activity:", activity);
+            // console.log("🔎 Weight range: 61-80", "activity:", activity);
             if (activity === "K1" || activity === "K2") {
-                console.log("✅ Matched K1 or K2 → Thickness = 3");
+                // console.log("✅ Matched K1 or K2 → Thickness = 3");
                 return 3;
             }
             if (activity === "K3" || activity === "K4") {
-                console.log("✅ Matched K3 or K4 → Thickness = 3.5");
+                // console.log("✅ Matched K3 or K4 → Thickness = 3.5");
                 return 3.5;
             }
         }
 
         if (weightKg <= 100) {
-            console.log("🔎 Weight range: 81-100 → Thickness = 3.5");
+            // console.log("🔎 Weight range: 81-100 → Thickness = 3.5");
             return 3.5;
         }
 
-        console.log("🔎 Weight range: 100+ → Thickness = 4");
+        // console.log("🔎 Weight range: 100+ → Thickness = 4");
         return 4;
     }
 
     if (model === "AddiSoleEco") {
-        console.log("📌 Model: AddiSoleEco");
+        // console.log("📌 Model: AddiSoleEco");
 
         if (weightKg <= 60) {
-            console.log("🔎 Weight range: 0-60 → Thickness = 3");
+            // console.log("🔎 Weight range: 0-60 → Thickness = 3");
             return 3;
         }
         if (weightKg <= 80) {
-            console.log("🔎 Weight range: 61-80 → Thickness = 3.5");
+            // console.log("🔎 Weight range: 61-80 → Thickness = 3.5");
             return 3.5;
         }
         if (weightKg <= 100) {
-            console.log("🔎 Weight range: 81-100 → Thickness = 3.5");
+            // console.log("🔎 Weight range: 81-100 → Thickness = 3.5");
             return 3.5;
         }
 
-        console.log("🔎 Weight range: 100+ → Thickness = 4");
+        // console.log("🔎 Weight range: 100+ → Thickness = 4");
         return 4;
     }
 
-    console.warn("⚠️ Unknown model. Returning fallback thickness = 0");
+    // console.warn("⚠️ Unknown model. Returning fallback thickness = 0");
     return 0;
 }
 
