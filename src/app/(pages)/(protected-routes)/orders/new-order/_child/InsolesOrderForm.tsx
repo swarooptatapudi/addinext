@@ -100,80 +100,80 @@ const step1Validation = Yup.object().shape({
     .test('min-value', 'Size must be at least 20', (value) => parseInt(value) >= 20)
     .test('max-value', 'Size must be no more than 60', (value) => parseInt(value) <= 45),
  
-foot_length: Yup.string()
+// foot_length: Yup.string()
+//     .required(FORMIK_ERRORS.REQUIRED)
+//     .matches(/^\d+$/, 'Must contain only digits')
+//     .test('min-value', 'foot length must be at least 5', (value) => parseInt(value) >= 5)
+//     .test('max-value', 'foot length must be no more than 50', (value) => parseInt(value) <= 25),
+//   custom_metatarsal_to_heel_length: Yup.string()
+//     .required(FORMIK_ERRORS.REQUIRED)
+//     .matches(/^\d+$/, 'Must contain only digits')
+//     .test('min-value', 'metatarsal length must be at least 3', (value) => parseInt(value) >= 3)
+//     .test(
+//       'max-value',
+//       'metatarsal length must be no more than 45',
+//       (value) => parseInt(value) <= 45
+//     ),
+//   custom_metatarsal_width_cm: Yup.string()
+//     .required(FORMIK_ERRORS.REQUIRED)
+//     .matches(/^\d+$/, 'Must contain only digits')
+//     .test('min-value', 'metatarsal width must be at least 3', (value) => parseInt(value) >= 3)
+//     .test(
+//       'max-value',
+//       'metatarsal width must be no more than 25',
+//       (value) => parseInt(value) <= 25
+//     ),
+     foot_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, 'Must contain only digits')
-    .test('min-value', 'foot length must be at least 5', (value) => parseInt(value) >= 5)
-    .test('max-value', 'foot length must be no more than 50', (value) => parseInt(value) <= 25),
+    .matches(/^\d+$/, "Must contain only digits")
+    .test("min-value", "Foot length must be at least 5", (value) => parseInt(value || "0") >= 5)
+    .test("max-value", "Foot length must be no more than 50", (value) => parseInt(value || "0") <= 50)
+    .test(
+      "greater-than-heel",
+      "Foot length must be greater than heel length",
+      function (value) {
+        const { custom_metatarsal_to_heel_length } = this.parent;
+        if (!value || !custom_metatarsal_to_heel_length) return true; // Skip if empty (handled by required)
+        return parseInt(value) > parseInt(custom_metatarsal_to_heel_length);
+      }
+    ),
+
   custom_metatarsal_to_heel_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, 'Must contain only digits')
-    .test('min-value', 'metatarsal length must be at least 3', (value) => parseInt(value) >= 3)
+    .matches(/^\d+$/, "Must contain only digits")
     .test(
-      'max-value',
-      'metatarsal length must be no more than 45',
-      (value) => parseInt(value) <= 45
+      "min-value",
+      "Metatarsal length must be at least 3",
+      (value) => parseInt(value || "0") >= 3
+    )
+    .test(
+      "max-value",
+      "Metatarsal length must be no more than 45",
+      (value) => parseInt(value || "0") <= 45
+    )
+    .test(
+      "greater-than-width",
+      "Heel length must be greater than metatarsal width",
+      function (value) {
+        const { custom_metatarsal_width_cm } = this.parent;
+        if (!value || !custom_metatarsal_width_cm) return true;
+        return parseInt(value) > parseInt(custom_metatarsal_width_cm);
+      }
     ),
+
   custom_metatarsal_width_cm: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, 'Must contain only digits')
-    .test('min-value', 'metatarsal width must be at least 3', (value) => parseInt(value) >= 3)
+    .matches(/^\d+$/, "Must contain only digits")
     .test(
-      'max-value',
-      'metatarsal width must be no more than 25',
-      (value) => parseInt(value) <= 25
+      "min-value",
+      "Metatarsal width must be at least 3",
+      (value) => parseInt(value || "0") >= 3
+    )
+    .test(
+      "max-value",
+      "Metatarsal width must be no more than 25",
+      (value) => parseInt(value || "0") <= 25
     ),
-  //    foot_length: Yup.string()
-  //   .required(FORMIK_ERRORS.REQUIRED)
-  //   .matches(/^\d+$/, "Must contain only digits")
-  //   .test("min-value", "Foot length must be at least 5", (value) => parseInt(value || "0") >= 5)
-  //   .test("max-value", "Foot length must be no more than 50", (value) => parseInt(value || "0") <= 50)
-  //   .test(
-  //     "greater-than-heel",
-  //     "Foot length must be greater than heel length",
-  //     function (value) {
-  //       const { custom_metatarsal_to_heel_length } = this.parent;
-  //       if (!value || !custom_metatarsal_to_heel_length) return true; // Skip if empty (handled by required)
-  //       return parseInt(value) > parseInt(custom_metatarsal_to_heel_length);
-  //     }
-  //   ),
-
-  // custom_metatarsal_to_heel_length: Yup.string()
-  //   .required(FORMIK_ERRORS.REQUIRED)
-  //   .matches(/^\d+$/, "Must contain only digits")
-  //   .test(
-  //     "min-value",
-  //     "Metatarsal length must be at least 3",
-  //     (value) => parseInt(value || "0") >= 3
-  //   )
-  //   .test(
-  //     "max-value",
-  //     "Metatarsal length must be no more than 45",
-  //     (value) => parseInt(value || "0") <= 45
-  //   )
-  //   .test(
-  //     "greater-than-width",
-  //     "Heel length must be greater than metatarsal width",
-  //     function (value) {
-  //       const { custom_metatarsal_width_cm } = this.parent;
-  //       if (!value || !custom_metatarsal_width_cm) return true;
-  //       return parseInt(value) > parseInt(custom_metatarsal_width_cm);
-  //     }
-  //   ),
-
-  // custom_metatarsal_width_cm: Yup.string()
-  //   .required(FORMIK_ERRORS.REQUIRED)
-  //   .matches(/^\d+$/, "Must contain only digits")
-  //   .test(
-  //     "min-value",
-  //     "Metatarsal width must be at least 3",
-  //     (value) => parseInt(value || "0") >= 3
-  //   )
-  //   .test(
-  //     "max-value",
-  //     "Metatarsal width must be no more than 25",
-  //     (value) => parseInt(value || "0") <= 25
-  //   ),
   // shoe_width: Yup.string()
   //   .required(FORMIK_ERRORS.REQUIRED)
   //   .matches(/^\d+$/, 'Must contain only digits')
@@ -699,6 +699,23 @@ const Step1 = ({
       ...option
     }));
   }, [values.socket_type, values.design_variation, FORM_OPTIONS]);
+  const footProblemOptions = [
+  { id: 'plantar-fascitis', label: 'Plantar Fascitis', group: 'Heel Pain' },
+  { id: 'heel-spur', label: 'Heel Spur', group: 'Heel Pain' },
+  { id: 'flat-feet', label: 'Flat Feet', group: 'Arch Pain' },
+  { id: 'pronation', label: 'Pronation', group: 'Arch Pain' },
+  { id: 'metatarsalgia', label: 'Metatarsalgia', group: 'Metatarsal Pain' },
+  { id: 'mortons-neuroma', label: 'Mortons Neuroma', group: 'Metatarsal Pain' },
+  { id: 'heel-deformity', label: 'Heel Deformity', group: 'Ankle Pain' },
+  { id: 'ankle-pain', label: 'Ankle Pain', group: 'Ankle Pain' },
+  { id: 'osteoarthritis', label: 'Osteoarthritis', group: 'Knee Pain' },
+  { id: 'corn', label: 'Corn', group: 'Skin Issues' },
+  { id: 'calluses', label: 'Calluses', group: 'Skin Issues' },
+  { id: 'achiles-tendonitis', label: 'Achilles Tendonitis', group: 'Ach Tend.' },
+  { id: 'neuroma', label: 'Neuroma', group: 'Diabetic' },
+  { id: 'shin-pain', label: 'Shin Pain', group: 'Shin Splint' },
+  { id: 'high-arches', label: 'High Arches', group: 'Lateral Foot Pain' }
+];
 
   return (
     <div className="flex flex-col gap-6">
@@ -1019,32 +1036,25 @@ const Step1 = ({
         <h6 className="text-2xl font-bold text-[16px] ml-5 text-primary">
           FOOT COMPLAINTS/ PROBLEMS
         </h6>
-        <div className="grid grid-cols-2 gap-4 mr-40 mb-5">
-          <CheckboxGroup
-            options={[
-              { id: 'plantar-fascitis', label: 'Plantar Fascitis', group: 'Heel Pain' },
-              { id: 'heel-spur', label: 'Heel Spur', group: 'Heel Pain' },
-              { id: 'flat-feet', label: 'Flat Feet', group: 'Arch Pain' },
-              { id: 'pronation', label: 'Pronation', group: 'Arch Pain' },
-              { id: 'metatarsalgia', label: 'Metatarsalgia', group: 'Metatarsal Pain' },
-              { id: 'mortons-neuroma', label: 'Mortons Neuroma', group: 'Metatarsal Pain' },
-              { id: 'heel-deformity', label: 'Heel Deformity', group: 'Ankle Pain' },
-              { id: 'ankle-pain', label: 'Ankle Pain', group: 'Ankle Pain' },
-              { id: 'osteoarthritis', label: 'Osteoarthritis', group: 'Knee Pain' },
-              { id: 'corn', label: 'Corn', group: 'Skin Issues' },
-              { id: 'calluses', label: 'Calluses', group: 'Skin Issues' },
-              { id: 'achiles-tendonitis', label: 'Achilles Tendonitis', group: 'Ach Tend.' },
-              { id: 'neuroma', label: 'Neuroma', group: 'Diabetic' },
-              { id: 'shin-pain', label: 'Shin Pain', group: 'Shin Splint' },
-              { id: 'high-arches', label: 'High Arches', group: 'Lateral Foot Pain' }
-            ]}
-            selectedOptions={selectedOptions}
-            onChange={(newSelectedOptions) => {
-              setSelectedOptions(newSelectedOptions);
-              setFieldValue('selected_foot_conditions', newSelectedOptions);
-            }}
-          />
-        </div>
+       <div className="grid grid-cols-2 gap-4 mr-40 mb-5">
+  <CheckboxGroup
+    options={footProblemOptions}
+    selectedOptions={selectedOptions}
+    onChange={(newSelectedOptions) => {
+      const selectedMapped = newSelectedOptions.map((id) => {
+        const option = footProblemOptions.find((opt) => opt.id === id);
+        return {
+          complaint: option?.group || "",
+          foot_problems: option?.label || ""
+        };
+      });
+
+      setSelectedOptions(newSelectedOptions);
+      setFieldValue("foot_complaints", selectedMapped);
+    }}
+  />
+</div>
+
       </div>
 
       <InsolesDialog
@@ -1446,8 +1456,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                     pressure_mm: item.pressure_mm || ''
                   }))
                 : [{ point_name: '', pressure_mm: '' }],
-              selected_foot_conditions: response.data.selected_foot_conditions?.length
-                ? response.data.selected_foot_conditions
+              foot_complaints: response.data.foot_complaints?.length
+                ? response.data.foot_complaints
                 : ['']
             };
 
@@ -1505,7 +1515,6 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
         foot_length: apiData.foot_length_cm || '',
         insoletype: matchedUsage ? matchedUsage.value : '',
         thickness: apiData.thickness_mm || '',
-
         design_variation: apiData.custom_design_by || '',
         Print_by: apiData.custom_print_by || '',
         insole_model: apiData.custom_insoles_model || '',
@@ -1515,11 +1524,11 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
             point_name: item.point_name || '',
             pressure_mm: item.pressure_mm || ''
           })) || INSOLES_FORM_INITIAL_VALUES.table_zbib,
-        selected_foot_conditions:
-          apiData.selected_foot_conditions || INSOLES_FORM_INITIAL_VALUES.selected_foot_conditions
+        foot_complaints:
+          apiData.foot_complaints || INSOLES_FORM_INITIAL_VALUES.foot_complaints
       });
     }
-  }, [orderDetails, skipValidation]);
+  }, [orderDetails]);
 
   useEffect(() => {
     console.log('Form Values Updated:', formValues);

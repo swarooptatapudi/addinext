@@ -555,7 +555,7 @@ export const INSOLES_FORM_INITIAL_VALUES = {
       pressure_mm: ''
     }
   ],
-  selected_foot_conditions: [],
+  foot_complaints: [],
 };
 
 export const BE_FORM_INITIAL_VALUES = {
