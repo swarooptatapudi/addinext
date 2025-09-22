@@ -186,7 +186,7 @@ export function getThickness(
 ): number {
     // console.log("➡️ getThickness called with:", { model, weightKg, activity });
 
-    if (model === "AddiSole") {
+    if (model === "AddiSole" || model === "AddiSoleL") {
         // console.log("📌 Model: AddiSole");
 
         if (weightKg <= 60) {
