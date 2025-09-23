@@ -64,7 +64,7 @@ function Model({ url, fileType, mtlUrl, textureUrl }: {
 
   return <primitive object={obj} scale={0.5} />;
 }
-
+//here is  the code
 
     case ".ply": {
       const ply = useLoader(PLYLoader, url);
@@ -181,7 +181,7 @@ const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
     return;
   }
 
-  const maxSize = 25 * 1024 * 1024; // 25MB
+  const maxSize = 50 * 1024 * 1024; // 25MB
   if (f.size > maxSize) {
     setError('File size exceeds 25MB limit.');
     return;

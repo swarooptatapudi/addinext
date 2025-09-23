@@ -368,8 +368,8 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
       throw new Error(orderResponse?.message?.message || "Order creation failed");
     }
   } catch (error: any) {
-    // console.error(" Addicoins order failed:", error);
-    toast.error(error?.message || "Failed to place order using Addicoins");
+    console.error(" Addicoins order failed:", error);
+    toast.error(error?.message ||"order creation failed.");
     setIsPaymentProcessing(false);
   }
 };
@@ -568,6 +568,8 @@ const handlePayLater = async (values: any) => {
                 formData.append('left_foot_file', obj[key]);
               }
             } else if (obj[key].constructor === FileList) {
+              //  Check and Vlaidate this code again with LLM tools .  ask like large files giviign 413 error
+              // do now
               Array.from(obj[key]).forEach((file: File, index: number) => {
                 if (key.includes('left_foot')) {
                   formData.append('left_foot_file', file);
@@ -610,7 +612,7 @@ const handlePayLater = async (values: any) => {
           }
         });
       }
-      
+      // wirte here ole logic.  check upload size of files. let me knwo
       return formData;
     };
 
@@ -639,8 +641,10 @@ const handlePayLater = async (values: any) => {
 
             const finalFormData = createFormDataWithFiles(finalOrderPayload);
 
+            // finalFormData   -  this one right  ?ok
+console.log('Final Insole Orderjson Payload:', JSON.stringify(finalOrderPayload));
             const orderResponse = await createInsoleOrder(finalFormData).unwrap();
-            // console.log('✅ Order Response:', orderResponse);
+            console.log('✅ Order Response:', orderResponse);  // show me this in consoel loghere it is  but  you need jsn  body correct
 
             // @ts-ignore
             if (orderResponse?.message?.status === 'success') {
@@ -653,25 +657,25 @@ const handlePayLater = async (values: any) => {
               // @ts-ignore
               throw new Error(orderResponse?.message?.message || 'Order creation failed');
             }
-          } catch (orderError: any) {
-            console.error('❌ Order creation failed:', orderError);
+          } 
+          catch (orderError: any) {
+  console.error(' Order creation failed:', orderError);this  
 
-            if (orderError?.data) {
-              // console.error('🔎 Backend error response:', orderError.data);
-              toast.error(
-                `Payment successful but order creation failed: ${
-                  orderError.data.message || 'Unknown error'
-                } (Payment ID: ${response.razorpay_payment_id})`
-              );
-            } else {
-              toast.error(
-                'Payment successful but order creation failed. Please contact support with payment ID: ' +
-                  response.razorpay_payment_id
-              );
-            }
+  // Extract meaningful message
+  const backendMessage =
+    orderError?.data?.message || // If backend sends `message`
+    orderError?.response?.data?.message || // If using axios/RTK Query
+    orderError?.message || // JS error message
+    JSON.stringify(orderError); // fallback raw object
 
-            setIsPaymentProcessing(false);
-          }
+  // Log full details for debugging
+  console.log("🔎 Full orderError object:", orderError);
+
+  // Show exact message in toast
+  toast.error(`❌ Order failed: ${backendMessage}`);
+
+  setIsPaymentProcessing(false);
+}
         },
 
         theme: { color: '#3399cc' },
