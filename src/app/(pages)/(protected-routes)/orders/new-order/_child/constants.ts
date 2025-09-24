@@ -33,9 +33,9 @@ export const BK_FORM_INITIAL_VALUES = {
   design_variation: '',
   model_name: '',
   additional_customization_requirements: '',
-  // foot_side: '', // mapped from foot_Amputation
-  // left_foot_file: null, // mapped from leftFootFile
-  // right_foot_file: null, // mapped from rightFootFile
+  foot_side: '', // mapped from foot_Amputation
+  left_foot_file: '', // mapped from leftFootFile
+  right_foot_file: '', // mapped from rightFootFile
   upload_link: '',
   custom_upload_link_with_photos: '',
   item_code: '',

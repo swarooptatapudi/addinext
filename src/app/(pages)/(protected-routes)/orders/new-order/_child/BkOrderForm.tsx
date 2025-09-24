@@ -28,7 +28,11 @@ import {
 } from '@/components/ui/dialog';
 // API Hooks
 import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
-import { useCreateOrderMutation, useGetOrderDetailIdsMutation ,useGetBKEstimateMutation} from '@/rtk-query/apis/orders';
+import {
+  useCreateOrderMutation,
+  useGetOrderDetailIdsMutation,
+  useGetBKEstimateMutation
+} from '@/rtk-query/apis/orders';
 import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
 
 // Constants & Utils
@@ -141,14 +145,10 @@ const step1Validation = Yup.object().shape({
               parseFloat(value) <= 100
             );
           }
-          if (value === "0") return true;
-
+          if (value === '0') return true;
 
           // Others: Skip validation if empty
           if (!value) return true;
-
-
-
 
           // If filled, must be valid
           return (
@@ -199,84 +199,86 @@ const step1Validation = Yup.object().shape({
 //   }
 // );
 
+const step2Validation = Yup.object()
+  .shape({
+    custom_upload_link_with_photos: Yup.string()
+      .url('Must be a valid URL (e.g., https://drive.google.com/...)')
+      .nullable(),
+    direct_body: Yup.string().required('Scan condition is required'),
+    foot_side: Yup.string().nullable(),
+    liner_thickness: Yup.string().nullable(),
+    liner_type: Yup.string().nullable(),
+    left_foot_file: Yup.mixed().nullable(),
+    right_foot_file: Yup.mixed().nullable()
+  })
+  .test('file-upload-validation', 'File upload validation', function (value) {
+    const { foot_side, custom_upload_link_with_photos, left_foot_file, right_foot_file } =
+      value as {
+        foot_side: string | null;
+        custom_upload_link_with_photos: string | null;
+        left_foot_file: File | null;
+        right_foot_file: File | null;
+      };
+    // console.log('Validation Values:', {
+    //   foot_side,
+    //   custom_upload_link_with_photos,
+    //   left_foot_file,
+    //   right_foot_file
+    // });
+    // If custom_upload_link_with_photos is provided, validation passes
+    if (custom_upload_link_with_photos && custom_upload_link_with_photos.trim()) {
+      return true;
+    }
 
-const step2Validation = Yup.object().shape({
-  custom_upload_link_with_photos: Yup.string()
-    .url('Must be a valid URL (e.g., https://drive.google.com/...)')
-    .nullable(),
-  direct_body: Yup.string().required('Scan condition is required'),
-  foot_side: Yup.string().nullable(),
-  liner_thickness: Yup.string().nullable(),
-  liner_type: Yup.string().nullable(),
-  left_foot_file: Yup.mixed().nullable(),
-  right_foot_file: Yup.mixed().nullable()
-}).test('file-upload-validation', 'File upload validation', function (value) {
-  const { foot_side, custom_upload_link_with_photos, left_foot_file, right_foot_file } = value as {
-    foot_side: string | null;
-    custom_upload_link_with_photos: string | null;
-    left_foot_file: File | null;
-    right_foot_file: File | null;
-  };
-  // console.log('Validation Values:', {
-  //   foot_side,
-  //   custom_upload_link_with_photos,
-  //   left_foot_file,
-  //   right_foot_file
-  // });
-  // If custom_upload_link_with_photos is provided, validation passes
-  if (custom_upload_link_with_photos && custom_upload_link_with_photos.trim()) {
-    return true;
-  }
-
-  // If foot_side is not selected, require custom_upload_link_with_photos
-  if (!foot_side) {
-    return this.createError({
-      path: 'custom_upload_link_with_photos',
-      message: 'Either upload scans or provide a photo link is required'
-    });
-  }
-
-  // If foot_side is selected, check for required files
-  if (foot_side === 'Left_Foot' && !left_foot_file) {
-    return this.createError({
-      path: 'left_foot_file',
-      message: 'File for Left Foot is required'
-    });
-  }
-
-  if (foot_side === 'Right_Foot' && !right_foot_file) {
-    return this.createError({
-      path: 'right_foot_file',
-      message: 'File for Right Foot is required'
-    });
-  }
-
-  if (foot_side === 'Both') {
-    if (!left_foot_file && !right_foot_file) {
-      // Create errors for both files
-      // this.createError({
-      //   path: 'left_foot_file',
-      //   message: 'STL file for Left Foot is required'
-      // });
+    // If foot_side is not selected, require custom_upload_link_with_photos
+    if (!foot_side) {
       return this.createError({
-        path: 'right_foot_file',
-        message: 'Both file for Right and Left Foot is required'
+        path: 'custom_upload_link_with_photos',
+        message: 'Either upload scans or provide a photo link is required'
       });
-    } else if (!left_foot_file) {
+    }
+
+    // If foot_side is selected, check for required files
+    if (foot_side === 'Left_Foot' && !left_foot_file) {
       return this.createError({
         path: 'left_foot_file',
         message: 'File for Left Foot is required'
       });
-    } else if (!right_foot_file) {
+    }
+
+    if (foot_side === 'Right_Foot' && !right_foot_file) {
       return this.createError({
         path: 'right_foot_file',
         message: 'File for Right Foot is required'
       });
     }
-  }
 
-  return true;
-})
+    if (foot_side === 'Both') {
+      if (!left_foot_file && !right_foot_file) {
+        // Create errors for both files
+        // this.createError({
+        //   path: 'left_foot_file',
+        //   message: 'STL file for Left Foot is required'
+        // });
+        return this.createError({
+          path: 'right_foot_file',
+          message: 'Both file for Right and Left Foot is required'
+        });
+      } else if (!left_foot_file) {
+        return this.createError({
+          path: 'left_foot_file',
+          message: 'File for Left Foot is required'
+        });
+      } else if (!right_foot_file) {
+        return this.createError({
+          path: 'right_foot_file',
+          message: 'File for Right Foot is required'
+        });
+      }
+    }
+
+    return true;
+  })
   .test(
     'validate-liner-fields',
     'Liner fields are required when "With Liner" is selected',
@@ -882,12 +884,10 @@ const Step1 = ({
                 disabled={isViewMode}
                 className="w-full text-left justify-start h-10"
                 onClick={() =>
-
                   setModelDialog({
                     open: true,
                     options: modelOptions
                   })
-
                 }
               >
                 {values.model_name
@@ -905,7 +905,6 @@ const Step1 = ({
                 !values.socket_type ? 'Select socket type first' : 'Select design variation first'
               }
               disabled
-
             />
           )}
         </div>
@@ -925,7 +924,6 @@ const Step1 = ({
             loading="lazy"
             priority={false}
             unoptimized={true}
-
           />
         </div>
         <div className="flex flex-col col-span-2 gap-4 ml-5">
@@ -1136,7 +1134,6 @@ const Step1 = ({
         options={designVariationOptions}
         onSelect={(value) => setFieldValue('design_variation', value)}
         socketType={values.socket_type}
-
       />
 
       <ModelDialog
@@ -1145,8 +1142,6 @@ const Step1 = ({
         options={modelOptions}
         onSelect={(value) => setFieldValue('model_name', value)}
         socketType={values.socket_type}
-
-
 
       // designVariation={values.design_variation}
       />
@@ -1165,7 +1160,6 @@ const Step2 = ({
   formSubmitted,
   isViewMode
 }: any) => {
-
   // const updateScanItems = () => {
   //   const items: any[] = [];
   //   const newScanItems = [...values.scan_items];
@@ -1200,7 +1194,7 @@ const Step2 = ({
 
   const updateScanItems = (footSide: string, file: File) => {
     const newScanItems = [...values.scan_items];
-    const index = newScanItems.findIndex(item => item.foot_side === footSide);
+    const index = newScanItems.findIndex((item) => item.foot_side === footSide);
 
     if (index >= 0) {
       // Update existing row
@@ -1274,7 +1268,8 @@ const Step2 = ({
     formSubmitted &&
     !values.foot_side &&
     !values.custom_upload_link_with_photos &&
-    errors.custom_upload_link_with_photos === 'Either upload scans or provide a photo link is required';
+    errors.custom_upload_link_with_photos ===
+    'Either upload scans or provide a photo link is required';
 
   return (
     <div className="flex flex-col gap-4">
@@ -1349,16 +1344,16 @@ const Step2 = ({
         </div>
       </div>
 
-      <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
+      <h3 className="font-semibold text-lg text-primary">Scans Uploaded</h3>
       <div className="grid grid-cols-8 gap-4">
         {/* Foot Selection */}
         <div className="col-span-3">
           <div className="grid grid-cols-2">
-            <p className="mb-1 text-[14px] flex items-center">Upload Scan</p>
+            <p className="mb-1 text-[14px] flex items-center">Upload Scans</p>
             <div className="w-[150px] ml-8">
               <SelectBox
                 options={[
-                  { value: 'Select', label: 'Select to Upload ' },
+                  { value: 'Selected', label: 'Select to Upload ' },
                   { value: 'Left_Foot', label: 'Left Foot ' },
                   { value: 'Right_Foot', label: 'Right Foot' },
                   { value: 'Both', label: 'Both' }
@@ -1367,9 +1362,10 @@ const Step2 = ({
                   }`}
                 value={values.foot_side || ''}
                 onValueChange={(value) => {
+                  console.log('🦶 Selected foot_side value:', value);
                   handleChange('foot_side')(value);
-                  setFieldValue('left_foot_file', null);
-                  setFieldValue('right_foot_file', null);
+                  setFieldValue('left_foot_file', value);
+                  setFieldValue('right_foot_file', value);
                 }}
                 inVaild={shouldShowError('custom_upload_link_with_photos')}
                 disabled={isViewMode}
@@ -1394,23 +1390,31 @@ const Step2 = ({
                     custom_upload_link_with_photos: undefined
                   });
                 }
-              }}//@ts-ignore
+              }} //@ts-ignore
               inVaild={shouldShowFileError('left_foot_file')}
               error={errors.left_foot_file}
             />
             {shouldShowFileError('left_foot_file') && errors.left_foot_file && (
               <div className="text-red-500 text-xs mt-1">{errors.left_foot_file}</div>
             )}
+            {/* ✅ Show existing left foot file if present */}
+            
+            
+            
+           
+              
           </div>
         )}
 
         {/* Right Foot Upload */}
         {(values.foot_side === 'Right_Foot' || values.foot_side === 'Both') && (
           <div className="w-fit">
+
             <StlFilePicker
               label="Upload file (Right Foot)"
               buttonText="Right Foot"
               accept={['.stl', '.ply']}
+              value={values.right_foot_file}
               onFileSelect={(file: any) => {
                 setFieldValue('right_foot_file', file);
                 if (file) {
@@ -1428,6 +1432,9 @@ const Step2 = ({
             {shouldShowFileError('right_foot_file') && errors.right_foot_file && (
               <div className="text-red-500 text-xs mt-1">{errors.right_foot_file}</div>
             )}
+            {/* ✅ Show existing right foot file if present */}
+           
+
           </div>
         )}
       </div>
@@ -1436,7 +1443,6 @@ const Step2 = ({
         <div className="col-span-3">
           <p className="mb-0 text-[14px]">Upload OBJ File</p>
         </div>
-
         <StlFilePicker
           label="Select Scan"
           buttonText="File 1"
@@ -1638,7 +1644,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [createOrder, { isLoading: isOrderCreating }] = useCreateOrderMutation();
   const [getOrderDetails, { data: orderDetails, isLoading: isOrderDetailsLoading }] =
     useGetOrderDetailIdsMutation();
-      const [getBKEstimate] = useGetBKEstimateMutation();
+  const [getBKEstimate] = useGetBKEstimateMutation();
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
   const [selectedItem, setSelectedItem] = React.useState<string>('');
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameByDetailsMutation();
@@ -1657,20 +1663,23 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   });
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalDiscount, setTotalDiscount] = useState(0);
+  const [desgin,setDesgin] = useState(0);
+  const [print,setPrint] = useState(0);
+  const [couponPer, setCouponPer] =useState(0);
+  
 
   // console.log("totalDiscount",totalDiscount)
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
   const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
-  const [formDisable, setFormDisable] = useState(false)
+  const [formDisable, setFormDisable] = useState(false);
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const deviceTypeId = searchParams.get('deviceType');
   const paid = searchParams.get('paid');
-  const isPaid = paid === "Paid"
-  const isEdit = searchParams.get("isEdit") === "true";
+  const isPaid = paid === 'Paid';
+  const isEdit = searchParams.get('isEdit') === 'true';
 
   const isViewMode = !!(deviceTypeId && orderId && isPaid);
-
 
   // Add these state variables to your component
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
@@ -1678,18 +1687,22 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
   const mode = searchParams.get('mode'); // "view" or null
 
-  
   useEffect(() => {
     if (orderId && deviceTypeId) {
       // console.log('orderId%%deviceTypeId=>', orderId, deviceTypeId)
       getOrderDetails({
         order_type: deviceTypeId,
-        order_id: orderId,
+        order_id: orderId
         // payment_status: isPaid ? 'Paid' : 'Pending'
       })
-
         .unwrap()
         .then((response) => {
+          const scanItem = response.data?.scan_items?.[0];
+          console.log('scanItem=>', scanItem);
+          let mappedFootSide = '';
+          if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right_Foot';
+          if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left_Foot';
+          if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
           // console.log("Full API response =>", response);
           // console.log("API Keys =>", Object.keys(response.data));
 
@@ -1702,7 +1715,9 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
           const transformedData = {
             ...initialValues,
             ...response.data,
-
+            foot_side: mappedFootSide || initialValues.foot_side,
+            left_foot_file: scanItem?.left_foot_file || initialValues.left_foot_file,
+            right_foot_file: scanItem?.right_foot_file || initialValues.right_foot_file,
             value_c_details:
               response.data?.value_c_details?.map((item: { gap: any; value: any }) => ({
                 gap: item.gap || '',
@@ -1724,7 +1739,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
           // console.log("API Response (response.data) =>", response.data);
           // console.log("Merged/Transformed =>", transformedData);
 
-          // console.log("Transformed Data =>", transformedData);
+          console.log('Transformed Data =>', transformedData);
 
           setFormValues(transformedData);
           if (response.data.item_code) {
@@ -1786,177 +1801,181 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   }, [data, isFormOptionsLoading]);
 
   // Main function for Pay & Place Order
- // Main function for Pay & Place Order
+  // Main function for Pay & Place Order
   const handlePayAndPlaceOrder = async (values: any) => {
-  if (!razorpayKey || !isRazorpayLoaded) {
-    toast.error('Payment gateway is not available. Please try again.');
-    return;
-  }
-  setIsPaymentProcessing(true);
-  setFormValues(values);
-  
-  try {
-    // Prepare the order data (same as "Order Now, Pay Later")
-    const payload = {
-      item_type: 'BK',
-      socket_type: values.socket_type,
-      design_variation: values.design_variation,
-      activity_level: values.activity_level,
-      model_name: values.model_name,
-      stump_length: values.stump_length,
-      weight: values.weight
-    };
-    const itemCode = await getItemCodeByValues(payload);
-    setSelectedItem(itemCode);
-    
-    // Create order payload
-    const orderPayload = {
-      item_type: 'BK',
-      customer: user?.customer_id,
-      order_details: {
-        ...values,
-      },
-      item_code: itemCode,
-      addicoins: parseInt(values.addicoins),
-      totalPrice: totalPrice,
-      discount_amount: totalDiscount,
-    };
+    if (!razorpayKey || !isRazorpayLoaded) {
+      toast.error('Payment gateway is not available. Please try again.');
+      return;
+    }
+    setIsPaymentProcessing(true);
+    setFormValues(values);
 
-    // ✅ CREATE FORMDATA FUNCTION (reusable)
-    const createFormDataWithFiles = (basePayload: any) => {
-      const formData = new FormData();
-      formData.append('data', JSON.stringify(basePayload));
-      
-      // Extract and append file uploads
-      const extractAndAppendFiles = (obj: any, prefix: string = '') => {
-        for (const key in obj) {
-          if (obj[key] && typeof obj[key] === 'object') {
-            if (obj[key] instanceof File) {
-              if (key.includes('left_foot') || key.includes('scan_file_left')) {
-                formData.append('scan_file_left', obj[key]);
-              } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
-                formData.append('scan_file_right', obj[key]);
-              } else if (key.includes('obj_file')) {
-                formData.append(`obj_file_${key}`, obj[key]);
-              } else if (key.includes('additional_file')) {
-                formData.append(`additional_file_${key}`, obj[key]);
-              } else {
-                formData.append('scan_file_left', obj[key]);
-              }
-            } else if (obj[key].constructor === FileList) {
-              Array.from(obj[key]).forEach((file: File, index: number) => {
-                if (key.includes('left_foot')) {
-                  formData.append('scan_file_left', file);
-                } else if (key.includes('right_foot')) {
-                  formData.append('scan_file_right', file);
+    try {
+      // Prepare the order data (same as "Order Now, Pay Later")
+      const payload = {
+        item_type: 'BK',
+        socket_type: values.socket_type,
+        design_variation: values.design_variation,
+        activity_level: values.activity_level,
+        model_name: values.model_name,
+        stump_length: values.stump_length,
+        weight: values.weight
+      };
+      const itemCode = await getItemCodeByValues(payload);
+      setSelectedItem(itemCode);
+
+      // Create order payload
+      const orderPayload = {
+        item_type: 'BK',
+        customer: user?.customer_id,
+        order_details: {
+          ...values
+        },
+        item_code: itemCode,
+        addicoins: parseInt(values.addicoins),
+        totalPrice: totalPrice,
+        print: print,
+        design: desgin,
+        coupon_per: couponPer,
+        discount_amount: totalDiscount
+      };
+
+      // ✅ CREATE FORMDATA FUNCTION (reusable)
+      const createFormDataWithFiles = (basePayload: any) => {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(basePayload));
+
+        // Extract and append file uploads
+        const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+          for (const key in obj) {
+            if (obj[key] && typeof obj[key] === 'object') {
+              if (obj[key] instanceof File) {
+                if (key.includes('left_foot') || key.includes('scan_file_left')) {
+                  formData.append('scan_file_left', obj[key]);
+                } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
+                  formData.append('scan_file_right', obj[key]);
+                } else if (key.includes('obj_file')) {
+                  formData.append(`obj_file_${key}`, obj[key]);
+                } else if (key.includes('additional_file')) {
+                  formData.append(`additional_file_${key}`, obj[key]);
                 } else {
-                  formData.append(`scan_file_${index}`, file);
+                  formData.append('scan_file_left', obj[key]);
                 }
-              });
-            } else if (Array.isArray(obj[key])) {
-              obj[key].forEach((item: any, index: number) => {
-                extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
-              });
-            } else {
-              extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+              } else if (obj[key].constructor === FileList) {
+                Array.from(obj[key]).forEach((file: File, index: number) => {
+                  if (key.includes('left_foot')) {
+                    formData.append('scan_file_left', file);
+                  } else if (key.includes('right_foot')) {
+                    formData.append('scan_file_right', file);
+                  } else {
+                    formData.append(`scan_file_${index}`, file);
+                  }
+                });
+              } else if (Array.isArray(obj[key])) {
+                obj[key].forEach((item: any, index: number) => {
+                  extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+                });
+              } else {
+                extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+              }
             }
+          }
+        };
+
+        // Extract files from the values object
+        extractAndAppendFiles(values);
+
+        // Also check for direct file fields in values
+        if (values.left_foot_file && values.left_foot_file instanceof File) {
+          formData.append('scan_file_left', values.left_foot_file);
+        }
+        if (values.right_foot_file && values.right_foot_file instanceof File) {
+          formData.append('scan_file_right', values.right_foot_file);
+        }
+
+        // Check scan_items for files
+        if (values.scan_items && Array.isArray(values.scan_items)) {
+          values.scan_items.forEach((item: any, index: number) => {
+            if (item.left_foot_file && item.left_foot_file instanceof File) {
+              formData.append('scan_file_left', item.left_foot_file);
+            }
+            if (item.right_foot_file && item.right_foot_file instanceof File) {
+              formData.append('scan_file_right', item.right_foot_file);
+            }
+          });
+        }
+
+        return formData;
+      };
+
+      const amountInPaise = 100000;
+
+      // Configure Razorpay options
+      const options = {
+        key: razorpayKey,
+        amount: amountInPaise.toString(),
+        currency: 'INR',
+        name: 'Addiwise Company',
+        description: `Payment for BK Order`,
+        handler: async function (response: any) {
+          try {
+            // ✅ Create final payload with payment details
+            const finalOrderPayload = {
+              ...orderPayload,
+              custom_payment_reference_id: response.razorpay_payment_id,
+              totalPrice: totalPrice,
+               print: print,
+        design: desgin,
+        coupon_per: couponPer,
+              discount_amount: totalDiscount
+            };
+
+            // ✅ CREATE FORMDATA WITH FILES INSIDE PAYMENT HANDLER
+            const finalFormData = createFormDataWithFiles(finalOrderPayload);
+
+            console.log('Final Order Payload:', finalOrderPayload);
+
+            // ✅ SEND FORMDATA (NOT JSON)
+            const orderResponse: any = await createOrder(finalFormData).unwrap();
+
+            if (orderResponse?.message?.status === 'success') {
+              toast.success('Payment successful! Order created successfully.');
+              setSelectedItem('');
+              setIsPaymentProcessing(false);
+              setFormDisable(true);
+              router.push('/orders');
+            } else {
+              throw new Error(orderResponse?.message?.message || 'Order creation failed');
+            }
+          } catch (orderError) {
+            console.error('Order creation error:', orderError);
+            toast.error(
+              'Order creation failed.'
+            );
+            setIsPaymentProcessing(false);
+          }
+        },
+        theme: { color: '#3399cc' },
+        modal: {
+          ondismiss: function () {
+            setIsPaymentProcessing(false);
+            toast.info('Payment cancelled');
           }
         }
       };
 
-      // Extract files from the values object
-      extractAndAppendFiles(values);
-      
-      // Also check for direct file fields in values
-      if (values.left_foot_file && values.left_foot_file instanceof File) {
-        formData.append('scan_file_left', values.left_foot_file);
-      }
-      if (values.right_foot_file && values.right_foot_file instanceof File) {
-        formData.append('scan_file_right', values.right_foot_file);
-      }
-      
-      // Check scan_items for files
-      if (values.scan_items && Array.isArray(values.scan_items)) {
-        values.scan_items.forEach((item: any, index: number) => {
-          if (item.left_foot_file && item.left_foot_file instanceof File) {
-            formData.append('scan_file_left', item.left_foot_file);
-          }
-          if (item.right_foot_file && item.right_foot_file instanceof File) {
-            formData.append('scan_file_right', item.right_foot_file);
-          }
-        });
-      }
-      
-      return formData;
-    };
-
-    const amountInPaise = 100000;
-    
-    // Configure Razorpay options
-    const options = {
-      key: razorpayKey,
-      amount: amountInPaise.toString(),
-      currency: 'INR',
-      name: 'Addiwise Company',
-      description: `Payment for BK Order`,
-      handler: async function (response: any) {
-        try {
-          // ✅ Create final payload with payment details
-          const finalOrderPayload = {
-            ...orderPayload,
-            custom_payment_reference_id: response.razorpay_payment_id,
-            totalPrice: totalPrice,
-            discount_amount: totalDiscount,
-          };
-          
-          // ✅ CREATE FORMDATA WITH FILES INSIDE PAYMENT HANDLER
-          const finalFormData = createFormDataWithFiles(finalOrderPayload);
-          
-          console.log('Final Order Payload:', finalOrderPayload);
-          
-          // ✅ SEND FORMDATA (NOT JSON)
-          const orderResponse:any = await createOrder(finalFormData).unwrap();
-          
-          if (orderResponse?.message?.status === 'success') {
-            toast.success('Payment successful! Order created successfully.');
-            setSelectedItem('');
-            setIsPaymentProcessing(false);
-            setFormDisable(true);
-            router.push('/orders');
-          } else {
-            throw new Error(orderResponse?.message?.message || 'Order creation failed');
-          }
-        } catch (orderError) {
-          console.error('Order creation error:', orderError);
-          toast.error(
-            'Payment successful but order creation failed. Please contact support with payment ID: ' +
-            response.razorpay_payment_id
-          );
-          setIsPaymentProcessing(false);
-        }
-      },
-      theme: { color: '#3399cc' },
-      modal: {
-        ondismiss: function () {
-          setIsPaymentProcessing(false);
-          toast.info('Payment cancelled');
-        }
-      }
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.on('payment.failed', function (response: any) {
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+        setIsPaymentProcessing(false);
+        toast.error(`Payment failed: ${response.error.description}`);
+      });
+      rzp.open();
+    } catch (error) {
+      console.error('Payment preparation error:', error);
       setIsPaymentProcessing(false);
-      toast.error(`Payment failed: ${response.error.description}`);
-    });
-    rzp.open();
-    
-  } catch (error) {
-    console.error('Payment preparation error:', error);
-    setIsPaymentProcessing(false);
-    toast.error('Failed to prepare payment. Please try again.');
-  }
-};
+      toast.error('Failed to prepare payment. Please try again.');
+    }
+  };
 
   const handleConfirmOrder = () => {
     const payload: any = {};
@@ -1969,124 +1988,122 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   };
 
   const OnSubmit = async (values: any) => {
-  setFormValues(values);
-  const payload = {
-    item_type: 'BK',
-    socket_type: values.socket_type,
-    design_variation: values.design_variation,
-    activity_level: values.activity_level,
-    model_name: values.model_name,
-    stump_length: values.stump_length,
-    weight: values.weight
-  };
-  const itemCode = await getItemCodeByValues(payload);
-  setSelectedItem(itemCode);
- 
-  // Submit the final form
-  const orderPayload = {
-    item_type: 'BK',
-    customer: user?.customer_id,
-    order_details: {
-    ...values,
-  },
-    item_code: itemCode,
-    // @ts-ignore
-    addicoins: parseInt(values.addicoins)
-  };
-  
-  console.log("Create Order orderPayload:", orderPayload);
-  
-  // Create FormData for multipart/form-data
-  const formData = new FormData();
-  
-  // Add the main data as JSON string
-  formData.append('data', JSON.stringify(orderPayload));
-  
-  // Extract and append file uploads
-  const extractAndAppendFiles = (obj: any, prefix: string = '') => {
-    for (const key in obj) {
-      if (obj[key] && typeof obj[key] === 'object') {
-        if (obj[key] instanceof File) {
-          // Handle File objects directly
-          if (key.includes('left_foot') || key.includes('scan_file_left')) {
-            formData.append('scan_file_left', obj[key]);
-          } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
-            formData.append('scan_file_right', obj[key]);
-          } else if (key.includes('obj_file')) {
-            formData.append(`obj_file_${key}`, obj[key]);
-          } else if (key.includes('additional_file')) {
-            formData.append(`additional_file_${key}`, obj[key]);
-          } else {
-            // Default to scan file if not specified
-            formData.append('scan_file_left', obj[key]);
-          }
-        } else if (obj[key].constructor === FileList) {
-          // Handle FileList objects
-          Array.from(obj[key]).forEach((file: File, index: number) => {
-            if (key.includes('left_foot')) {
-              formData.append('scan_file_left', file);
-            } else if (key.includes('right_foot')) {
-              formData.append('scan_file_right', file);
+    setFormValues(values);
+    const payload = {
+      item_type: 'BK',
+      socket_type: values.socket_type,
+      design_variation: values.design_variation,
+      activity_level: values.activity_level,
+      model_name: values.model_name,
+      stump_length: values.stump_length,
+      weight: values.weight
+    };
+    const itemCode = await getItemCodeByValues(payload);
+    setSelectedItem(itemCode);
+
+    // Submit the final form
+    const orderPayload = {
+      item_type: 'BK',
+      customer: user?.customer_id,
+      order_details: {
+        ...values
+      },
+      item_code: itemCode,
+      // @ts-ignore
+      addicoins: parseInt(values.addicoins)
+    };
+
+    console.log('Create Order orderPayload:', orderPayload);
+
+    // Create FormData for multipart/form-data
+    const formData = new FormData();
+
+    // Add the main data as JSON string
+    formData.append('data', JSON.stringify(orderPayload));
+
+    // Extract and append file uploads
+    const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+      for (const key in obj) {
+        if (obj[key] && typeof obj[key] === 'object') {
+          if (obj[key] instanceof File) {
+            // Handle File objects directly
+            if (key.includes('left_foot') || key.includes('scan_file_left')) {
+              formData.append('scan_file_left', obj[key]);
+            } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
+              formData.append('scan_file_right', obj[key]);
+            } else if (key.includes('obj_file')) {
+              formData.append(`obj_file_${key}`, obj[key]);
+            } else if (key.includes('additional_file')) {
+              formData.append(`additional_file_${key}`, obj[key]);
             } else {
-              formData.append(`scan_file_${index}`, file);
+              // Default to scan file if not specified
+              formData.append('scan_file_left', obj[key]);
             }
-          });
-        } else if (Array.isArray(obj[key])) {
-          // Handle arrays (like scan_items)
-          obj[key].forEach((item: any, index: number) => {
-            extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
-          });
-        } else {
-          // Recursively check nested objects
-          extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+          } else if (obj[key].constructor === FileList) {
+            // Handle FileList objects
+            Array.from(obj[key]).forEach((file: File, index: number) => {
+              if (key.includes('left_foot')) {
+                formData.append('scan_file_left', file);
+              } else if (key.includes('right_foot')) {
+                formData.append('scan_file_right', file);
+              } else {
+                formData.append(`scan_file_${index}`, file);
+              }
+            });
+          } else if (Array.isArray(obj[key])) {
+            // Handle arrays (like scan_items)
+            obj[key].forEach((item: any, index: number) => {
+              extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+            });
+          } else {
+            // Recursively check nested objects
+            extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+          }
         }
       }
+    };
+
+    // Extract files from the values object
+    extractAndAppendFiles(values);
+
+    // Also check for direct file fields in values
+    if (values.left_foot_file && values.left_foot_file instanceof File) {
+      formData.append('scan_file_left', values.left_foot_file);
+    }
+    if (values.right_foot_file && values.right_foot_file instanceof File) {
+      formData.append('scan_file_right', values.right_foot_file);
+    }
+
+    // Check scan_items for files
+    if (values.scan_items && Array.isArray(values.scan_items)) {
+      values.scan_items.forEach((item: any, index: number) => {
+        if (item.left_foot_file && item.left_foot_file instanceof File) {
+          formData.append('scan_file_left', item.left_foot_file);
+        }
+        if (item.right_foot_file && item.right_foot_file instanceof File) {
+          formData.append('scan_file_right', item.right_foot_file);
+        }
+      });
+    }
+
+    try {
+      const res = await createOrder(formData).unwrap();
+      console.log('res', res);
+      // @ts-ignore
+      if (res?.message?.status === 'success') {
+        toast.success('Order created successfully');
+        setSelectedItem('');
+        setFormValues(initialValues);
+        router.push('/orders');
+      } else {
+        // @ts-ignore
+        toast.error(` ${res?.message?.message || 'Order creation failed'}`);
+      }
+    } catch (err) {
+      console.error('Mutation error:', err);
+      toast.error('Server error. Please try again.');
     }
   };
-  
-  // Extract files from the values object
-  extractAndAppendFiles(values);
-  
-  // Also check for direct file fields in values
-  if (values.left_foot_file && values.left_foot_file instanceof File) {
-    formData.append('scan_file_left', values.left_foot_file);
-  }
-  if (values.right_foot_file && values.right_foot_file instanceof File) {
-    formData.append('scan_file_right', values.right_foot_file);
-  }
-  
-  // Check scan_items for files
-  if (values.scan_items && Array.isArray(values.scan_items)) {
-    values.scan_items.forEach((item: any, index: number) => {
-      if (item.left_foot_file && item.left_foot_file instanceof File) {
-        formData.append('scan_file_left', item.left_foot_file);
-      }
-      if (item.right_foot_file && item.right_foot_file instanceof File) {
-        formData.append('scan_file_right', item.right_foot_file);
-      }
-    });
-  }
-
-  
-  try {
-    const res = await createOrder(formData).unwrap();
-    console.log("res", res)
-    // @ts-ignore
-    if (res?.message?.status === 'success') {
-      toast.success('Order created successfully');
-      setSelectedItem('');
-      setFormValues(initialValues);
-      router.push('/orders');
-    } else {
-      // @ts-ignore
-      toast.error(` ${res?.message?.message || 'Order creation failed'}`);
-    }
-  } catch (err) {
-    console.error('Mutation error:', err);
-    toast.error('Server error. Please try again.');
-  }
-};
-
 
   const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
@@ -2279,10 +2296,10 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                     >
                       <div
                         className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${currentStep === step
-                          ? 'bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4'
-                          : completedSteps.includes(step)
-                            ? 'bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4'
-                            : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4'
+                            ? 'bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4'
+                            : completedSteps.includes(step)
+                              ? 'bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4'
+                              : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4'
                           } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       >
                         <span className="flex items-center gap-2">
@@ -2393,6 +2410,10 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
                 user={user}
                 isViewMode={isViewMode}
                 setTotalDiscount={setTotalDiscount}
+                setDesgin={setDesgin}
+                setPrint={setPrint}
+                setCouponPer={setCouponPer}
+               
                 setTotalPrice={setTotalPrice}
               />
             )}

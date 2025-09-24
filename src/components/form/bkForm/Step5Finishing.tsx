@@ -59,8 +59,12 @@ export const Step5 = ({
   deviceTypeId,
   user, // Add user prop to access customer_id
   isViewMode,
+  setDesgin,
+  setPrint,
+  setCouponPer,
   setTotalDiscount,
-  setTotalPrice
+  setTotalPrice,
+ 
 
 }: any) => {
   const [showEstimateCard, setShowEstimateCard] = useState(false);
@@ -165,10 +169,9 @@ export const Step5 = ({
       discount_per: couponData?.discount_percentage || 0,
       // totaldistamount:couponData?.discount_amount + additional_discount ,
       discount_amt: couponData?.discount_amount || 0,
-      
       coupon_code: couponCode.trim()
     };
-
+    
     console.log('Estimate Payload:', estimatePayload);
 
     try {
@@ -176,6 +179,9 @@ export const Step5 = ({
 
       console.log('Estimate Response:', response);
       setTotalDiscount(response?.data?.total_distcounted_price);
+      setDesgin(response?.data?.design);
+         setPrint(response?.data?.print);
+         setCouponPer(response?.data?.additional_discount);
       setTotalPrice(response?.data?.total_price);
       // Parse coins to numbers for comparison
        const data = response.data;

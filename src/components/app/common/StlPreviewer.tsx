@@ -154,6 +154,7 @@ type ModelFilePickerProps = {
   onFileSelect?: (file: File | null) => void;
    allowedExtensions?: string[];
      accept?: string[]; 
+     value?: string;
 };
 
 export default function ModelFilePicker({
@@ -170,56 +171,32 @@ export default function ModelFilePicker({
 
 const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
 
- const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const f = e.target.files?.[0];
-  setError(null);
-  if (!f) return;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    setError(null);
+    
+    if (!f) return;
 
-  const fileExtension = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
-  if (!extensions.includes(fileExtension)) {
-    setError(`Invalid file type. Please upload one of: ${extensions.join(', ')}`);
-    return;
-  }
+    const allowedExtensions = ['.stl', '.obj', '.ply'];
+    const fileExtension = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+      setError('Invalid file type. Please upload .stl, .obj, or .ply files.');
+      return;
+    }
+    const maxSize = 50 * 1024 * 1024; // 5MB in bytes
+    // const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+    if (f.size > maxSize) {
+      setError('File size exceeds 50MB limit.');
+      return;
+    }
 
-  const maxSize = 50 * 1024 * 1024; // 25MB
-  if (f.size > maxSize) {
-    setError('File size exceeds 25MB limit.');
-    return;
-  }
-
-  setFile(f);
-  setFileType(fileExtension);
-
-  if (fileExtension !== '.zip') {
+    setFile(f);
+    setFileType(fileExtension);
     setFileUrl(URL.createObjectURL(f));
-  } else {
-    setFileUrl(null);
-  }
+    onFileSelect?.(f);
+  };
 
-  // ✅ Upload file to backend
-  try {
-    const formData = new FormData();
-    formData.append("file", f);
-
-    const res = await fetch("https://uaterp.addiwise.com/api/method/addiwise.apis.order_types.bk_order.create_bk_order", {
-  method: "POST",
-  body: formData,
-});
-
-
-    if (!res.ok) throw new Error("Upload failed");
-
-//     console.log("Response status:", res.status);
-// console.log("Response text:", await res.text());
-    const data = await res.json();
-    // console.log("Upload success:", data);
-  } catch (err) {
-    // console.error("Error uploading file:", err);
-    setError("Upload failed");
-  }
-
-  onFileSelect?.(f);
-};
 
 
   return (
@@ -275,7 +252,7 @@ const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
               />
               {error && <p className="text-sm text-red-500">{error}</p>}
               <p className="text-xs text-muted-foreground">
-                Max file size: 25MB | Allowed types: {extensions.join(', ')}
+                Max file size: 50MB | Allowed types: {extensions.join(', ')}
               </p>
             </div>
           )}

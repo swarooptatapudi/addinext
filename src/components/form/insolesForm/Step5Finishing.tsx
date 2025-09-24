@@ -12,6 +12,7 @@ import {
 } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
 import { useGetINEstimateMutation, useValidateCouponMutation } from '@/rtk-query/apis/orders';
 import { toast } from 'react-toastify';
+import { RootState } from '@/rtk-query/store';
 import { Button } from '@/components/ui/button';
 import { BK_FORM_TYPE, USER } from '@/uttils/Types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -85,7 +86,6 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
   const [validateCoupon] = useValidateCouponMutation();
   const [couponTimeout, setCouponTimeout] = useState<NodeJS.Timeout | null>(null);
   const [getItem, { isLoading: isItemFetching }] = useGetItemNameInByDetailsMutation();
-
   // Coins as strings to match API response
   const [availableAddicoins, setAvailableAddicoins] = useState<string | null>(null);
   const [requiredAddicoins, setRequiredAddicoins] = useState<string | null>(null);
@@ -135,6 +135,9 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
       } catch (err) {
         setIsRazorpayLoaded(false);
       }
+
+
+     
     };
 
     loadRazorpayScript();
@@ -642,7 +645,7 @@ const handlePayLater = async (values: any) => {
             const finalFormData = createFormDataWithFiles(finalOrderPayload);
 
             // finalFormData   -  this one right  ?ok
-console.log('Final Insole Orderjson Payload:', JSON.stringify(finalOrderPayload));
+            console.log('Final Insole Orderjson Payload:', JSON.stringify(finalOrderPayload));
             const orderResponse = await createInsoleOrder(finalFormData).unwrap();
             console.log('✅ Order Response:', orderResponse);  // show me this in consoel loghere it is  but  you need jsn  body correct
 
@@ -658,8 +661,9 @@ console.log('Final Insole Orderjson Payload:', JSON.stringify(finalOrderPayload)
               throw new Error(orderResponse?.message?.message || 'Order creation failed');
             }
           } 
-          catch (orderError: any) {
-  console.error(' Order creation failed:', orderError);this  
+          catch (orderError: any) 
+          {
+  console.error(' Order creation failed:', orderError); 
 
   // Extract meaningful message
   const backendMessage =
@@ -684,6 +688,16 @@ console.log('Final Insole Orderjson Payload:', JSON.stringify(finalOrderPayload)
             setIsPaymentProcessing(false);
             toast.info('Payment cancelled');
           }
+        },
+        prefill: {
+          name: user?.full_name || '',
+          // email: user?. || '',
+          contact: user?.phone_number || '',
+        },
+        notes: {
+          customer_id: user?.customer_id,
+          // product: productName,
+          // quantity: quantity.toString(),
         }
       };
 

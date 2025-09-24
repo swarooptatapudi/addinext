@@ -81,6 +81,7 @@ export default function BuyProductsPage() {
     if (!quantity || quantity <= 0) {
       toast.error("Please enter a valid quantity");
       return;
+      
     }
 
     try {
@@ -154,11 +155,11 @@ export default function BuyProductsPage() {
 
       rzp.on("payment.failed", function (response: any) {
         toast.error("Payment failed. Please try again.");
-        // console.error("Payment failed:", response.error);
+        console.error("Payment failed:", response.error);
       });
     } catch (err) {
       toast.error("An error occurred during payment process");
-      // console.error(err);
+      console.error(err);
     }
   };
 

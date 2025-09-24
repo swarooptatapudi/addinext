@@ -1396,7 +1396,6 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
 
   // const { values, setFieldValue } = useFormikContext<any>(); // ✅ Formik hook
-
   //payment states
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
@@ -1449,6 +1448,10 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
               insole_design_variation: response.data.layers || '',
               Design_by: response.data.custom_print_by || '',
               design_variation: response.data.custom_design_by || '',
+              custom_scan_type: response.data.custom_scan_type || '',
+              left_foot_file: response.data.left_foot_file || null,
+              right_foot_file: response.data.right_foot_file || null,
+            
               Print_by: response.data.custom_print_by || '',
               table_zbib: response.data.table_zbib?.length
                 ? response.data.table_zbib.map((item: any) => ({
