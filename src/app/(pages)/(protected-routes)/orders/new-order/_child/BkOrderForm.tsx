@@ -1687,6 +1687,9 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const isViewMode = !!(deviceTypeId && orderId && isPaid);
 
   // Add these state variables to your component
+
+
+  
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
