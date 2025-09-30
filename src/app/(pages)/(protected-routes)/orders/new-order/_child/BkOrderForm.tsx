@@ -31,7 +31,7 @@ import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
 import {
   useCreateOrderMutation,
   useGetOrderDetailIdsMutation,
-  useGetBKEstimateMutation
+  useGetBKEstimateMutation,usePreSignedUrlMutation
 } from '@/rtk-query/apis/orders';
 import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
 
@@ -1661,6 +1661,11 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     open: false,
     data: null
   });
+const[preSignedUrl,setPreSignedUrl] = usePreSignedUrlMutation();
+
+    // 1️⃣ Maintain an array to store uploaded file metadata
+const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
+
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalDiscount, setTotalDiscount] = useState(0);
   const [desgin,setDesgin] = useState(0);
@@ -1686,6 +1691,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
   const mode = searchParams.get('mode'); // "view" or null
+  // S3 FILE UPLOAD STATES 
 
   useEffect(() => {
     if (orderId && deviceTypeId) {
@@ -1802,6 +1808,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
 
   // Main function for Pay & Place Order
   // Main function for Pay & Place Order
+
+  
   const handlePayAndPlaceOrder = async (values: any) => {
     if (!razorpayKey || !isRazorpayLoaded) {
       toast.error('Payment gateway is not available. Please try again.');
@@ -1845,7 +1853,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
         const formData = new FormData();
         formData.append('data', JSON.stringify(basePayload));
 
-        // Extract and append file uploads
+        
         const extractAndAppendFiles = (obj: any, prefix: string = '') => {
           for (const key in obj) {
             if (obj[key] && typeof obj[key] === 'object') {
@@ -1977,9 +1985,202 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     }
   };
 
+
+
+// 2️⃣ Function to upload file to S3 & store metadata
+// 2️⃣ Function to upload file to S3 & store metadata
+// const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
+//   const token = localStorage.getItem('token');
+//   if (!token) throw new Error("Missing authentication token");
+
+//   console.log("📤 Requesting presigned URL for:", file.name);
+
+//   // Step 1: Get Presigned URL
+//   const presignedRes = await fetch("https://uaterp.addiwise.com/api/method/addiwise.apis.utils.generate_presigned_url", {
+//     method: "POST",
+//     headers: { 
+//       "Content-Type": "application/json",
+//       // "Authorization": `Bearer ${token}`   // ⚡ make sure this matches what worked in Postman
+//     },
+//     body: JSON.stringify({
+//       fileName: file.name,
+//       fileType: file.type,
+//       userId
+//     }),
+//     credentials: "include", 
+//   });
+
+//   if (!presignedRes.ok) {
+//     const errorText = await presignedRes.text();
+//     console.error("❌ Presigned URL error:", errorText);
+//     throw new Error(`Failed to get presigned URL: ${presignedRes.status}`);
+//   }
+
+//   const result = await presignedRes.json();
+//   if (!result?.message?.status) throw new Error("Presigned URL request failed");
+
+//   const { uploadUrl, key } = result.message.data;
+//   const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
+//   return new Promise<void>((resolve, reject) => {
+//     const xhr = new XMLHttpRequest();
+//     xhr.open("PUT", url);
+//     xhr.setRequestHeader("Content-Type", file.type);
+
+//     xhr.upload.onprogress = (event) => {
+//       if (event.lengthComputable && onProgress) {
+//         const percent = Math.round((event.loaded / event.total) * 100);
+//         onProgress(percent);
+//       }
+//     };
+
+//     xhr.onload = () => {
+//       if (xhr.status === 200) {
+//         resolve();
+//       } else {
+//         reject(new Error(`Upload failed with status ${xhr.status}`));
+//       }
+//     };
+
+//     xhr.onerror = () => reject(new Error("Network error during upload"));
+//     xhr.send(file);
+//   });
+// };
+
+//   // Step 2: Upload File → S3
+//   await uploadFileToS3(uploadUrl, file, (percent) => {
+//     console.log(`Uploading ${file.name}: ${percent}%`);
+//   });
+
+//   // Step 3: Return Metadata
+//   const fileMeta = {
+//     key,
+//     size: file.size,
+//     type: file.type,
+//     originalName: file.name,
+//   };
+
+//   setUploadedFiles((prev) => [...prev, fileMeta]);
+//   return fileMeta;
+// };
+
+
+
+// // 3️⃣ Modified handlePayAndPlaceOrder
+// const handlePayAndPlaceOrder = async (values: any) => {
+//   if (!razorpayKey || !isRazorpayLoaded) {
+//     toast.error('Payment gateway is not available. Please try again.');
+//     return;
+//   }
+//   setIsPaymentProcessing(true);
+//   setFormValues(values);
+
+//   try {
+//     // Prepare order data
+//     const payload = {
+//       item_type: 'BK',
+//       socket_type: values.socket_type,
+//       design_variation: values.design_variation,
+//       activity_level: values.activity_level,
+//       model_name: values.model_name,
+//       stump_length: values.stump_length,
+//       weight: values.weight,
+//     };
+//     const itemCode = await getItemCodeByValues(payload);
+//     setSelectedItem(itemCode);
+
+//     // 🔥 1) UPLOAD FILES TO S3 FIRST (if present)
+//     const filesToUpload: File[] = [];
+//     if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+//     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+//     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
+
+//     const uploadedMetadata: any[] = [];
+//     for (const f of filesToUpload) {
+//       const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+//       uploadedMetadata.push(meta);
+//     }
+
+//     // 🔥 2) ENCODE METADATA AS BASE64
+//     const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
+
+//     // Build final order payload
+//     const orderPayload = {
+//       item_type: 'BK',
+//       customer: user?.customer_id,
+//       order_details: { ...values },
+//       item_code: itemCode,
+//       uploaded_files: encodedFiles, // ✅ only sending encoded metadata
+//       addicoins: parseInt(values.addicoins),
+//       totalPrice: totalPrice,
+//       print,
+//       design: desgin,
+//       coupon_per: couponPer,
+//       discount_amount: totalDiscount,
+//     };
+
+//     // Configure Razorpay
+//     const amountInPaise = 100000;
+//     const options = {
+//       key: razorpayKey,
+//       amount: amountInPaise.toString(),
+//       currency: 'INR',
+//       name: 'Addiwise Company',
+//       description: `Payment for BK Order`,
+//       handler: async function (response: any) {
+//         try {
+//           const finalOrderPayload = {
+//             ...orderPayload,
+//             custom_payment_reference_id: response.razorpay_payment_id,
+//           };
+
+//           // Use FormData but without files — only data
+//           const finalFormData = new FormData();
+//           finalFormData.append("data", JSON.stringify(finalOrderPayload));
+
+//           console.log("📦 Final Payload:", finalOrderPayload);
+
+//           const orderResponse: any = await createOrder(finalFormData).unwrap();
+
+//           if (orderResponse?.message?.status === 'success') {
+//             toast.success('Payment successful! Order created successfully.');
+//             setSelectedItem('');
+//             setIsPaymentProcessing(false);
+//             setFormDisable(true);
+//             router.push('/orders');
+//           } else {
+//             throw new Error(orderResponse?.message?.message || 'Order creation failed');
+//           }
+//         } catch (orderError) {
+//           console.error('Order creation error:', orderError);
+//           toast.error('Order creation failed.');
+//           setIsPaymentProcessing(false);
+//         }
+//       },
+//       theme: { color: '#3399cc' },
+//       modal: {
+//         ondismiss: () => {
+//           setIsPaymentProcessing(false);
+//           toast.info('Payment cancelled');
+//         },
+//       },
+//     };
+
+//     const rzp = new window.Razorpay(options);
+//     rzp.on('payment.failed', function (response: any) {
+//       setIsPaymentProcessing(false);
+//       toast.error(`Payment failed: ${response.error.description}`);
+//     });
+//     rzp.open();
+
+//   } catch (error) {
+//     console.error('', error);
+//     setIsPaymentProcessing(false);
+//     toast.error('Failed to prepare payment. Please try again.');
+//   }
+// };
+
   const handleConfirmOrder = () => {
     const payload: any = {};
-
     payload.item_type = 'BK';
     payload.customer = user?.customer_id;
     payload.order_details = formValues;

@@ -48,3 +48,10 @@ export default async function handler(
     res.status(405).json({ message: `Method ${req.method} not allowed` });
   }
 }
+// so here i need to dothat array like file uiploading functionality correct with shared 
+// api ?a
+
+
+
+// remove thsi file completly and write insdie upload page. 
+

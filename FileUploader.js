@@ -15,13 +15,12 @@ const FileUploader = () => {
     setUploading(true);
 
     try {
-      const response = await axios.post('/method/addiwise.apis.order_types.bk_order.create_bk_order', {
+      const response = await axios.post('/api/s3-presigned-url', {
         fileName: selectedFile.name,
         fileType: selectedFile.type,
       });
 
       const presignedUrl = response.data.presignedUrl;
-      console.log('Presigned URL:', presignedUrl);
 
       await axios.put(presignedUrl, selectedFile, {
         headers: {
@@ -30,7 +29,7 @@ const FileUploader = () => {
       });
 
       // Share metadata with your backend API
-      await axios.post('/method/ad diwise.apis.order_types.bk_order.create_bk_order', {
+      await axios.post('/api/share-metadata', {
         fileName: selectedFile.name,
         fileType: selectedFile.type,
       });

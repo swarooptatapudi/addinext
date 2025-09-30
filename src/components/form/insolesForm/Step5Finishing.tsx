@@ -500,7 +500,7 @@ const handlePayLater = async (values: any) => {
     }
   } catch (error: any) {
     // console.error("Order creation failed:", error);
-    toast.error(error?.message || "Failed to place order using Addicoins");
+    toast.error(error?.message || "Failed to place order");
   } finally {
     setIsPaymentProcessing(false); // ✅ Always stop loader
   }

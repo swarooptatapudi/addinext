@@ -156,7 +156,7 @@ type ModelFilePickerProps = {
      accept?: string[]; 
      value?: string;
 };
-
+// this the file page whgich is having upload functionality taking file to uploasd 
 export default function ModelFilePicker({
   label = 'Select Scan',
   buttonText = 'Upload Scan File',
@@ -189,7 +189,10 @@ const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
     if (f.size > maxSize) {
       setError('File size exceeds 50MB limit.');
       return;
+    
+
     }
+ 
 
     setFile(f);
     setFileType(fileExtension);
@@ -197,7 +200,7 @@ const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
     onFileSelect?.(f);
   };
 
-
+// so my doubt is shall i write async await here which  the files drectly go to s3
 
   return (
     <div className="space-y-2 pl-4 pr-4 pb-4 w-[200px] sm:w-[150px] md:w-[150px] lg:w-[145px] xl:w-[170px]">

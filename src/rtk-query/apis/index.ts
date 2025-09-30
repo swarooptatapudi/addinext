@@ -25,6 +25,10 @@ const baseQuery = fetchBaseQuery({
     const token = localStorage.getItem('token');
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
+      localStorage.setItem('token', token); // Refresh token expiry on each request
+      // not this api. where is login api 
+    } else {
+      console.warn('No auth token found in localStorage');
     }
     return headers;
   }

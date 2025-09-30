@@ -420,6 +420,18 @@ export const ordersApi = createApi({
         return response;
       }
     }),
+   
+    preSignedUrl: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.utils.generate_presigned_url',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response) => {
+        // console.log("create_bk_order", response);
+        return response;
+      }
+    }),
   })
 });
 
@@ -433,5 +445,6 @@ export const {
   useCreateProductOrderMutation,
   useCreateInsoleOrderMutation,
   useGetINEstimateMutation,
+  usePreSignedUrlMutation
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;
