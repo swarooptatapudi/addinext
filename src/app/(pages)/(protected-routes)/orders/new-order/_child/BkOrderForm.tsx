@@ -1661,7 +1661,8 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     open: false,
     data: null
   });
-const[preSignedUrl,setPreSignedUrl] = usePreSignedUrlMutation();
+
+const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
 
     // 1️⃣ Maintain an array to store uploaded file metadata
 const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
@@ -1811,376 +1812,397 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
 
   // Main function for Pay & Place Order
   // Main function for Pay & Place Order
+  // const handlePayAndPlaceOrder = async (values: any) => {
+  //   if (!razorpayKey || !isRazorpayLoaded) {
+  //     toast.error('Payment gateway is not available. Please try again.');
+  //     return;
+  //   }
+  //   setIsPaymentProcessing(true);
+  //   setFormValues(values);
 
-  
-  const handlePayAndPlaceOrder = async (values: any) => {
-    if (!razorpayKey || !isRazorpayLoaded) {
-      toast.error('Payment gateway is not available. Please try again.');
-      return;
-    }
-    setIsPaymentProcessing(true);
-    setFormValues(values);
+  //   try {
+  //     // Prepare the order data (same as "Order Now, Pay Later")
+  //     const payload = {
+  //       item_type: 'BK',
+  //       socket_type: values.socket_type,
+  //       design_variation: values.design_variation,
+  //       activity_level: values.activity_level,
+  //       model_name: values.model_name,
+  //       stump_length: values.stump_length,
+  //       weight: values.weight
+  //     };
+  //     const itemCode = await getItemCodeByValues(payload);
+  //     setSelectedItem(itemCode);
 
-    try {
-      // Prepare the order data (same as "Order Now, Pay Later")
-      const payload = {
-        item_type: 'BK',
-        socket_type: values.socket_type,
-        design_variation: values.design_variation,
-        activity_level: values.activity_level,
-        model_name: values.model_name,
-        stump_length: values.stump_length,
-        weight: values.weight
-      };
-      const itemCode = await getItemCodeByValues(payload);
-      setSelectedItem(itemCode);
+  //     // Create order payload
+  //     const orderPayload = {
+  //       item_type: 'BK',
+  //       customer: user?.customer_id,
+  //       order_details: {
+  //         ...values
+  //       },
+  //       item_code: itemCode,
+  //       addicoins: parseInt(values.addicoins),
+  //       totalPrice: totalPrice,
+  //       print: print,
+  //       design: desgin,
+  //       coupon_per: couponPer,
+  //       discount_amount: totalDiscount
+  //     };
 
-      // Create order payload
-      const orderPayload = {
-        item_type: 'BK',
-        customer: user?.customer_id,
-        order_details: {
-          ...values
-        },
-        item_code: itemCode,
-        addicoins: parseInt(values.addicoins),
-        totalPrice: totalPrice,
-        print: print,
-        design: desgin,
-        coupon_per: couponPer,
-        discount_amount: totalDiscount
-      };
-
-      // ✅ CREATE FORMDATA FUNCTION (reusable)
-      const createFormDataWithFiles = (basePayload: any) => {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(basePayload));
+  //     // ✅ CREATE FORMDATA FUNCTION (reusable)
+  //     const createFormDataWithFiles = (basePayload: any) => {
+  //       const formData = new FormData();
+  //       formData.append('data', JSON.stringify(basePayload));
 
         
-        const extractAndAppendFiles = (obj: any, prefix: string = '') => {
-          for (const key in obj) {
-            if (obj[key] && typeof obj[key] === 'object') {
-              if (obj[key] instanceof File) {
-                if (key.includes('left_foot') || key.includes('scan_file_left')) {
-                  formData.append('scan_file_left', obj[key]);
-                } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
-                  formData.append('scan_file_right', obj[key]);
-                } else if (key.includes('obj_file')) {
-                  formData.append(`obj_file_${key}`, obj[key]);
-                } else if (key.includes('additional_file')) {
-                  formData.append(`additional_file_${key}`, obj[key]);
-                } else {
-                  formData.append('scan_file_left', obj[key]);
-                }
-              } else if (obj[key].constructor === FileList) {
-                Array.from(obj[key]).forEach((file: File, index: number) => {
-                  if (key.includes('left_foot')) {
-                    formData.append('scan_file_left', file);
-                  } else if (key.includes('right_foot')) {
-                    formData.append('scan_file_right', file);
-                  } else {
-                    formData.append(`scan_file_${index}`, file);
-                  }
-                });
-              } else if (Array.isArray(obj[key])) {
-                obj[key].forEach((item: any, index: number) => {
-                  extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
-                });
-              } else {
-                extractAndAppendFiles(obj[key], `${prefix}${key}.`);
-              }
-            }
+  //       const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+  //         for (const key in obj) {
+  //           if (obj[key] && typeof obj[key] === 'object') {
+  //             if (obj[key] instanceof File) {
+  //               if (key.includes('left_foot') || key.includes('scan_file_left')) {
+  //                 formData.append('scan_file_left', obj[key]);
+  //               } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
+  //                 formData.append('scan_file_right', obj[key]);
+  //               } else if (key.includes('obj_file')) {
+  //                 formData.append(`obj_file_${key}`, obj[key]);
+  //               } else if (key.includes('additional_file')) {
+  //                 formData.append(`additional_file_${key}`, obj[key]);
+  //               } else {
+  //                 formData.append('scan_file_left', obj[key]);
+  //               }
+  //             } else if (obj[key].constructor === FileList) {
+  //               Array.from(obj[key]).forEach((file: File, index: number) => {
+  //                 if (key.includes('left_foot')) {
+  //                   formData.append('scan_file_left', file);
+  //                 } else if (key.includes('right_foot')) {
+  //                   formData.append('scan_file_right', file);
+  //                 } else {
+  //                   formData.append(`scan_file_${index}`, file);
+  //                 }
+  //               });
+  //             } else if (Array.isArray(obj[key])) {
+  //               obj[key].forEach((item: any, index: number) => {
+  //                 extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+  //               });
+  //             } else {
+  //               extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+  //             }
+  //           }
+  //         }
+  //       };
+
+  //       // Extract files from the values object
+  //       extractAndAppendFiles(values);
+
+  //       // Also check for direct file fields in values
+  //       if (values.left_foot_file && values.left_foot_file instanceof File) {
+  //         formData.append('scan_file_left', values.left_foot_file);
+  //       }
+  //       if (values.right_foot_file && values.right_foot_file instanceof File) {
+  //         formData.append('scan_file_right', values.right_foot_file);
+  //       }
+
+  //       // Check scan_items for files
+  //       if (values.scan_items && Array.isArray(values.scan_items)) {
+  //         values.scan_items.forEach((item: any, index: number) => {
+  //           if (item.left_foot_file && item.left_foot_file instanceof File) {
+  //             formData.append('scan_file_left', item.left_foot_file);
+  //           }
+  //           if (item.right_foot_file && item.right_foot_file instanceof File) {
+  //             formData.append('scan_file_right', item.right_foot_file);
+  //           }
+  //         });
+  //       }
+
+  //       return formData;
+  //     };
+
+  //     const amountInPaise = 100000;
+
+  //     // Configure Razorpay options
+  //     const options = {
+  //       key: razorpayKey,
+  //       amount: amountInPaise.toString(),
+  //       currency: 'INR',
+  //       name: 'Addiwise Company',
+  //       description: `Payment for BK Order`,
+  //       handler: async function (response: any) {
+  //         try {
+  //           // ✅ Create final payload with payment details
+  //           const finalOrderPayload = {
+  //             ...orderPayload,
+  //             custom_payment_reference_id: response.razorpay_payment_id,
+  //             totalPrice: totalPrice,
+  //              print: print,
+  //       design: desgin,
+  //       coupon_per: couponPer,
+  //             discount_amount: totalDiscount
+  //           };
+
+  //           // ✅ CREATE FORMDATA WITH FILES INSIDE PAYMENT HANDLER
+  //           const finalFormData = createFormDataWithFiles(finalOrderPayload);
+
+  //           console.log('Final Order Payload:', finalOrderPayload);
+
+  //           // ✅ SEND FORMDATA (NOT JSON)
+  //           const orderResponse: any = await createOrder(finalFormData).unwrap();
+
+  //           if (orderResponse?.message?.status === 'success') {
+  //             toast.success('Payment successful! Order created successfully.');
+  //             setSelectedItem('');
+  //             setIsPaymentProcessing(false);
+  //             setFormDisable(true);
+  //             router.push('/orders');
+  //           } else {
+  //             throw new Error(orderResponse?.message?.message || 'Order creation failed');
+  //           }
+  //         } catch (orderError) {
+  //           console.error('Order creation error:', orderError);
+  //           toast.error(
+  //             'Order creation failed.'
+  //           );
+  //           setIsPaymentProcessing(false);
+  //         }
+  //       },
+  //       theme: { color: '#3399cc' },
+  //       modal: {
+  //         ondismiss: function () {
+  //           setIsPaymentProcessing(false);
+  //           toast.info('Payment cancelled');
+  //         }
+  //       }
+  //     };
+
+  //     const rzp = new window.Razorpay(options);
+  //     rzp.on('payment.failed', function (response: any) {
+  //       setIsPaymentProcessing(false);
+  //       toast.error(`Payment failed: ${response.error.description}`);
+  //     });
+  //     rzp.open();
+  //   } catch (error) {
+  //     console.error('Payment preparation error:', error);
+  //     setIsPaymentProcessing(false);
+  //     toast.error('Failed to prepare payment. Please try again.');
+  //   }
+  // };
+
+const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
+  console.log("📤 Requesting presigned URL for:", file.name);
+  console.log("📄 Original file type:", file.type); // Debug log
+
+  try {
+    // ✅ CRITICAL FIX: Force Content-Type for STL files
+    let contentType = file.type;
+    
+    // Handle STL files specifically - browsers often return empty or incorrect MIME type
+    if (file.name.toLowerCase().endsWith('.stl')) {
+      contentType = 'application/octet-stream'; // Standard for STL files
+      console.log("🔧 STL file detected, using application/octet-stream");
+    }
+    
+    // If file.type is empty or generic, use application/octet-stream
+    if (!contentType || contentType === '' || contentType === 'application/octet-stream') {
+      contentType = 'application/octet-stream';
+      console.log("🔧 Using application/octet-stream for content type");
+    }
+
+    // Step 1: Get Presigned URL using RTK Query
+    const result = await preSignedUrl({
+      fileName: file.name,
+      fileType: contentType, 
+      userId
+    }).unwrap();
+
+    console.log("📥 Received presigned URL:", result);
+
+    if (!result?.message?.status) {
+      throw new Error("Presigned URL request failed");
+    }
+
+    const uploadUrl = result?.message?.data?.upload_url;
+    const key = result?.message?.data?.key;
+
+    // Step 2: Upload File to S3 
+    const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
+      return new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", url);
+        
+        // ✅ CRITICAL: Use the exact same Content-Type as presigned URL generation
+        xhr.setRequestHeader("Content-Type", contentType);
+        console.log(`🎯 Setting Content-Type header to: ${contentType}`);
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable && onProgress) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            onProgress(percent);
           }
         };
 
-        // Extract files from the values object
-        extractAndAppendFiles(values);
-
-        // Also check for direct file fields in values
-        if (values.left_foot_file && values.left_foot_file instanceof File) {
-          formData.append('scan_file_left', values.left_foot_file);
-        }
-        if (values.right_foot_file && values.right_foot_file instanceof File) {
-          formData.append('scan_file_right', values.right_foot_file);
-        }
-
-        // Check scan_items for files
-        if (values.scan_items && Array.isArray(values.scan_items)) {
-          values.scan_items.forEach((item: any, index: number) => {
-            if (item.left_foot_file && item.left_foot_file instanceof File) {
-              formData.append('scan_file_left', item.left_foot_file);
-            }
-            if (item.right_foot_file && item.right_foot_file instanceof File) {
-              formData.append('scan_file_right', item.right_foot_file);
-            }
-          });
-        }
-
-        return formData;
-      };
-
-      const amountInPaise = 100000;
-
-      // Configure Razorpay options
-      const options = {
-        key: razorpayKey,
-        amount: amountInPaise.toString(),
-        currency: 'INR',
-        name: 'Addiwise Company',
-        description: `Payment for BK Order`,
-        handler: async function (response: any) {
-          try {
-            // ✅ Create final payload with payment details
-            const finalOrderPayload = {
-              ...orderPayload,
-              custom_payment_reference_id: response.razorpay_payment_id,
-              totalPrice: totalPrice,
-               print: print,
-        design: desgin,
-        coupon_per: couponPer,
-              discount_amount: totalDiscount
-            };
-
-            // ✅ CREATE FORMDATA WITH FILES INSIDE PAYMENT HANDLER
-            const finalFormData = createFormDataWithFiles(finalOrderPayload);
-
-            console.log('Final Order Payload:', finalOrderPayload);
-
-            // ✅ SEND FORMDATA (NOT JSON)
-            const orderResponse: any = await createOrder(finalFormData).unwrap();
-
-            if (orderResponse?.message?.status === 'success') {
-              toast.success('Payment successful! Order created successfully.');
-              setSelectedItem('');
-              setIsPaymentProcessing(false);
-              setFormDisable(true);
-              router.push('/orders');
-            } else {
-              throw new Error(orderResponse?.message?.message || 'Order creation failed');
-            }
-          } catch (orderError) {
-            console.error('Order creation error:', orderError);
-            toast.error(
-              'Order creation failed.'
-            );
-            setIsPaymentProcessing(false);
+        xhr.onload = () => {
+          console.log(`📊 Upload response status: ${xhr.status}`);
+          if (xhr.status === 200) {
+            console.log(`✅ Successfully uploaded ${file.name}`);
+            resolve();
+          } else {
+            console.error(`❌ Upload failed with status ${xhr.status}`);
+            console.error("Response headers:", xhr.getAllResponseHeaders());
+            console.error("Response text:", xhr.responseText);
+            reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.responseText}`));
           }
-        },
-        theme: { color: '#3399cc' },
-        modal: {
-          ondismiss: function () {
-            setIsPaymentProcessing(false);
-            toast.info('Payment cancelled');
-          }
-        }
-      };
+        };
 
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response: any) {
-        setIsPaymentProcessing(false);
-        toast.error(`Payment failed: ${response.error.description}`);
+        xhr.onerror = () => {
+          console.error("❌ Network error during upload");
+          reject(new Error("Network error during upload"));
+        };
+
+        console.log(`🚀 Starting upload to S3...`);
+        console.log(`📎 Final Content-Type: ${contentType}`);
+        xhr.send(file);
       });
-      rzp.open();
-    } catch (error) {
-      console.error('Payment preparation error:', error);
-      setIsPaymentProcessing(false);
-      toast.error('Failed to prepare payment. Please try again.');
+    };
+
+    await uploadFileToS3(uploadUrl, file, (percent) => {
+      console.log(`Uploading ${file.name}: ${percent}%`);
+    });
+
+    // Step 3: Return Metadata
+    const fileMeta = {
+      key,
+      size: file.size,
+      type: contentType, // ✅ Use the determined content type
+      originalName: file.name,
+    };
+
+    console.log("📄 File metadata:", fileMeta);
+
+    setUploadedFiles((prev) => [...prev, fileMeta]);
+    return fileMeta;
+
+  } catch (error) {
+    console.error('❌ Upload error:', error);
+    throw error;
+  }
+};
+
+
+
+// 3️⃣ Modified handlePayAndPlaceOrder
+const handlePayAndPlaceOrder = async (values: any) => {
+
+  if (!razorpayKey || !isRazorpayLoaded) {
+    toast.error('Payment gateway is not available. Please try again.');
+    return;
+  }
+  setIsPaymentProcessing(true);
+  setFormValues(values);
+
+  try {
+    // Prepare order data
+    const payload = {
+      item_type: 'BK',
+      socket_type: values.socket_type,
+      design_variation: values.design_variation,
+      activity_level: values.activity_level,
+      model_name: values.model_name,
+      stump_length: values.stump_length,
+      weight: values.weight,
+    };
+    const itemCode = await getItemCodeByValues(payload);
+    setSelectedItem(itemCode);
+
+    // 🔥 1) UPLOAD FILES TO S3 FIRST (if present)
+    const filesToUpload: File[] = [];
+    if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+    if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+    if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
+
+    const uploadedMetadata: any[] = [];
+    for (const f of filesToUpload) {
+      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+      uploadedMetadata.push(meta);
     }
-  };
 
+    // 🔥 2) ENCODE METADATA AS BASE64
+    const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
 
+    // Build final order payload
+    const orderPayload = {
+      item_type: 'BK',
+      customer: user?.customer_id,
+      order_details: { ...values },
+      item_code: itemCode,
+      uploaded_files: encodedFiles, // ✅ only sending encoded metadata
+      addicoins: parseInt(values.addicoins),
+      totalPrice: totalPrice,
+      print,
+      design: desgin,
+      coupon_per: couponPer,
+      discount_amount: totalDiscount,
+    };
 
-// 2️⃣ Function to upload file to S3 & store metadata
-// 2️⃣ Function to upload file to S3 & store metadata
-// const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
-//   const token = localStorage.getItem('token');
-//   if (!token) throw new Error("Missing authentication token");
+    // Configure Razorpay
+    const amountInPaise = 100000;
+    const options = {
+      key: razorpayKey,
+      amount: amountInPaise.toString(),
+      currency: 'INR',
+      name: 'Addiwise Company',
+      description: `Payment for BK Order`,
+      handler: async function (response: any) {
+        try {
+          const finalOrderPayload = {
+            ...orderPayload,
+            custom_payment_reference_id: response.razorpay_payment_id,
+          };
 
-//   console.log("📤 Requesting presigned URL for:", file.name);
+          // Use FormData but without files — only data
+          const finalFormData = new FormData();
+          finalFormData.append("data", JSON.stringify(finalOrderPayload));
 
-//   // Step 1: Get Presigned URL
-//   const presignedRes = await fetch("https://uaterp.addiwise.com/api/method/addiwise.apis.utils.generate_presigned_url", {
-//     method: "POST",
-//     headers: { 
-//       "Content-Type": "application/json",
-//       // "Authorization": `Bearer ${token}`   // ⚡ make sure this matches what worked in Postman
-//     },
-//     body: JSON.stringify({
-//       fileName: file.name,
-//       fileType: file.type,
-//       userId
-//     }),
-//     credentials: "include", 
-//   });
+          console.log("📦 Final Payload:", finalOrderPayload);
 
-//   if (!presignedRes.ok) {
-//     const errorText = await presignedRes.text();
-//     console.error("❌ Presigned URL error:", errorText);
-//     throw new Error(`Failed to get presigned URL: ${presignedRes.status}`);
-//   }
+          const orderResponse: any = await createOrder(finalFormData).unwrap();
 
-//   const result = await presignedRes.json();
-//   if (!result?.message?.status) throw new Error("Presigned URL request failed");
+          if (orderResponse?.message?.status === 'success') {
+            toast.success('Payment successful! Order created successfully.');
+            setSelectedItem('');
+            setIsPaymentProcessing(false);
+            setFormDisable(true);
+            router.push('/orders');
+          } else {
+            throw new Error(orderResponse?.message?.message || 'Order creation failed');
+          }
+        } catch (orderError) {
+          console.error('Order creation error:', orderError);
+          toast.error('Order creation failed.');
+          setIsPaymentProcessing(false);
+        }
+      },
+      theme: { color: '#3399cc' },
+      modal: {
+        ondismiss: () => {
+          setIsPaymentProcessing(false);
+          toast.info('Payment cancelled');
+        },
+      },
+    };
 
-//   const { uploadUrl, key } = result.message.data;
-//   const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
-//   return new Promise<void>((resolve, reject) => {
-//     const xhr = new XMLHttpRequest();
-//     xhr.open("PUT", url);
-//     xhr.setRequestHeader("Content-Type", file.type);
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', function (response: any) {
+      setIsPaymentProcessing(false);
+      toast.error(`Payment failed: ${response.error.description}`);
+    });
+    rzp.open();
 
-//     xhr.upload.onprogress = (event) => {
-//       if (event.lengthComputable && onProgress) {
-//         const percent = Math.round((event.loaded / event.total) * 100);
-//         onProgress(percent);
-//       }
-//     };
-
-//     xhr.onload = () => {
-//       if (xhr.status === 200) {
-//         resolve();
-//       } else {
-//         reject(new Error(`Upload failed with status ${xhr.status}`));
-//       }
-//     };
-
-//     xhr.onerror = () => reject(new Error("Network error during upload"));
-//     xhr.send(file);
-//   });
-// };
-
-//   // Step 2: Upload File → S3
-//   await uploadFileToS3(uploadUrl, file, (percent) => {
-//     console.log(`Uploading ${file.name}: ${percent}%`);
-//   });
-
-//   // Step 3: Return Metadata
-//   const fileMeta = {
-//     key,
-//     size: file.size,
-//     type: file.type,
-//     originalName: file.name,
-//   };
-
-//   setUploadedFiles((prev) => [...prev, fileMeta]);
-//   return fileMeta;
-// };
-
-
-
-// // 3️⃣ Modified handlePayAndPlaceOrder
-// const handlePayAndPlaceOrder = async (values: any) => {
-//   if (!razorpayKey || !isRazorpayLoaded) {
-//     toast.error('Payment gateway is not available. Please try again.');
-//     return;
-//   }
-//   setIsPaymentProcessing(true);
-//   setFormValues(values);
-
-//   try {
-//     // Prepare order data
-//     const payload = {
-//       item_type: 'BK',
-//       socket_type: values.socket_type,
-//       design_variation: values.design_variation,
-//       activity_level: values.activity_level,
-//       model_name: values.model_name,
-//       stump_length: values.stump_length,
-//       weight: values.weight,
-//     };
-//     const itemCode = await getItemCodeByValues(payload);
-//     setSelectedItem(itemCode);
-
-//     // 🔥 1) UPLOAD FILES TO S3 FIRST (if present)
-//     const filesToUpload: File[] = [];
-//     if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
-//     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
-//     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
-
-//     const uploadedMetadata: any[] = [];
-//     for (const f of filesToUpload) {
-//       const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-//       uploadedMetadata.push(meta);
-//     }
-
-//     // 🔥 2) ENCODE METADATA AS BASE64
-//     const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
-
-//     // Build final order payload
-//     const orderPayload = {
-//       item_type: 'BK',
-//       customer: user?.customer_id,
-//       order_details: { ...values },
-//       item_code: itemCode,
-//       uploaded_files: encodedFiles, // ✅ only sending encoded metadata
-//       addicoins: parseInt(values.addicoins),
-//       totalPrice: totalPrice,
-//       print,
-//       design: desgin,
-//       coupon_per: couponPer,
-//       discount_amount: totalDiscount,
-//     };
-
-//     // Configure Razorpay
-//     const amountInPaise = 100000;
-//     const options = {
-//       key: razorpayKey,
-//       amount: amountInPaise.toString(),
-//       currency: 'INR',
-//       name: 'Addiwise Company',
-//       description: `Payment for BK Order`,
-//       handler: async function (response: any) {
-//         try {
-//           const finalOrderPayload = {
-//             ...orderPayload,
-//             custom_payment_reference_id: response.razorpay_payment_id,
-//           };
-
-//           // Use FormData but without files — only data
-//           const finalFormData = new FormData();
-//           finalFormData.append("data", JSON.stringify(finalOrderPayload));
-
-//           console.log("📦 Final Payload:", finalOrderPayload);
-
-//           const orderResponse: any = await createOrder(finalFormData).unwrap();
-
-//           if (orderResponse?.message?.status === 'success') {
-//             toast.success('Payment successful! Order created successfully.');
-//             setSelectedItem('');
-//             setIsPaymentProcessing(false);
-//             setFormDisable(true);
-//             router.push('/orders');
-//           } else {
-//             throw new Error(orderResponse?.message?.message || 'Order creation failed');
-//           }
-//         } catch (orderError) {
-//           console.error('Order creation error:', orderError);
-//           toast.error('Order creation failed.');
-//           setIsPaymentProcessing(false);
-//         }
-//       },
-//       theme: { color: '#3399cc' },
-//       modal: {
-//         ondismiss: () => {
-//           setIsPaymentProcessing(false);
-//           toast.info('Payment cancelled');
-//         },
-//       },
-//     };
-
-//     const rzp = new window.Razorpay(options);
-//     rzp.on('payment.failed', function (response: any) {
-//       setIsPaymentProcessing(false);
-//       toast.error(`Payment failed: ${response.error.description}`);
-//     });
-//     rzp.open();
-
-//   } catch (error) {
-//     console.error('', error);
-//     setIsPaymentProcessing(false);
-//     toast.error('Failed to prepare payment. Please try again.');
-//   }
-// };
+  } catch (error) {
+    console.error('', error);
+    setIsPaymentProcessing(false);
+    toast.error('Failed to prepare payment. Please try again.');
+  }
+};
 
   const handleConfirmOrder = () => {
     const payload: any = {};
