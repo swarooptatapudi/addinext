@@ -255,12 +255,12 @@ export default function Organization(): React.JSX.Element {
   );
 
   const { data: patientList } = useGetPatientListQuery({});
-  console.log(" Fetched Patient Data:", patientList);
+  // console.log(" Fetched Patient Data:", patientList);
   const [patients, setPatients] = useState<Patient[]>([]);
 
   // ✅ Keep local state clean
   useEffect(() => {
-    console.log("📥 Raw API Data:", patientList);
+    // console.log("📥 Raw API Data:", patientList);
     setPatients(patientList);
   }, [patientList]);
 

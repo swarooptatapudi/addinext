@@ -74,7 +74,7 @@ export const Step5 = ({
   const [isEstimating, setIsEstimating] = useState(false);
   const [getINEstimate, { isLoading, isError, data }] = useGetINEstimateMutation();
 const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
-
+ const   [uploadURL,setUploadURL]= useState('');
 
   const [prevValues, setPrevValues] = useState(values);
   const [isEstimateAccepted, setIsEstimateAccepted] = useState(false);
@@ -251,25 +251,25 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
   //   }
   // };
 
-  const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
-  console.log("📤 Requesting presigned URL for:", file.name);
-  console.log("📄 Original file type:", file.type); // Debug log
+ const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
+  // console.log("📤 Requesting presigned URL for:", file.name);
+  // console.log("📄 Original file type:", file.type); // Debug log
 
   try {
     // ✅ CRITICAL FIX: Force Content-Type for STL files
-    let contentType = file.type;
+    let contentType = "model/stl";
     
-    // Handle STL files specifically - browsers often return empty or incorrect MIME type
-    if (file.name.toLowerCase().endsWith('.stl')) {
-      contentType = 'application/octet-stream'; // Standard for STL files
-      console.log("🔧 STL file detected, using application/octet-stream");
-    }
+    // // Handle STL files specifically - browsers often return empty or incorrect MIME type
+    // if (file.name.toLowerCase().endsWith('.stl')) {
+    //   contentType = 'application/octet-stream'; // Standard for STL files
+    //   console.log("🔧 STL file detected, using application/octet-stream");
+    // }
     
-    // If file.type is empty or generic, use application/octet-stream
-    if (!contentType || contentType === '' || contentType === 'application/octet-stream') {
-      contentType = 'application/octet-stream';
-      console.log("🔧 Using application/octet-stream for content type");
-    }
+    // // If file.type is empty or generic, use application/octet-stream
+    // if (!contentType || contentType === '' || contentType === 'application/octet-stream') {
+    //   contentType = 'application/octet-stream';
+    //   console.log("🔧 Using application/octet-stream for content type");
+    // }
 
     // Step 1: Get Presigned URL using RTK Query
     const result = await preSignedUrl({
@@ -278,16 +278,24 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
       userId
     }).unwrap();
 
-    console.log("📥 Received presigned URL:", result);
+    // console.log("📥 Received presigned URL:", result);
+   
+   
 // @ts-ignore
     if (!result?.message?.status) {
       throw new Error("Presigned URL request failed");
     }
-// @ts-ignore
-    const uploadUrl = result?.message?.data?.upload_url;
-    // @ts-ignore
+//@ts-ignore
+    const uploadUrl = result?.message?.data?.uploadUrl;
+    // setUploadURL(uploadUrl)
+    // console.log("🔗 Upload URL:", uploadUrl);
+ //   @ts-ignore
     const key = result?.message?.data?.key;
-
+    // console.log("🆔 S3 Object Key:", key);
+    const uploadUrlStr = String(uploadUrl);
+const keyStr       = String(key);
+    
+setUploadURL(uploadUrl);
     // Step 2: Upload File to S3 
     const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
       return new Promise<void>((resolve, reject) => {
@@ -296,7 +304,7 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
         
         // ✅ CRITICAL: Use the exact same Content-Type as presigned URL generation
         xhr.setRequestHeader("Content-Type", contentType);
-        console.log(`🎯 Setting Content-Type header to: ${contentType}`);
+        // console.log(`🎯 Setting Content-Type header to: ${contentType}`);
 
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable && onProgress) {
@@ -306,9 +314,9 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
         };
 
         xhr.onload = () => {
-          console.log(`📊 Upload response status: ${xhr.status}`);
+          // console.log(`📊 Upload response status: ${xhr.status}`);
           if (xhr.status === 200) {
-            console.log(`✅ Successfully uploaded ${file.name}`);
+            // console.log(`✅ Successfully uploaded ${file.name}`);
             resolve();
           } else {
             console.error(`❌ Upload failed with status ${xhr.status}`);
@@ -323,14 +331,14 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
           reject(new Error("Network error during upload"));
         };
 
-        console.log(`🚀 Starting upload to S3...`);
-        console.log(`📎 Final Content-Type: ${contentType}`);
+        // console.log(`🚀 Starting upload to S3...`);
+        // console.log(`📎 Final Content-Type: ${contentType}`);
         xhr.send(file);
       });
     };
 
     await uploadFileToS3(uploadUrl, file, (percent) => {
-      console.log(`Uploading ${file.name}: ${percent}%`);
+      // console.log(`Uploading ${file.name}: ${percent}%`);
     });
 
     // Step 3: Return Metadata
@@ -341,16 +349,18 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
       originalName: file.name,
     };
 
-    console.log("📄 File metadata:", fileMeta);
+    // console.log("📄 File metadata:", fileMeta);
+    const fullS3Url = `https://addiwse-tech.s3.amazonaws.com/${keyStr}`;
 
     setUploadedFiles((prev) => [...prev, fileMeta]);
-    return fileMeta;
+    return { ...fileMeta, fullS3Url };
 
   } catch (error) {
     console.error('❌ Upload error:', error);
     throw error;
   }
 };
+
  const handlePayAndPlaceOrderWithAddicoins = async (values: any) => {
   try {
     setIsPaymentProcessing(true);
@@ -377,12 +387,17 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
-    const uploadedMetadata: any[] = [];
-    for (const f of filesToUpload) {
-      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-      uploadedMetadata.push(meta);
-    }
-
+       const uploadedMetadata: any[] = [];
+const uploadedUrls: string[] = [];
+    // for (const f of filesToUpload) {
+    //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+    //   uploadedMetadata.push(meta);
+    // }
+for (const f of filesToUpload) {
+  const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+  uploadedMetadata.push(meta);
+  uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
+}
     // 🔥 2) ENCODE METADATA AS BASE64
     const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
 
@@ -398,6 +413,7 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
        uploaded_files: encodedFiles, 
       addicoins: parseInt(values.addicoins) || 0, // Deduct coins
       total_price: estimateData?.apiResponse?.total_price ?? 0,
+      uploadURL: uploadedUrls[0] || "",
       payment_method: "ADDICOINS", // mark as coins payment
     };
 
@@ -523,12 +539,17 @@ const handlePayLater = async (values: any) => {
     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
-    const uploadedMetadata: any[] = [];
-    for (const f of filesToUpload) {
-      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-      uploadedMetadata.push(meta);
-    }
-
+      const uploadedMetadata: any[] = [];
+const uploadedUrls: string[] = [];
+    // for (const f of filesToUpload) {
+    //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+    //   uploadedMetadata.push(meta);
+    // }
+for (const f of filesToUpload) {
+  const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+  uploadedMetadata.push(meta);
+  uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
+}
     // 🔥 2) ENCODE METADATA AS BASE64
     const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
     // 🟢 Step 2: Build order payload
@@ -540,7 +561,8 @@ const handlePayLater = async (values: any) => {
         thickness: thicknests,
       },
       item_code: itemCode,
-       uploaded_files: encodedFiles, 
+       uploaded_files: encodedFiles,
+       uploadURL: uploadedUrls[0] || "", 
       addicoins: parseInt(values.addicoins) || 0, // Deduct coins
       total_price: estimateData?.apiResponse?.total_price ?? 0,
     };
@@ -669,11 +691,18 @@ const handlePayLater = async (values: any) => {
     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
-    const uploadedMetadata: any[] = [];
-    for (const f of filesToUpload) {
-      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-      uploadedMetadata.push(meta);
-    }
+    
+      const uploadedMetadata: any[] = [];
+const uploadedUrls: string[] = [];
+    // for (const f of filesToUpload) {
+    //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+    //   uploadedMetadata.push(meta);
+    // }
+for (const f of filesToUpload) {
+  const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+  uploadedMetadata.push(meta);
+  uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
+}
 
     // 🔥 2) ENCODE METADATA AS BASE64
     const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
@@ -688,6 +717,7 @@ const handlePayLater = async (values: any) => {
         },
         item_code: itemCode,
         uploaded_files: encodedFiles,
+        uploadURL: uploadedUrls[0] || "", 
         addicoins: parseInt(values.addicoins) || 0,
         total_price: estimateData?.apiResponse?.total_price ?? 0
       };
@@ -791,7 +821,7 @@ const handlePayLater = async (values: any) => {
             // finalFormData   -  this one right  ?ok
             console.log('Final Insole Orderjson Payload:',finalOrderPayload);
             const orderResponse = await createInsoleOrder(finalFormData).unwrap();
-            console.log('✅ Order Response:', orderResponse);  // show me this in consoel loghere it is  but  you need jsn  body correct
+            // console.log('✅ Order Response:', orderResponse);  // show me this in consoel loghere it is  but  you need jsn  body correct
 
             // @ts-ignore
             if (orderResponse?.message?.status === 'success') {

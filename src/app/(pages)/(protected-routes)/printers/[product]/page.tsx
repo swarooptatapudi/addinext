@@ -307,8 +307,8 @@ const calculateBasicRate = (coins: number): number => {
   if (!coins || coins === 0) return 0;
   const baseAmount = coins * COIN_BASE_PRICE;
   const discountAmount = baseAmount * (DISCOUNT_PERCENTAGE / 100);
-  console.log('Base Amount:', baseAmount);
-  console.log('Discount Amount:', discountAmount);
+  // console.log('Base Amount:', baseAmount);
+  // console.log('Discount Amount:', discountAmount);
   if (couponData?.discount_percentage) {
     const finalDiscountAmount = discountAmount * (couponData?.discount_percentage / 100);
     return discountAmount - finalDiscountAmount; 

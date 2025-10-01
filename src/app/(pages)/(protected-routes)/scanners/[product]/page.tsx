@@ -241,7 +241,7 @@ export default function BuyScannersPage({ params }: { params: Promise<{ product:
             };
 
             const result = await buyAddiNxtCoin(payload).unwrap();
-            console.log('Payment result:', result);
+            // console.log('Payment result:', result);
             toast.success('product purchased successfully!');
             refetchTransactions();
             // if (result.success) {

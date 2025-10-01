@@ -56,7 +56,7 @@ export default function UploadPage() {
         originalName: file.name,
       });
 
-      console.log("Uploaded", body);
+      // console.log("Uploaded", body);
 
       // Here you uploading multiple file right and asking backend pre signed url separately for each file  ? yes the only chnages i ahve is url only...
       // are you storeing uploaded details in array like 

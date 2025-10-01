@@ -1639,7 +1639,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   // };
 
   const OnSubmit = async (values: any) => {
-    console.log("Form values on submit:");
+    // console.log("Form values on submit:");
     setFormValues(values);
 
     const payload = {
@@ -1756,7 +1756,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   // };
 
   const nextStep = async (values: any, setErrors: any): Promise<boolean> => {
-    console.log('Next step called with values:', values);
+    // console.log('Next step called with values:', values);
     setFormSubmitted(true);
     const errors = await validateCurrentStep(values);
 

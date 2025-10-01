@@ -172,12 +172,12 @@ export const Step5 = ({
       coupon_code: couponCode.trim()
     };
     
-    console.log('Estimate Payload:', estimatePayload);
+    // console.log('Estimate Payload:', estimatePayload);
 
     try {
       const response = await getBKEstimate(estimatePayload).unwrap();
 
-      console.log('Estimate Response:', response);
+      // console.log('Estimate Response:', response);
       setTotalDiscount(response?.data?.total_distcounted_price);
       setDesgin(response?.data?.design);
          setPrint(response?.data?.print);

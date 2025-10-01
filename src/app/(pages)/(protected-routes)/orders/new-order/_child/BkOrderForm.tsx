@@ -1362,7 +1362,7 @@ const Step2 = ({
                   }`}
                 value={values.foot_side || ''}
                 onValueChange={(value) => {
-                  console.log('🦶 Selected foot_side value:', value);
+                  // console.log('🦶 Selected foot_side value:', value);
                   handleChange('foot_side')(value);
                   setFieldValue('left_foot_file', value);
                   setFieldValue('right_foot_file', value);
@@ -1652,7 +1652,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [modelOpen, setModelOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
-
+    const   [uploadURL,setUploadURL]= useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -1708,7 +1708,7 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
         .unwrap()
         .then((response) => {
           const scanItem = response.data?.scan_items?.[0];
-          console.log('scanItem=>', scanItem);
+          // console.log('scanItem=>', scanItem);
           let mappedFootSide = '';
           if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right_Foot';
           if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left_Foot';
@@ -1749,7 +1749,7 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
           // console.log("API Response (response.data) =>", response.data);
           // console.log("Merged/Transformed =>", transformedData);
 
-          console.log('Transformed Data =>', transformedData);
+          // console.log('Transformed Data =>', transformedData);
 
           setFormValues(transformedData);
           if (response.data.item_code) {
@@ -1988,8 +1988,8 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   // };
 
 const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
-  console.log("📤 Requesting presigned URL for:", file.name);
-  console.log("📄 Original file type:", file.type); // Debug log
+  // console.log("📤 Requesting presigned URL for:", file.name);
+  // console.log("📄 Original file type:", file.type); // Debug log
 
   try {
     // ✅ CRITICAL FIX: Force Content-Type for STL files
@@ -2014,16 +2014,25 @@ const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
       userId
     }).unwrap();
 
-    console.log("📥 Received presigned URL:", result);
+    // console.log("📥 Received presigned URL:", result);
+   
+   
 // @ts-ignore
     if (!result?.message?.status) {
       throw new Error("Presigned URL request failed");
     }
 //@ts-ignore
     const uploadUrl = result?.message?.data?.uploadUrl;
+    // setUploadURL(uploadUrl)
+    // console.log("🔗 Upload URL:", uploadUrl);
  //   @ts-ignore
     const key = result?.message?.data?.key;
+    // console.log("🆔 S3 Object Key:", key);
+    const uploadUrlStr = String(uploadUrl);
+const keyStr       = String(key);
+    
 
+setUploadURL(uploadUrl);
     // Step 2: Upload File to S3 
     const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
       return new Promise<void>((resolve, reject) => {
@@ -2032,7 +2041,7 @@ const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
         
         // ✅ CRITICAL: Use the exact same Content-Type as presigned URL generation
         xhr.setRequestHeader("Content-Type", contentType);
-        console.log(`🎯 Setting Content-Type header to: ${contentType}`);
+        // console.log(`🎯 Setting Content-Type header to: ${contentType}`);
 
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable && onProgress) {
@@ -2078,9 +2087,10 @@ const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
     };
 
     console.log("📄 File metadata:", fileMeta);
+    const fullS3Url = `https://addiwse-tech.s3.amazonaws.com/${keyStr}`;
 
     setUploadedFiles((prev) => [...prev, fileMeta]);
-    return fileMeta;
+    return { ...fileMeta, fullS3Url };
 
   } catch (error) {
     console.error('❌ Upload error:', error);
@@ -2120,12 +2130,18 @@ const handlePayAndPlaceOrder = async (values: any) => {
     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
+   
     const uploadedMetadata: any[] = [];
-    for (const f of filesToUpload) {
-      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-      uploadedMetadata.push(meta);
-    }
-
+const uploadedUrls: string[] = [];
+    // for (const f of filesToUpload) {
+    //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+    //   uploadedMetadata.push(meta);
+    // }
+for (const f of filesToUpload) {
+  const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+  uploadedMetadata.push(meta);
+  uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
+}
     // 🔥 2) ENCODE METADATA AS BASE64
     const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
 
@@ -2142,6 +2158,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
       design: desgin,
       coupon_per: couponPer,
       discount_amount: totalDiscount,
+      uploadURL: uploadedUrls[0] || "",
     };
 
     // Configure Razorpay
@@ -2232,12 +2249,18 @@ const handlePayAndPlaceOrder = async (values: any) => {
     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
-    const uploadedMetadata: any[] = [];
-    for (const f of filesToUpload) {
-      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-      uploadedMetadata.push(meta);
-    }
-
+    // const uploadedMetadata: any[] = [];
+    // for (const f of filesToUpload) {
+    //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+    //   uploadedMetadata.push(meta);
+    // }
+const uploadedMetadata: any[] = [];
+const uploadedUrls: string[] = [];
+for (const f of filesToUpload) {
+  const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+  uploadedMetadata.push(meta);
+  uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
+}
     // 🔥 2) ENCODE METADATA AS BASE64
     const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
     // Submit the final form
@@ -2249,6 +2272,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
       },
       item_code: itemCode,
         uploaded_files: encodedFiles,
+        uploadURL: uploadedUrls[0] || "",
       // @ts-ignore
       addicoins: parseInt(values.addicoins)
     };
@@ -2672,7 +2696,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
                   <Button
                     className="shadow-2xl"
                     onClick={async () => {
-                      console.log('next step error', errors);
+                      // console.log('next step error', errors);
                       await nextStep(values, setErrors);
                     }}
                     type="button"

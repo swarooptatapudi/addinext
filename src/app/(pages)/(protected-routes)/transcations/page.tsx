@@ -120,7 +120,7 @@ export default function Transcations(): React.JSX.Element {
   const { data: receiptsData = [], refetch: refetchReceipts } =
     useGetProductsSalesOrderListQuery({ customer: user?.customer_id });
 
-  console.log("receiptsData>>", receiptsData);
+  // console.log("receiptsData>>", receiptsData);
 
 
   // console.log('::>>', transactionHistorySeles);
