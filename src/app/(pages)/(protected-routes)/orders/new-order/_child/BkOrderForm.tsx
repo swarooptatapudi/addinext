@@ -2015,12 +2015,14 @@ const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
     }).unwrap();
 
     console.log("📥 Received presigned URL:", result);
-
+// @ts-ignore
     if (!result?.message?.status) {
       throw new Error("Presigned URL request failed");
     }
-
-    const uploadUrl = result?.message?.data?.upload_url;
+// @ts-ignore
+   const uploadUrl = result?.message?.data?.uploadUrl;  // ✅ correct field name
+console.log("🔗 Upload URL:", uploadUrl);
+    // @ts-ignore
     const key = result?.message?.data?.key;
 
     // Step 2: Upload File to S3 
@@ -2226,7 +2228,19 @@ const handlePayAndPlaceOrder = async (values: any) => {
     };
     const itemCode = await getItemCodeByValues(payload);
     setSelectedItem(itemCode);
+ const filesToUpload: File[] = [];
+    if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+    if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+    if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
+    const uploadedMetadata: any[] = [];
+    for (const f of filesToUpload) {
+      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+      uploadedMetadata.push(meta);
+    }
+
+    // 🔥 2) ENCODE METADATA AS BASE64
+    const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
     // Submit the final form
     const orderPayload = {
       item_type: 'BK',
@@ -2235,6 +2249,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
         ...values
       },
       item_code: itemCode,
+        uploaded_files: encodedFiles,
       // @ts-ignore
       addicoins: parseInt(values.addicoins)
     };

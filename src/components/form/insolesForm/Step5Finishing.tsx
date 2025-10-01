@@ -4,7 +4,7 @@ import { ImageCheckbox } from './ImgproCheck';
 import { useState, useCallback, useEffect } from 'react';
 import {
   useCreateInsoleOrderMutation,
-  useGetOrderDetailIdsMutation
+  useGetOrderDetailIdsMutation,usePreSignedUrlMutation
 } from '@/rtk-query/apis/orders';
 import {
   thicknessToinsoletypeMap,
@@ -65,6 +65,7 @@ export const Step5 = ({
 
   const [selectedType, setSelectedType] = useState<'Standard' | 'Premium'>('Standard');
   const [showEstimateCard, setShowEstimateCard] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [estimateConform, setEstimateConform] = useState(false);
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
   const [createInsoleOrder, { isLoading: isOrderCreating }] = useCreateInsoleOrderMutation();
@@ -96,7 +97,7 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
   const [orderData, setOrderData] = useState<any | null>({});
   const [showAddicoinsCard, setShowAddicoinsCard] = useState(false);
   const [formDisable, setFormDisable] = useState(false);
-
+const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
   const initialValues = INSOLES_FORM_INITIAL_VALUES;
 
   const isAddiSole = values.model_name === 'AddiEase';
@@ -250,6 +251,106 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
   //   }
   // };
 
+  const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
+  console.log("📤 Requesting presigned URL for:", file.name);
+  console.log("📄 Original file type:", file.type); // Debug log
+
+  try {
+    // ✅ CRITICAL FIX: Force Content-Type for STL files
+    let contentType = file.type;
+    
+    // Handle STL files specifically - browsers often return empty or incorrect MIME type
+    if (file.name.toLowerCase().endsWith('.stl')) {
+      contentType = 'application/octet-stream'; // Standard for STL files
+      console.log("🔧 STL file detected, using application/octet-stream");
+    }
+    
+    // If file.type is empty or generic, use application/octet-stream
+    if (!contentType || contentType === '' || contentType === 'application/octet-stream') {
+      contentType = 'application/octet-stream';
+      console.log("🔧 Using application/octet-stream for content type");
+    }
+
+    // Step 1: Get Presigned URL using RTK Query
+    const result = await preSignedUrl({
+      fileName: file.name,
+      fileType: contentType, 
+      userId
+    }).unwrap();
+
+    console.log("📥 Received presigned URL:", result);
+// @ts-ignore
+    if (!result?.message?.status) {
+      throw new Error("Presigned URL request failed");
+    }
+// @ts-ignore
+    const uploadUrl = result?.message?.data?.upload_url;
+    // @ts-ignore
+    const key = result?.message?.data?.key;
+
+    // Step 2: Upload File to S3 
+    const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
+      return new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", url);
+        
+        // ✅ CRITICAL: Use the exact same Content-Type as presigned URL generation
+        xhr.setRequestHeader("Content-Type", contentType);
+        console.log(`🎯 Setting Content-Type header to: ${contentType}`);
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable && onProgress) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            onProgress(percent);
+          }
+        };
+
+        xhr.onload = () => {
+          console.log(`📊 Upload response status: ${xhr.status}`);
+          if (xhr.status === 200) {
+            console.log(`✅ Successfully uploaded ${file.name}`);
+            resolve();
+          } else {
+            console.error(`❌ Upload failed with status ${xhr.status}`);
+            console.error("Response headers:", xhr.getAllResponseHeaders());
+            console.error("Response text:", xhr.responseText);
+            reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.responseText}`));
+          }
+        };
+
+        xhr.onerror = () => {
+          console.error("❌ Network error during upload");
+          reject(new Error("Network error during upload"));
+        };
+
+        console.log(`🚀 Starting upload to S3...`);
+        console.log(`📎 Final Content-Type: ${contentType}`);
+        xhr.send(file);
+      });
+    };
+
+    await uploadFileToS3(uploadUrl, file, (percent) => {
+      console.log(`Uploading ${file.name}: ${percent}%`);
+    });
+
+    // Step 3: Return Metadata
+    const fileMeta = {
+      key,
+      size: file.size,
+      type: contentType, // ✅ Use the determined content type
+      originalName: file.name,
+    };
+
+    console.log("📄 File metadata:", fileMeta);
+
+    setUploadedFiles((prev) => [...prev, fileMeta]);
+    return fileMeta;
+
+  } catch (error) {
+    console.error('❌ Upload error:', error);
+    throw error;
+  }
+};
  const handlePayAndPlaceOrderWithAddicoins = async (values: any) => {
   try {
     setIsPaymentProcessing(true);
@@ -270,6 +371,20 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
 
     const itemCode = await getItemCodeByValues(payload);
     setSelectedItemcode(itemCode);
+ // 🔥 1) UPLOAD FILES TO S3 FIRST (if present)
+    const filesToUpload: File[] = [];
+    if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+    if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+    if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
+
+    const uploadedMetadata: any[] = [];
+    for (const f of filesToUpload) {
+      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+      uploadedMetadata.push(meta);
+    }
+
+    // 🔥 2) ENCODE METADATA AS BASE64
+    const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
 
     // 🔹 Step 2: Build order payload (NO Razorpay needed)
     const orderPayload = {
@@ -280,6 +395,7 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
         thickness: thicknests,
       },
       item_code: itemCode,
+       uploaded_files: encodedFiles, 
       addicoins: parseInt(values.addicoins) || 0, // Deduct coins
       total_price: estimateData?.apiResponse?.total_price ?? 0,
       payment_method: "ADDICOINS", // mark as coins payment
@@ -355,6 +471,7 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
     };
     // 🟢 Step 3: Call API directly — no Razorpay flow
     const finalFormData = createFormDataWithFiles(orderPayload);
+    console.log("📦 Final FormData Payload:", finalFormData);
     // 🔹 Step 3: Call API directly — no Razorpay flow
     const orderResponse = await createInsoleOrder(finalFormData).unwrap();
     // console.log("✅ Order Response:", orderResponse);
@@ -401,7 +518,19 @@ const handlePayLater = async (values: any) => {
       throw new Error("Failed to fetch item code. Please try again.");
     }
     setSelectedItemcode(itemCode);
+ const filesToUpload: File[] = [];
+    if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+    if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+    if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
+    const uploadedMetadata: any[] = [];
+    for (const f of filesToUpload) {
+      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+      uploadedMetadata.push(meta);
+    }
+
+    // 🔥 2) ENCODE METADATA AS BASE64
+    const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
     // 🟢 Step 2: Build order payload
     const orderPayload = {
       item_type: "IN",
@@ -411,6 +540,7 @@ const handlePayLater = async (values: any) => {
         thickness: thicknests,
       },
       item_code: itemCode,
+       uploaded_files: encodedFiles, 
       addicoins: parseInt(values.addicoins) || 0, // Deduct coins
       total_price: estimateData?.apiResponse?.total_price ?? 0,
     };
@@ -534,6 +664,19 @@ const handlePayLater = async (values: any) => {
 
       const itemCode = await getItemCodeByValues(payload);
       setSelectedItemcode(itemCode);
+      const filesToUpload: File[] = [];
+    if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+    if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+    if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
+
+    const uploadedMetadata: any[] = [];
+    for (const f of filesToUpload) {
+      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+      uploadedMetadata.push(meta);
+    }
+
+    // 🔥 2) ENCODE METADATA AS BASE64
+    const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
 
       // 🔹 Step 2: Build the order payload
       const orderPayload = {
@@ -544,6 +687,7 @@ const handlePayLater = async (values: any) => {
           thickness: thicknests // add calculated thickness
         },
         item_code: itemCode,
+        uploaded_files: encodedFiles,
         addicoins: parseInt(values.addicoins) || 0,
         total_price: estimateData?.apiResponse?.total_price ?? 0
       };
@@ -645,7 +789,7 @@ const handlePayLater = async (values: any) => {
             const finalFormData = createFormDataWithFiles(finalOrderPayload);
 
             // finalFormData   -  this one right  ?ok
-            console.log('Final Insole Orderjson Payload:', JSON.stringify(finalOrderPayload));
+            console.log('Final Insole Orderjson Payload:',finalOrderPayload);
             const orderResponse = await createInsoleOrder(finalFormData).unwrap();
             console.log('✅ Order Response:', orderResponse);  // show me this in consoel loghere it is  but  you need jsn  body correct
 
