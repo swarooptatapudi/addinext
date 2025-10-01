@@ -2231,145 +2231,221 @@ for (const f of filesToUpload) {
     createOrder(payload);
   };
 
-  const OnSubmit = async (values: any) => {
-    setFormValues(values);
-    const payload = {
-      item_type: 'BK',
-      socket_type: values.socket_type,
-      design_variation: values.design_variation,
-      activity_level: values.activity_level,
-      model_name: values.model_name,
-      stump_length: values.stump_length,
-      weight: values.weight
-    };
-    const itemCode = await getItemCodeByValues(payload);
-    setSelectedItem(itemCode);
- const filesToUpload: File[] = [];
-    if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
-    if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
-    if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
+//   const OnSubmit = async (values: any) => {
+//     setFormValues(values);
+//     const payload = {
+//       item_type: 'BK',
+//       socket_type: values.socket_type,
+//       design_variation: values.design_variation,
+//       activity_level: values.activity_level,
+//       model_name: values.model_name,
+//       stump_length: values.stump_length,
+//       weight: values.weight
+//     };
+//     const itemCode = await getItemCodeByValues(payload);
+//     setSelectedItem(itemCode);
+//  const filesToUpload: File[] = [];
+//     if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+//     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+//     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
-    // const uploadedMetadata: any[] = [];
-    // for (const f of filesToUpload) {
-    //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-    //   uploadedMetadata.push(meta);
-    // }
-const uploadedMetadata: any[] = [];
-const uploadedUrls: string[] = [];
-for (const f of filesToUpload) {
-  const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-  uploadedMetadata.push(meta);
-  uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
-}
-    // 🔥 2) ENCODE METADATA AS BASE64
-    const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
-    // Submit the final form
-    const orderPayload = {
-      item_type: 'BK',
-      customer: user?.customer_id,
-      order_details: {
-        ...values
-      },
-      item_code: itemCode,
-        uploaded_files: encodedFiles,
-        uploadURL: uploadedUrls[0] || "",
-      // @ts-ignore
-      addicoins: parseInt(values.addicoins)
-    };
+//     // const uploadedMetadata: any[] = [];
+//     // for (const f of filesToUpload) {
+//     //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+//     //   uploadedMetadata.push(meta);
+//     // }
+// const uploadedMetadata: any[] = [];
+// const uploadedUrls: string[] = [];
+// for (const f of filesToUpload) {
+//   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+//   uploadedMetadata.push(meta);
+//   uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
+// }
+//     // 🔥 2) ENCODE METADATA AS BASE64
+//     const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
+//     // Submit the final form
+//     const orderPayload = {
+//       item_type: 'BK',
+//       customer: user?.customer_id,
+//       order_details: {
+//         ...values
+//       },
+//       item_code: itemCode,
+//         uploaded_files: {
+//     left_foot: uploadedUrls[0] || "",
+//     right_foot: uploadedUrls[1] || "",
+//     obj_file: uploadedUrls[2] || ""
+//   },
+//         uploadURL: uploadedUrls[0] || "",
+//       // @ts-ignore
+//       addicoins: parseInt(values.addicoins)
+//     };
 
-    console.log('Create Order orderPayload:', orderPayload);
+//     console.log('Create Order orderPayload:', orderPayload);
 
-    // Create FormData for multipart/form-data
-    const formData = new FormData();
+//     // Create FormData for multipart/form-data
+//     const formData = new FormData();
 
-    // Add the main data as JSON string
-    formData.append('data', JSON.stringify(orderPayload));
+//     // Add the main data as JSON string
+//     formData.append('data', JSON.stringify(orderPayload));
 
-    // Extract and append file uploads
-    const extractAndAppendFiles = (obj: any, prefix: string = '') => {
-      for (const key in obj) {
-        if (obj[key] && typeof obj[key] === 'object') {
-          if (obj[key] instanceof File) {
-            // Handle File objects directly
-            if (key.includes('left_foot') || key.includes('scan_file_left')) {
-              formData.append('scan_file_left', obj[key]);
-            } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
-              formData.append('scan_file_right', obj[key]);
-            } else if (key.includes('obj_file')) {
-              formData.append(`obj_file_${key}`, obj[key]);
-            } else if (key.includes('additional_file')) {
-              formData.append(`additional_file_${key}`, obj[key]);
-            } else {
-              // Default to scan file if not specified
-              formData.append('scan_file_left', obj[key]);
-            }
-          } else if (obj[key].constructor === FileList) {
-            // Handle FileList objects
-            Array.from(obj[key]).forEach((file: File, index: number) => {
-              if (key.includes('left_foot')) {
-                formData.append('scan_file_left', file);
-              } else if (key.includes('right_foot')) {
-                formData.append('scan_file_right', file);
-              } else {
-                formData.append(`scan_file_${index}`, file);
-              }
-            });
-          } else if (Array.isArray(obj[key])) {
-            // Handle arrays (like scan_items)
-            obj[key].forEach((item: any, index: number) => {
-              extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
-            });
-          } else {
-            // Recursively check nested objects
-            extractAndAppendFiles(obj[key], `${prefix}${key}.`);
-          }
-        }
-      }
-    };
+//     // Extract and append file uploads
+//     const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+//       for (const key in obj) {
+//         if (obj[key] && typeof obj[key] === 'object') {
+//           if (obj[key] instanceof File) {
+//             // Handle File objects directly
+//             if (key.includes('left_foot') || key.includes('scan_file_left')) {
+//               formData.append('scan_file_left', obj[key]);
+//             } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
+//               formData.append('scan_file_right', obj[key]);
+//             } else if (key.includes('obj_file')) {
+//               formData.append(`obj_file_${key}`, obj[key]);
+//             } else if (key.includes('additional_file')) {
+//               formData.append(`additional_file_${key}`, obj[key]);
+//             } else {
+//               // Default to scan file if not specified
+//               formData.append('scan_file_left', obj[key]);
+//             }
+//           } else if (obj[key].constructor === FileList) {
+//             // Handle FileList objects
+//             Array.from(obj[key]).forEach((file: File, index: number) => {
+//               if (key.includes('left_foot')) {
+//                 formData.append('scan_file_left', file);
+//               } else if (key.includes('right_foot')) {
+//                 formData.append('scan_file_right', file);
+//               } else {
+//                 formData.append(`scan_file_${index}`, file);
+//               }
+//             });
+//           } else if (Array.isArray(obj[key])) {
+//             // Handle arrays (like scan_items)
+//             obj[key].forEach((item: any, index: number) => {
+//               extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+//             });
+//           } else {
+//             // Recursively check nested objects
+//             extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+//           }
+//         }
+//       }
+//     };
 
-    // Extract files from the values object
-    extractAndAppendFiles(values);
+//     // Extract files from the values object
+//     extractAndAppendFiles(values);
 
-    // Also check for direct file fields in values
-    if (values.left_foot_file && values.left_foot_file instanceof File) {
-      formData.append('scan_file_left', values.left_foot_file);
-    }
-    if (values.right_foot_file && values.right_foot_file instanceof File) {
-      formData.append('scan_file_right', values.right_foot_file);
-    }
+//     // Also check for direct file fields in values
+//     if (values.left_foot_file && values.left_foot_file instanceof File) {
+//       formData.append('scan_file_left', values.left_foot_file);
+//     }
+//     if (values.right_foot_file && values.right_foot_file instanceof File) {
+//       formData.append('scan_file_right', values.right_foot_file);
+//     }
 
-    // Check scan_items for files
-    if (values.scan_items && Array.isArray(values.scan_items)) {
-      values.scan_items.forEach((item: any, index: number) => {
-        if (item.left_foot_file && item.left_foot_file instanceof File) {
-          formData.append('scan_file_left', item.left_foot_file);
-        }
-        if (item.right_foot_file && item.right_foot_file instanceof File) {
-          formData.append('scan_file_right', item.right_foot_file);
-        }
-      });
-    }
+//     // Check scan_items for files
+//     if (values.scan_items && Array.isArray(values.scan_items)) {
+//       values.scan_items.forEach((item: any, index: number) => {
+//         if (item.left_foot_file && item.left_foot_file instanceof File) {
+//           formData.append('scan_file_left', item.left_foot_file);
+//         }
+//         if (item.right_foot_file && item.right_foot_file instanceof File) {
+//           formData.append('scan_file_right', item.right_foot_file);
+//         }
+//       });
+//     }
 
-    try {
-      const res = await createOrder(formData).unwrap();
-      console.log('res', res);
-      // @ts-ignore
-      if (res?.message?.status === 'success') {
-        toast.success('Order created successfully');
-        setSelectedItem('');
-        setFormValues(initialValues);
-        router.push('/orders');
-      } else {
-        // @ts-ignore
-        toast.error(` ${res?.message?.message || 'Order creation failed'}`);
-      }
-    } catch (err) {
-      console.error('Mutation error:', err);
-      toast.error('Server error. Please try again.');
-    }
+//     try {
+//       const res = await createOrder(formData).unwrap();
+//       console.log('res', res);
+//       // @ts-ignore
+//       if (res?.message?.status === 'success') {
+//         toast.success('Order created successfully');
+//         setSelectedItem('');
+//         setFormValues(initialValues);
+//         router.push('/orders');
+//       } else {
+//         // @ts-ignore
+//         toast.error(` ${res?.message?.message || 'Order creation failed'}`);
+//       }
+//     } catch (err) {
+//       console.error('Mutation error:', err);
+//       toast.error('Server error. Please try again.');
+//     }
+//   };
+
+  
+const OnSubmit = async (values: any) => {
+  setFormValues(values);
+
+  // Build base payload
+  const payload = {
+    item_type: 'BK',
+    socket_type: values.socket_type,
+    design_variation: values.design_variation,
+    activity_level: values.activity_level,
+    model_name: values.model_name,
+    stump_length: values.stump_length,
+    weight: values.weight
   };
 
-  const getItemCodeByValues = async (payload: any) => {
+  const itemCode = await getItemCodeByValues(payload);
+  setSelectedItem(itemCode);
+
+  // 1️⃣ Upload files to S3
+  const filesToUpload: File[] = [];
+  if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+  if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+  if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
+
+  const uploadedUrls: string[] = [];
+  for (const f of filesToUpload) {
+    const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+    uploadedUrls.push(meta.fullS3Url);
+  }
+
+  // 2️⃣ Build order payload with URLs instead of files
+  const orderPayload = {
+    item_type: 'BK',
+    customer: user?.customer_id,
+    order_details: { ...values },
+    item_code: itemCode,
+    uploaded_files: {
+      left_foot: uploadedUrls[0] || "",
+      right_foot: uploadedUrls[1] || "",
+      obj_file: uploadedUrls[2] || ""
+    },
+    // Optional: keep for backward compatibility
+    uploadURL: uploadedUrls[0] || "",
+    // @ts-ignore
+    addicoins: parseInt(values.addicoins)
+  };
+
+  console.log('Create Order orderPayload:', orderPayload);
+
+  // 3️⃣ Send only JSON (no raw files)
+  const formData = new FormData();
+  formData.append("data", JSON.stringify(orderPayload));
+
+  try {
+    const res = await createOrder(formData).unwrap();
+    console.log("res", res);
+    // @ts-ignore
+    if (res?.message?.status === "success") {
+      toast.success("Order created successfully");
+      setSelectedItem("");
+      setFormValues(initialValues);
+      router.push("/orders");
+    } else {
+      // @ts-ignore
+      toast.error(`${res?.message?.message || "Order creation failed"}`);
+    }
+  } catch (err) {
+    console.error("Mutation error:", err);
+    toast.error("Server error. Please try again.");
+  }
+};
+
+const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
     //    const itemCode = res?.data?.item_code;
     //   if (itemCode) {
