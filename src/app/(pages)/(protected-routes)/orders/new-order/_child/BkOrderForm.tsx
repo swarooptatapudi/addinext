@@ -1993,19 +1993,19 @@ const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
 
   try {
     // ✅ CRITICAL FIX: Force Content-Type for STL files
-    let contentType = file.type;
+    let contentType = "model/stl";
     
-    // Handle STL files specifically - browsers often return empty or incorrect MIME type
-    if (file.name.toLowerCase().endsWith('.stl')) {
-      contentType = 'application/octet-stream'; // Standard for STL files
-      console.log("🔧 STL file detected, using application/octet-stream");
-    }
+    // // Handle STL files specifically - browsers often return empty or incorrect MIME type
+    // if (file.name.toLowerCase().endsWith('.stl')) {
+    //   contentType = 'application/octet-stream'; // Standard for STL files
+    //   console.log("🔧 STL file detected, using application/octet-stream");
+    // }
     
-    // If file.type is empty or generic, use application/octet-stream
-    if (!contentType || contentType === '' || contentType === 'application/octet-stream') {
-      contentType = 'application/octet-stream';
-      console.log("🔧 Using application/octet-stream for content type");
-    }
+    // // If file.type is empty or generic, use application/octet-stream
+    // if (!contentType || contentType === '' || contentType === 'application/octet-stream') {
+    //   contentType = 'application/octet-stream';
+    //   console.log("🔧 Using application/octet-stream for content type");
+    // }
 
     // Step 1: Get Presigned URL using RTK Query
     const result = await preSignedUrl({
@@ -2019,10 +2019,9 @@ const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
     if (!result?.message?.status) {
       throw new Error("Presigned URL request failed");
     }
-// @ts-ignore
-   const uploadUrl = result?.message?.data?.uploadUrl;  // ✅ correct field name
-console.log("🔗 Upload URL:", uploadUrl);
-    // @ts-ignore
+//@ts-ignore
+    const uploadUrl = result?.message?.data?.uploadUrl;
+ //   @ts-ignore
     const key = result?.message?.data?.key;
 
     // Step 2: Upload File to S3 
