@@ -475,6 +475,7 @@ export const INSOLES_FORM_INITIAL_VALUES = {
   scan_markings: '',
   foot_type: '',
   shoe_size: '',
+  foot_side: '', // new field for foot side
   flexion_angle: '',
   abductionadduction_angle: '',
   thicknessss: '',
@@ -493,6 +494,8 @@ export const INSOLES_FORM_INITIAL_VALUES = {
   global_volume_reduction: '',
   foot_length: '',
   usage: '',
+  left_foot_file: null,
+  right_foot_file: null,
   layers: '',
   Design_by: '',
   Print_by: '',

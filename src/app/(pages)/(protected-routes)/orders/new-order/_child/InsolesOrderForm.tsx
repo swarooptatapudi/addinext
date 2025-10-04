@@ -1161,7 +1161,20 @@ const Step2 = ({
                   <p className="text-xs text-red-500 mt-1">{errors.left_foot_file}</p>
                 )}
               </div>
-            )}
+            )}       {/* ✅ Show existing left foot file name or link */}
+{values.left_foot_file && typeof values.left_foot_file === "string" && (
+  <div className="mt-2 text-sm text-gray-700">
+    <span className="font-medium">Existing Left Foot File: </span>
+    <a
+      href={`https://your-bucket-name.s3.amazonaws.com/${values.left_foot_file}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 underline break-all"
+    >
+      {values.left_foot_file.split('/').pop()}
+    </a>
+  </div>
+)}
 
             {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
               <div className="w-fit">
@@ -1180,6 +1193,20 @@ const Step2 = ({
                 {shouldShowError('left_foot_file', true) && (
                   <p className="text-xs text-red-500 mt-1">{errors.left_foot_file}</p>
                 )}
+                {/* ✅ Show existing right foot file name or link */}
+{values.right_foot_file && typeof values.right_foot_file === "string" && (
+  <div className="mt-2 text-sm text-gray-700">
+    <span className="font-medium">Existing Right Foot File: </span>
+    <a
+      href={`https://your-bucket-name.s3.amazonaws.com/${values.right_foot_file}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 underline break-all"
+    >
+      {values.right_foot_file.split('/').pop()}
+    </a>
+  </div>
+)}
               </div>
             )}
           </div>
@@ -1413,7 +1440,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
       })
         .unwrap()
         .then((response) => {
-          // console.log("Full API response =>", response);
+          console.log("Full API response =>", response);
 
           if (response.data) {
             // console.log("API Keys =>", Object.keys(response.data));
@@ -1426,6 +1453,11 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
             ];
             const matchedUsage = insoleOptions.find((opt) => opt.value === response.data.usage);
             // console.log("✅ Matched Usage Option:", matchedUsage);
+const scanItem = response.data?.scan_items?.[0];
+let mappedFootSide = '';
+if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right_Foot';
+if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left_Foot';
+if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
 
             const transformedData = {
               ...INSOLES_FORM_INITIAL_VALUES,
@@ -1449,9 +1481,9 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
               Design_by: response.data.custom_print_by || '',
               design_variation: response.data.custom_design_by || '',
               custom_scan_type: response.data.custom_scan_type || '',
-              left_foot_file: response.data.left_foot_file || null,
-              right_foot_file: response.data.right_foot_file || null,
-            
+              foot_side: response.data.foot_side || '',
+          left_foot_file: scanItem.left_foot_file || null,
+  right_foot_file: scanItem.right_foot_file || null,
               Print_by: response.data.custom_print_by || '',
               table_zbib: response.data.table_zbib?.length
                 ? response.data.table_zbib.map((item: any) => ({
@@ -1500,6 +1532,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
       ];
       const matchedUsage = insoleOptions.find((opt) => opt.value === apiData.usage);
       // console.log("✅ Matched Usages Option:", matchedUsage);
+      const scanItem = apiData.scan_items?.[0];
 
       setFormValues({
         ...INSOLES_FORM_INITIAL_VALUES,
@@ -1520,6 +1553,10 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
         thickness: apiData.thickness_mm || '',
         design_variation: apiData.custom_design_by || '',
         Print_by: apiData.custom_print_by || '',
+         foot_side: apiData.foot_side || '',
+     left_foot_file: scanItem.left_foot_file || null,
+  right_foot_file: scanItem.right_foot_file || null,
+      // scan_date: apiData.scan_date || '',
         insole_model: apiData.custom_insoles_model || '',
         insole_design_variation: apiData.layers || '',
         table_zbib:
