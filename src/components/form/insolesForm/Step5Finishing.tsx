@@ -295,7 +295,7 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
     const uploadUrlStr = String(uploadUrl);
 const keyStr       = String(key);
     
-setUploadURL(uploadUrl);
+
     // Step 2: Upload File to S3 
     const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
       return new Promise<void>((resolve, reject) => {
@@ -348,7 +348,7 @@ setUploadURL(uploadUrl);
       type: contentType, // ✅ Use the determined content type
       originalName: file.name,
     };
-
+setUploadURL(key);
     // console.log("📄 File metadata:", fileMeta);
     const fullS3Url = `https://addiwse-tech.s3.amazonaws.com/${keyStr}`;
 
@@ -396,7 +396,8 @@ const uploadedUrls: string[] = [];
 for (const f of filesToUpload) {
   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
   uploadedMetadata.push(meta);
-  uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
+  uploadedUrls.push(meta.key); // ✅ collect URLs
+
 }
     // 🔥 2) ENCODE METADATA AS BASE64
     const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
@@ -410,83 +411,88 @@ for (const f of filesToUpload) {
         thickness: thicknests,
       },
       item_code: itemCode,
-       uploaded_files: encodedFiles, 
+      //  uploaded_files: encodedFiles,
+       
       addicoins: parseInt(values.addicoins) || 0, // Deduct coins
       total_price: estimateData?.apiResponse?.total_price ?? 0,
-      uploadURL: uploadedUrls[0] || "",
+      custom_scan_items: {
+      left_foot_file: uploadedUrls[0] || "",
+      right_foot_file: uploadedUrls[1] || "",
+      // obj_file: uploadedUrls[2] || ""
+    },
       payment_method: "ADDICOINS", // mark as coins payment
     };
 
     // console.log("📦 Base Order Payload (Addicoins):", orderPayload);
 
-         const createFormDataWithFiles = (finalOrderPayload: any) => {
-      const formData = new FormData();
-      formData.append('data', JSON.stringify(finalOrderPayload));
+    //      const createFormDataWithFiles = (finalOrderPayload: any) => {
+    //   const formData = new FormData();
+    //   formData.append('data', JSON.stringify(finalOrderPayload));
       
-      // Extract and append file uploads
-      const extractAndAppendFiles = (obj: any, prefix: string = '') => {
-        for (const key in obj) {
-          if (obj[key] && typeof obj[key] === 'object') {
-            if (obj[key] instanceof File) {
-              if (key.includes('left_foot') || key.includes('left_foot_file')) {
-                formData.append('left_foot_file', obj[key]);
-              } else if (key.includes('right_foot') || key.includes('right_foot_file')) {
-                formData.append('right_foot_file', obj[key]);
-              } else if (key.includes('obj_file')) {
-                formData.append(`obj_file_${key}`, obj[key]);
-              } else if (key.includes('additional_file')) {
-                formData.append(`additional_file_${key}`, obj[key]);
-              } else {
-                formData.append('left_foot_file', obj[key]);
-              }
-            } else if (obj[key].constructor === FileList) {
-              Array.from(obj[key]).forEach((file: File, index: number) => {
-                if (key.includes('left_foot')) {
-                  formData.append('left_foot_file', file);
-                } else if (key.includes('right_foot')) {
-                  formData.append('right_foot_file', file);
-                } else {
-                  formData.append(`scan_file_${index}`, file);
-                }
-              });
-            } else if (Array.isArray(obj[key])) {
-              obj[key].forEach((item: any, index: number) => {
-                extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
-              });
-            } else {
-              extractAndAppendFiles(obj[key], `${prefix}${key}.`);
-            }
-          }
-        }
-      };
+    //   // Extract and append file uploads
+    //   const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+    //     for (const key in obj) {
+    //       if (obj[key] && typeof obj[key] === 'object') {
+    //         if (obj[key] instanceof File) {
+    //           if (key.includes('left_foot') || key.includes('left_foot_file')) {
+    //             formData.append('left_foot_file', obj[key]);
+    //           } else if (key.includes('right_foot') || key.includes('right_foot_file')) {
+    //             formData.append('right_foot_file', obj[key]);
+    //           } else if (key.includes('obj_file')) {
+    //             formData.append(`obj_file_${key}`, obj[key]);
+    //           } else if (key.includes('additional_file')) {
+    //             formData.append(`additional_file_${key}`, obj[key]);
+    //           } else {
+    //             formData.append('left_foot_file', obj[key]);
+    //           }
+    //         } else if (obj[key].constructor === FileList) {
+    //           Array.from(obj[key]).forEach((file: File, index: number) => {
+    //             if (key.includes('left_foot')) {
+    //               formData.append('left_foot_file', file);
+    //             } else if (key.includes('right_foot')) {
+    //               formData.append('right_foot_file', file);
+    //             } else {
+    //               formData.append(`scan_file_${index}`, file);
+    //             }
+    //           });
+    //         } else if (Array.isArray(obj[key])) {
+    //           obj[key].forEach((item: any, index: number) => {
+    //             extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+    //           });
+    //         } else {
+    //           extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+    //         }
+    //       }
+    //     }
+    //   };
 
-      // Extract files from the values object
-      extractAndAppendFiles(values);
+    //   // Extract files from the values object
+    //   extractAndAppendFiles(values);
       
-      // Also check for direct file fields in values
-      if (values.left_foot_file && values.left_foot_file instanceof File) {
-        formData.append('left_foot_file', values.left_foot_file);
-      }
-      if (values.right_foot_file && values.right_foot_file instanceof File) {
-        formData.append('right_foot_file', values.right_foot_file);
-      }
+    //   // Also check for direct file fields in values
+    //   if (values.left_foot_file && values.left_foot_file instanceof File) {
+    //     formData.append('left_foot_file', values.left_foot_file);
+    //   }
+    //   if (values.right_foot_file && values.right_foot_file instanceof File) {
+    //     formData.append('right_foot_file', values.right_foot_file);
+    //   }
       
-      // Check scan_items for files
-      if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
-        values.scan_items.forEach((item: any, index: number) => {
-          if (item.left_foot_file && item.left_foot_file instanceof File) {
-            formData.append('left_foot_file', item.left_foot_file);
-          }
-          if (item.right_foot_file && item.right_foot_file instanceof File) {
-            formData.append('right_foot_file', item.right_foot_file);
-          }
-        });
-      }
+    //   // Check scan_items for files
+    //   if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
+    //     values.scan_items.forEach((item: any, index: number) => {
+    //       if (item.left_foot_file && item.left_foot_file instanceof File) {
+    //         formData.append('left_foot_file', item.left_foot_file);
+    //       }
+    //       if (item.right_foot_file && item.right_foot_file instanceof File) {
+    //         formData.append('right_foot_file', item.right_foot_file);
+    //       }
+    //     });
+    //   }
       
-      return formData;
-    };
+    //   return formData;
+    // };
     // 🟢 Step 3: Call API directly — no Razorpay flow
-    const finalFormData = createFormDataWithFiles(orderPayload);
+    const finalFormData = orderPayload;
     console.log("📦 Final FormData Payload:", finalFormData);
     // 🔹 Step 3: Call API directly — no Razorpay flow
     const orderResponse = await createInsoleOrder(finalFormData).unwrap();
@@ -548,7 +554,7 @@ const uploadedUrls: string[] = [];
 for (const f of filesToUpload) {
   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
   uploadedMetadata.push(meta);
-  uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
+  uploadedUrls.push(meta.key); // ✅ collect URLs
 }
     // 🔥 2) ENCODE METADATA AS BASE64
     const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
@@ -561,82 +567,87 @@ for (const f of filesToUpload) {
         thickness: thicknests,
       },
       item_code: itemCode,
-       uploaded_files: encodedFiles,
-       uploadURL: uploadedUrls[0] || "", 
+      //  uploaded_files: encodedFiles,
+      custom_scan_items: {
+      left_foot_file: uploadedUrls[0] || "",
+      right_foot_file: uploadedUrls[1] || "",
+      // obj_file: uploadedUrls[2] || ""
+    },
+      //  uploadURL: uploadedUrls[0] || "", 
       addicoins: parseInt(values.addicoins) || 0, // Deduct coins
       total_price: estimateData?.apiResponse?.total_price ?? 0,
     };
 
     // console.log("📝 Pay Later Order Payload:", orderPayload);
 
-     const createFormDataWithFiles = (finalOrderPayload: any) => {
-      const formData = new FormData();
-      formData.append('data', JSON.stringify(finalOrderPayload));
+    //  const createFormDataWithFiles = (finalOrderPayload: any) => {
+    //   const formData = new FormData();
+    //   formData.append('data', JSON.stringify(finalOrderPayload));
       
-      // Extract and append file uploads
-      const extractAndAppendFiles = (obj: any, prefix: string = '') => {
-        for (const key in obj) {
-          if (obj[key] && typeof obj[key] === 'object') {
-            if (obj[key] instanceof File) {
-              if (key.includes('left_foot') || key.includes('left_foot_file')) {
-                formData.append('left_foot_file', obj[key]);
-              } else if (key.includes('right_foot') || key.includes('right_foot_file')) {
-                formData.append('right_foot_file', obj[key]);
-              } else if (key.includes('obj_file')) {
-                formData.append(`obj_file_${key}`, obj[key]);
-              } else if (key.includes('additional_file')) {
-                formData.append(`additional_file_${key}`, obj[key]);
-              } else {
-                formData.append('left_foot_file', obj[key]);
-              }
-            } else if (obj[key].constructor === FileList) {
-              Array.from(obj[key]).forEach((file: File, index: number) => {
-                if (key.includes('left_foot')) {
-                  formData.append('left_foot_file', file);
-                } else if (key.includes('right_foot')) {
-                  formData.append('right_foot_file', file);
-                } else {
-                  formData.append(`scan_file_${index}`, file);
-                }
-              });
-            } else if (Array.isArray(obj[key])) {
-              obj[key].forEach((item: any, index: number) => {
-                extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
-              });
-            } else {
-              extractAndAppendFiles(obj[key], `${prefix}${key}.`);
-            }
-          }
-        }
-      };
+    //   // Extract and append file uploads
+    //   const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+    //     for (const key in obj) {
+    //       if (obj[key] && typeof obj[key] === 'object') {
+    //         if (obj[key] instanceof File) {
+    //           if (key.includes('left_foot') || key.includes('left_foot_file')) {
+    //             formData.append('left_foot_file', obj[key]);
+    //           } else if (key.includes('right_foot') || key.includes('right_foot_file')) {
+    //             formData.append('right_foot_file', obj[key]);
+    //           } else if (key.includes('obj_file')) {
+    //             formData.append(`obj_file_${key}`, obj[key]);
+    //           } else if (key.includes('additional_file')) {
+    //             formData.append(`additional_file_${key}`, obj[key]);
+    //           } else {
+    //             formData.append('left_foot_file', obj[key]);
+    //           }
+    //         } else if (obj[key].constructor === FileList) {
+    //           Array.from(obj[key]).forEach((file: File, index: number) => {
+    //             if (key.includes('left_foot')) {
+    //               formData.append('left_foot_file', file);
+    //             } else if (key.includes('right_foot')) {
+    //               formData.append('right_foot_file', file);
+    //             } else {
+    //               formData.append(`scan_file_${index}`, file);
+    //             }
+    //           });
+    //         } else if (Array.isArray(obj[key])) {
+    //           obj[key].forEach((item: any, index: number) => {
+    //             extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+    //           });
+    //         } else {
+    //           extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+    //         }
+    //       }
+    //     }
+    //   };
 
-      // Extract files from the values object
-      extractAndAppendFiles(values);
+    //   // Extract files from the values object
+    //   extractAndAppendFiles(values);
       
-      // Also check for direct file fields in values
-      if (values.left_foot_file && values.left_foot_file instanceof File) {
-        formData.append('left_foot_file', values.left_foot_file);
-      }
-      if (values.right_foot_file && values.right_foot_file instanceof File) {
-        formData.append('right_foot_file', values.right_foot_file);
-      }
+    //   // Also check for direct file fields in values
+    //   if (values.left_foot_file && values.left_foot_file instanceof File) {
+    //     formData.append('left_foot_file', values.left_foot_file);
+    //   }
+    //   if (values.right_foot_file && values.right_foot_file instanceof File) {
+    //     formData.append('right_foot_file', values.right_foot_file);
+    //   }
       
-      // Check scan_items for files
-      if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
-        values.scan_items.forEach((item: any, index: number) => {
-          if (item.left_foot_file && item.left_foot_file instanceof File) {
-            formData.append('left_foot_file', item.left_foot_file);
-          }
-          if (item.right_foot_file && item.right_foot_file instanceof File) {
-            formData.append('right_foot_file', item.right_foot_file);
-          }
-        });
-      }
+    //   // Check scan_items for files
+    //   if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
+    //     values.scan_items.forEach((item: any, index: number) => {
+    //       if (item.left_foot_file && item.left_foot_file instanceof File) {
+    //         formData.append('left_foot_file', item.left_foot_file);
+    //       }
+    //       if (item.right_foot_file && item.right_foot_file instanceof File) {
+    //         formData.append('right_foot_file', item.right_foot_file);
+    //       }
+    //     });
+    //   }
       
-      return formData;
-    };
+    //   return formData;
+    // };
     // 🟢 Step 3: Call API directly — no Razorpay flow
-    const finalFormData = createFormDataWithFiles(orderPayload);
+    const finalFormData = orderPayload;
     const orderResponse = await createInsoleOrder(finalFormData).unwrap();
     // console.log("✅ Order Response:", orderResponse);
       
@@ -701,7 +712,8 @@ const uploadedUrls: string[] = [];
 for (const f of filesToUpload) {
   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
   uploadedMetadata.push(meta);
-  uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
+  uploadedUrls.push(meta.key); // ✅ collect URLs
+
 }
 
     // 🔥 2) ENCODE METADATA AS BASE64
@@ -716,82 +728,87 @@ for (const f of filesToUpload) {
           thickness: thicknests // add calculated thickness
         },
         item_code: itemCode,
-        uploaded_files: encodedFiles,
-        uploadURL: uploadedUrls[0] || "", 
+        // uploaded_files: encodedFiles,
+        custom_scan_items: {
+      left_foot_file: uploadedUrls[0] || "",
+      right_foot_file: uploadedUrls[1] || "",
+      // obj_file: uploadedUrls[2] || ""
+    },
+        // uploadURL: uploadedUrls[0] || "", 
         addicoins: parseInt(values.addicoins) || 0,
         total_price: estimateData?.apiResponse?.total_price ?? 0
       };
 
       // console.log('📦 Base Order Payload:', orderPayload);
 
-     const createFormDataWithFiles = (finalOrderPayload: any) => {
-      const formData = new FormData();
-      formData.append('data', JSON.stringify(finalOrderPayload));
+    //  const createFormDataWithFiles = (finalOrderPayload: any) => {
+    //   const formData = new FormData();
+    //   formData.append('data', JSON.stringify(finalOrderPayload));
       
-      // Extract and append file uploads
-      const extractAndAppendFiles = (obj: any, prefix: string = '') => {
-        for (const key in obj) {
-          if (obj[key] && typeof obj[key] === 'object') {
-            if (obj[key] instanceof File) {
-              if (key.includes('left_foot') || key.includes('left_foot_file')) {
-                formData.append('left_foot_file', obj[key]);
-              } else if (key.includes('right_foot') || key.includes('right_foot_file')) {
-                formData.append('right_foot_file', obj[key]);
-              } else if (key.includes('obj_file')) {
-                formData.append(`obj_file_${key}`, obj[key]);
-              } else if (key.includes('additional_file')) {
-                formData.append(`additional_file_${key}`, obj[key]);
-              } else {
-                formData.append('left_foot_file', obj[key]);
-              }
-            } else if (obj[key].constructor === FileList) {
-              //  Check and Vlaidate this code again with LLM tools .  ask like large files giviign 413 error
-              // do now
-              Array.from(obj[key]).forEach((file: File, index: number) => {
-                if (key.includes('left_foot')) {
-                  formData.append('left_foot_file', file);
-                } else if (key.includes('right_foot')) {
-                  formData.append('right_foot_file', file);
-                } else {
-                  formData.append(`scan_file_${index}`, file);
-                }
-              });
-            } else if (Array.isArray(obj[key])) {
-              obj[key].forEach((item: any, index: number) => {
-                extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
-              });
-            } else {
-              extractAndAppendFiles(obj[key], `${prefix}${key}.`);
-            }
-          }
-        }
-      };
+    //   // Extract and append file uploads
+    //   const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+    //     for (const key in obj) {
+    //       if (obj[key] && typeof obj[key] === 'object') {
+    //         if (obj[key] instanceof File) {
+    //           if (key.includes('left_foot') || key.includes('left_foot_file')) {
+    //             formData.append('left_foot_file', obj[key]);
+    //           } else if (key.includes('right_foot') || key.includes('right_foot_file')) {
+    //             formData.append('right_foot_file', obj[key]);
+    //           } else if (key.includes('obj_file')) {
+    //             formData.append(`obj_file_${key}`, obj[key]);
+    //           } else if (key.includes('additional_file')) {
+    //             formData.append(`additional_file_${key}`, obj[key]);
+    //           } else {
+    //             formData.append('left_foot_file', obj[key]);
+    //           }
+    //         } else if (obj[key].constructor === FileList) {
+    //           //  Check and Vlaidate this code again with LLM tools .  ask like large files giviign 413 error
+    //           // do now
+    //           Array.from(obj[key]).forEach((file: File, index: number) => {
+    //             if (key.includes('left_foot')) {
+    //               formData.append('left_foot_file', file);
+    //             } else if (key.includes('right_foot')) {
+    //               formData.append('right_foot_file', file);
+    //             } else {
+    //               formData.append(`scan_file_${index}`, file);
+    //             }
+    //           });
+    //         } else if (Array.isArray(obj[key])) {
+    //           obj[key].forEach((item: any, index: number) => {
+    //             extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+    //           });
+    //         } else {
+    //           extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+    //         }
+    //       }
+    //     }
+    //   };
 
-      // Extract files from the values object
-      extractAndAppendFiles(values);
+    //   // Extract files from the values object
+    //   extractAndAppendFiles(values);
       
-      // Also check for direct file fields in values
-      if (values.left_foot_file && values.left_foot_file instanceof File) {
-        formData.append('left_foot_file', values.left_foot_file);
-      }
-      if (values.right_foot_file && values.right_foot_file instanceof File) {
-        formData.append('right_foot_file', values.right_foot_file);
-      }
+    //   // Also check for direct file fields in values
+    //   if (values.left_foot_file && values.left_foot_file instanceof File) {
+    //     formData.append('left_foot_file', values.left_foot_file);
+    //   }
+    //   if (values.right_foot_file && values.right_foot_file instanceof File) {
+    //     formData.append('right_foot_file', values.right_foot_file);
+    //   }
       
-      // Check scan_items for files
-      if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
-        values.scan_items.forEach((item: any, index: number) => {
-          if (item.left_foot_file && item.left_foot_file instanceof File) {
-            formData.append('left_foot_file', item.left_foot_file);
-          }
-          if (item.right_foot_file && item.right_foot_file instanceof File) {
-            formData.append('right_foot_file', item.right_foot_file);
-          }
-        });
-      }
-      // wirte here ole logic.  check upload size of files. let me knwo
-      return formData;
-    };
+    //   // Check scan_items for files
+    //   if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
+    //     values.scan_items.forEach((item: any, index: number) => {
+    //       if (item.left_foot_file && item.left_foot_file instanceof File) {
+    //         formData.append('left_foot_file', item.left_foot_file);
+    //       }
+    //       if (item.right_foot_file && item.right_foot_file instanceof File) {
+    //         formData.append('right_foot_file', item.right_foot_file);
+    //       }
+    //     });
+    //   }
+    //   // wirte here ole logic.  check upload size of files. let me knwo
+    //   return formData;
+    // };
 
 
       // 🔹 Step 3: Payment amount (hardcoded for now)
@@ -816,7 +833,7 @@ for (const f of filesToUpload) {
               razorpay_signature: response.razorpay_signature
             };
 
-            const finalFormData = createFormDataWithFiles(finalOrderPayload);
+            const finalFormData = finalOrderPayload;
 
             // finalFormData   -  this one right  ?ok
             console.log('Final Insole Orderjson Payload:',finalOrderPayload);
