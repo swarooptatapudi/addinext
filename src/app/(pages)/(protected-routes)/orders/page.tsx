@@ -57,7 +57,15 @@ export type Order = {
 };
 
 export default function Orders(): React.JSX.Element {
-  const { data, isLoading, error, refetch } = useGetOrdersQuery('');
+  // const { data, isLoading, error, refetch } = useGetOrdersQuery('');
+ const [page, setPage] = useState(1);
+const pageSize = 10;
+
+const { data, isLoading,error,refetch } = useGetOrdersQuery({ page, page_size: pageSize });
+
+const orders = data?.data.sales_orders ?? [];
+const totalPages = data?.data.total_pages ?? 1;
+
   // console.log("salesorderdetails", data)
   const [getOrderDetails, { isLoading: isPaymentLoading }] =
     useGetOrderDetailsMutation();
@@ -72,7 +80,7 @@ export default function Orders(): React.JSX.Element {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const deviceType = searchParams.get("deviceType");
-
+  
   const router = useRouter();
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
@@ -82,6 +90,12 @@ export default function Orders(): React.JSX.Element {
     device_type: so.custom_order_types || '-',
     sales_invoices: so.sales_invoices || [],
   }));
+//   useEffect(() => {
+//   if (data?.data?.total_count) {
+//     setTotalPages(Math.ceil(data.data.total_count / pageSize));
+//   }
+// }, [data, pageSize]);
+
 
   // load Razorpay script
   useEffect(() => {
@@ -401,6 +415,28 @@ export default function Orders(): React.JSX.Element {
         sorting={sorting}
         onSortingChange={setSorting}
       />
+      {/* <div className="flex justify-between items-center mt-4">
+  <button
+    onClick={() => setPage((p) => Math.max(p - 1, 1))}
+    disabled={page === 1}
+    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+  >
+    Previous
+  </button>
+
+  <span>
+    Page {page} of {totalPages || 1}
+  </span>
+
+  <button
+    onClick={() => setPage((p) => (totalPages ? Math.min(p + 1, totalPages) : p + 1))}
+    disabled={totalPages ? page >= totalPages : false}
+    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+  >
+    Next
+  </button>
+</div> */}
+
     </div>
   );
 }

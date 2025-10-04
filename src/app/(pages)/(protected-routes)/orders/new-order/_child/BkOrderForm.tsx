@@ -2031,8 +2031,8 @@ const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
     const uploadUrlStr = String(uploadUrl);
 const keyStr       = String(key);
     
+ 
 
-setUploadURL(uploadUrl);
     // Step 2: Upload File to S3 
     const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
       return new Promise<void>((resolve, reject) => {
@@ -2085,12 +2085,12 @@ setUploadURL(uploadUrl);
       type: contentType, // ✅ Use the determined content type
       originalName: file.name,
     };
-
+setUploadURL(fileMeta.key);
     console.log("📄 File metadata:", fileMeta);
-    const fullS3Url = `https://addiwse-tech.s3.amazonaws.com/${keyStr}`;
+    // const fullS3Url = `https://addiwse-tech.s3.amazonaws.com/${keyStr}`;
 
     setUploadedFiles((prev) => [...prev, fileMeta]);
-    return { ...fileMeta, fullS3Url };
+    return { ...fileMeta };
 
   } catch (error) {
     console.error('❌ Upload error:', error);
@@ -2140,7 +2140,8 @@ const uploadedUrls: string[] = [];
 for (const f of filesToUpload) {
   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
   uploadedMetadata.push(meta);
-  uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
+  uploadedUrls.push(meta.key); // ✅ collect URLs
+
 }
     // 🔥 2) ENCODE METADATA AS BASE64
     const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
@@ -2151,14 +2152,19 @@ for (const f of filesToUpload) {
       customer: user?.customer_id,
       order_details: { ...values },
       item_code: itemCode,
-      uploaded_files: encodedFiles, // ✅ only sending encoded metadata
+      // uploaded_files: encodedFiles, // ✅ only sending encoded metadata
+       scan_items: {
+      left_foot_file: uploadedUrls[0] || "",
+      right_foot_file: uploadedUrls[1] || "",
+      // obj_file: uploadedUrls[2] || ""
+    },
       addicoins: parseInt(values.addicoins),
       totalPrice: totalPrice,
       print,
       design: desgin,
       coupon_per: couponPer,
       discount_amount: totalDiscount,
-      uploadURL: uploadedUrls[0] || "",
+      // uploadURL: uploadedUrls[0] || "",
     };
 
     // Configure Razorpay
@@ -2397,25 +2403,32 @@ const OnSubmit = async (values: any) => {
   if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
   if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
-  const uploadedUrls: string[] = [];
-  for (const f of filesToUpload) {
-    const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-    uploadedUrls.push(meta.fullS3Url);
-  }
+  // const uploadedUrls: string[] = [];
+  // for (const f of filesToUpload) {
+  //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+  //   uploadedUrls.push(meta.key);
+  // }
+ const uploadedMetadata: any[] = [];
+const uploadedUrls: string[] = [];
+for (const f of filesToUpload) {
+  const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+  uploadedMetadata.push(meta);
+  uploadedUrls.push(meta.key); // ✅ collect URLs
 
+}
   // 2️⃣ Build order payload with URLs instead of files
   const orderPayload = {
     item_type: 'BK',
     customer: user?.customer_id,
     order_details: { ...values },
     item_code: itemCode,
-    uploaded_files: {
-      left_foot: uploadedUrls[0] || "",
-      right_foot: uploadedUrls[1] || "",
+    scan_items: {
+      left_foot_file: uploadedUrls[0] || "",
+      right_foot_file: uploadedUrls[1] || "",
       obj_file: uploadedUrls[2] || ""
     },
     // Optional: keep for backward compatibility
-    uploadURL: uploadedUrls[0] || "",
+    // uploadURL: uploadedUrls[0] || "",
     // @ts-ignore
     addicoins: parseInt(values.addicoins)
   };
