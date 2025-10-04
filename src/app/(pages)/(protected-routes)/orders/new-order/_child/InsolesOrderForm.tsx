@@ -1464,7 +1464,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
                 : ['']
             };
 
-            // console.log("Transformed Insole Data =>", transformedData);
+            console.log("Transformed Insole Data =>", transformedData);
             setFormValues(transformedData);
 
             if (response.data.item_code) {

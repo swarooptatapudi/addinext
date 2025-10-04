@@ -415,7 +415,7 @@ const totalPages = data?.data.total_pages ?? 1;
         sorting={sorting}
         onSortingChange={setSorting}
       />
-      {/* <div className="flex justify-between items-center mt-4">
+      <div className="flex justify-between items-center mt-4">
   <button
     onClick={() => setPage((p) => Math.max(p - 1, 1))}
     disabled={page === 1}
@@ -435,7 +435,7 @@ const totalPages = data?.data.total_pages ?? 1;
   >
     Next
   </button>
-</div> */}
+</div>
 
     </div>
   );

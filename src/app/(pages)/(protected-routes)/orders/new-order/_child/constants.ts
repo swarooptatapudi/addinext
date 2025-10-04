@@ -74,14 +74,14 @@ export const BK_FORM_INITIAL_VALUES = {
     { gap: "18 cm", value: "0" },
     { gap: "21 cm", value: "0" }
   ],
-  scan_items: [
-    {
-      foot_side: '',        // will be dynamically set
-      left_foot_file: null, // will store left foot STL
-      right_foot_file: null,// will store right foot STL
-      scan_date: ''         // will use assessment_date / amputation_date
-    }
-  ]
+  // scan_items: [
+  //   {
+  //     foot_side: '',        // will be dynamically set
+  //     left_foot_file: null, // will store left foot STL
+  //     right_foot_file: null,// will store right foot STL
+  //     scan_date: ''         // will use assessment_date / amputation_date
+  //   }
+  // ]
 };
 
 // ak form

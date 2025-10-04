@@ -209,7 +209,10 @@ const step2Validation = Yup.object()
     liner_thickness: Yup.string().nullable(),
     liner_type: Yup.string().nullable(),
     left_foot_file: Yup.mixed().nullable(),
-    right_foot_file: Yup.mixed().nullable()
+    right_foot_file: Yup.mixed().nullable(),
+    custom_obj_file_1: Yup.mixed().nullable(),
+    custom_mtl_file_2: Yup.mixed().nullable(),
+    custom_jpg_file_3: Yup.mixed().nullable()
   })
   .test('file-upload-validation', 'File upload validation', function (value) {
     const { foot_side, custom_upload_link_with_photos, left_foot_file, right_foot_file } =
@@ -1192,26 +1195,26 @@ const Step2 = ({
   //   setFieldValue('scan_items', items);
   // };
 
-  const updateScanItems = (footSide: string, file: File) => {
-    const newScanItems = [...values.scan_items];
-    const index = newScanItems.findIndex((item) => item.foot_side === footSide);
+  // const updateScanItems = (footSide: string, file: File) => {
+  //   const newScanItems = [...values.scan_items];
+  //   const index = newScanItems.findIndex((item) => item.foot_side === footSide);
 
-    if (index >= 0) {
-      // Update existing row
-      if (footSide === 'Left_Foot') newScanItems[index].left_foot_file = file;
-      if (footSide === 'Right_Foot') newScanItems[index].right_foot_file = file;
-    } else {
-      // Add new row if not exists
-      newScanItems.push({
-        foot_side: footSide,
-        left_foot_file: footSide === 'Left_Foot' ? file : null,
-        right_foot_file: footSide === 'Right_Foot' ? file : null,
-        scan_date: values.scan_date || ''
-      });
-    }
+  //   if (index >= 0) {
+  //     // Update existing row
+  //     if (footSide === 'Left_Foot') newScanItems[index].left_foot_file = file;
+  //     if (footSide === 'Right_Foot') newScanItems[index].right_foot_file = file;
+  //   } else {
+  //     // Add new row if not exists
+  //     newScanItems.push({
+  //       foot_side: footSide,
+  //       left_foot_file: footSide === 'Left_Foot' ? file : null,
+  //       right_foot_file: footSide === 'Right_Foot' ? file : null,
+  //       scan_date: values.scan_date || ''
+  //     });
+  //   }
 
-    setFieldValue('scan_items', newScanItems);
-  };
+  //   setFieldValue('scan_items', newScanItems);
+  // };
 
   const shouldShowError = (fieldName: string, isRequired = false) => {
     const fieldValue = fieldName.includes('.')
@@ -1354,19 +1357,24 @@ const Step2 = ({
               <SelectBox
                 options={[
                   { value: 'Selected', label: 'Select to Upload ' },
-                  { value: 'Left_Foot', label: 'Left Foot ' },
-                  { value: 'Right_Foot', label: 'Right Foot' },
+                  { value: 'left_foot_file', label: 'Left Foot ' },
+                  { value: 'right_foot_file', label: 'Right Foot' },
                   { value: 'Both', label: 'Both' }
                 ]}
                 className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''
                   }`}
                 value={values.foot_side || ''}
-                onValueChange={(value) => {
-                  // console.log('🦶 Selected foot_side value:', value);
-                  handleChange('foot_side')(value);
-                  setFieldValue('left_foot_file', value);
-                  setFieldValue('right_foot_file', value);
-                }}
+                // onValueChange={(value) => {
+                //   // console.log('🦶 Selected foot_side value:', value);
+                //   handleChange('foot_side')(value);
+                //   setFieldValue('left_foot_file', value);
+                //   setFieldValue('right_foot_file', value);
+                // }}
+               onValueChange={(value) => {
+  setFieldValue('foot_side', value);
+}}
+
+
                 inVaild={shouldShowError('custom_upload_link_with_photos')}
                 disabled={isViewMode}
               />
@@ -1375,7 +1383,7 @@ const Step2 = ({
         </div>
 
         {/* Left Foot Upload */}
-        {(values.foot_side === 'Left_Foot' || values.foot_side === 'Both') && (
+        {(values.foot_side === 'left_foot_file' || values.foot_side === 'Both') && (
           <div className="w-fit justify-center">
             <StlFilePicker
               label="Upload file (Left Foot)"
@@ -1397,6 +1405,21 @@ const Step2 = ({
             {shouldShowFileError('left_foot_file') && errors.left_foot_file && (
               <div className="text-red-500 text-xs mt-1">{errors.left_foot_file}</div>
             )}
+            {/* ✅ Show existing left foot file name or link */}
+{values.left_foot_file && typeof values.left_foot_file === "string" && (
+  <div className="mt-2 text-sm text-gray-700">
+    <span className="font-medium">Existing Left Foot File: </span>
+    <a
+      href={`https://your-bucket-name.s3.amazonaws.com/${values.left_foot_file}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 underline break-all"
+    >
+      {values.left_foot_file.split('/').pop()}
+    </a>
+  </div>
+)}
+
             {/* ✅ Show existing left foot file if present */}
             
             
@@ -1407,7 +1430,7 @@ const Step2 = ({
         )}
 
         {/* Right Foot Upload */}
-        {(values.foot_side === 'Right_Foot' || values.foot_side === 'Both') && (
+        {(values.foot_side === 'right_foot_file' || values.foot_side === 'Both') && (
           <div className="w-fit">
 
             <StlFilePicker
@@ -1434,6 +1457,20 @@ const Step2 = ({
             )}
             {/* ✅ Show existing right foot file if present */}
            
+{/* ✅ Show existing right foot file name or link */}
+{values.right_foot_file && typeof values.right_foot_file === "string" && (
+  <div className="mt-2 text-sm text-gray-700">
+    <span className="font-medium">Existing Right Foot File: </span>
+    <a
+      href={`https://your-bucket-name.s3.amazonaws.com/${values.right_foot_file}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 underline break-all"
+    >
+      {values.right_foot_file.split('/').pop()}
+    </a>
+  </div>
+)}
 
           </div>
         )}
@@ -1448,9 +1485,9 @@ const Step2 = ({
           buttonText="File 1"
           accept={['.obj']}
           onFileSelect={(file: any) => {
-            setFieldValue('obj_file_1', file);
-            setErrors({ ...errors, obj_file_1: undefined });
-            updateScanItems(values.foot_side, file);
+            setFieldValue('custom_obj_file_1', file);
+            setErrors({ ...errors, custom_obj_file_1: undefined });
+            // updateScanItems(values.foot_side, file);
           }}
         />
         <StlFilePicker
@@ -1458,8 +1495,8 @@ const Step2 = ({
           buttonText="File 2"
           accept={['.mtl']}
           onFileSelect={(file: any) => {
-            setFieldValue('mtl_file_2', file);
-            setErrors({ ...errors, mtl_file_2: undefined });
+            setFieldValue('custom_mtl_file_2', file);
+            setErrors({ ...errors, custom_mtl_file_2: undefined });
           }}
         />
         <StlFilePicker
@@ -1467,8 +1504,8 @@ const Step2 = ({
           buttonText="File 3"
           accept={['.jpg']}
           onFileSelect={(file: any) => {
-            setFieldValue('jpg_file_3', file);
-            setErrors({ ...errors, jpg_file_3: undefined });
+            setFieldValue('custom_jpg_file_3', file);
+            setErrors({ ...errors, custom_jpg_file_3: undefined });
           }}
         />
       </div>
@@ -1487,10 +1524,10 @@ const Step2 = ({
             label="Select Image"
             buttonText="File 1"
             onFileSelect={(file) => {
-              setFieldValue('additional_file_1', file);
+              setFieldValue('custom_additional_file_1', file);
               setErrors({
                 ...errors,
-                additional_file_1: undefined,
+                custom_additional_file_1: undefined,
                 custom_upload_link_with_photos: undefined
               });
             }}
@@ -1504,10 +1541,10 @@ const Step2 = ({
             label="Select Image"
             buttonText="File 2"
             onFileSelect={(file) => {
-              setFieldValue('additional_file_2', file);
+              setFieldValue('custom_additional_file_2', file);
               setErrors({
                 ...errors,
-                additional_file_2: undefined,
+                custom_additional_file_2: undefined,
                 custom_upload_link_with_photos: undefined
               });
             }}
@@ -1710,9 +1747,13 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
           const scanItem = response.data?.scan_items?.[0];
           // console.log('scanItem=>', scanItem);
           let mappedFootSide = '';
-          if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right_Foot';
-          if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left_Foot';
-          if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
+          if (scanItem?.foot_side === 'Right') mappedFootSide = 'right_foot_file';
+if (scanItem?.foot_side === 'Left') mappedFootSide = 'left_foot_file';
+if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
+
+          // if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right_Foot';
+          // if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left_Foot';
+          // if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
           // console.log("Full API response =>", response);
           // console.log("API Keys =>", Object.keys(response.data));
 
@@ -1723,6 +1764,7 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
           // console.log("socket_design_details =>", response.data?.socket_design_details);
 
           const transformedData = {
+
             ...initialValues,
             ...response.data,
             foot_side: mappedFootSide || initialValues.foot_side,
@@ -1749,9 +1791,11 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
           // console.log("API Response (response.data) =>", response.data);
           // console.log("Merged/Transformed =>", transformedData);
 
-          // console.log('Transformed Data =>', transformedData);
+          console.log('Transformed Data =>', transformedData);
 
-          setFormValues(transformedData);
+          // setFormValues(transformedData);
+          setFormValues(transformedData as any);
+
           if (response.data.item_code) {
             setSelectedItem(response.data.item_code);
           }
@@ -1993,7 +2037,19 @@ const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
 
   try {
     // ✅ CRITICAL FIX: Force Content-Type for STL files
-    let contentType = "model/stl";
+    // let contentType = "model/stl";
+    let contentType = "application/octet-stream"; // default fallback
+
+if (file.name.endsWith(".stl")) {
+  contentType = "model/stl";
+} else if (file.name.endsWith(".mtl")) {
+  contentType = "application/octet-stream"; // MTL is a text file describing materials
+} else if (file.name.endsWith(".ply")) {
+  contentType = "application/octet-stream"; // or "model/ply" if your backend supports it
+}
+else if (file.name.endsWith(".obj")) {
+  contentType = "application/octet-stream"; // OBJ files are text-based
+}
     
     // // Handle STL files specifically - browsers often return empty or incorrect MIME type
     // if (file.name.toLowerCase().endsWith('.stl')) {
@@ -2128,8 +2184,9 @@ const handlePayAndPlaceOrder = async (values: any) => {
     const filesToUpload: File[] = [];
     if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
-    if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
-
+    if (values.custom_obj_file_1 instanceof File) filesToUpload.push(values.custom_obj_file_1);
+    if (values.custom_mtl_file_2 instanceof File) filesToUpload.push(values.custom_mtl_file_2);
+        if (values.custom_jpg_file_3 instanceof File) filesToUpload.push(values.custom_jpg_file_3);
    
     const uploadedMetadata: any[] = [];
 const uploadedUrls: string[] = [];
@@ -2156,7 +2213,9 @@ for (const f of filesToUpload) {
        scan_items: {
       left_foot_file: uploadedUrls[0] || "",
       right_foot_file: uploadedUrls[1] || "",
-      // obj_file: uploadedUrls[2] || ""
+      custom_obj_file_1: uploadedUrls[2] || "",
+      custom_mtl_file_2: uploadedUrls[3] || "",
+      custom_jpg_file_3: uploadedUrls[4] || ""
     },
       addicoins: parseInt(values.addicoins),
       totalPrice: totalPrice,
@@ -2425,7 +2484,7 @@ for (const f of filesToUpload) {
     scan_items: {
       left_foot_file: uploadedUrls[0] || "",
       right_foot_file: uploadedUrls[1] || "",
-      obj_file: uploadedUrls[2] || ""
+      custom_obj_file_1: uploadedUrls[2] || ""
     },
     // Optional: keep for backward compatibility
     // uploadURL: uploadedUrls[0] || "",

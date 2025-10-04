@@ -177,7 +177,7 @@ const extensions = accept && accept.length > 0 ? accept : allowedExtensions;
     
     if (!f) return;
 
-    const allowedExtensions = ['.stl', '.obj', '.ply'];
+    const allowedExtensions = ['.stl', '.obj', '.ply','.mtl','.jpg'];
     const fileExtension = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
     
     if (!allowedExtensions.includes(fileExtension)) {
