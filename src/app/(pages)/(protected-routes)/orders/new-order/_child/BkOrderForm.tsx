@@ -1744,16 +1744,22 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
       })
         .unwrap()
         .then((response) => {
+          const apiData = response.data;
+          console.log('Fetched order details response =>', apiData);
           const scanItem = response.data?.scan_items?.[0];
           console.log('scanItem=>', scanItem);
+          const validScanItem = apiData.scan_items?.find(
+  (item:any) => item.left_foot_file || item.right_foot_file
+) || {};
           let mappedFootSide = '';
-          if (scanItem?.foot_side === 'Right') mappedFootSide = 'right_foot_file';
-if (scanItem?.foot_side === 'Left') mappedFootSide = 'left_foot_file';
-if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
+//          if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right';
+// if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left';
+// if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
 
-          // if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right_Foot';
-          // if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left_Foot';
-          // if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
+
+          if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right_Foot';
+          if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left_Foot';
+          if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
           // console.log("Full API response =>", response);
           // console.log("API Keys =>", Object.keys(response.data));
 
@@ -1767,9 +1773,10 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
 
             ...initialValues,
             ...response.data,
-            foot_side: mappedFootSide || initialValues.foot_side,
-            left_foot_file: scanItem?.left_foot_file || initialValues.left_foot_file,
-            right_foot_file: scanItem?.right_foot_file || initialValues.right_foot_file,
+            left_foot_file: validScanItem.left_foot_file || apiData.left_foot_file || "",
+  right_foot_file: validScanItem.right_foot_file || apiData.right_foot_file || "",
+  foot_side: validScanItem.foot_side || apiData.foot_side || "",
+
             value_c_details:
               response.data?.value_c_details?.map((item: { gap: any; value: any }) => ({
                 gap: item.gap || '',
@@ -1807,17 +1814,186 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
         });
     }
   }, [orderId, deviceTypeId]);
+// useEffect(() => {
+//   if (orderId && deviceTypeId) {
+//     getOrderDetails({
+//       order_type: deviceTypeId,
+//       order_id: orderId
+//     })
+//       .unwrap()
+//       .then((response) => {
+//         const apiData = response.data;
+//         console.log('Fetched order details response =>', apiData);
 
-  useEffect(() => {
-    if (orderDetails?.data) {
-      setFormValues({
-        ...initialValues,
-        ...orderDetails.data
-      });
-    }
-  }, [orderDetails]);
+//         // ✅ Safely find the valid scan item
+//         const validScanItem =
+//           apiData.scan_items?.find(
+//             (item: any) => item.left_foot_file || item.right_foot_file
+//           ) || {};
+// console.log('validScanItem=>', validScanItem);
+//         // ✅ Normalize foot_side value
+//         let mappedFootSide = '';
+//         if (validScanItem?.foot_side === 'Right') mappedFootSide = 'right_foot_file';
+//         if (validScanItem?.foot_side === 'Left') mappedFootSide = 'left_foot_file';
+//         if (validScanItem?.foot_side === 'Both') mappedFootSide = 'Both';
+
+//         // ✅ Merge with form values
+//         const transformedData = {
+//           ...initialValues,
+//           ...apiData,
+//           left_foot_file: validScanItem.left_foot_file || apiData.left_foot_file || '',
+//           right_foot_file: validScanItem.right_foot_file || apiData.right_foot_file || '',
+//           foot_side: mappedFootSide || apiData.foot_side || '',
+
+//           value_c_details:
+//             apiData?.value_c_details?.map(
+//               (item: { gap: any; value: any }) => ({
+//                 gap: item.gap || '',
+//                 value: item.value || ''
+//               })
+//             ) || initialValues.value_c_details,
+
+//           socket_design_details:
+//             apiData?.socket_design_details?.map(
+//               (item: {
+//                 area: any;
+//                 area_name: any;
+//                 default_mm: any;
+//                 cpo_input_mm: any;
+//               }) => ({
+//                 area: item.area || '',
+//                 area_name: item.area_name || '',
+//                 default_mm: item.default_mm || '',
+//                 cpo_input_mm: item.cpo_input_mm || ''
+//               })
+//             ) || initialValues.socket_design_details
+//         };
+
+//         console.log('✅ Transformed Data =>', transformedData);
+//         setFormValues(transformedData as any);
+
+//         if (apiData.item_code) setSelectedItem(apiData.item_code);
+
+//         setIsInitialDataLoaded(true);
+//       })
+//       .catch((error) => {
+//         console.error('Failed to load order details:', error);
+//         setIsInitialDataLoaded(false);
+//       });
+//   }
+// }, [orderId, deviceTypeId]);
+
+
+ 
+
 
   // Add this useEffect to load Razorpay script
+  
+  
+  
+//   useEffect(() => {
+//   if (orderDetails?.data) {
+//     const apiData = orderDetails.data;
+
+//     const validScanItem =
+//       apiData.scan_items?.find(
+//         (item: any) => item.left_foot_file || item.right_foot_file
+//       ) || {};
+
+//     const mappedFootSide =
+//       validScanItem?.foot_side === 'Right'
+//         ? 'right_foot_file'
+//         : validScanItem?.foot_side === 'Left'
+//         ? 'left_foot_file'
+//         : validScanItem?.foot_side === 'Both'
+//         ? 'Both'
+//         : '';
+
+//     const mergedData = {
+//       ...initialValues,
+//       ...apiData,
+//       left_foot_file: validScanItem.left_foot_file || apiData.left_foot_file || '',
+//       right_foot_file: validScanItem.right_foot_file || apiData.right_foot_file || '',
+//       foot_side: mappedFootSide || apiData.foot_side || '',
+//       design_variation:apiData.design_variation || initialValues.design_variation||'',
+//       value_c_details:
+//         apiData?.value_c_details?.map((item: any) => ({
+//           gap: item.gap || '',
+//           value: item.value || ''
+//         })) || initialValues.value_c_details,
+//       socket_design_details:
+//         apiData?.socket_design_details?.map((item: any) => ({
+//           area: item.area || '',
+//           area_name: item.area_name || '',
+//           default_mm: item.default_mm || '',
+//           cpo_input_mm: item.cpo_input_mm || ''
+//         })) || initialValues.socket_design_details
+//     };
+
+//     console.log('✅ Final merged data =>', mergedData);
+//     setFormValues(mergedData);
+//   }
+// }, [orderDetails]);
+
+
+//
+
+
+//
+
+
+//
+
+
+//
+// useEffect(() => {
+//   if (orderDetails?.data) {
+//     console.log('orderDetails.data=>', orderDetails.data);
+//     setFormValues({
+//       ...initialValues,
+//       ...orderDetails.data
+//     });
+//   }
+// }, [orderDetails]);
+
+  //
+  useEffect(() => {
+  if (orderDetails?.data) {
+    const apiData = orderDetails.data;
+
+    // ✅ Find the valid scan item (either left or right)
+    const validScanItem =
+      apiData.scan_items?.find(
+        (item:any) => item.left_foot_file || item.right_foot_file
+      ) || {};
+
+    // ✅ Determine foot side based on scan item
+    const mappedFootSide =
+      validScanItem?.foot_side === "Right"
+        ? "right_foot_file"
+        : validScanItem?.foot_side === "Left"
+        ? "left_foot_file"
+        : validScanItem?.foot_side === "Both"
+        ? "Both"
+        : apiData.foot_side || "";
+
+    // ✅ Merge only what’s needed
+    const mergedData = {
+      ...initialValues,
+      ...apiData,
+      left_foot_file:
+        validScanItem.left_foot_file || apiData.left_foot_file || "",
+      right_foot_file:
+        validScanItem.right_foot_file || apiData.right_foot_file || "",
+      foot_side: mappedFootSide
+    };
+
+    console.log("✅ Merged data with scan mapping =>", mergedData);
+    setFormValues(mergedData);
+  }
+}, [orderDetails]);
+ 
+
   useEffect(() => {
     const loadRazorpayScript = async () => {
       if (window.Razorpay) {
@@ -2202,6 +2378,34 @@ for (const f of filesToUpload) {
 }
     // 🔥 2) ENCODE METADATA AS BASE64
     const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
+// ✅ Dynamic scan item mapping
+const scan_items = {
+  left_foot_file: "",
+  right_foot_file: "",
+  custom_obj_file_1: "",
+  custom_mtl_file_2: "",
+  custom_jpg_file_3: ""
+};
+
+// ✅ Make sure to use filesToUpload, not uploadedFiles
+filesToUpload.forEach((file, index) => {
+  const url = uploadedUrls[index];
+  const name = file.name.toLowerCase();
+
+  if (name.includes("left")) {
+    scan_items.left_foot_file = url;
+  } else if (name.includes("right")) {
+    scan_items.right_foot_file = url;
+  } else if (name.endsWith(".obj")) {
+    scan_items.custom_obj_file_1 = url;
+  } else if (name.endsWith(".mtl")) {
+    scan_items.custom_mtl_file_2 = url;
+  } else if (/\.(jpg|jpeg|png)$/.test(name)) {
+    scan_items.custom_jpg_file_3 = url;
+  }
+});
+
+console.log("✅ scan_items mapped:", scan_items);
 
     // Build final order payload
     const orderPayload = {
@@ -2210,13 +2414,14 @@ for (const f of filesToUpload) {
       order_details: { ...values },
       item_code: itemCode,
       // uploaded_files: encodedFiles, // ✅ only sending encoded metadata
-       scan_items: {
-      left_foot_file: uploadedUrls[0] || "",
-      right_foot_file: uploadedUrls[1] || "",
-      custom_obj_file_1: uploadedUrls[2] || "",
-      custom_mtl_file_2: uploadedUrls[3] || "",
-      custom_jpg_file_3: uploadedUrls[4] || ""
-    },
+    //    scan_items: {
+    //   left_foot_file: uploadedUrls[0] || "",
+    //   right_foot_file: uploadedUrls[1] || "",
+    //   custom_obj_file_1: uploadedUrls[2] || "",
+    //   custom_mtl_file_2: uploadedUrls[3] || "",
+    //   custom_jpg_file_3: uploadedUrls[4] || ""
+    // },
+    scan_items,
       addicoins: parseInt(values.addicoins),
       totalPrice: totalPrice,
       print,
@@ -2475,19 +2680,51 @@ for (const f of filesToUpload) {
   uploadedUrls.push(meta.key); // ✅ collect URLs
 
 }
-  // 2️⃣ Build order payload with URLs instead of files
-  const orderPayload = {
+
+const scan_items = {
+  left_foot_file: "",
+  right_foot_file: "",
+  custom_obj_file_1: "",
+  custom_mtl_file_2: "",
+  custom_jpg_file_3: ""
+};
+
+// // ✅ Make sure to use filesToUpload, not uploadedFiles
+filesToUpload.forEach((file, index) => {
+  const url = uploadedUrls[index];
+  const name = file.name.toLowerCase();
+
+  if (name.includes("left")) {
+    scan_items.left_foot_file = url;
+  } else if (name.includes("right")) {
+    scan_items.right_foot_file = url;
+  } else if (name.endsWith(".obj")) {
+    scan_items.custom_obj_file_1 = url;
+  } else if (name.endsWith(".mtl")) {
+    scan_items.custom_mtl_file_2 = url;
+  } else if (/\.(jpg|jpeg|png)$/.test(name)) {
+    scan_items.custom_jpg_file_3 = url;
+  }
+});
+
+// 2️⃣ Build order payload with URLs instead of files
+  
+
+
+
+const orderPayload = {
     item_type: 'BK',
     customer: user?.customer_id,
     order_details: { ...values },
     item_code: itemCode,
-    scan_items: {
-      left_foot_file: uploadedUrls[0] || "",
-      right_foot_file: uploadedUrls[1] || "",
-      custom_obj_file_1: uploadedUrls[2] || ""
-    },
+    // scan_items: {
+    //   left_foot_file: uploadedUrls[0] || "",
+    //   right_foot_file: uploadedUrls[1] || "",
+    //   custom_obj_file_1: uploadedUrls[2] || ""
+    // },
     // Optional: keep for backward compatibility
     // uploadURL: uploadedUrls[0] || "",
+    scan_items,
     // @ts-ignore
     addicoins: parseInt(values.addicoins)
   };
