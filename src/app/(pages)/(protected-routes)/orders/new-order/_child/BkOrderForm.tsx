@@ -1745,7 +1745,7 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
         .unwrap()
         .then((response) => {
           const scanItem = response.data?.scan_items?.[0];
-          // console.log('scanItem=>', scanItem);
+          console.log('scanItem=>', scanItem);
           let mappedFootSide = '';
           if (scanItem?.foot_side === 'Right') mappedFootSide = 'right_foot_file';
 if (scanItem?.foot_side === 'Left') mappedFootSide = 'left_foot_file';

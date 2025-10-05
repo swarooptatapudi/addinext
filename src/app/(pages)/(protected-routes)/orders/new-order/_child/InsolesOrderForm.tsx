@@ -1454,9 +1454,12 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
             const matchedUsage = insoleOptions.find((opt) => opt.value === response.data.usage);
             // console.log("✅ Matched Usage Option:", matchedUsage);
 const scanItem = response.data?.scan_items?.[0];
+console.log(" Scan Item =>", scanItem);
 let mappedFootSide = '';
-if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right_Foot';
-if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left_Foot';
+if (scanItem?.ight_foot_file === 'Right') mappedFootSide = 'Right_Foot';
+if (scanItem?.
+left_foot_file
+ === 'Left') mappedFootSide = 'Left_Foot';
 if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
 
             const transformedData = {
@@ -1481,7 +1484,7 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
               Design_by: response.data.custom_print_by || '',
               design_variation: response.data.custom_design_by || '',
               custom_scan_type: response.data.custom_scan_type || '',
-              foot_side: response.data.foot_side || '',
+              // foot_side: response.data.foot_side || '',
           left_foot_file: scanItem.left_foot_file || null,
   right_foot_file: scanItem.right_foot_file || null,
               Print_by: response.data.custom_print_by || '',
@@ -1553,7 +1556,8 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
         thickness: apiData.thickness_mm || '',
         design_variation: apiData.custom_design_by || '',
         Print_by: apiData.custom_print_by || '',
-         foot_side: apiData.foot_side || '',
+        //  foot_side: apiData.foot_side || '',
+         custom_scan_type: apiData.custom_scan_type || '',
      left_foot_file: scanItem.left_foot_file || null,
   right_foot_file: scanItem.right_foot_file || null,
       // scan_date: apiData.scan_date || '',
