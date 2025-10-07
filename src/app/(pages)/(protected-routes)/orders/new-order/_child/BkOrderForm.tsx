@@ -2364,6 +2364,9 @@ const handlePayAndPlaceOrder = async (values: any) => {
     if (values.custom_mtl_file_2 instanceof File) filesToUpload.push(values.custom_mtl_file_2);
         if (values.custom_jpg_file_3 instanceof File) filesToUpload.push(values.custom_jpg_file_3);
    
+
+
+
     const uploadedMetadata: any[] = [];
 const uploadedUrls: string[] = [];
     // for (const f of filesToUpload) {
@@ -2376,16 +2379,20 @@ for (const f of filesToUpload) {
   uploadedUrls.push(meta.key); // ✅ collect URLs
 
 }
+console.log("🧾 Uploaded Metadata:", uploadedMetadata);
+
     // 🔥 2) ENCODE METADATA AS BASE64
     const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
 // ✅ Dynamic scan item mapping
+// Assuming your Formik values have separate fields for left/right
 const scan_items = {
-  left_foot_file: "",
-  right_foot_file: "",
-  custom_obj_file_1: "",
-  custom_mtl_file_2: "",
-  custom_jpg_file_3: ""
+  left_foot_file: values.left_foot_file instanceof File ? uploadedUrls[0] : values.left_foot_file || "",
+  right_foot_file: values.right_foot_file instanceof File ? uploadedUrls[1] : values.right_foot_file || "",
+  custom_obj_file_1: values.custom_obj_file_1 instanceof File ? uploadedUrls[2] : values.custom_obj_file_1 || "",
+  custom_mtl_file_2: values.custom_mtl_file_2 instanceof File ? uploadedUrls[3] : values.custom_mtl_file_2 || "",
+  custom_jpg_file_3: values.custom_jpg_file_3 instanceof File ? uploadedUrls[4] : values.custom_jpg_file_3 || ""
 };
+// console.log(" scan_items before mapping:", scan_items);
 
 // ✅ Make sure to use filesToUpload, not uploadedFiles
 filesToUpload.forEach((file, index) => {
@@ -2405,7 +2412,7 @@ filesToUpload.forEach((file, index) => {
   }
 });
 
-console.log("✅ scan_items mapped:", scan_items);
+console.log(" scan_items mapped:", scan_items);
 
     // Build final order payload
     const orderPayload = {
@@ -2492,7 +2499,10 @@ console.log("✅ scan_items mapped:", scan_items);
   }
 };
 
-  const handleConfirmOrder = () => {
+ 
+
+
+const handleConfirmOrder = () => {
     const payload: any = {};
     payload.item_type = 'BK';
     payload.customer = user?.customer_id;
@@ -2709,7 +2719,7 @@ filesToUpload.forEach((file, index) => {
 
 // 2️⃣ Build order payload with URLs instead of files
   
-
+console.log(" scan_items mapped:", scan_items);
 
 
 const orderPayload = {
