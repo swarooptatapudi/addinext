@@ -267,12 +267,18 @@ const totalPages = data?.data.total_pages ?? 1;
         const order = row.original;
         // console.log('Order Status:', order);
         let status = order.status;
+        const orderValue = order.order_value || 0;
+        // console.log('Order Value:', orderValue);
+     
         if (
           status === 'Draft' &&
           (order.custom_payment_reference_id || order.sales_invoices.length > 0)
         ) {
           status = 'Paid';
-        }
+        } 
+       if (orderValue === 0) {
+      status = 'Paid';
+    }
         const statusClasses = {
           Draft: 'bg-yellow-100 text-yellow-800',
           Completed: 'bg-green-100 text-green-800',
@@ -296,6 +302,7 @@ const totalPages = data?.data.total_pages ?? 1;
       header: 'Actions',
       cell: ({ row }) => {
         const order = row.original;
+        console.log('Order for Actions:', order);
         const isDisabled =
           order.status === 'Completed' || order.status === 'Paid';
         return (
