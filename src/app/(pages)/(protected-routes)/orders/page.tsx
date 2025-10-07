@@ -302,9 +302,9 @@ const totalPages = data?.data.total_pages ?? 1;
       header: 'Actions',
       cell: ({ row }) => {
         const order = row.original;
-        console.log('Order for Actions:', order);
+        // console.log('Order for Actions:', order);
         const isDisabled =
-          order.status === 'Completed' || order.status === 'Paid';
+          order.status === 'Completed' || order.status === 'Paid' || order.order_value === 0;
         return (
           <div className="flex gap-2">
             <Button
