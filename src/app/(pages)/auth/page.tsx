@@ -3,41 +3,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLoginMutation } from '@/rtk-query/apis/auth';
 import { Formik } from 'formik';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react'; // 👈 for password toggle icons
 
 export default function SignIn(): React.JSX.Element {
-  const [login, { isSuccess, isLoading }] = useLoginMutation();
+  const [login, { isSuccess, error, isLoading }] = useLoginMutation();
   const router = useRouter();
-   
+  const [showPassword, setShowPassword] = useState(false);
+
   useEffect(() => {
     if (isSuccess) {
-      router.replace('/dashboard'); 
-      window.location.reload(); 
+      router.replace('/dashboard');
+      window.location.reload();
       toast.success('Login successful');
     }
   }, [isSuccess, router]);
-  // useEffect(() => {
-  //   console.log("Login status changed", { isSuccess, isLoading });
-  //   if (isSuccess) {
-  //     console.log("Redirecting to dashboard");
-  //     router.push('/dashboard');
-  //     toast.success('Login successful');
-  //   }
-  // }, [isSuccess,router]);
 
-  // useEffect(() => {
-  //   if (isSuccess) {
-  //     router.push('/dashboard');
-  //     toast.success('Login successful');
-  //   }
-  // }, [isSuccess]);
+  useEffect(() => {
+    if (error) {
+      console.error('Login error:', error);
+      toast.error('Login failed. Please check your credentials and try again.');
+    }
+  }, [error]);
 
   return (
     <div className="h-full p-4 flex flex-col items-center justify-center w-full">
-      <div className="flex flex-col items-center justify-center w-[80%] bg-white p-4 rounded-lg drop--lg py-10">
+  <div className="flex flex-col items-center justify-center w-[80%] bg-white p-4 rounded-lg drop--lg py-10">
         <h1 className="text-2xl font-bold">Sign In</h1>
         <p className="text-sm text-gray-500">Sign in to your account</p>
         <div className="flex flex-col gap-4 w-full mt-6">
@@ -45,15 +39,32 @@ export default function SignIn(): React.JSX.Element {
             {({ values, handleChange, handleSubmit }) => (
               <form onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-4">
-                  <Input placeholder="Email" value={values.usr} onChange={handleChange('usr')} />
                   <Input
-                    placeholder="Password"
-                    type="password"
-                    value={values.pwd}
-                    onChange={handleChange('pwd')}
+                    placeholder="Email"
+                    value={values.usr}
+                    onChange={handleChange('usr')}
                   />
-                  <Button type="submit">
-                    Sign In
+
+                  {/* 👇 Password field with toggle button */}
+                  <div className="relative">
+                    <Input
+                      placeholder="Password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={values.pwd}
+                      onChange={handleChange('pwd')}
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Signing In...' : 'Sign In'}
                   </Button>
                 </div>
               </form>
@@ -61,12 +72,14 @@ export default function SignIn(): React.JSX.Element {
           </Formik>
         </div>
       </div>
-      <div className="flex justify-end text-sm text-blue-600 hover:underline cursor-pointer">
-  <Link href="/auth/forgot-password">Forgot Password?</Link>
-</div>
+
+      <div className="flex justify-end text-sm text-blue-600 hover:underline cursor-pointer mt-4">
+        <Link href="/auth/forgot-password">Forgot Password?</Link>
+      </div>
     </div>
   );
 }
+
 
 
 //===================================================================

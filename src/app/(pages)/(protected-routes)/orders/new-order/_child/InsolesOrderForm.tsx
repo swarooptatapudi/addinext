@@ -98,7 +98,7 @@ const step1Validation = Yup.object().shape({
     .required(FORMIK_ERRORS.REQUIRED)
     .matches(/^\d+(\.\d+)?$/, 'Must contain only digits')
     .test('min-value', 'Size must be at least 20', (value) => parseInt(value) >= 20)
-    .test('max-value', 'Size must be no more than 60', (value) => parseInt(value) <= 45),
+    .test('max-value', 'Size must be no more than 45', (value) => parseInt(value) <= 45),
  
 // foot_length: Yup.string()
 //     .required(FORMIK_ERRORS.REQUIRED)
