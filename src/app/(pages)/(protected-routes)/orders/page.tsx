@@ -18,12 +18,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { useHDFCPayment } from '@/hooks/useHDFCPayment';
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
 
 type SalesInvoice = {
   name: string;
@@ -71,7 +67,6 @@ const totalPages = data?.data.total_pages ?? 1;
     useGetOrderDetailsMutation();
   const [getOrderDetailIds] = useGetOrderDetailIdsMutation();
 
-  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'order_date', desc: true },
@@ -80,9 +75,12 @@ const totalPages = data?.data.total_pages ?? 1;
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const deviceType = searchParams.get("deviceType");
-  
+
   const router = useRouter();
-  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  // const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
+  // Add HDFC payment hook
+  const { initiatePayment, isLoading: isPaymentLoadingHDFC } = useHDFCPayment();
 
   // prepare table data
   const tableData: Order[] = (data?.data?.sales_orders || []).map((so: any) => ({
@@ -98,24 +96,24 @@ const totalPages = data?.data.total_pages ?? 1;
 
 
   // load Razorpay script
-  useEffect(() => {
-    if (window.Razorpay) {
-      setIsRazorpayLoaded(true);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    script.onload = () => setIsRazorpayLoaded(true);
-    script.onerror = () => {
-      setIsRazorpayLoaded(false);
-      toast.error('Failed to load payment gateway. Please refresh the page.');
-    };
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+  // useEffect(() => {
+  //   if (window.Razorpay) {
+  //     setIsRazorpayLoaded(true);
+  //     return;
+  //   }
+  //   const script = document.createElement('script');
+  //   script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+  //   script.async = true;
+  //   script.onload = () => setIsRazorpayLoaded(true);
+  //   script.onerror = () => {
+  //     setIsRazorpayLoaded(false);
+  //     toast.error('Failed to load payment gateway. Please refresh the page.');
+  //   };
+  //   document.body.appendChild(script);
+  //   return () => {
+  //     document.body.removeChild(script);
+  //   };
+  // }, []);
 
   // helper for order_type
   function getOrderType(order: Order): string {
@@ -126,70 +124,53 @@ const totalPages = data?.data.total_pages ?? 1;
 
   // ✅ Pay button logic
   const handlePayment = async (order: Order) => {
-    if (!razorpayKey || !isRazorpayLoaded) return;
-
     try {
       const payload = {
         order_id: order.order_id,
         order_type: getOrderType(order),
-
       };
+
       const response = await getOrderDetails(payload).unwrap();
-
       const orderAmount = response.data.order_amount;
-      const amountInPaise = Math.round(orderAmount * 100);
 
-      const options = {
-        key: razorpayKey,
-        amount: amountInPaise.toString(),
+      const paymentOptions = {
+        amount: orderAmount,
         currency: 'INR',
-        name: 'Addiwise Company',
+        orderId: order.order_id,
+        customerName: response.data.customer || '',
+        customerEmail: response.data.email || '',
+        customerPhone: response.data.mobile_no || '',
         description: `Payment for Order ${response.data.so_order_id || order.order_id}`,
-        handler: async function (razorpayResponse: any) {
-          // console.log('✅ Payment Success (from Razorpay):', razorpayResponse);
+        returnUrl: `${window.location.origin}/payment/success`,
+        cancelUrl: `${window.location.origin}/payment/cancel`,
+      };
 
+      await initiatePayment(
+        paymentOptions,
+        async (paymentData) => {
+          // Payment success callback
           const backendPayload = {
             order_id: order.order_id,
             order_type: getOrderType(order),
-            custom_payment_reference_id: razorpayResponse.razorpay_payment_id,
+            custom_payment_reference_id: paymentData.paymentId,
             payment_status: 'Paid',
           };
 
-          // console.log("📤 Sending payload to backend:", backendPayload);
-
           try {
             const res = await getOrderDetailIds(backendPayload).unwrap();
-            // console.log("✅ Backend response:", res);
-
-            toast.success('Payment Successfull');
+            toast.success('Payment Successful');
             refetch();
           } catch (err) {
-            // console.error('Failed to update backend:', err);
             toast.error('Payment success but backend update failed');
           }
         },
-
-        prefill: {
-          name: response.data.customer || '',
-          email: response.data.email || '',
-          contact: response.data.mobile_no || '',
-        },
-        notes: {
-          order_type: response.data.order_type,
-          order_value: response.data.order_value,
-          internal_order_id: order.order_id,
-        },
-        theme: { color: '#3399cc' },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', (failureResponse: any) => {
-        toast.error(`Payment failed: ${failureResponse.error.description}`);
-      });
-      rzp.open();
-    } catch (err) {
-      // console.error(err);
-      toast.error('Failed to process payment');
+        (error) => {
+          // Payment failure callback
+          toast.error(`Payment failed: ${error}`);
+        }
+      );
+    } catch (error) {
+      toast.error('Failed to initiate payment');
     }
   };
 
@@ -309,11 +290,11 @@ const totalPages = data?.data.total_pages ?? 1;
           <div className="flex gap-2">
             <Button
               size="sm"
-              disabled={isDisabled || isPaymentLoading || !razorpayKey}
+              disabled={isDisabled || isPaymentLoadingHDFC}
               className="bg-primary hover:bg-primary/90 text-white shadow-md"
               onClick={() => handlePayment(order)}
             >
-              {isPaymentLoading ? 'Processing...' : 'Pay'}
+              {isPaymentLoadingHDFC ? 'Processing...' : 'Pay'}
             </Button>
 
             <div className="relative group ml-2">
@@ -406,11 +387,6 @@ const totalPages = data?.data.total_pages ?? 1;
           onChange={(e) => setSearchTerm(e.target.value)}
           className="border border-gray-300 px-4 py-2 rounded w-64 placeholder:text-sm"
         />
-        {!razorpayKey && (
-          <div className="text-red-500 text-sm bg-red-50 p-2 rounded">
-            Warning: Payment gateway is not properly configured
-          </div>
-        )}
       </div>
       <DataTable
         columns={columns}

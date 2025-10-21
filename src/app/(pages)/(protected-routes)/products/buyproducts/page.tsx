@@ -17,11 +17,7 @@ import { useRouter } from "next/navigation";
 import { Loader, Check, X } from 'lucide-react';
 
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
+import { useHDFCPayment } from '@/hooks/useHDFCPayment';
 
 export default function BuyProductsPage() {
   const [quantity, setQuantity] = useState<number | "">("");
@@ -33,7 +29,7 @@ export default function BuyProductsPage() {
 
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
 
-  
+
   const router = useRouter();
 
   // Debounced coupon check
@@ -63,109 +59,64 @@ export default function BuyProductsPage() {
     (item: any) => item.item_name === productName
   );
   // console.log("selectedProduct", selectedProduct);
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => {
-        resolve(true);
-      };
-      script.onerror = () => {
-        resolve(false);
-      };
-      document.body.appendChild(script);
-    });
-  };
+  const { initiatePayment, isLoading: isPaymentLoading } = useHDFCPayment();
 
   const onPayNow = async () => {
     if (!quantity || quantity <= 0) {
       toast.error("Please enter a valid quantity");
       return;
-      
     }
 
     try {
-      const isScriptLoaded = await loadRazorpayScript();
-      if (!isScriptLoaded) {
-        toast.error("Failed to load payment gateway");
-        return;
-      }
-
-      // 🎯 Amount in paise (Razorpay expects INR * 100)
-      const amountInPaise = Math.round(finalAmount * 100);
-
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: amountInPaise.toString(),
-        currency: "INR",
-        name: "Addiwise Company",
+      const paymentOptions = {
+        amount: finalAmount,
+        currency: 'INR',
+        orderId: `PRODUCT_${Date.now()}_${user?.customer_id}`,
+        customerName: user?.full_name || '',
+        customerEmail: user?.email || '',
+        customerPhone: user?.phone_number || '',
         description: `Purchase of ${quantity} x ${productName}`,
+        returnUrl: `${window.location.origin}/payment/success`,
+        cancelUrl: `${window.location.origin}/payment/cancel`,
+      };
 
-        // 👉 Only ONE handler function
-        handler: async function (response: any) {
-          // console.log("Payment response:", response);
-
+      await initiatePayment(
+        paymentOptions,
+        async (paymentData) => {
+          // Payment success callback
           try {
-            // Build order payload
             const orderPayload = {
               orderPayload: {
                 product_name: productName,
                 item_code: selectedProduct?.item_code,
                 product_id: selectedProduct?.id,
                 quantity,
-                amount: finalAmount.toFixed(2), // makes "11100.00"
+                amount: finalAmount.toFixed(2),
                 coupon_code: couponCode || null,
-                payment_reference_id: response.razorpay_payment_id, // ✅ corrected key name
+                payment_reference_id: paymentData.paymentId || paymentData.transactionId,
               },
             };
 
-            // console.log("Order Payload (object):", orderPayload);
-
-            // 🟢 Logs as raw JSON string (exact body you send)
-            // console.log("Order Payload (JSON):", JSON.stringify(orderPayload, null, 2));
-            // Call your API
             const orderRes = await createProductOrder(orderPayload).unwrap();
-
             toast.success("Order placed successfully!");
-            // console.log("Order Response:", orderRes);
             router.push(`/transcations`);
           } catch (err) {
             toast.error("Failed to create order after payment");
-            // console.error("Create Order Error:", err);
           }
         },
-
-        prefill: {
-          name: user?.full_name || '',
-          // email: user?. || '',
-          contact: user?.phone_number || '',
-        },
-        notes: {
-          customer_id: user?.customer_id,
-          product: productName,
-          quantity: quantity.toString(),
-        },
-        theme: {
-          color: "#3399cc",
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-
-      rzp.on("payment.failed", function (response: any) {
-        toast.error("Payment failed. Please try again.");
-        console.error("Payment failed:", response.error);
-      });
+        (error) => {
+          // Payment failure callback
+          toast.error(`Payment failed: ${error}`);
+        }
+      );
     } catch (err) {
       toast.error("An error occurred during payment process");
-      console.error(err);
     }
   };
 
 
-const custom_product_image = selectedProduct?.custom_product_image; // Or whatever field holds the image
-// console.log("🖼️ custom_product_image:", custom_product_image);
+  const custom_product_image = selectedProduct?.custom_product_image; // Or whatever field holds the image
+  // console.log("🖼️ custom_product_image:", custom_product_image);
 
   const description = selectedProduct?.description || "";
   // console.log("description",description)
@@ -229,42 +180,42 @@ const custom_product_image = selectedProduct?.custom_product_image; // Or whatev
     return <p>No product selected</p>; // conditions go *after* hooks
   }
 
-  
+
   // 📌 AddiStud Description
- const getProductDescriptionCard = () => {
-  if (!selectedProduct) return null;
+  const getProductDescriptionCard = () => {
+    if (!selectedProduct) return null;
 
-  // Handle HTML safely if the description contains tags
-  const safeDescription =
-    description?.includes("<a") || description?.includes("<p")
-      ? <div dangerouslySetInnerHTML={{ __html: description }} />
-      : <p>{description}</p>;
+    // Handle HTML safely if the description contains tags
+    const safeDescription =
+      description?.includes("<a") || description?.includes("<p")
+        ? <div dangerouslySetInnerHTML={{ __html: description }} />
+        : <p>{description}</p>;
 
-  return (
-    <Card className="border border-gray-200 bg-gray-50 shadow-sm rounded-lg mb-6">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <InfoIcon className="w-5 h-5 text-primary" />
-          <CardTitle className="text-lg font-semibold text-primary">
-            {selectedProduct.item_name}
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="text-sm text-gray-700">
-        {safeDescription}
+    return (
+      <Card className="border border-gray-200 bg-gray-50 shadow-sm rounded-lg mb-6">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <InfoIcon className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg font-semibold text-primary">
+              {selectedProduct.item_name}
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="text-sm text-gray-700">
+          {safeDescription}
 
-        {/* ✅ Product image (if exists) */}
-        {custom_product_image && (
-          <img
-            src={custom_product_image}
-            alt={selectedProduct.item_name}
-            className="mt-3 rounded-md w-full max-w-sm"
-          />
-        )}
-      </CardContent>
-    </Card>
-  );
-};
+          {/* ✅ Product image (if exists) */}
+          {custom_product_image && (
+            <img
+              src={custom_product_image}
+              alt={selectedProduct.item_name}
+              className="mt-3 rounded-md w-full max-w-sm"
+            />
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
 
 

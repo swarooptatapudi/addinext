@@ -31,7 +31,7 @@ import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
 import {
   useCreateOrderMutation,
   useGetOrderDetailIdsMutation,
-  useGetBKEstimateMutation,usePreSignedUrlMutation
+  useGetBKEstimateMutation, usePreSignedUrlMutation
 } from '@/rtk-query/apis/orders';
 import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
 
@@ -42,12 +42,7 @@ import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 import { BK_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/bkForm/Step5Finishing';
 import { PatientPortalDialog } from '@/components/app/common/ResidualLimbForm';
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
+import { useHDFCPayment } from '@/hooks/useHDFCPayment';
 
 export type Order = {
   order_id: string;
@@ -1730,7 +1725,7 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
-  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const { initiatePayment, isLoading: isPaymentLoading } = useHDFCPayment();
   const mode = searchParams.get('mode'); // "view" or null
   // S3 FILE UPLOAD STATES 
 
@@ -1752,9 +1747,9 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   (item:any) => item.left_foot_file || item.right_foot_file
 ) || {};
           let mappedFootSide = '';
-//          if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right';
-// if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left';
-// if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
+          //          if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right';
+          // if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left';
+          // if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
 
 
           if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right_Foot';
@@ -1994,32 +1989,6 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
 }, [orderDetails]);
  
 
-  useEffect(() => {
-    const loadRazorpayScript = async () => {
-      if (window.Razorpay) {
-        setIsRazorpayLoaded(true);
-        return;
-      }
-
-      try {
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-
-        script.onload = () => setIsRazorpayLoaded(true);
-        script.onerror = () => {
-          setIsRazorpayLoaded(false);
-          toast.error('Failed to load payment gateway. Please refresh the page.');
-        };
-
-        document.body.appendChild(script);
-      } catch (err) {
-        setIsRazorpayLoaded(false);
-      }
-    };
-
-    loadRazorpayScript();
-  }, []);
 
   const FORM_OPTIONS = useMemo(() => {
     if (isFormOptionsLoading) return {};
@@ -2332,15 +2301,10 @@ setUploadURL(fileMeta.key);
 
 
 
-// 3️⃣ Modified handlePayAndPlaceOrder
-const handlePayAndPlaceOrder = async (values: any) => {
-
-  if (!razorpayKey || !isRazorpayLoaded) {
-    toast.error('Payment gateway is not available. Please try again.');
-    return;
-  }
-  setIsPaymentProcessing(true);
-  setFormValues(values);
+  // 3️⃣ Modified handlePayAndPlaceOrder
+  const handlePayAndPlaceOrder = async (values: any) => {
+    setIsPaymentProcessing(true);
+    setFormValues(values);
 
   try {
     // Prepare order data
@@ -2438,59 +2402,60 @@ console.log(" scan_items mapped:", scan_items);
       // uploadURL: uploadedUrls[0] || "",
     };
 
-    // Configure Razorpay
-    const amountInPaise = 100000;
-    const options = {
-      key: razorpayKey,
-      amount: amountInPaise.toString(),
-      currency: 'INR',
-      name: 'Addiwise Company',
-      description: `Payment for BK Order`,
-      handler: async function (response: any) {
-        try {
-          const finalOrderPayload = {
-            ...orderPayload,
-            custom_payment_reference_id: response.razorpay_payment_id,
-          };
+      // Configure HDFC Smart Gateway Payment
+      const paymentAmount = estimateData?.apiResponse?.total_price || 1000;
 
-          // Use FormData but without files — only data
-          const finalFormData = new FormData();
-          finalFormData.append("data", JSON.stringify(finalOrderPayload));
+      const paymentOptions = {
+        amount: paymentAmount,
+        currency: 'INR',
+        orderId: `BK_${Date.now()}_${user?.customer_id}`,
+        customerName: user?.full_name || '',
+        customerEmail: user?.email || '',
+        customerPhone: user?.phone_number || '',
+        description: `Payment for BK Order`,
+        returnUrl: `${window.location.origin}/payment/success`,
+        cancelUrl: `${window.location.origin}/payment/cancel`,
+      };
 
-          console.log("📦 Final Payload:", finalOrderPayload);
+      await initiatePayment(
+        paymentOptions,
+        async (paymentData) => {
+          // Payment success callback
+          try {
+            const finalOrderPayload = {
+              ...orderPayload,
+              custom_payment_reference_id: paymentData.paymentId || paymentData.transactionId,
+              payment_status: 'Paid'
+            };
 
-          const orderResponse: any = await createOrder(finalFormData).unwrap();
+            const finalFormData = new FormData();
+            finalFormData.append("data", JSON.stringify(finalOrderPayload));
 
-          if (orderResponse?.message?.status === 'success') {
-            toast.success('Payment successful! Order created successfully.');
-            setSelectedItem('');
+            console.log("📦 Final Payload:", finalOrderPayload);
+
+            const orderResponse: any = await createOrder(finalFormData).unwrap();
+
+            if (orderResponse?.message?.status === 'success') {
+              toast.success('Payment successful! Order created successfully.');
+              setSelectedItem('');
+              setIsPaymentProcessing(false);
+              setFormDisable(true);
+              router.push('/orders');
+            } else {
+              throw new Error(orderResponse?.message?.message || 'Order creation failed');
+            }
+          } catch (orderError) {
+            console.error('Order creation error:', orderError);
+            toast.error('Order creation failed.');
             setIsPaymentProcessing(false);
-            setFormDisable(true);
-            router.push('/orders');
-          } else {
-            throw new Error(orderResponse?.message?.message || 'Order creation failed');
           }
-        } catch (orderError) {
-          console.error('Order creation error:', orderError);
-          toast.error('Order creation failed.');
-          setIsPaymentProcessing(false);
-        }
-      },
-      theme: { color: '#3399cc' },
-      modal: {
-        ondismiss: () => {
-          setIsPaymentProcessing(false);
-          toast.info('Payment cancelled');
         },
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.on('payment.failed', function (response: any) {
-      setIsPaymentProcessing(false);
-      toast.error(`Payment failed: ${response.error.description}`);
-    });
-    rzp.open();
+        (error) => {
+          // Payment failure callback
+          setIsPaymentProcessing(false);
+          toast.error(`Payment failed: ${error}`);
+        }
+      );
 
   } catch (error) {
     console.error('', error);
@@ -3115,7 +3080,7 @@ const getItemCodeByValues = async (payload: any) => {
                             !estimateConform ||
                             isOrderCreating ||
                             isPaymentProcessing ||
-                            !isRazorpayLoaded
+                            false
                           }
                         >
                           {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
@@ -3130,7 +3095,7 @@ const getItemCodeByValues = async (payload: any) => {
                             !estimateConform ||
                             isOrderCreating ||
                             isPaymentProcessing ||
-                            !isRazorpayLoaded
+                            false
                           }
                         >
                           {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}

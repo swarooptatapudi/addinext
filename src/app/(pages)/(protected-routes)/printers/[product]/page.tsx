@@ -34,17 +34,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { Loader, Check, X } from 'lucide-react';
-import Razorpay from 'razorpay';
-
 import { useValidateCouponMutation } from '@/rtk-query/apis/orders';
 import { RootState } from '@/rtk-query/store';
-
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
+import { useHDFCPayment } from '@/hooks/useHDFCPayment';
 
 interface Props {
 params: {product: string}
@@ -80,7 +72,7 @@ interface RateAndDiscountData {
     };
   };
 }
-export default function BuyPrintersPage ({ params }: { params: Promise<{ product: string }> }) {
+export default function BuyPrintersPage({ params }: { params: Promise<{ product: string }> }) {
   const { product } = React.use(params);
 
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
@@ -96,7 +88,7 @@ export default function BuyPrintersPage ({ params }: { params: Promise<{ product
   // console.log("transactionHistory dd:",user);
   const [initPayment, { isLoading }] = useBuyCoinsInitiatePaymentMutation();
   const [buyCoins, { isLoading: isPaymentSuccessLoading }] = useBuyCoinsAfterPaymentMutation();
-  const [buyAddiNxtCoin, { isLoading: isBuyingCoins }] = useBuyAddiNxtCoinMutation(); 
+  const [buyAddiNxtCoin, { isLoading: isBuyingCoins }] = useBuyAddiNxtCoinMutation();
   const [buyQuantity, setBuyQuantity] = React.useState<number>(0);
   const [payId, setPayId] = React.useState<string>('');
   const [error, setError] = React.useState<string>('');
@@ -189,97 +181,54 @@ const [couponCode, setCouponCode] = useState('');
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value); 
+    const value = Number(e.target.value);
     if (!isNaN(value)) {
       setBuyQuantity(value);
       validateQuantity(value);
     }
   };
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => {
-        resolve(true);
-      };
-      script.onerror = () => {
-        resolve(false);
-      };
-      document.body.appendChild(script);
-    });
-  };
+  const { initiatePayment, isLoading: isPaymentLoading } = useHDFCPayment();
 
   const onPayNow = async () => {
     if (!validateQuantity(buyQuantity)) return;
-  
+
     try {
-      const isScriptLoaded = await loadRazorpayScript();
-      if (!isScriptLoaded) {
-        toast.error('Failed to load payment gateway');
-        return;
-      }
-      
-      // Set up Razorpay options
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
-        amount:(finalRate * 100).toString(),
+      const paymentOptions = {
+        amount: finalRate,
         currency: 'INR',
-        name: 'addiwise company',
+        orderId: `PRINTER_${Date.now()}_${user?.customer_id}`,
+        customerName: user?.full_name || '',
+        customerEmail: user?.email || '',
+        customerPhone: user?.phone_number || '',
         description: `Purchase of ${buyQuantity} coins`,
-        // order_id: orderResponse.data.order_id,
-        // image: '/your-company-logo.png',
-        // order_id: "ddd",
-        app_name:'addiwise customer portal',
-        handler: async function(response: any) {
-          // console.log('Payment response:', response);
+        returnUrl: `${window.location.origin}/payment/success`,
+        cancelUrl: `${window.location.origin}/payment/cancel`,
+      };
+
+      await initiatePayment(
+        paymentOptions,
+        async (paymentData) => {
+          // Payment success callback
           try {
             const payload = {
               buy_coin: buyQuantity,
               plan: subscriptionId,
-              payment_id: response.razorpay_payment_id,
+              payment_id: paymentData.paymentId || paymentData.transactionId,
               amount: finalRate.toString()
             };
-            
+
             const result = await buyAddiNxtCoin(payload).unwrap();
-            // console.log('Payment result:', result);
-            toast.success('product purchased successfully!');
-            refetchTransactions(); 
-            // if (result.success) {
-            //   toast.success('Payment and coin purchase successful!');
-            //   refetchTransactions();
-            // } else {
-            //   toast.error(result.message || 'Failed to update coins');
-            // }
+            toast.success('Product purchased successfully!');
+            refetchTransactions();
           } catch (err) {
             toast.error('Payment verification failed');
-            console.error('Verification error:', err);
           }
         },
-        prefill: {
-          name: user?.full_name || '',
-          // email: user?. || '',
-          contact: user?.phone_number || '',
-        },
-         
-        notes: {
-          customer_id: user?.customer_id,
-          coins: buyQuantity.toString(),
-          plan: subscriptionId,
-        },
-        theme: {
-          color: '#3399cc',
-        },
-      };
-      console.log('Razorpay options:', options);
-      // Open Razorpay payment modal
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-      
-      rzp.on('payment.failed', function(response: any) {
-        toast.error('Payment failed. Please try again.');
-        console.error('Payment failed:', response.error);
-      });
-
+        (error) => {
+          // Payment failure callback
+          toast.error(`Payment failed: ${error}`);
+        }
+      );
     } catch (err) {
       toast.error('An error occurred during payment process');
     }

@@ -13,8 +13,11 @@ const nextConfig = {
     ];
   },
   env: {
-    NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-    RAZORPAY_KEY_SECRET: process.env.NEXT_PUBLIC_RAZORPAY_KEY_SECRET,
+    NEXT_PUBLIC_HDFC_MERCHANT_ID: process.env.NEXT_PUBLIC_HDFC_MERCHANT_ID,
+    NEXT_PUBLIC_HDFC_API_KEY: process.env.NEXT_PUBLIC_HDFC_API_KEY,
+    HDFC_SECRET_KEY: process.env.HDFC_SECRET_KEY,
+    NEXT_PUBLIC_HDFC_GATEWAY_URL: process.env.NEXT_PUBLIC_HDFC_GATEWAY_URL,
+    NEXT_PUBLIC_HDFC_PAYMENT_CLIENT_ID: process.env.NEXT_PUBLIC_HDFC_PAYMENT_CLIENT_ID,
   },
   webpack: (config: { optimization: any; }) => {
     config.optimization = {

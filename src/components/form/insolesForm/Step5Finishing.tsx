@@ -4,7 +4,7 @@ import { ImageCheckbox } from './ImgproCheck';
 import { useState, useCallback, useEffect } from 'react';
 import {
   useCreateInsoleOrderMutation,
-  useGetOrderDetailIdsMutation,usePreSignedUrlMutation
+  useGetOrderDetailIdsMutation, usePreSignedUrlMutation
 } from '@/rtk-query/apis/orders';
 import {
   thicknessToinsoletypeMap,
@@ -24,6 +24,7 @@ import { useGetItemNameInByDetailsMutation } from '@/rtk-query/apis/products';
 import { INSOLES_FORM_INITIAL_VALUES } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
+import { useHDFCPayment } from '@/hooks/useHDFCPayment';
 type LayeringImageType = {
   Standard: string;
   Premium: string;
@@ -73,8 +74,8 @@ export const Step5 = ({
   const [estimateDataLabel, setEstimateDataLabel] = useState<any>('');
   const [isEstimating, setIsEstimating] = useState(false);
   const [getINEstimate, { isLoading, isError, data }] = useGetINEstimateMutation();
-const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
- const   [uploadURL,setUploadURL]= useState('');
+  const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
+  const [uploadURL, setUploadURL] = useState('');
 
   const [prevValues, setPrevValues] = useState(values);
   const [isEstimateAccepted, setIsEstimateAccepted] = useState(false);
@@ -97,7 +98,7 @@ const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
   const [orderData, setOrderData] = useState<any | null>({});
   const [showAddicoinsCard, setShowAddicoinsCard] = useState(false);
   const [formDisable, setFormDisable] = useState(false);
-const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
+  const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
   const initialValues = INSOLES_FORM_INITIAL_VALUES;
 
   const isAddiSole = values.model_name === 'AddiEase';
@@ -109,40 +110,8 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
   {
     /**payment */
   }
-  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
-  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-
-  // Add this useEffect to load Razorpay script
-  useEffect(() => {
-    const loadRazorpayScript = async () => {
-      if (window.Razorpay) {
-        setIsRazorpayLoaded(true);
-        return;
-      }
-
-      try {
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-
-        script.onload = () => setIsRazorpayLoaded(true);
-        script.onerror = () => {
-          setIsRazorpayLoaded(false);
-          toast.error('Failed to load payment gateway. Please refresh the page.');
-        };
-
-        document.body.appendChild(script);
-      } catch (err) {
-        setIsRazorpayLoaded(false);
-      }
-
-
-     
-    };
-
-    loadRazorpayScript();
-  }, []);
+  const { initiatePayment, isLoading: isPaymentLoading } = useHDFCPayment();
 
   //    const handlePayAndPlaceOrder = async (values: any) => {
   //   if (!razorpayKey || !isRazorpayLoaded) {
@@ -423,7 +392,7 @@ for (const f of filesToUpload) {
       payment_method: "ADDICOINS", // mark as coins payment
     };
 
-    // console.log("📦 Base Order Payload (Addicoins):", orderPayload);
+      // console.log("📦 Base Order Payload (Addicoins):", orderPayload);
 
     //      const createFormDataWithFiles = (finalOrderPayload: any) => {
     //   const formData = new FormData();
@@ -578,7 +547,7 @@ for (const f of filesToUpload) {
       total_price: estimateData?.apiResponse?.total_price ?? 0,
     };
 
-    // console.log("📝 Pay Later Order Payload:", orderPayload);
+      // console.log("📝 Pay Later Order Payload:", orderPayload);
 
     //  const createFormDataWithFiles = (finalOrderPayload: any) => {
     //   const formData = new FormData();
@@ -670,10 +639,6 @@ for (const f of filesToUpload) {
 };
 
   const handlePayAndPlaceOrder = async (values: any) => {
-    if (!razorpayKey || !isRazorpayLoaded) {
-      toast.error('Payment gateway is not available. Please try again.');
-      return;
-    }
 
     setIsPaymentProcessing(true);
     setFormValues(values);
@@ -811,34 +776,34 @@ for (const f of filesToUpload) {
     // };
 
 
-      // 🔹 Step 3: Payment amount (hardcoded for now)
-      const amountInPaise = 100000; // Replace later with API order amount * 100
+      // 🔹 Step 3: Payment with HDFC Smart Gateway
+      const paymentAmount = estimateData?.apiResponse?.total_price || 1000; // Use actual amount
 
-      // 🔹 Step 4: Configure Razorpay
-      const options = {
-        key: razorpayKey,
-        amount: amountInPaise.toString(),
+      const paymentOptions = {
+        amount: paymentAmount,
         currency: 'INR',
-        name: 'Addiwise Company',
+        orderId: `IN_${Date.now()}_${user?.customer_id}`,
+        customerName: user?.full_name || '',
+        customerEmail: user?.email || '',
+        customerPhone: user?.phone_number || '',
         description: `Payment for IN Order`,
+        returnUrl: `${window.location.origin}/payment/success`,
+        cancelUrl: `${window.location.origin}/payment/cancel`,
+      };
 
-        handler: async function (response: any) {
+      await initiatePayment(
+        paymentOptions,
+        async (paymentData) => {
+          // Payment success callback
           try {
-            // 🔹 Step 5: After payment success → Create order
             const finalOrderPayload = {
               ...orderPayload,
-              razorpay_payment_id: response.razorpay_payment_id,
-              custom_payment_reference_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature
+              custom_payment_reference_id: paymentData.paymentId || paymentData.transactionId,
+              payment_status: 'Paid'
             };
 
-            const finalFormData = finalOrderPayload;
-
-            // finalFormData   -  this one right  ?ok
-            console.log('Final Insole Orderjson Payload:',finalOrderPayload);
-            const orderResponse = await createInsoleOrder(finalFormData).unwrap();
-            // console.log('✅ Order Response:', orderResponse);  // show me this in consoel loghere it is  but  you need jsn  body correct
+            console.log('Final Insole Order Payload:', finalOrderPayload);
+            const orderResponse = await createInsoleOrder(finalOrderPayload).unwrap();
 
             // @ts-ignore
             if (orderResponse?.message?.status === 'success') {
@@ -851,55 +816,26 @@ for (const f of filesToUpload) {
               // @ts-ignore
               throw new Error(orderResponse?.message?.message || 'Order creation failed');
             }
-          } 
-          catch (orderError: any) 
-          {
-  console.error(' Order creation failed:', orderError); 
+          } catch (orderError: any) {
+            console.error('Order creation failed:', orderError);
 
-  // Extract meaningful message
-  const backendMessage =
-    orderError?.data?.message || // If backend sends `message`
-    orderError?.response?.data?.message || // If using axios/RTK Query
-    orderError?.message || // JS error message
-    JSON.stringify(orderError); // fallback raw object
+            const backendMessage =
+              orderError?.data?.message ||
+              orderError?.response?.data?.message ||
+              orderError?.message ||
+              JSON.stringify(orderError);
 
-  // Log full details for debugging
-  console.log("🔎 Full orderError object:", orderError);
-
-  // Show exact message in toast
-  toast.error(`❌ Order failed: ${backendMessage}`);
-
-  setIsPaymentProcessing(false);
-}
-        },
-
-        theme: { color: '#3399cc' },
-        modal: {
-          ondismiss: function () {
+            console.log("🔎 Full orderError object:", orderError);
+            toast.error(`❌ Order failed: ${backendMessage}`);
             setIsPaymentProcessing(false);
-            toast.info('Payment cancelled');
           }
         },
-        prefill: {
-          name: user?.full_name || '',
-          // email: user?. || '',
-          contact: user?.phone_number || '',
-        },
-        notes: {
-          customer_id: user?.customer_id,
-          // product: productName,
-          // quantity: quantity.toString(),
+        (error) => {
+          // Payment failure callback
+          setIsPaymentProcessing(false);
+          toast.error(`Payment failed: ${error}`);
         }
-      };
-
-      const rzp = new window.Razorpay(options);
-
-      rzp.on('payment.failed', function (response: any) {
-        setIsPaymentProcessing(false);
-        toast.error(`Payment failed: ${response.error.description}`);
-      });
-
-      rzp.open();
+      );
     } catch (orderError: any) {
       console.error(' Unexpected error before payment:', orderError);
 
@@ -2337,33 +2273,33 @@ for (const f of filesToUpload) {
     {/* ✅ Show Estimate Button Always */}
    
 
-    {/* ✅ Show Payment Buttons ONLY if NOT Self/Self */}
-    {!(values.Design_by === 'Self' && values.Print_by === 'Self') && (
-      <> <Button
-      className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
-      onClick={handleEstimateClick}
-      disabled={isEstimating}
-    >
-      {isEstimating
-        ? 'Estimating...'
-        : isEstimateStale
-        ? 'Update Estimate'
-        : 'Estimate Now'}
-    </Button> <div className="flex gap-2.5 mt-6">
-        <Button
-          className="shadow-2xl"
-          onClick={() => handlePayAndPlaceOrder(values)}
-          disabled={
-            !estimateConform ||
-            isOrderCreating ||
-            isPaymentProcessing ||
-            !isRazorpayLoaded
-          }
-        >
-          {isPaymentProcessing
-            ? 'Processing Payment...'
-            : 'Pay & Place Order'}
-        </Button>
+                {/* ✅ Show Payment Buttons ONLY if NOT Self/Self */}
+                {!(values.Design_by === 'Self' && values.Print_by === 'Self') && (
+                  <> <Button
+                    className="w-[350px] mt-10 py-6 bg-gradient-to-r bg-primary hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-md transition-all"
+                    onClick={handleEstimateClick}
+                    disabled={isEstimating}
+                  >
+                    {isEstimating
+                      ? 'Estimating...'
+                      : isEstimateStale
+                        ? 'Update Estimate'
+                        : 'Estimate Now'}
+                  </Button> <div className="flex gap-2.5 mt-6">
+                      <Button
+                        className="shadow-2xl"
+                        onClick={() => handlePayAndPlaceOrder(values)}
+                        disabled={
+                          !estimateConform ||
+                          isOrderCreating ||
+                          isPaymentProcessing ||
+                          false
+                        }
+                      >
+                        {isPaymentProcessing
+                          ? 'Processing Payment...'
+                          : 'Pay & Place Order'}
+                      </Button>
 
         <Button
           className="shadow-2xl"
@@ -2379,7 +2315,7 @@ for (const f of filesToUpload) {
   </>
 )}
 
-      </div>
+          </div>
         )
       }
     </div>
