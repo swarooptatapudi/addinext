@@ -5,7 +5,7 @@ import {
   CONDITION,
   type SeverityCode,
   type ConditionCode,
-} from '@/lib/cranial/metrics';
+} from '@/lib/metrics';
 
 type UISet = {
   Input: any;   // your design system Input (used only for the read-only code box)
