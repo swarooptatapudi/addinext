@@ -5,6 +5,7 @@ import AkOrderForm from '../_child/AkOrderForm';
 import InsolesOrderForm from '../_child/InsolesOrderForm';
 import BEOrderForm from '../_child/BEOrderForm';
 import AEOrderForm from '../_child/AEOrderForm';
+import CranialForm from '@/app/(pages)/(protected-routes)/orders/new-order/_child/CranialOrderForm';
 
 export default function NewOrderController({
   params
@@ -21,6 +22,10 @@ export default function NewOrderController({
   }
   else if (product?.toLowerCase()?.includes('in')) {
     return <InsolesOrderForm item_type={product} />
+
+  }
+  else if (product?.toLowerCase()?.includes('cranial')) {
+    return <CranialForm item_type={product} />
 
   }
   else if (product?.toLowerCase()?.includes('be')) {

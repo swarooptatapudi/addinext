@@ -133,6 +133,11 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
         };
 
         document.body.appendChild(script);
+
+        frappe.model.with_doctype("Cranial Helmet Orders", () => {
+          console.log(frappe.get_doc("DocType", "Cranial Helmet Orders"));
+        });
+
       } catch (err) {
         setIsRazorpayLoaded(false);
       }

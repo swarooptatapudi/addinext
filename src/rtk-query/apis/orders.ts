@@ -1,5 +1,30 @@
 // import { createApi } from '@reduxjs/toolkit/query/react';
 // import baseQueryWithReauth from '../base/baseQueryReAuth';
+// at top of file with other imports:
+import type { FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import type { QueryReturnValue } from '@reduxjs/toolkit/query/react';
+
+// ---- helper: try multiple RPCs in order, return first non-417 ----
+async function tryRpcInOrder(
+  baseQuery: (arg: string | FetchArgs) => Promise<QueryReturnValue<unknown, FetchBaseQueryError, unknown>>,
+  attempts: Array<{ url: string; method: 'POST' | 'GET'; body?: any }>
+): Promise<QueryReturnValue<unknown, FetchBaseQueryError, unknown>> {
+  let last: QueryReturnValue<unknown, FetchBaseQueryError, unknown> | undefined;
+
+  for (const req of attempts) {
+    const res = await baseQuery({ url: req.url, method: req.method, body: req.body });
+    // success: return immediately
+    if (!('error' in res) || !res.error) return res;
+
+    // If it's NOT the "method not found" 417, also return immediately
+    if ((res.error as any)?.status !== 417) return res;
+
+    // keep the 417 to return if everything fails
+    last = res;
+  }
+  // if all attempts failed with 417, return the last one
+  return last as QueryReturnValue<unknown, FetchBaseQueryError, unknown>;
+}
 
 // interface SalesOrder {
 //   order_id: string;
@@ -275,7 +300,36 @@
     discount_amt: number;
     coupon_code?: string;
   }
-
+interface CHEstimateRequest {
+  item_code: string;
+  design_by: string;
+  print_by: string;
+  discount_per: number;
+  discount_amt: number;
+  coupon_code?: string;
+}
+interface CHEstimateResponse {
+  message: {
+    status: number;
+    message: string;
+    data: {
+      item_standard_discount: string;
+      design: string;
+      print: string;
+      estimate_price: string;
+      item_discount: string;
+      additional_discount: string;
+      discounted_price: string;
+      discounted_price_18: string;
+      discounted_price_5: string;
+      gst_18: string;
+      gst_5: string;
+      total_price: string;
+      customer_available_coins: string;
+      design_coin_use: string;
+    };
+  };
+}
   interface BKEstimateResponse {
     message: string;
     data: {
@@ -368,7 +422,46 @@
           return response;
         }
       }),
-  //     getOrders: builder.query<SalesOrdersResponse, { page: number; page_size: number }>({
+      // ----------------------
+// CREATE CRANIAL ORDER
+// ----------------------
+      createCranialOrder: builder.mutation<any, any>({
+        /** Try custom RPCs, then fallback to DocType resource create. */
+        async queryFn(arg, _api, _extra, baseQuery) {
+          const res = await tryRpcInOrder(baseQuery as any, [
+            // If this exists on your server:
+            { url: '/method/addiwise.apis.order_types.ch_order.create_ch_order', method: 'POST', body: arg },
+            // The one that currently 417s for you:
+            { url: '/method/addiwise.apis.order_types.cranial_helmet_order.create_cranial_helmet_order', method: 'POST', body: arg },
+            // Guaranteed fallback when the DocType exists:
+            { url: '/resource/Cranial%20Helmet%20Orders', method: 'POST', body: arg },
+          ]);
+
+          if ('error' in res && res.error) return { error: res.error };
+          // normalize: if server put payload in `data` or `message`, just pass through
+          return { data: (res.data as any) ?? res };
+        },
+      }),
+
+// ----------------------
+// CRANIAL ESTIMATE
+// ----------------------
+      getCHEstimate: builder.mutation<
+        any,
+        { item_code: string; design_by: string; print_by: string; discount_per: number; discount_amt: number; coupon_code?: string }
+      >({
+        /** Try both known RPC paths; there is no /resource fallback for estimates. */
+        async queryFn(arg, _api, _extra, baseQuery) {
+          const res = await tryRpcInOrder(baseQuery as any, [
+            { url: '/method/addiwise.apis.order_types.ch_order.get_ch_estimate', method: 'POST', body: arg },
+            { url: '/method/addiwise.apis.order_types.cranial_helmet_order.get_ch_estimate', method: 'POST', body: arg },
+            { url: '/resource/Cranial%20Helmet%20Orders', method: 'POST', body: arg },
+          ]);
+          if ('error' in res && res.error) return { error: res.error };
+          return { data: (res.data as any) ?? res };
+        },
+      }),
+      //     getOrders: builder.query<SalesOrdersResponse, { page: number; page_size: number }>({
   //   query: ({ page, page_size }) => ({
   //     url: `/method/addiwise.apis.order.get_sales_order?page=${page}&page_size=${page_size}`,
   //     method: 'GET'
@@ -466,6 +559,8 @@ export const {
   useGetOrderDetailIdsMutation,
   useCreateProductOrderMutation,
   useCreateInsoleOrderMutation,
+  useCreateCranialOrderMutation,
+  useGetCHEstimateMutation,
   useGetINEstimateMutation,
   usePreSignedUrlMutation
 } = ordersApi;

@@ -9,7 +9,7 @@ import InsolesOrderForm from '../orders/new-order/_child/InsolesOrderForm';
 export default function Products(): React.JSX.Element {
 
   const { data: products, isLoading, error } = useGetProductsListQuery();
-  // console.log("products", products);
+  console.log("products", products);
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load products</p>;
 
@@ -25,9 +25,10 @@ export default function Products(): React.JSX.Element {
     <div className="p-6 max-w-full">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
         <div>
-          <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
-            Prosthetics
-          </p> <div className="text-xs  font-extrabold text-[#2e2a6f] mb-3  -mt-3 uppercase">Lower Extremity</div>
+          <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">Prosthetics</p>{' '}
+          <div className="text-xs  font-extrabold text-[#2e2a6f] mb-3  -mt-3 uppercase">
+            Lower Extremity
+          </div>
           <div className="flex flex-wrap gap-x-8 gap-y-6">
             <ProductItem
               src="/assets/order-forms/products/BK.jpg"
@@ -44,9 +45,10 @@ export default function Products(): React.JSX.Element {
 
         {/* Prosthetics Upper Extremity */}
         <div>
-          <p className="text-xs  font-extrabold text-[#2e2a6f] mb-3 uppercase">
-            Prosthetics
-          </p> <div className="text-xs  font-extrabold text-[#2e2a6f] mb-3  -mt-3 uppercase">Upper Extremity</div>
+          <p className="text-xs  font-extrabold text-[#2e2a6f] mb-3 uppercase">Prosthetics</p>{' '}
+          <div className="text-xs  font-extrabold text-[#2e2a6f] mb-3  -mt-3 uppercase">
+            Upper Extremity
+          </div>
           <div className="flex flex-wrap gap-x-8 gap-y-6 justify-start">
             <ProductItem
               src="/assets/order-forms/products/BE.jpg"
@@ -64,30 +66,50 @@ export default function Products(): React.JSX.Element {
 
       {/* Orthotics */}
       <div className="mt-5">
-        <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
-          Orthotics
-        </p>
+        <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">Orthotics</p>
+        {/*<div className="flex flex-wrap gap-x-8 gap-y-6">*/}
+        {/*  {orthotics?.map((orthotic: any) => (*/}
+        {/*    <ProductItem*/}
+        {/*      key={orthotic.item_name}*/}
+        {/*      src={orthotic.image || "/assets/placeholder.jpg"}*/}
+        {/*      label={orthotic.item_name}*/}
+        {/*      href={*/}
+        {/*        orthotic.item_name === "AddiSole (Insole)"*/}
+        {/*          ? "/orders/new-order/Insoles"   // 👈 route for Insole*/}
+        {/*          : ""   // 👈 route for others*/}
+        {/*      }*/}
+        {/*    />*/}
+        {/*  ))}*/}
+        {/*</div>*/}
         <div className="flex flex-wrap gap-x-8 gap-y-6">
-          {orthotics?.map((orthotic: any) => (
-            <ProductItem
-              key={orthotic.item_name}
-              src={orthotic.image || "/assets/placeholder.jpg"}
-              label={orthotic.item_name}
-              href={
-                orthotic.item_name === "AddiSole (Insole)"
-                  ? "/orders/new-order/Insoles"   // 👈 route for Insole
-                  : ""   // 👈 route for others
-              }
-            />
-          ))}
-        </div>
+          {orthotics?.map((orthotic: any) => {
+            let href = '';
+            switch (orthotic.item_name) {
+              case 'AddiSole (Insole)':
+                href = '/orders/new-order/Insoles'; // Route for Insole
+                break;
+              case 'Cranial Helmet':
+                href = '/orders/new-order/Cranial'; // Route for Cranial Helmet
+                break;
+              default:
+                href = '#'; // Default route for others
+                break;
+            }
 
+            return (
+              <ProductItem
+                key={orthotic.item_name}
+                src={orthotic.image || '/assets/placeholder.jpg'}
+                label={orthotic.item_name}
+                href={href}
+              />
+            );
+          })}
+        </div>
       </div>
       {/* Off the Shelf */}
       <div className="mt-5">
-        <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
-          Off the Shelf
-        </p>
+        <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">Off the Shelf</p>
         <div className="flex flex-wrap gap-x-8 gap-y-6">
           {offtheself?.map((offtheself: any) => (
             <ProductItem
@@ -101,17 +123,14 @@ export default function Products(): React.JSX.Element {
       </div>
       {/* Scanners */}
       <div className="mt-5">
-        <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
-          Scanners
-        </p>
+        <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">Scanners</p>
         <div className="flex flex-wrap gap-x-8 gap-y-6">
           {scanners?.map((scanners: any) => (
             <ProductItem
               key={scanners.item_name}
-              src={scanners.image || "/assets/placeholder.jpg"}
+              src={scanners.image || '/assets/placeholder.jpg'}
               label={scanners.item_name}
               href={`/products/buyproducts?name=${encodeURIComponent(scanners.item_name)}`}
-           
             />
           ))}
         </div>
@@ -119,37 +138,26 @@ export default function Products(): React.JSX.Element {
 
       {/* Printers */}
       <div className="mt-5">
-        <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
-          Printers
-        </p>
+        <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">Printers</p>
         <div className="flex flex-wrap gap-x-8 gap-y-6">
           {printer?.map((printer: any) => (
             <ProductItem
               key={printer.item_name}
-              src={printer.image || "/assets/placeholder.jpg"}
+              src={printer.image || '/assets/placeholder.jpg'}
               label={printer.item_name}
               href={`/products/buyproducts?name=${encodeURIComponent(printer.item_name)}`}
-              
             />
           ))}
         </div>
       </div>
       {/* AddiNxT Design Platform */}
-      <div className='mt-5'>
+      <div className="mt-5">
         <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
           AddiNxT Design Platform
         </p>
         <div className="flex flex-wrap gap-x-8 gap-y-6">
-          <ProductItem
-            src="/assets/order-forms/products/Standard.jpg"
-            label="Standard"
-            href={''}
-          />
-          <ProductItem
-            src="/assets/order-forms/products/Premium.jpg"
-            label="Premium"
-            href={''}
-          />
+          <ProductItem src="/assets/order-forms/products/Standard.jpg" label="Standard" href={''} />
+          <ProductItem src="/assets/order-forms/products/Premium.jpg" label="Premium" href={''} />
         </div>
       </div>
     </div>
