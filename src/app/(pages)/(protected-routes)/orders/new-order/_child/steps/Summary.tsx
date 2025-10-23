@@ -1,23 +1,12 @@
 import React from 'react';
-import {
-  makeProductCode,
-  SEVERITY,
-  CONDITION,
-  type SeverityCode,
-  type ConditionCode,
-} from '@/lib/metrics';
 
-type UISet = {
-  Input: any;   // your design system Input (used only for the read-only code box)
-  Label: any;
-};
+type UISet = { Input: any; Label: any };
 
 type Props = {
   values: any;
   cr?: number;
   cvai?: number;
-  severity?: 'L' | 'M' | 'S' | '';
-  productCode?: string; // optional existing prop; we’ll prefer computed one
+  productCode?: string; // single source of truth from parent
   UI: UISet;
 };
 
@@ -30,8 +19,6 @@ const POS_LABEL: Record<string, string> = {
   '': '',
 };
 
-const SEV_LABEL: Record<string, string> = { L: 'Light', M: 'Moderate', S: 'Severe', '': '' };
-
 const csv = (s?: string) =>
   (s || '')
     .split(',')
@@ -39,60 +26,22 @@ const csv = (s?: string) =>
     .filter(Boolean)
     .join(', ');
 
-// helper: map your positional code to CONDITION enum (metrics.ts)
-function toConditionCode(positional?: string): ConditionCode | undefined {
-  switch ((positional || '').toUpperCase()) {
-    case 'P':   return CONDITION.PLAGIOCEPHALY;
-    case 'B':   return CONDITION.BRACHYCEPHALY;
-    case 'SC':  return CONDITION.SCAPHOCEPHALY;
-    case 'ASB': return CONDITION.ASYMMETRIC_BRACHYCEPHALY;
-    default:    return undefined;
-  }
-}
-
-// helper: ensure 'L' | 'M' | 'S' is a SeverityCode
-function toSeverityCode(sev?: string): SeverityCode | undefined {
-  switch ((sev || '').toUpperCase()) {
-    case 'L': return SEVERITY.LIGHT;
-    case 'M': return SEVERITY.MODERATE;
-    case 'S': return SEVERITY.SEVERE;
-    default:  return undefined;
-  }
-}
-
-export default function SummaryStep({ values, cr, cvai, severity, productCode, UI }: Props) {
+export default function SummaryStep({ values, cr, cvai, productCode, UI }: Props) {
   const { Input, Label } = UI;
 
-  const positionalLabel = POS_LABEL[values.positional || ''] || values.positional || '';
-  const severityLabel = SEV_LABEL[severity || ''] || severity || '';
-
-  const sevCode = toSeverityCode(severity);
-  const condCode = toConditionCode(values.positional);
-  const computedProductCode =
-    sevCode && condCode ? makeProductCode(sevCode, condCode) : '';
-
-  // prefer computed over incoming prop (flip if you want the opposite)
-  const finalProductCode = computedProductCode || productCode || 'CH-?-?';
-
+  const positionalPretty =
+    POS_LABEL[values.positional as string] || (values.positional as string) || '';
   const fullName = `${values.first_name ?? ''}${values.last_name ? ` ${values.last_name}` : ''}`;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
       <h2 className="text-primary text-lg font-semibold border-b pb-2">Summary</h2>
 
-      {/* Generated product code with metrics.ts */}
       <div className="mt-4">
-        <Label className="block font-semibold">
-          Generated Product Code
-        </Label>
-        <Input
-          readOnly
-          value={finalProductCode}
-          className="mt-2 bg-gray-50 text-center"
-        />
+        <Label className="block font-semibold">Generated Product Code</Label>
+        <Input readOnly value={productCode || 'CH-?-?'} className="mt-2 bg-gray-50 text-center" />
       </div>
 
-      {/* Big two-column table */}
       <div className="mt-6 overflow-hidden rounded-md border border-gray-200">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-700">
@@ -113,8 +62,8 @@ export default function SummaryStep({ values, cr, cvai, severity, productCode, U
           <tr><td className="px-4 py-3">CR</td><td className="px-4 py-3">{cr ?? ''}</td></tr>
           <tr><td className="px-4 py-3">CVAI (%)</td><td className="px-4 py-3">{cvai ?? ''}</td></tr>
 
-          <tr><td className="px-4 py-3">Diagnosis</td><td className="px-4 py-3">{positionalLabel || 'Select'}</td></tr>
-          <tr><td className="px-4 py-3">Severity</td><td className="px-4 py-3">{severityLabel || 'Select'}</td></tr>
+          <tr><td className="px-4 py-3">Diagnosis</td><td className="px-4 py-3">{positionalPretty || 'Select'}</td></tr>
+          <tr><td className="px-4 py-3">Severity</td><td className="px-4 py-3">{(values.severity as string) || ''}</td></tr>
 
           <tr><td className="px-4 py-3">Occipital Area</td><td className="px-4 py-3">{values.occipital_area || ''}</td></tr>
           <tr><td className="px-4 py-3">Parietal Area</td><td className="px-4 py-3">{values.parietal_area || ''}</td></tr>
@@ -124,30 +73,13 @@ export default function SummaryStep({ values, cr, cvai, severity, productCode, U
           <tr><td className="px-4 py-3">Post Surgical</td><td className="px-4 py-3">{csv(values.post_surgical)}</td></tr>
           <tr><td className="px-4 py-3">Suture Type</td><td className="px-4 py-3">{csv(values.suture_type_surgical_diagnoses_only)}</td></tr>
 
-          {/* Already asked earlier */}
           <tr><td className="px-4 py-3">Date of Surgery</td><td className="px-4 py-3">{values.date_of_surgery || ''}</td></tr>
           <tr><td className="px-4 py-3">Surgical Complications</td><td className="px-4 py-3">{values.surgical_complications || ''}</td></tr>
           <tr><td className="px-4 py-3">Other Diagnosis and Syndromes</td><td className="px-4 py-3">{values.other_diagnosis_and_syndromes || ''}</td></tr>
 
-          <tr>
-            <td className="px-4 py-3">Google Drive Link</td>
-            <td className="px-4 py-3">
-              {values.scan_gdrive_link ? (
-                <a
-                  className="text-primary underline underline-offset-4"
-                  href={values.scan_gdrive_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {values.scan_gdrive_link}
-                </a>
-              ) : ''}
-            </td>
-          </tr>
-
           <tr className="bg-gray-50">
             <td className="px-4 py-3 font-medium">Product Code</td>
-            <td className="px-4 py-3 font-medium">{finalProductCode}</td>
+            <td className="px-4 py-3 font-medium">{productCode || '—'}</td>
           </tr>
           </tbody>
         </table>

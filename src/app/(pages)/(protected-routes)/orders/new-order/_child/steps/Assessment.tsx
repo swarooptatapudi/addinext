@@ -79,7 +79,6 @@ const TEXT = {
     'Bi-Lambdoid',
   ],
 };
-
 export default function Assessment({
                                      values,
                                      errors,
@@ -97,21 +96,22 @@ export default function Assessment({
     { label: 'N/A',                      value: 'N/A' },
   ];
   const earOptions = [
-    { label: TEXT.rightAnteriorShift, value: 'Right Anterior Shift' },
-    { label: TEXT.leftAnteriorShift, value: 'Left Anterior Shift' },
-    { label: TEXT.noEarShift, value: 'No Ear Shift' },
+    { label: 'Right Flattening > Left', value: 'Right Flattening > Left' },
+    { label: 'Left Flattening > Right', value: 'Left Flattening > Right' },
+    { label: 'Bi-lateral Flattening',   value: 'Bi-lateral Flattening'   },
+    { label: 'N/A',                     value: 'N/A'                     },
   ];
   const positionalOptions = [
-    { value: 'P', label: TEXT.plagio },
-    { value: 'B', label: TEXT.brachy },
-    { value: 'ASB', label: TEXT.asymBrachy },
-    { value: 'SC', label: TEXT.scapho },
-    { value: 'ASYS', label: TEXT.asymScapho },
+    { value: 'Plagiocephaly',                         label: TEXT.plagio },
+    { value: 'Brachycephaly',                         label: TEXT.brachy },
+    { value: 'Asymmetrical Brachycephaly (Combo)',    label: TEXT.asymBrachy },
+    { value: 'Scaphocephaly',                         label: TEXT.scapho },
+    { value: 'Asymmetrical Scaphocephaly',            label: TEXT.asymScapho },
   ];
   const severityOptions = [
-    { value: 'L', label: TEXT.light },
-    { value: 'M', label: TEXT.moderate },
-    { value: 'S', label: TEXT.severe },
+    { value: 'Light', label: TEXT.light },
+    { value: 'Moderate', label: TEXT.moderate },
+    { value: 'Severe', label: TEXT.severe },
   ];
   const torticollisOptions = [
     { label: TEXT.tortRight, value: 'Right' },

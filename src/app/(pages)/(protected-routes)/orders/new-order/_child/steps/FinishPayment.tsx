@@ -11,8 +11,8 @@ type UISet = {
 
 type Props = {
   values: any;
-  productCode?: string;
-  UI: { Button: any; Input: any; SelectBox: any; Label: any; Card: any };
+  productCode?: string; // single source from parent
+  UI: UISet;
   onEstimate?: (v: {
     design_by: string;
     print_by: string;
@@ -47,7 +47,6 @@ export default function FinishPayment({
   const [designBy, setDesignBy] = useState(values.design_by);
   const [printBy, setPrintBy] = useState(values.print_by);
   const [colour, setColour] = useState(values.colour ?? '');
-  const [thickness] = useState(values.thickness_3d_mm ?? '3.5');
 
   // pricing
   const [designPrice, setDesignPrice] = useState<number>(Number(values.design_price || 0));
@@ -61,10 +60,15 @@ export default function FinishPayment({
   const [validating, setValidating] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
 
-  // optional local suggestions to mimic "lookup autocomplete"
+  // suggestions
   const [suggestions, setSuggestions] = useState<Coupon[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const couponBoxRef = useRef<HTMLDivElement>(null);
+
+  // ensure Formik.item_code matches the single productCode
+  useEffect(() => {
+    setFieldValue?.('item_code', productCode || '');
+  }, [productCode, setFieldValue]);
 
   // close suggestions when clicking outside
   useEffect(() => {
@@ -76,7 +80,7 @@ export default function FinishPayment({
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
-  // lightweight local suggestions (backend validate is done by onValidateCoupon)
+  // lightweight local suggestions
   useEffect(() => {
     const t = setTimeout(() => {
       const q = couponText.trim();
@@ -96,17 +100,15 @@ export default function FinishPayment({
 
   // push coupon code back to form
   useEffect(() => {
-    if (!setFieldValue) return;
-    setFieldValue('coupon_code', coupon?.code ?? couponText ?? '');
+    setFieldValue?.('coupon_code', coupon?.code ?? couponText ?? '');
   }, [coupon, couponText, setFieldValue]);
 
-  // push pricing back to form (so Summary/payment elsewhere stay in sync)
+  // push pricing back to form
   useEffect(() => {
-    if (!setFieldValue) return;
-    setFieldValue('design_price', designPrice);
-    setFieldValue('print_price', printPrice);
-    setFieldValue('standard_discount_pct', stdPct);
-    setFieldValue('gst_rate', gstRate);
+    setFieldValue?.('design_price', designPrice);
+    setFieldValue?.('print_price', printPrice);
+    setFieldValue?.('standard_discount_pct', stdPct);
+    setFieldValue?.('gst_rate', gstRate);
   }, [designPrice, printPrice, stdPct, gstRate, setFieldValue]);
 
   // derived summary
@@ -137,7 +139,7 @@ export default function FinishPayment({
       design_by: designBy,
       print_by: printBy,
       coupon_code: couponText,
-      product_code: productCode,
+      product_code: productCode, // use prop (single source)
     });
     if (r) {
       setDesignPrice(Number(r.design ?? designPrice));
@@ -148,7 +150,7 @@ export default function FinishPayment({
   };
 
   const applyCoupon = async () => {
-    if (!onValidateCoupon) return; // safe no-op if validator not provided
+    if (!onValidateCoupon) return;
     const code = couponText.trim();
     if (!code) return;
 
@@ -221,7 +223,13 @@ export default function FinishPayment({
             placeholder="Select"
           />
 
-          <Input label="Thickness of 3D layer" value={thickness} readOnly />
+          {/* Product Code (read-only; from parent) */}
+          <Input
+            label="Product Code"
+            value={productCode || 'CH-?-?'}
+            readOnly
+            className="font-mono"
+          />
 
           <SelectBox
             options={[
@@ -240,11 +248,10 @@ export default function FinishPayment({
             placeholder="Select"
           />
 
-          {/* Coupon lookup + validate (aligned input+button group) */}
+          {/* Coupon lookup + validate */}
           <div ref={couponBoxRef} className="relative">
             <Label className="mb-1 block">Enter coupon code</Label>
 
-            {/* Input + Apply button as a single control */}
             <div className="flex">
               <Input
                 placeholder="Enter coupon code"
@@ -268,12 +275,7 @@ export default function FinishPayment({
               >
                 {validating ? (
                   <span className="inline-flex items-center gap-2">
-                    <svg
-                      className="animate-spin h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                    >
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
                     </svg>
@@ -285,7 +287,6 @@ export default function FinishPayment({
               </Button>
             </div>
 
-            {/* Suggestions dropdown anchored to the group width */}
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow">
                 {suggestions.map((s) => (
@@ -307,7 +308,6 @@ export default function FinishPayment({
               </div>
             )}
 
-            {/* Validation / applied state messages */}
             {couponError ? (
               <div className="text-xs text-red-600 mt-1">{couponError}</div>
             ) : coupon ? (
@@ -337,13 +337,13 @@ export default function FinishPayment({
           <ul className="text-sm space-y-2">
             <li className="flex justify-between">
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-600 inline-block" /> Design
+                <span className="w-1.5 h-1.5 rounded-full inline-block" /> Design
               </span>
               <span>₹{designPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </li>
             <li className="flex justify-between">
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-600 inline-block" /> Print
+                <span className="w-1.5 h-1.5 rounded-full inline-block" /> Print
               </span>
               <span>₹{printPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </li>
@@ -388,7 +388,7 @@ export default function FinishPayment({
               onChange={(e) => setFieldValue?.('agree_terms', e.target.checked)}
             />
             I agree to the{' '}
-            <a className="text-primary underline underline-offset-4" href="/terms" target="_blank">
+            <a className="text-primary underline underline-offset-4" href="/terms" target="_blank" rel="noreferrer">
               terms and conditions
             </a>
           </label>
@@ -417,7 +417,7 @@ export default function FinishPayment({
         </div>
       </div>
 
-      {/* Hidden product code */}
+      {/* Hidden (still single source) */}
       <div className="sr-only">{productCode}</div>
     </div>
   );

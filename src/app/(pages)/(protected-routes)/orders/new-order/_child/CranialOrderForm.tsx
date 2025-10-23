@@ -34,10 +34,13 @@ import {
   useValidateCouponMutation,
 } from '@/rtk-query/apis/orders';
 
+// ---------------- Types ----------------
 type FormValues = {
   sales_order_id?: string;
-  item_code?: string;
+  item_code?: string; // synced from computed productCode (not user-entered)
   customer?: string;
+
+  // Patient
   first_name?: string;
   last_name?: string;
   parent_name?: string;
@@ -50,24 +53,53 @@ type FormValues = {
   clinic_name?: string;
   consultant?: string;
 
+  // Measurements
   ap?: string; ml?: string; da?: string; db?: string; hc?: string; tw?: string;
 
+  // Derived (display)
   cr?: number; cvai?: number;
 
-  occipital_area?: string; parietal_area?: string; frontal_area?: string; ear_alignment?: string;
-  positional?: string; severity?: 'L'|'M'|'S'|''; torticollis?: string; post_surgical?: string;
-  suture_type_surgical_diagnoses_only?: string; date_of_surgery?: string; surgical_complications?: string;
+  // Clinical
+  occipital_area?: string;
+  parietal_area?: string;
+  frontal_area?: string;
+  ear_alignment?: string;
+
+  // Diagnosis (may be short codes or labels)
+  positional?: string; // 'P'|'B'|'SC'|'ASB'|'ASYS' OR full label
+  severity?: 'L'|'M'|'S'|'' | 'Light' | 'Moderate' | 'Severe';
+  torticollis?: string;
+
+  // Surgical & others
+  post_surgical?: string; // CSV
+  suture_type_surgical_diagnoses_only?: string; // CSV
+  date_of_surgery?: string;
+  surgical_complications?: string;
   other_diagnosis_and_syndromes?: string;
 
-  scan_file?: File | null; extra_files?: File[];
-  patient_remarks?: string; other_remarks?: string;
+  // Files & remarks
+  scan_file?: File | null;
+  extra_files?: File[];
+  patient_remarks?: string;
+  other_remarks?: string;
+  scan_gdrive_link?: string;
 
-  design_by?: string; print_by?: string; colour?: string; thickness_3d_mm?: string;
-  coupon_code?: string; coupon_id?: string; agree_terms?: boolean;
+  // Pricing / payments
+  design_by?: string;
+  print_by?: string;
+  colour?: string;
+  thickness_3d_mm?: string;
+  coupon_code?: string;
+  coupon_id?: string;
+  agree_terms?: boolean;
 
-  design_price?: number; print_price?: number; standard_discount_pct?: number; gst_rate?: number;
+  design_price?: number;
+  print_price?: number;
+  standard_discount_pct?: number;
+  gst_rate?: number;
 };
 
+// ---------------- Validation ----------------
 const Schema = Yup.object({
   first_name: Yup.string().required('Required'),
   date_of_birth: Yup.string().required('Required'),
@@ -78,6 +110,7 @@ const Schema = Yup.object({
   hc: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable(),
 });
 
+// ---------------- Steps ----------------
 const steps = [
   { key: 'patient', label: 'Basic Details' },
   { key: 'measurement', label: 'Measurement' },
@@ -88,56 +121,123 @@ const steps = [
   { key: 'finish', label: 'Finish & Payment' }
 ] as const;
 
-// ---------- util (keep outside) ----------
+// ---------------- Helpers ----------------
 const toNum = (v?: string) => (v === '' || v == null ? undefined : Number(v));
-const sevFromCvai = (cvai?: number): 'L'|'M'|'S'|'' =>
-  cvai == null ? '' : cvai < 3.5 ? 'L' : cvai < 7.0 ? 'M' : 'S';
+const up = (s?: string) => (s || '').trim().toUpperCase();
 
-// map Formik values → ERP payload (flat)
-function toApiOrder(values: FormValues) {
-  const ap = toNum(values.ap);
-  const ml = toNum(values.ml);
-  const da = toNum(values.da);
-  const db = toNum(values.db);
+const normalizeCondition = (pos?: string): ConditionCode | undefined => {
+  const p = up(pos);
+  if (p === 'P' || p === 'PLAGIOCEPHALY') return 'P';
+  if (p === 'B' || p === 'BRACHYCEPHALY') return 'B';
+  if (p === 'SC' || p === 'SCAPHOCEPHALY') return 'SC';
+  if (p === 'ASB' || p === 'ASYMMETRICAL BRACHYCEPHALY (COMBO)') return 'ASB';
+  if (p === 'ASYS' || p === 'ASYMMETRICAL SCAPHOCEPHALY') return 'ASYS';
+  return undefined;
+};
 
-  let cr: number | undefined;
-  let cvai: number | undefined;
+const normalizeSeverity = (sev?: string, cvai?: number): SeverityCode | undefined => {
+  const s = up(sev);
+  if (s === 'L' || s === 'LIGHT') return 'L';
+  if (s === 'M' || s === 'MODERATE') return 'M';
+  if (s === 'S' || s === 'SEVERE') return 'S';
+  if (typeof cvai === 'number' && Number.isFinite(cvai)) {
+    if (cvai < 3.5) return 'L';
+    if (cvai < 7.0) return 'M';
+    return 'S';
+  }
+  return undefined;
+};
+
+// keep every key by sending nulls, never undefined (JSON.stringify drops undefined)
+const toNumOrNull = (v?: string) => {
+  if (v == null || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+const orEmpty = (v?: string) => (v == null ? '' : v);
+
+// Backend expects labels for positional
+const POS_LABEL_BY_CODE: Record<string, string> = {
+  P: 'Plagiocephaly',
+  B: 'Brachycephaly',
+  SC: 'Scaphocephaly',
+  ASB: 'Asymmetrical Brachycephaly (Combo)',
+  ASYS: 'Asymmetrical Scaphocephaly',
+};
+const toPositionalLabel = (pos?: string) => {
+  const raw = (pos || '').trim();
+  const code = raw.toUpperCase();
+  return POS_LABEL_BY_CODE[code] || raw;
+};
+
+// Build payload that matches CranialHelmetOrder shape; use computed productCode
+function toApiOrder(values: FormValues, productCode: string) {
+  const ap = toNumOrNull(values.ap);
+  const ml = toNumOrNull(values.ml);
+  const da = toNumOrNull(values.da);
+  const db = toNumOrNull(values.db);
+
+  let cr: number | null = null;
+  let cvai: number | null = null;
   try { if (ap && ml) cr = calculateCephalicRatio(ap, ml).value; } catch {}
   try { if (da && db && da >= db) cvai = calculateCVAI(da, db).valueShorterDenominator; } catch {}
 
   return {
-    customer: values.customer || '',
-    sales_order_id: values.sales_order_id,
+    // ---- Basic details / header ----
+    basic_details_section: null,
+    sales_order_id: orEmpty(values.sales_order_id),
+    item_code: productCode || '',
+    column_break_jqdc: null,
+    customer: orEmpty(values.customer),
 
-    first_name: values.first_name,
-    last_name: values.last_name,
-    date_of_birth: values.date_of_birth || undefined,
-    weight_kg: toNum(values.weight_kg),
-    email: values.email,
-    clinic_name: values.clinic_name,
-    height_cm: toNum(values.height_cm),
+    // ---- Patient info ----
+    patient_information_section: null,
+    first_name: orEmpty(values.first_name),
+    last_name: orEmpty(values.last_name),
+    parent_name: orEmpty(values.parent_name),
+    parent_mobile: null, // keep key present
+    column_break_mxvu: null,
+    date_of_birth: values.date_of_birth || null,
+    weight_kg: toNumOrNull(values.weight_kg),
+    email: orEmpty(values.email),
+    clinic_name: orEmpty(values.clinic_name),
 
+    // ---- Measurement section ----
+    measurement_section_section: null,
     measurement_of_length_a_to_p__mm: ap,
+    head_circumference_mm: toNumOrNull(values.hc),
+    temple_width_mm: toNumOrNull(values.tw),
+    column_break_bzvk: null,
     measurement_of_width_m_to_l_mm: ml,
-    diagonal_a: da,
-    diagonal_b: db,
-    head_circumference_mm: toNum(values.hc),
-    temple_width_mm: toNum(values.tw),
+    cr,
+    cvai,
 
-    cr, cvai,
+    // ---- Clinical section ----
+    clinical_section_section: null,
+    occipital_area: orEmpty(values.occipital_area),
+    parietal_area: orEmpty(values.parietal_area),
+    column_break_zgts: null,
+    frontal_area: orEmpty(values.frontal_area),
+    ear_alignment: orEmpty(values.ear_alignment),
 
-    occipital_area: values.occipital_area,
-    parietal_area: values.parietal_area,
-    frontal_area: values.frontal_area,
-    ear_alignment: values.ear_alignment,
-    positional: values.positional,
-    torticollis: values.torticollis,
-    post_surgical: values.post_surgical,
-    suture_type_surgical_diagnoses_only: values.suture_type_surgical_diagnoses_only,
-    other_diagnosis_and_syndromes: values.other_diagnosis_and_syndromes,
+    // ---- Clinical diagnosis ----
+    clinical_diagnosis_section_section: null,
+    positional: toPositionalLabel(values.positional), // send label, not code
+    torticollis: orEmpty(values.torticollis),
+    column_break_lngl: null,
+    post_surgical: orEmpty(values.post_surgical),
+    suture_type_surgical_diagnoses_only: orEmpty(values.suture_type_surgical_diagnoses_only),
+
+    // ---- Surgery details ----
+    surgery_details_section: null,
+    date_of_surgery: values.date_of_surgery || null,
+    surgical_complications: orEmpty(values.surgical_complications),
+    column_break_scqs: null,
+    other_diagnosis_and_syndromes: orEmpty(values.other_diagnosis_and_syndromes),
   };
 }
 
+// ---------------- Component ----------------
 type CranialOrderFormProps = { item_type: string };
 
 export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
@@ -156,7 +256,7 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
     date_of_birth: '', gender: '', height_cm: '', weight_kg: '',
     email: '', clinic_name: '', consultant: '',
 
-    item_code: item_type,
+    item_code: item_type, // synced later from computed productCode
     sales_order_id: '',
     customer: '',
 
@@ -171,6 +271,7 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
 
     scan_file: null, extra_files: [],
     patient_remarks: '', other_remarks: '',
+    scan_gdrive_link: '',
 
     design_by: 'Addiwise', print_by: 'Addiwise', colour: '', thickness_3d_mm: '3.5',
     coupon_code: '', coupon_id: '', agree_terms: false,
@@ -180,7 +281,18 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
 
   return (
     <div className="w-full">
-      {/* sticky header … */}
+      <div className="sticky top-0 z-10 bg-primary text-white px-4 py-3">
+        <div className="font-semibold text-center">
+          Step {activeStep + 1} of {steps.length} — {steps[activeStep].label}
+        </div>
+        <div className="flex flex-wrap gap-2 justify-center mt-2">
+          {steps.map((s, i) => (
+            <button key={s.key} type="button" className={pill(i)} onClick={() => setActiveStep(i)}>
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <Formik
         initialValues={initialValues}
@@ -199,7 +311,7 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
             setFieldValue(field, next);
           };
 
-          // ---- move ALL derived calculations INSIDE render ----
+          // --- Derived measurements ---
           const { cr, cvai } = useMemo(() => {
             const apN = toNum(values.ap);
             const mlN = toNum(values.ml);
@@ -213,23 +325,29 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
             return { cr: crV, cvai: cvaiV };
           }, [values.ap, values.ml, values.da, values.db]);
 
-          const derivedSeverity: 'L' | 'M' | 'S' | '' = values.severity || sevFromCvai(cvai);
+          // --- Single source of truth: productCode ---
+          const productCode = useMemo(() => {
+            const cond = normalizeCondition(values.positional);
+            const sev  = normalizeSeverity(values.severity as string, cvai);
+            return cond && sev ? makeProductCode(sev, cond) : '';
+          }, [values.positional, values.severity, cvai]);
 
-          const code = useMemo(() => {
-            if (!derivedSeverity || !values.positional) return '';
-            // cast to helper’s union types
-            return makeProductCode(
-              derivedSeverity as SeverityCode,
-              values.positional as ConditionCode
-            );
-          }, [derivedSeverity, values.positional]);
+          // keep Formik.item_code in sync (useful for any UI that reads it)
+          useMemo(() => {
+            setFieldValue('item_code', productCode || '');
+          }, [productCode, setFieldValue]);
 
-          // === Estimate ===
-          const onEstimate = async (p: {
-            design_by: string; print_by: string; coupon_code?: string; product_code?: string;
-          }) => {
+          // --- Estimate ---
+          const onEstimate = async (
+            p: { design_by: string; print_by: string; coupon_code?: string; product_code?: string }
+          ): Promise<void | { design: number; print: number; stdDiscPct?: number; gstRate?: number }> => {
+            if (!productCode) {
+              alert('Select Positional Diagnosis and Severity to generate Product Code first.');
+              return;
+            }
+
             const res = await getCHEstimate({
-              item_code: values.item_code || item_type,
+              item_code: productCode,
               design_by: p.design_by,
               print_by: p.print_by,
               discount_per: 0,
@@ -237,18 +355,23 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
               coupon_code: p.coupon_code || '',
             }).unwrap();
 
-            const d = Number(res?.message?.data?.design || 0);
-            const pr = Number(res?.message?.data?.print || 0);
-            const stdPct = Number(res?.message?.data?.item_standard_discount || 0) / 100;
+            const d = Number(res?.message?.data?.design ?? 0);
+            const pr = Number(res?.message?.data?.print ?? 0);
+            const stdPct = Number(res?.message?.data?.item_standard_discount ?? 0) / 100;
+
+            const gst18 = Number(res?.message?.data?.gst_18 ?? 0);
+            const gst5  = Number(res?.message?.data?.gst_5 ?? 0);
+            const gstRate = gst18 ? gst18 / 100 : (gst5 ? gst5 / 100 : undefined);
 
             setFieldValue('design_price', d);
             setFieldValue('print_price', pr);
             setFieldValue('standard_discount_pct', stdPct);
+            if (gstRate !== undefined) setFieldValue('gst_rate', gstRate);
 
-            return { design: d, print: pr, stdDiscPct: stdPct };
+            return { design: d, print: pr, stdDiscPct: stdPct, gstRate };
           };
 
-          // === Coupon Validate ===
+          // --- Coupon validate ---
           const onValidateCoupon = async (code: string) => {
             if (!code) return null;
             try {
@@ -259,12 +382,13 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
             }
           };
 
-          // === Final POSTs ===
+          // --- Final POSTs ---
           const placeOrder = async () => {
             if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
+            if (!productCode) return alert('Please select Positional Diagnosis + Severity (product code missing).');
             try {
               setBusy('place');
-              const payload = toApiOrder(values);
+              const payload = toApiOrder(values, productCode);
               await createCranialOrder(payload).unwrap();
               alert('Order placed successfully.');
             } catch (e: any) {
@@ -278,9 +402,10 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
           const payLater = async () => {
             if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
             if (!values.customer)    return alert('Please select a Customer before saving the order.');
+            if (!productCode)        return alert('Please select Positional Diagnosis + Severity (product code missing).');
             try {
               setBusy('later');
-              const payload = toApiOrder(values);
+              const payload = toApiOrder(values, productCode);
               await createCranialOrder(payload).unwrap();
               alert('Order saved. You can pay later.');
             } catch (e: any) {
@@ -337,20 +462,23 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
                   values={values}
                   cr={cr}
                   cvai={cvai}
-                  severity={derivedSeverity}
-                  productCode={code}
+                  productCode={productCode} // single source
                   UI={{ Input, Label }}
                 />
               )}
 
               {activeStep === 5 && (
-                <ScanUpload values={values} setFieldValue={setFieldValue} UI={{ Input, Label, Card, Textarea }} />
+                <ScanUpload
+                  values={values}
+                  setFieldValue={setFieldValue}
+                  UI={{ Input, Label, Card, Textarea }}
+                />
               )}
 
               {activeStep === 6 && (
                 <FinishPayment
                   values={values}
-                  productCode={code}
+                  productCode={productCode} // same code shown here
                   UI={{ Input, Button, Label, Card, SelectBox }}
                   onEstimate={onEstimate}
                   onValidateCoupon={onValidateCoupon}
@@ -362,6 +490,7 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
                 />
               )}
 
+              {/* Navigation */}
               <div className="flex justify-between gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={() => setActiveStep((s) => Math.max(s - 1, 0))}>
                   Previous

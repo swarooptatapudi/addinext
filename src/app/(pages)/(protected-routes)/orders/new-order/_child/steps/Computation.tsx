@@ -7,8 +7,8 @@ type Props = {
   UI: { Card: any; Label: any; Input: any };
 };
 
-const CR_IMG = '/assets/order-forms/cranial/image5.png';
-const CVAI_IMG = '/assets/order-forms/cranial/image6.png';
+const CR_IMG = '/assets/order-forms/cranial/cr.png';
+const CVAI_IMG = '/assets/order-forms/cranial/cvai.png';
 
 export default function Computation({ cr, cvai, UI }: Props) {
   const { Card, Label, Input } = UI;
