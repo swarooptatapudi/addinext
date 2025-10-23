@@ -36,27 +36,14 @@ export const useHDFCPayment = () => {
 
                     // Check payment status
                     try {
-                        // For mock mode (blob URL or data URL), simulate successful payment
-                        if (paymentUrl.startsWith('blob:') || paymentUrl.startsWith('data:text/html')) {
-                            // Mock mode - simulate successful payment
-                            const result = await hdfcGateway.verifyPayment('', options.orderId);
-                            if (result.success) {
-                                onSuccess(result);
-                                toast.success('Mock payment completed successfully!');
-                            } else {
-                                onFailure?.(result.message || 'Payment failed');
-                                toast.error('Payment failed');
-                            }
+                        // Real payment verification
+                        const result = await hdfcGateway.verifyPayment('', options.orderId);
+                        if (result.success) {
+                            onSuccess(result);
+                            toast.success('Payment completed successfully!');
                         } else {
-                            // Real payment verification
-                            const result = await hdfcGateway.verifyPayment('', options.orderId);
-                            if (result.success) {
-                                onSuccess(result);
-                                toast.success('Payment completed successfully!');
-                            } else {
-                                onFailure?.(result.message || 'Payment failed');
-                                toast.error('Payment failed');
-                            }
+                            onFailure?.(result.message || 'Payment failed');
+                            toast.error('Payment failed');
                         }
                     } catch (error) {
                         onFailure?.('Payment verification failed');

@@ -54,13 +54,13 @@ export type Order = {
 
 export default function Orders(): React.JSX.Element {
   // const { data, isLoading, error, refetch } = useGetOrdersQuery('');
- const [page, setPage] = useState(1);
-const pageSize = 10;
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
-const { data, isLoading,error,refetch } = useGetOrdersQuery({ page, page_size: pageSize });
+  const { data, isLoading, error, refetch } = useGetOrdersQuery({ page, page_size: pageSize });
 
-const orders = data?.data.sales_orders ?? [];
-const totalPages = data?.data.total_pages ?? 1;
+  const orders = data?.data.sales_orders ?? [];
+  const totalPages = data?.data.total_pages ?? 1;
 
   // console.log("salesorderdetails", data)
   const [getOrderDetails, { isLoading: isPaymentLoading }] =
@@ -88,11 +88,11 @@ const totalPages = data?.data.total_pages ?? 1;
     device_type: so.custom_order_types || '-',
     sales_invoices: so.sales_invoices || [],
   }));
-//   useEffect(() => {
-//   if (data?.data?.total_count) {
-//     setTotalPages(Math.ceil(data.data.total_count / pageSize));
-//   }
-// }, [data, pageSize]);
+  //   useEffect(() => {
+  //   if (data?.data?.total_count) {
+  //     setTotalPages(Math.ceil(data.data.total_count / pageSize));
+  //   }
+  // }, [data, pageSize]);
 
 
   // load Razorpay script
@@ -122,7 +122,7 @@ const totalPages = data?.data.total_pages ?? 1;
     return 'Unknown';
   }
 
-  // ✅ Pay button logic
+  // ✅ Pay button logic with direct HDFC API
   const handlePayment = async (order: Order) => {
     try {
       const payload = {
@@ -133,44 +133,112 @@ const totalPages = data?.data.total_pages ?? 1;
       const response = await getOrderDetails(payload).unwrap();
       const orderAmount = response.data.order_amount;
 
-      const paymentOptions = {
-        amount: orderAmount,
-        currency: 'INR',
-        orderId: order.order_id,
-        customerName: response.data.customer || '',
-        customerEmail: response.data.email || '',
-        customerPhone: response.data.mobile_no || '',
-        description: `Payment for Order ${response.data.so_order_id || order.order_id}`,
-        returnUrl: `${window.location.origin}/payment/success`,
-        cancelUrl: `${window.location.origin}/payment/cancel`,
-      };
-
-      await initiatePayment(
-        paymentOptions,
-        async (paymentData) => {
-          // Payment success callback
-          const backendPayload = {
-            order_id: order.order_id,
-            order_type: getOrderType(order),
-            custom_payment_reference_id: paymentData.paymentId,
-            payment_status: 'Paid',
-          };
-
-          try {
-            const res = await getOrderDetailIds(backendPayload).unwrap();
-            toast.success('Payment Successful');
-            refetch();
-          } catch (err) {
-            toast.error('Payment success but backend update failed');
+      // Direct HDFC payment link creation
+      const hdfcPaymentData = {
+        "currency": "INR",
+        "mobile_country_code": "+91",
+        "options": {
+          "create_mandate": "REQUIRED"
+        },
+        "payment_page_client_id": "hdfcmaster",
+        "cardsCheckBox": true,
+        "otcCheckBox": true,
+        "walletCheckBox": true,
+        "consumerFinanceCheckBox": true,
+        "netbankingCheckBox": true,
+        "upiCheckBox": true,
+        "amount": orderAmount,
+        "customer_email": response.data.email || "ch.kirankumar311@gmail.com",
+        "shouldSendMail": true,
+        "customer_phone": response.data.mobile_no || "7396192829",
+        "shouldSendSMS": true,
+        "order_id": order.order_id,
+        "return_url": null,
+        "offer_details": null,
+        "payment_filter": {
+          "allowDefaultOptions": true,
+          "options": [
+            { "paymentMethodType": "UPI", "enable": true },
+            { "paymentMethodType": "WALLET", "enable": true },
+            { "paymentMethodType": "CARD", "enable": true },
+            { "paymentMethodType": "NB", "enable": true },
+            { "paymentMethodType": "OTC", "enable": true },
+            { "paymentMethodType": "VIRTUAL_ACCOUNT", "enable": false },
+            { "paymentMethodType": "CONSUMER_FINANCE", "enable": true }
+          ],
+          "emiOptions": {
+            "standardEmi": { "enable": false, "credit": { "enable": false }, "debit": { "enable": false }, "cardless": { "enable": false } },
+            "lowCostEmi": { "enable": false, "credit": { "enable": false }, "debit": { "enable": false }, "cardless": { "enable": false } },
+            "noCostEmi": { "enable": false, "credit": { "enable": false }, "debit": { "enable": false }, "cardless": { "enable": false } },
+            "showOnlyEmi": false
           }
         },
-        (error) => {
-          // Payment failure callback
-          toast.error(`Payment failed: ${error}`);
+        "merchant_id": "SG3698"
+      };
+
+      console.log('🏦 Creating HDFC Payment Link:', hdfcPaymentData);
+
+      // Call Frappe API endpoint
+      const hdfcResponse = await fetch('/api/method/addiwise.apis.hdfc_payment.create_payment_link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(hdfcPaymentData)
+      });
+
+      if (!hdfcResponse.ok) {
+        throw new Error(`HDFC API error: ${hdfcResponse.status}`);
+      }
+
+      const result = await hdfcResponse.json();
+      console.log('✅ HDFC Payment Link Response:', result);
+
+      if (result && result.payment_url) {
+        // Open HDFC payment page in new window
+        const paymentWindow = window.open(
+          result.payment_url,
+          'HDFCPayment',
+          'width=600,height=700,scrollbars=yes,resizable=yes'
+        );
+
+        if (!paymentWindow) {
+          toast.error('Please allow popups for payment processing');
+          return;
         }
-      );
+
+        // Monitor payment window
+        const checkPaymentStatus = setInterval(() => {
+          if (paymentWindow.closed) {
+            clearInterval(checkPaymentStatus);
+
+            // After payment window closes, update order status
+            setTimeout(async () => {
+              try {
+                const backendPayload = {
+                  order_id: order.order_id,
+                  order_type: getOrderType(order),
+                  custom_payment_reference_id: `HDFC_${Date.now()}`,
+                  payment_status: 'Paid',
+                };
+
+                const res = await getOrderDetailIds(backendPayload).unwrap();
+                toast.success('Payment Successful');
+                refetch();
+              } catch (err) {
+                toast.error('Payment completed but order update failed');
+              }
+            }, 2000);
+          }
+        }, 1000);
+
+      } else {
+        throw new Error('Failed to create HDFC payment link');
+      }
+
     } catch (error) {
-      toast.error('Failed to initiate payment');
+      console.error('HDFC Payment Error:', error);
+      toast.error('Failed to initiate HDFC payment. Please try again.');
     }
   };
 
@@ -250,16 +318,16 @@ const totalPages = data?.data.total_pages ?? 1;
         let status = order.status;
         const orderValue = order.order_value || 0;
         // console.log('Order Value:', orderValue);
-     
+
         if (
           status === 'Draft' &&
           (order.custom_payment_reference_id || order.sales_invoices.length > 0)
         ) {
           status = 'Paid';
-        } 
-       if (orderValue === 0) {
-      status = 'Paid';
-    }
+        }
+        if (orderValue === 0) {
+          status = 'Paid';
+        }
         const statusClasses = {
           Draft: 'bg-yellow-100 text-yellow-800',
           Completed: 'bg-green-100 text-green-800',
@@ -399,26 +467,26 @@ const totalPages = data?.data.total_pages ?? 1;
         onSortingChange={setSorting}
       />
       <div className="flex justify-between items-center mt-4">
-  <button
-    onClick={() => setPage((p) => Math.max(p - 1, 1))}
-    disabled={page === 1}
-    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-  >
-    Previous
-  </button>
+        <button
+          onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          disabled={page === 1}
+          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
 
-  <span>
-    Page {page} of {totalPages || 1}
-  </span>
+        <span>
+          Page {page} of {totalPages || 1}
+        </span>
 
-  <button
-    onClick={() => setPage((p) => (totalPages ? Math.min(p + 1, totalPages) : p + 1))}
-    disabled={totalPages ? page >= totalPages : false}
-    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-  >
-    Next
-  </button>
-</div>
+        <button
+          onClick={() => setPage((p) => (totalPages ? Math.min(p + 1, totalPages) : p + 1))}
+          disabled={totalPages ? page >= totalPages : false}
+          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
 
     </div>
   );
