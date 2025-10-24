@@ -1,111 +1,85 @@
-import baseQueryWithReauth from '../rtk-query/base/baseQueryReAuth';
-import { getGstStateCode } from '../uttils/stateGstCodes';
+import { getGstStateCode } from '../uttils/stateGstCodes'
+import type { BaseQueryApi, BaseQueryFn } from '@reduxjs/toolkit/query';
 
-export type ItemEstimateInput = {
-    item_code: string;
-    qty: number;
-};
-
-export type Coupon = {
-    code: string;
-    discount_type: 'Percent' | 'Amount';
-    discount_value: number;
-};
-
-export type EstimateResult = {
-    subtotal: number;
-    total_discount: number;
-    coupon_discount: number;
-    tax: number;
-    total: number;
-    breakdown: {
-        items: Array<{
-            item_code: string;
-            qty: number;
-            price: number;
-            discount: number;
-            tax: number;
-            tax_rate: number;
-            tax_category: string;
-        }>;
-    };
-};
-
-// --- GST State Code Extraction ---
-function getCompanyStateCode(company: any): string | null {
-    if (company.gstin) return company.gstin.substring(0, 2);
-    if (company.state) return getGstStateCode(company.state);
-    return null;
-}
-
-function getCustomerStateCode(customer: any): string | null {
-    const billingAddr = customer.__onload?.addr_list?.find((a: any) => a.is_primary_address);
-    if (billingAddr?.gst_state_number) return billingAddr.gst_state_number;
-    if (billingAddr?.state) return getGstStateCode(billingAddr.state);
-    return null;
-}
-
-function getTaxCategory(company: any, customer: any): "In-State" | "Out-State" {
-    const companyStateCode = getCompanyStateCode(company);
-    const customerStateCode = getCustomerStateCode(customer);
-    if (companyStateCode && customerStateCode && companyStateCode === customerStateCode) {
-        return "In-State";
-    }
-    return "Out-State";
-}
-
-// --- API Helpers ---
-async function fetchTaxRateFromTemplate(templateName: string): Promise<number> {
-    if (!templateName) return 0;
-    const res = await baseQueryWithReauth({
-        url: `/resource/Item Tax Template/${encodeURIComponent(templateName)}`,
-        method: 'GET'
-    });
-    if ('error' in res && res.error) return 0;
-    const template = (res.data as any)?.data;
-    if (template && Array.isArray(template.taxes) && template.taxes.length > 0) {
-        return Number(template.taxes[0].rate) || 0;
-    }
-    return 0;
-}
-
-async function fetchItemPrice(item_code: string, price_list: string) {
-    const res = await baseQueryWithReauth({
-        url: `/resource/Item Price?filters=[["item_code","=","${item_code}"],["price_list","=","${price_list}"]]`,
-        method: 'GET'
-    });
-    if ('error' in res && res.error) return undefined;
-    return (res.data as any)?.data?.[0]?.price_list_rate;
-}
-
-async function fetchItemDetails(item_code: string) {
-    const res = await baseQueryWithReauth({
-        url: `/resource/Item/${item_code}`,
-        method: 'GET'
-    });
-    if ('error' in res && res.error) return undefined;
-    return (res.data as any)?.data;
-}
-
-// --- Main Estimation Utility ---
 export async function estimateOrderClientSide({
     company,
     customer,
     items,
     coupon,
-    price_list = "Standard Selling"
+    price_list = "Standard Selling",
+    baseQuery,
+    api
 }: {
     company: any;
     customer: any;
-    items: ItemEstimateInput[];
-    coupon?: Coupon;
+    items: { item_code: string; qty: number }[];
+    coupon?: { code: string; discount_type: string; discount_value: number };
     price_list?: string;
-}): Promise<{ result?: EstimateResult; error?: string }> {
+    baseQuery: BaseQueryFn;
+    api: BaseQueryApi;
+}): Promise<{ result?: any; error?: string }> {
     let subtotal = 0,
         total_discount = 0,
         coupon_discount = 0,
         tax = 0;
     const breakdownItems = [];
+
+    function getCompanyStateCode(company: any): string | null {
+        if (company.gstin) return company.gstin.substring(0, 2);
+        if (company.state) return getGstStateCode(company.state);
+        return null;
+    }
+
+    function getCustomerStateCode(customer: any): string | null {
+        const billingAddr = customer.__onload?.addr_list?.find((a: any) => a.is_primary_address);
+        if (billingAddr?.gst_state_number) return billingAddr.gst_state_number;
+        if (billingAddr?.state) return getGstStateCode(billingAddr.state);
+        return null;
+    }
+
+    function getTaxCategory(company: any, customer: any): "In-State" | "Out-State" {
+        const companyStateCode = getCompanyStateCode(company);
+        const customerStateCode = getCustomerStateCode(customer);
+        if (companyStateCode && customerStateCode && companyStateCode === customerStateCode) {
+            return "In-State";
+        }
+        return "Out-State";
+    }
+
+    async function fetchTaxRateFromTemplate(templateName: string): Promise<number> {
+        if (!templateName) return 0;
+        const res = await baseQuery(
+            { url: `/resource/Item Tax Template/${encodeURIComponent(templateName)}`, method: 'GET' },
+            api,
+            {}
+        );
+        if ('error' in res && res.error) return 0;
+        const template = (res.data as any)?.data;
+        if (template && Array.isArray(template.taxes) && template.taxes.length > 0) {
+            return Number(template.taxes[0].rate) || 0;
+        }
+        return 0;
+    }
+
+    async function fetchItemPrice(item_code: string, price_list: string) {
+        const res = await baseQuery(
+            { url: `/resource/Item Price?filters=[["item_code","=","${item_code}"],["price_list","=","${price_list}"]]`, method: 'GET' },
+            api,
+            undefined
+        );
+        if ('error' in res && res.error) return undefined;
+        return (res.data as any)?.data?.[0]?.price_list_rate;
+    }
+
+    async function fetchItemDetails(item_code: string) {
+        const res = await baseQuery(
+            { url: `/resource/Item/${item_code}`, method: 'GET' },
+            api,
+            undefined
+        );
+        if ('error' in res && res.error) return undefined;
+        return (res.data as any)?.data;
+    }
 
     try {
         const taxCategory = getTaxCategory(company, customer);
