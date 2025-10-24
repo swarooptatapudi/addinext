@@ -71,6 +71,15 @@ export async function estimateOrderClientSide({
         return (res.data as any)?.data?.[0]?.price_list_rate;
     }
 
+    async function fetchCompanyDetails(companyName: string, baseQuery: any, api: any) {
+        const res = await baseQuery(
+            { url: `/resource/Company/${encodeURIComponent(companyName)}`, method: 'GET' },
+            api,
+            {}
+        );
+        if ('error' in res && res.error) return undefined;
+        return (res.data as any)?.data;
+    }
     async function fetchItemDetails(item_code: string) {
         const res = await baseQuery(
             { url: `/resource/Item/${item_code}`, method: 'GET' },
@@ -88,6 +97,15 @@ export async function estimateOrderClientSide({
             // 1. Fetch item details
             const itemDetails = await fetchItemDetails(item.item_code);
             if (!itemDetails) return { error: `No item details found for ${item.item_code}` };
+
+            // 1.1. If company is not provided, fetch from item defaults
+            let usedCompany = company;
+            if (!usedCompany) {
+                const companyName = itemDetails.item_defaults?.[0]?.company;
+                if (!companyName) return { error: `No company found in item defaults for ${item.item_code}` };
+                usedCompany = await fetchCompanyDetails(companyName, baseQuery, api);
+                if (!usedCompany) return { error: `Failed to fetch company details for ${companyName}` };
+            }
 
             // 2. Fetch item price
             const price = await fetchItemPrice(item.item_code, price_list);
