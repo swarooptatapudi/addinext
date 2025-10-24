@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import PatientPicker from '@/components/app/common/PatientPicker';
 import { AddCranialPatientDialog } from '@/components/app/common/AddCranialPatientDialog';

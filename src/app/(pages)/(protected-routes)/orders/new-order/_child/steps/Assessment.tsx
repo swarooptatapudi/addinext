@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import Image from 'next/image';
 
@@ -198,7 +199,6 @@ export default function Assessment({
             value={values.positional ?? ''}
             onValueChange={handleChange ? handleChange('positional') : (v: string) => setFieldValue('positional', v)}
             inVaild={shouldShowError ? shouldShowError('positional') : false}
-            required={false}
             error={errors?.positional}
             placeholder="Select"
           />

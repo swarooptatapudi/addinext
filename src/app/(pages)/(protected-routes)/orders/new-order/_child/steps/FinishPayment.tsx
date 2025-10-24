@@ -144,8 +144,10 @@ export default function FinishPayment({
     if (r) {
       setDesignPrice(Number(r.design ?? designPrice));
       setPrintPrice(Number(r.print ?? printPrice));
-      if (r.stdDiscPct != null) setStdPct(r.stdDiscPct);
-      if ((r as any).gstRate != null) setGstRate((r as any).gstRate);
+      if (typeof r.stdDiscPct === 'number') setStdPct(r.stdDiscPct);
+
+      const nextGst = typeof r.gstRate === 'number' && r.gstRate > 0 ? r.gstRate : gstRate || 0.05;
+      setGstRate(nextGst);
     }
   };
 

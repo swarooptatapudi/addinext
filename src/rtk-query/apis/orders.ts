@@ -221,6 +221,7 @@ async function tryRpcInOrder(
 
 import { createApi } from '@reduxjs/toolkit/query/react';
 import baseQueryWithReauth from '../base/baseQueryReAuth';
+import { estimateOrderClientSide } from '@/uttils/getEstimate';
 
 interface SalesOrder {
   order_id: string;
@@ -489,6 +490,8 @@ export const ordersApi = createApi({
                 ? { code: arg.coupon_code, discount_type: 'Percent', discount_value: arg.discount_per }
                 : undefined,
               price_list: arg.price_list,
+              baseQuery,          // ✅ pass baseQuery
+              api: _api,          // ✅ pass api
             });
             if (error) return { error: { status: 500, data: { message: error } } };
             return { data: result };

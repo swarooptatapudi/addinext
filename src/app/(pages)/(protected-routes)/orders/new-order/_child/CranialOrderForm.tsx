@@ -30,9 +30,12 @@ import FinishPayment from './steps/FinishPayment';
 
 import {
   useCreateCranialOrderMutation,
-  useGetCHEstimateMutation,
   useValidateCouponMutation,
 } from '@/rtk-query/apis/orders';
+
+// ✅ import the client-side estimator + baseQuery
+import baseQueryWithReauth from '@/rtk-query/base/baseQueryReAuth';
+import { estimateOrderClientSide } from '@/uttils/getEstimate';
 
 // ---------------- Types ----------------
 type FormValues = {
@@ -95,10 +98,9 @@ type FormValues = {
 
   design_price?: number;
   print_price?: number;
-  standard_discount_pct?: number;
-  gst_rate?: number;
+  standard_discount_pct?: number; // 0–1
+  gst_rate?: number;              // 0–1 (e.g., 0.05)
 };
-
 // ---------------- Validation ----------------
 const Schema = Yup.object({
   first_name: Yup.string().required('Required'),
@@ -194,8 +196,8 @@ function toApiOrder(values: FormValues, productCode: string) {
     patient_information_section: null,
     first_name: orEmpty(values.first_name),
     last_name: orEmpty(values.last_name),
-    parent_name: orEmpty(values.parent_name),
-    parent_mobile: null, // keep key present
+    //parent_name: orEmpty(values.parent_name),
+    parent_mobile: orEmpty(values.parent_mobile),
     column_break_mxvu: null,
     date_of_birth: values.date_of_birth || null,
     weight_kg: toNumOrNull(values.weight_kg),
@@ -222,7 +224,7 @@ function toApiOrder(values: FormValues, productCode: string) {
 
     // ---- Clinical diagnosis ----
     clinical_diagnosis_section_section: null,
-    positional: toPositionalLabel(values.positional), // send label, not code
+    positional: toPositionalLabel(values.positional),
     torticollis: orEmpty(values.torticollis),
     column_break_lngl: null,
     post_surgical: orEmpty(values.post_surgical),
@@ -243,9 +245,8 @@ type CranialOrderFormProps = { item_type: string };
 export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [busy, setBusy] = useState<null | 'place' | 'later'>(null);
-
+  const [formResetKey, setFormResetKey] = useState(0);
   const [createCranialOrder] = useCreateCranialOrderMutation();
-  const [getCHEstimate] = useGetCHEstimateMutation();
   const [validateCoupon] = useValidateCouponMutation();
 
   const pill = (i: number) =>
@@ -295,6 +296,7 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
       </div>
 
       <Formik
+        key={formResetKey}                 // << force remount of the entire form
         initialValues={initialValues}
         validationSchema={Schema}
         onSubmit={() => {}}
@@ -302,7 +304,7 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
         validateOnChange
         validateOnBlur
       >
-        {({ values, errors, touched, setFieldValue }) => {
+        {({ values, errors, touched, setFieldValue,resetForm }) => {
           const handleChange = (field: string) => (eOrVal: any) => {
             const next =
               eOrVal && typeof eOrVal === 'object' && 'target' in eOrVal
@@ -337,7 +339,7 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
             setFieldValue('item_code', productCode || '');
           }, [productCode, setFieldValue]);
 
-          // --- Estimate ---
+          // --- Estimate (calls estimateOrderClientSide directly) ---
           const onEstimate = async (
             p: { design_by: string; print_by: string; coupon_code?: string; product_code?: string }
           ): Promise<void | { design: number; print: number; stdDiscPct?: number; gstRate?: number }> => {
@@ -346,29 +348,54 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
               return;
             }
 
-            const res = await getCHEstimate({
-              item_code: productCode,
-              design_by: p.design_by,
-              print_by: p.print_by,
-              discount_per: 0,
-              discount_amt: 0,
-              coupon_code: p.coupon_code || '',
-            }).unwrap();
+            const qty = 1;
 
-            const d = Number(res?.message?.data?.design ?? 0);
-            const pr = Number(res?.message?.data?.print ?? 0);
-            const stdPct = Number(res?.message?.data?.item_standard_discount ?? 0) / 100;
+            // literal union to satisfy CouponInput type
+            const couponPayload =
+              p.coupon_code && p.coupon_code.trim()
+                ? { code: p.coupon_code.trim(), discount_type: 'Percent' as const, discount_value: 0 }
+                : undefined;
 
-            const gst18 = Number(res?.message?.data?.gst_18 ?? 0);
-            const gst5  = Number(res?.message?.data?.gst_5 ?? 0);
-            const gstRate = gst18 ? gst18 / 100 : (gst5 ? gst5 / 100 : undefined);
+            const { result, error } = await estimateOrderClientSide({
+              company: undefined,     // utility will fetch from item defaults if needed
+              customer: undefined,    // pass a loaded Customer doc if you need in/out state accuracy
+              items: [{ item_code: productCode, qty }],
+              coupon: couponPayload,
+              price_list: 'Standard Selling',
+              baseQuery: baseQueryWithReauth,
+              api: {} as any,         // baseQueryWithReauth doesn't use this
+            });
 
-            setFieldValue('design_price', d);
-            setFieldValue('print_price', pr);
+            if (error) { alert(error); return; }
+            if (!result) return;
+
+            const subtotal = Number(result.subtotal || 0);
+            const totalDisc = Number(result.total_discount || 0);
+            const baseBeforeCoupon = Math.max(0, subtotal - totalDisc);
+
+            // Standard discount pct (0..1) against subtotal
+            const stdPct = subtotal > 0 ? totalDisc / subtotal : 0;
+
+            // pick current GST rate from form or default
+            const prevGstRate = (typeof values.gst_rate === 'number' && values.gst_rate > 0)
+              ? values.gst_rate!
+              : 0.05;
+
+            // take first line's tax_rate if present; else keep previous or default
+            const firstLine = result.breakdown?.items?.[0];
+            const computedGstRate =
+              typeof firstLine?.tax_rate === 'number' && firstLine.tax_rate > 0
+                ? firstLine.tax_rate / 100
+                : prevGstRate;
+
+            // Push into form state
+            setFieldValue('design_price', 0);
+            setFieldValue('print_price', baseBeforeCoupon);
             setFieldValue('standard_discount_pct', stdPct);
-            if (gstRate !== undefined) setFieldValue('gst_rate', gstRate);
+            setFieldValue('gst_rate', computedGstRate);
 
-            return { design: d, print: pr, stdDiscPct: stdPct, gstRate };
+            // Return for FinishPayment
+            return { design: 0, print: baseBeforeCoupon, stdDiscPct: stdPct, gstRate: computedGstRate };
           };
 
           // --- Coupon validate ---
@@ -383,6 +410,8 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
           };
 
           // --- Final POSTs ---
+          const [isPlacing, isSavingLater] = [busy === 'place', busy === 'later'];
+
           const placeOrder = async () => {
             if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
             if (!productCode) return alert('Please select Positional Diagnosis + Severity (product code missing).');
@@ -391,6 +420,10 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
               const payload = toApiOrder(values, productCode);
               await createCranialOrder(payload).unwrap();
               alert('Order placed successfully.');
+              // >>> Reset everything:
+              resetForm({ values: initialValues });  // reset Formik state
+              setActiveStep(0);                      // go back to first step
+              setFormResetKey((k) => k + 1);         // remount children to flush
             } catch (e: any) {
               const msg = e?.data?.message || e?.data?._server_messages || e?.error || e?.message || 'Failed to place order.';
               alert(msg);
@@ -401,13 +434,16 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
 
           const payLater = async () => {
             if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
-            if (!values.customer)    return alert('Please select a Customer before saving the order.');
             if (!productCode)        return alert('Please select Positional Diagnosis + Severity (product code missing).');
             try {
               setBusy('later');
               const payload = toApiOrder(values, productCode);
               await createCranialOrder(payload).unwrap();
               alert('Order saved. You can pay later.');
+              // >>> Reset everything:
+              resetForm({ values: initialValues });  // reset Formik state
+              setActiveStep(0);                      // go back to first step
+              setFormResetKey((k) => k + 1);         // remount children to flush
             } catch (e: any) {
               const msg = e?.data?.message || e?.data?._server_messages || e?.error || e?.message || 'Failed to save order.';
               alert(msg);
@@ -432,11 +468,6 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
 
               {activeStep === 1 && (
                 <Measurement
-                  values={values}
-                  errors={errors}
-                  touched={touched}
-                  setFieldValue={setFieldValue}
-                  handleChange={handleChange}
                   UI={{ Input, Label, Card }}
                 />
               )}
@@ -462,7 +493,7 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
                   values={values}
                   cr={cr}
                   cvai={cvai}
-                  productCode={productCode} // single source
+                  productCode={productCode}
                   UI={{ Input, Label }}
                 />
               )}
@@ -478,14 +509,14 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
               {activeStep === 6 && (
                 <FinishPayment
                   values={values}
-                  productCode={productCode} // same code shown here
+                  productCode={productCode}
                   UI={{ Input, Button, Label, Card, SelectBox }}
                   onEstimate={onEstimate}
                   onValidateCoupon={onValidateCoupon}
                   onPlaceOrder={placeOrder}
                   onPayLater={payLater}
-                  isPlacing={busy === 'place'}
-                  isSavingLater={busy === 'later'}
+                  isPlacing={isPlacing}
+                  isSavingLater={isSavingLater}
                   setFieldValue={setFieldValue}
                 />
               )}
