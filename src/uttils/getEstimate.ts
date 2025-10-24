@@ -65,7 +65,7 @@ export async function estimateOrderClientSide({
         const res = await baseQuery(
             { url: `/resource/Item Price?filters=[["item_code","=","${item_code}"],["price_list","=","${price_list}"]]`, method: 'GET' },
             api,
-            undefined
+            {}
         );
         if ('error' in res && res.error) return undefined;
         return (res.data as any)?.data?.[0]?.price_list_rate;
@@ -75,7 +75,7 @@ export async function estimateOrderClientSide({
         const res = await baseQuery(
             { url: `/resource/Item/${item_code}`, method: 'GET' },
             api,
-            undefined
+            {}
         );
         if ('error' in res && res.error) return undefined;
         return (res.data as any)?.data;

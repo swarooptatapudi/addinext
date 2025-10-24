@@ -603,6 +603,4 @@ export const {
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;
 
-function estimateOrderClientSide(arg0: { company: any; customer: any; items: { item_code: string; qty: number; }[]; coupon: { code: string; discount_type: string; discount_value: number; } | undefined; price_list: string | undefined; }): { result: any; error: any; } | PromiseLike<{ result: any; error: any; }> {
-  throw new Error('Function not implemented.');
-}
+
