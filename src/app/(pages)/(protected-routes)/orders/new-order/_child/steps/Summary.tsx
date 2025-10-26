@@ -16,7 +16,7 @@ const POS_LABEL: Record<string, string> = {
   B: 'Brachycephaly',
   SC: 'Scaphocephaly',
   ASB: 'Asymmetrical Brachycephaly (Combo)',
-  ASYS: 'Asymmetrical Scaphocephaly',
+  ASSC: 'Asymmetrical Scaphocephaly',
   '': '',
 };
 

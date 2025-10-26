@@ -77,7 +77,7 @@ export function calculateCranialAsymmetry(diagonalA: number, diagonalB: number):
 // Product code
 const PRODUCT_PREFIX = 'CH' as const;
 export const SEVERITY = { LIGHT: 'L', MODERATE: 'M', SEVERE: 'S' } as const;
-export const CONDITION = { PLAGIOCEPHALY: 'P', BRACHYCEPHALY: 'B', SCAPHOCEPHALY: 'SC', ASYMMETRIC_BRACHYCEPHALY: 'ASB' , ASYMMETRIC_SCAPHOCEPHALY: 'ASYS'} as const;
+export const CONDITION = { PLAGIOCEPHALY: 'P', BRACHYCEPHALY: 'B', SCAPHOCEPHALY: 'SC', ASYMMETRIC_BRACHYCEPHALY: 'ASB' , ASYMMETRIC_SCAPHOCEPHALY: 'ASSC'} as const;
 export type SeverityCode = typeof SEVERITY[keyof typeof SEVERITY];
 export type ConditionCode = typeof CONDITION[keyof typeof CONDITION];
 export type ProductCode = `${typeof PRODUCT_PREFIX}-${SeverityCode}-${ConditionCode}`;

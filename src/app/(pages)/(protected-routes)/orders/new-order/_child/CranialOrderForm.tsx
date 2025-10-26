@@ -69,7 +69,7 @@ type FormValues = {
   ear_alignment?: string;
 
   // Diagnosis (may be short codes or labels)
-  positional?: string; // 'P'|'B'|'SC'|'ASB'|'ASYS' OR full label
+  positional?: string; // 'P'|'B'|'SC'|'ASB'|'ASSC' OR full label
   severity?: 'L'|'M'|'S'|'' | 'Light' | 'Moderate' | 'Severe';
   torticollis?: string;
 
@@ -133,7 +133,7 @@ const normalizeCondition = (pos?: string): ConditionCode | undefined => {
   if (p === 'B' || p === 'BRACHYCEPHALY') return 'B';
   if (p === 'SC' || p === 'SCAPHOCEPHALY') return 'SC';
   if (p === 'ASB' || p === 'ASYMMETRICAL BRACHYCEPHALY (COMBO)') return 'ASB';
-  if (p === 'ASYS' || p === 'ASYMMETRICAL SCAPHOCEPHALY') return 'ASYS';
+  if (p === 'ASSC' || p === 'ASYMMETRICAL SCAPHOCEPHALY') return 'ASSC';
   return undefined;
 };
 
@@ -164,7 +164,7 @@ const POS_LABEL_BY_CODE: Record<string, string> = {
   B: 'Brachycephaly',
   SC: 'Scaphocephaly',
   ASB: 'Asymmetrical Brachycephaly (Combo)',
-  ASYS: 'Asymmetrical Scaphocephaly',
+  ASSC: 'Asymmetrical Scaphocephaly',
 };
 const toPositionalLabel = (pos?: string) => {
   const raw = (pos || '').trim();
