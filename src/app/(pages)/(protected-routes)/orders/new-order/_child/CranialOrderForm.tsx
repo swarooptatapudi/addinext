@@ -1,7 +1,10 @@
 'use client';
-import React, { useMemo, useState } from 'react';
+
+import React, { useMemo, useState, useEffect } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
+import { useSelector } from 'react-redux';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,19 +34,21 @@ import FinishPayment from './steps/FinishPayment';
 import {
   useCreateCranialOrderMutation,
   useValidateCouponMutation,
+  useGetOrderDetailsMutation,
 } from '@/rtk-query/apis/orders';
 
-// ✅ import the client-side estimator + baseQuery
-import baseQueryWithReauth from '@/rtk-query/base/baseQueryReAuth';
+import { USER } from '@/uttils/Types';
 import { estimateOrderClientSide } from '@/uttils/getEstimate';
+import { baseQueryWithReauth } from '@/rtk-query/apis';
 
-// ---------------- Types ----------------
+/* ------------------------------- Types/Schema ------------------------------ */
+
 type FormValues = {
-  sales_order_id?: string;
-  item_code?: string; // synced from computed productCode (not user-entered)
+  item_code?: string;
   customer?: string;
 
   // Patient
+  patient_name?: string;
   first_name?: string;
   last_name?: string;
   parent_name?: string;
@@ -51,7 +56,7 @@ type FormValues = {
   date_of_birth?: string;
   gender?: string;
   height_cm?: string;
-  weight_kg?: string;
+  weight_kg?: string | number;
   email?: string;
   clinic_name?: string;
   consultant?: string;
@@ -68,14 +73,14 @@ type FormValues = {
   frontal_area?: string;
   ear_alignment?: string;
 
-  // Diagnosis (may be short codes or labels)
-  positional?: string; // 'P'|'B'|'SC'|'ASB'|'ASSC' OR full label
+  // Diagnosis
+  positional?: string;
   severity?: 'L'|'M'|'S'|'' | 'Light' | 'Moderate' | 'Severe';
   torticollis?: string;
 
   // Surgical & others
-  post_surgical?: string; // CSV
-  suture_type_surgical_diagnoses_only?: string; // CSV
+  post_surgical?: string;
+  suture_type_surgical_diagnoses_only?: string;
   date_of_surgery?: string;
   surgical_complications?: string;
   other_diagnosis_and_syndromes?: string;
@@ -87,7 +92,7 @@ type FormValues = {
   other_remarks?: string;
   scan_gdrive_link?: string;
 
-  // Pricing / payments
+  // UI / selections
   design_by?: string;
   print_by?: string;
   colour?: string;
@@ -96,12 +101,21 @@ type FormValues = {
   coupon_id?: string;
   agree_terms?: boolean;
 
-  design_price?: number;
-  print_price?: number;
-  standard_discount_pct?: number; // 0–1
-  gst_rate?: number;              // 0–1 (e.g., 0.05)
+  // From SERVER ONLY (strings are fine; server formats Indian numbers)
+  design_price?: string | number;
+  print_price?: string | number;
+  item_special_discount?: string | number;
+  item_standard_discount?: string | number;
+  additional_discount?: string | number;
+  discounted_price?: string | number;
+  gst_5_amt?: string | number;
+  gst_18_amt?: string | number;
+  total_price?: string | number;
+
+  // For flags
+  gst_rate?: 0 | 0.05 | 0.18;
 };
-// ---------------- Validation ----------------
+
 const Schema = Yup.object({
   first_name: Yup.string().required('Required'),
   date_of_birth: Yup.string().required('Required'),
@@ -112,7 +126,8 @@ const Schema = Yup.object({
   hc: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable(),
 });
 
-// ---------------- Steps ----------------
+/* --------------------------------- Steps ---------------------------------- */
+
 const steps = [
   { key: 'patient', label: 'Basic Details' },
   { key: 'measurement', label: 'Measurement' },
@@ -120,10 +135,11 @@ const steps = [
   { key: 'assessment', label: 'Clinical Assessment' },
   { key: 'summary', label: 'Summary' },
   { key: 'scan', label: 'Scan & Upload' },
-  { key: 'finish', label: 'Finish & Payment' }
+  { key: 'finish', label: 'Finish & Payment' },
 ] as const;
 
-// ---------------- Helpers ----------------
+/* -------------------------------- Helpers --------------------------------- */
+
 const toNum = (v?: string) => (v === '' || v == null ? undefined : Number(v));
 const up = (s?: string) => (s || '').trim().toUpperCase();
 
@@ -150,15 +166,13 @@ const normalizeSeverity = (sev?: string, cvai?: number): SeverityCode | undefine
   return undefined;
 };
 
-// keep every key by sending nulls, never undefined (JSON.stringify drops undefined)
-const toNumOrNull = (v?: string) => {
+const toNumOrNull = (v?: string | number) => {
   if (v == null || v === '') return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 };
 const orEmpty = (v?: string) => (v == null ? '' : v);
 
-// Backend expects labels for positional
 const POS_LABEL_BY_CODE: Record<string, string> = {
   P: 'Plagiocephaly',
   B: 'Brachycephaly',
@@ -172,8 +186,7 @@ const toPositionalLabel = (pos?: string) => {
   return POS_LABEL_BY_CODE[code] || raw;
 };
 
-// Build payload that matches CranialHelmetOrder shape; use computed productCode
-function toApiOrder(values: FormValues, productCode: string) {
+function toOrderDetails(values: FormValues) {
   const ap = toNumOrNull(values.ap);
   const ml = toNumOrNull(values.ml);
   const da = toNumOrNull(values.da);
@@ -185,81 +198,196 @@ function toApiOrder(values: FormValues, productCode: string) {
   try { if (da && db && da >= db) cvai = calculateCVAI(da, db).valueShorterDenominator; } catch {}
 
   return {
-    // ---- Basic details / header ----
-    basic_details_section: null,
-    sales_order_id: orEmpty(values.sales_order_id),
-    item_code: productCode || '',
-    column_break_jqdc: null,
-    customer: orEmpty(values.customer),
-
-    // ---- Patient info ----
-    patient_information_section: null,
+    patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),
     first_name: orEmpty(values.first_name),
     last_name: orEmpty(values.last_name),
-    //parent_name: orEmpty(values.parent_name),
+
     parent_mobile: orEmpty(values.parent_mobile),
-    column_break_mxvu: null,
-    date_of_birth: values.date_of_birth || null,
-    weight_kg: toNumOrNull(values.weight_kg),
     email: orEmpty(values.email),
     clinic_name: orEmpty(values.clinic_name),
+    date_of_birth: values.date_of_birth || null,
+    height_cm: toNumOrNull(values.height_cm),             // <-- add
+    weight_kg: toNumOrNull(values.weight_kg),
 
-    // ---- Measurement section ----
-    measurement_section_section: null,
     measurement_of_length_a_to_p__mm: ap,
+    measurement_of_width_m_to_l_mm: ml,
+    diagonal_a_mm: toNumOrNull(values.da),                // <-- add
+    diagonal_b_mm: toNumOrNull(values.db),                // <-- add
     head_circumference_mm: toNumOrNull(values.hc),
     temple_width_mm: toNumOrNull(values.tw),
-    column_break_bzvk: null,
-    measurement_of_width_m_to_l_mm: ml,
-    cr,
-    cvai,
+    cr, cvai,
 
-    // ---- Clinical section ----
-    clinical_section_section: null,
     occipital_area: orEmpty(values.occipital_area),
     parietal_area: orEmpty(values.parietal_area),
-    column_break_zgts: null,
     frontal_area: orEmpty(values.frontal_area),
     ear_alignment: orEmpty(values.ear_alignment),
 
-    // ---- Clinical diagnosis ----
-    clinical_diagnosis_section_section: null,
     positional: toPositionalLabel(values.positional),
+    severity: orEmpty(values.severity as string),
     torticollis: orEmpty(values.torticollis),
-    column_break_lngl: null,
+
     post_surgical: orEmpty(values.post_surgical),
     suture_type_surgical_diagnoses_only: orEmpty(values.suture_type_surgical_diagnoses_only),
-
-    // ---- Surgery details ----
-    surgery_details_section: null,
     date_of_surgery: values.date_of_surgery || null,
     surgical_complications: orEmpty(values.surgical_complications),
-    column_break_scqs: null,
     other_diagnosis_and_syndromes: orEmpty(values.other_diagnosis_and_syndromes),
+
+    custom_design_by: orEmpty(values.design_by),
+    custom_print_by: orEmpty(values.print_by),
+    colour: orEmpty(values.colour),
+    thickness_3d_mm: orEmpty(values.thickness_3d_mm),
+
+    patient_remarks: orEmpty(values.patient_remarks),
+    other_remarks: orEmpty(values.other_remarks),
+  };
+}
+function flattenForSalesOrder(values: FormValues) {
+  return {
+    patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),                 // <— add this
+    custom_patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),
+    first_name: orEmpty(values.first_name),
+    last_name: orEmpty(values.last_name),
+    parent_mobile: orEmpty(values.parent_mobile),
+    email: orEmpty(values.email),
+    clinic_name: orEmpty(values.clinic_name),
+    date_of_birth: values.date_of_birth || null,
+    height_cm: toNumOrNull(values.height_cm),
+    weight_kg: toNumOrNull(values.weight_kg),
+
+    // Measurements
+    measurement_of_length_a_to_p__mm: toNumOrNull(values.ap),
+    measurement_of_width_m_to_l_mm: toNumOrNull(values.ml),
+    diagonal_a_mm: toNumOrNull(values.da),            // Diagonal A
+    diagonal_b_mm: toNumOrNull(values.db),            // Diagonal B
+    head_circumference_mm: toNumOrNull(values.hc),
+    temple_width_mm: toNumOrNull(values.tw),
+
+    // Derived
+    cr: typeof values.cr === 'number' ? values.cr : undefined,
+    cvai: typeof values.cvai === 'number' ? values.cvai : undefined,
+
+    // Clinical / Diagnosis
+    positional: toPositionalLabel(values.positional), // Positional Diagnosis
+    torticollis: orEmpty(values.torticollis),
+    severity: orEmpty(values.severity as string),
+    post_surgical: orEmpty(values.post_surgical),
+    suture_type_surgical_diagnoses_only: orEmpty(values.suture_type_surgical_diagnoses_only),
+    date_of_surgery: values.date_of_surgery || null,
+    surgical_complications: orEmpty(values.surgical_complications),
+    other_diagnosis_and_syndromes: orEmpty(values.other_diagnosis_and_syndromes),
+
+    // Areas
+    occipital_area: orEmpty(values.occipital_area),
+    parietal_area: orEmpty(values.parietal_area),
+    frontal_area: orEmpty(values.frontal_area),
+    ear_alignment: orEmpty(values.ear_alignment),
+
+    // UI / selections
+    custom_design_by: orEmpty(values.design_by),      // Design By
+    custom_print_by: orEmpty(values.print_by),        // Print By
+    colour: orEmpty(values.colour),                   // Colour
+    thickness_3d_mm: orEmpty(values.thickness_3d_mm),
+
+    // Payment Summary (send as plain numbers; backend can format)
+    design_price: values.design_price ?? 0,
+    print_price: values.print_price ?? 0,
+    item_special_discount: values.item_special_discount ?? 0,
+    item_standard_discount: values.item_standard_discount ?? 0,
+    additional_discount: values.additional_discount ?? 0,
+    discounted_price: values.discounted_price ?? 0,
+    gst_5_amt: values.gst_5_amt ?? 0,
+    gst_18_amt: values.gst_18_amt ?? 0,
+    gst_rate: values.gst_rate ?? 0.05,
   };
 }
 
-// ---------------- Component ----------------
-type CranialOrderFormProps = { item_type: string };
+function toCreatePayload(values: FormValues, productCode: string, ctx: {
+  customerId?: string;
+  orderId?: string | null;
+  deviceTypeId?: string | null;
+}) {
+  const order_details = toOrderDetails(values);
 
-export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
+  // numeric GST flags for server's rate derivation
+  const gst_18_num = Number(String(values.gst_18_amt ?? 0).replace(/,/g, '')) || 0;
+  const gst_5_num  = Number(String(values.gst_5_amt  ?? 0).replace(/,/g, '')) || 0;
+
+  const today = new Date();
+  const ymd = today.toISOString().slice(0, 10);
+  const in7 = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  const flattened = flattenForSalesOrder(values);
+
+  const payload: any = {
+    item_type: 'CH',
+    customer: ctx.customerId || values.customer || '',
+    item_code: productCode || '',
+    qty: 1,
+    // Pricing
+    rate: Number(values.print_price ?? 0),            // subtotal
+    total_price: String(values.total_price ?? ''),    // final total as string if you prefer
+
+    addicoins: 0,
+    custom_payment_reference_id: orEmpty(values.coupon_code),
+
+    gst_5: gst_5_num > 0,
+    gst_18: gst_18_num > 0,
+
+    transaction_date: ymd,
+    delivery_date: in7,
+
+    // for SO labels only (safe)
+    order_details,
+    ...flattened,
+  };
+
+  if (values.scan_gdrive_link) {
+    payload.custom_scan_items = { primary_scan: values.scan_gdrive_link };
+    payload.custom_upload_link_with_photos = values.scan_gdrive_link; // (common Frappe field name)
+  }
+  if (ctx.orderId) {
+    payload.order_id = ctx.orderId;
+    payload.orderId = ctx.orderId;
+  }
+  if (ctx.deviceTypeId) {
+    payload.device_type_id = ctx.deviceTypeId;
+    payload.deviceTypeId = ctx.deviceTypeId;
+    payload.device_type = ctx.deviceTypeId;
+  }
+
+  return payload;
+}
+
+/* -------------------------------- Component -------------------------------- */
+
+type CranialOrderFormProps = { item_type?: string };
+
+export default function CranialOrderForm(_: CranialOrderFormProps) {
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('orderId');
+  const deviceTypeId = searchParams.get('deviceType');
+  const router = useRouter();
+
   const [activeStep, setActiveStep] = useState(0);
   const [busy, setBusy] = useState<null | 'place' | 'later'>(null);
   const [formResetKey, setFormResetKey] = useState(0);
+
   const [createCranialOrder] = useCreateCranialOrderMutation();
   const [validateCoupon] = useValidateCouponMutation();
+  const [getOrderDetails] = useGetOrderDetailsMutation();
+
+  const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
 
   const pill = (i: number) =>
     `text-xs border rounded-full px-3 py-1 ${i === activeStep ? 'bg-primary text-white border-primary' : 'text-violet-300 border-violet-400'}`;
 
   const initialValues: FormValues = useMemo(() => ({
-    first_name: '', last_name: '', parent_name: '', parent_mobile: '',
+    first_name: '', last_name: '', parent_mobile: '',
     date_of_birth: '', gender: '', height_cm: '', weight_kg: '',
     email: '', clinic_name: '', consultant: '',
 
-    item_code: item_type, // synced later from computed productCode
-    sales_order_id: '',
-    customer: '',
+    item_code: '', // computed from positional + severity
+    customer: user?.customer_id || '',
 
     ap: '', ml: '', da: '', db: '', hc: '', tw: '',
     cr: undefined, cvai: undefined,
@@ -277,8 +405,69 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
     design_by: 'Addiwise', print_by: 'Addiwise', colour: '', thickness_3d_mm: '3.5',
     coupon_code: '', coupon_id: '', agree_terms: false,
 
-    design_price: 0, print_price: 0, standard_discount_pct: 0, gst_rate: 0.05,
-  }), [item_type]);
+    // from server; default empty
+    design_price: '',
+    print_price: '',
+    item_special_discount: '',
+    item_standard_discount: '',
+    additional_discount: '',
+    discounted_price: '',
+    gst_5_amt: '',
+    gst_18_amt: '',
+    total_price: '',
+    gst_rate: 0.05,
+  }), [user?.customer_id]);
+
+  const [formSeed, setFormSeed] = useState<FormValues>(initialValues);
+  const [prefilled, setPrefilled] = useState(false);
+
+  // Prefill (optional)
+  useEffect(() => {
+    const hydrate = async () => {
+      if (!orderId || !deviceTypeId) return;
+      try {
+        const resp: any = await getOrderDetails({ order_type: deviceTypeId, order_id: orderId }).unwrap();
+        const d = resp?.data || {};
+        const seed: FormValues = {
+          ...initialValues,
+          first_name: d.first_name || '',
+          last_name: d.last_name || '',
+          parent_mobile: d.parent_mobile || d.custom_mobile_no || '',
+          date_of_birth: d.date_of_birth || d.dob || '',
+          gender: d.gender || '',
+          weight_kg: d.weight || d.weight_kg || '',
+          email: d.email || d.custom_email || '',
+          clinic_name: d.clinic_name || '',
+          ap: (d.measurement_of_length_a_to_p__mm ?? d.ap ?? '')?.toString() || '',
+          ml: (d.measurement_of_width_m_to_l_mm ?? d.ml ?? '')?.toString() || '',
+          hc: (d.head_circumference_mm ?? '')?.toString() || '',
+          tw: (d.temple_width_mm ?? '')?.toString() || '',
+          da: (d.da ?? '')?.toString() || '',
+          db: (d.db ?? '')?.toString() || '',
+          occipital_area: d.occipital_area || '',
+          parietal_area: d.parietal_area || '',
+          frontal_area: d.frontal_area || '',
+          ear_alignment: d.ear_alignment || '',
+          positional: d.positional || '',
+          severity: d.severity || '',
+          torticollis: d.torticollis || '',
+          post_surgical: d.post_surgical || '',
+          suture_type_surgical_diagnoses_only: d.suture_type_surgical_diagnoses_only || '',
+          date_of_surgery: d.date_of_surgery || '',
+          surgical_complications: d.surgical_complications || '',
+          other_diagnosis_and_syndromes: d.other_diagnosis_and_syndromes || '',
+          item_code: d.item_code || '',
+          scan_gdrive_link: d.custom_upload_link_with_photos || '',
+        };
+        setFormSeed(seed);
+        setPrefilled(true);
+      } catch {
+        setPrefilled(false);
+      }
+    };
+    hydrate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId, deviceTypeId]);
 
   return (
     <div className="w-full">
@@ -296,15 +485,15 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
       </div>
 
       <Formik
-        key={formResetKey}                 // << force remount of the entire form
-        initialValues={initialValues}
+        key={formResetKey + (prefilled ? 1 : 0)}
+        initialValues={prefilled ? formSeed : initialValues}
         validationSchema={Schema}
         onSubmit={() => {}}
         enableReinitialize
         validateOnChange
         validateOnBlur
       >
-        {({ values, errors, touched, setFieldValue,resetForm }) => {
+        {({ values, errors, touched, setFieldValue, resetForm }) => {
           const handleChange = (field: string) => (eOrVal: any) => {
             const next =
               eOrVal && typeof eOrVal === 'object' && 'target' in eOrVal
@@ -313,7 +502,12 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
             setFieldValue(field, next);
           };
 
-          // --- Derived measurements ---
+          // keep Formik.customer in sync with Redux
+          useEffect(() => {
+            setFieldValue('customer', user?.customer_id || '');
+          }, [user?.customer_id, setFieldValue]);
+
+          // Derived metrics (display only)
           const { cr, cvai } = useMemo(() => {
             const apN = toNum(values.ap);
             const mlN = toNum(values.ml);
@@ -327,15 +521,14 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
             return { cr: crV, cvai: cvaiV };
           }, [values.ap, values.ml, values.da, values.db]);
 
-          // --- Single source of truth: productCode ---
+          // Product Code
           const productCode = useMemo(() => {
             const cond = normalizeCondition(values.positional);
             const sev  = normalizeSeverity(values.severity as string, cvai);
             return cond && sev ? makeProductCode(sev, cond) : '';
           }, [values.positional, values.severity, cvai]);
 
-          // keep Formik.item_code in sync (useful for any UI that reads it)
-          useMemo(() => {
+          useEffect(() => {
             setFieldValue('item_code', productCode || '');
           }, [productCode, setFieldValue]);
 
@@ -393,6 +586,12 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
             setFieldValue('print_price', baseBeforeCoupon);
             setFieldValue('standard_discount_pct', stdPct);
             setFieldValue('gst_rate', computedGstRate);
+            // prefer server totals if present; else compute from GST
+            const totalAmount =
+              Number(result.total ?? result.grand_total ?? (baseBeforeCoupon * (1 + (computedGstRate || 0))));
+
+            // store final amount for submit
+            setFieldValue('total_price', totalAmount);
 
             // Return for FinishPayment
             return { design: 0, print: baseBeforeCoupon, stdDiscPct: stdPct, gstRate: computedGstRate };
@@ -409,48 +608,121 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
             }
           };
 
-          // --- Final POSTs ---
-          const [isPlacing, isSavingLater] = [busy === 'place', busy === 'later'];
+          // ===== Submit (Place/Pay later) =====
+          const [isPlacing, isSavingLater] = [busy === 'place', busy === 'later'] as const;
 
-          const placeOrder = async () => {
+          const buildBodyOrForm = (payload: any) => {
+            const hasFiles = !!values.scan_file || (values.extra_files && values.extra_files.length > 0);
+            if (!hasFiles) return payload;
+
+            const fd = new FormData();
+            fd.append('data', JSON.stringify(payload));
+            if (values.scan_file) fd.append('scan_file_primary', values.scan_file);
+            for (const [i, f] of (values.extra_files || []).entries()) {
+              fd.append(`additional_file_${i + 1}`, f);
+            }
+            return fd;
+          };
+
+
+          // ---- helpers to safely read "success" from varying API shapes ----
+          type CreateOk =
+            | { message: { status: string; message?: string; sales_order_id?: string; cranial_order_id?: string } }
+            | { status: string; message?: string; sales_order_id?: string; cranial_order_id?: string }
+            | string
+            | Record<string, any>
+            | undefined
+            | null;
+
+          function normalizeCreateResponse(res: unknown) {
+            let ok = false;
+            let salesId: string | undefined;
+            let cranialId: string | undefined;
+            let note = '';
+
+            if (res == null) return { ok, salesId, cranialId, note: 'Empty response' };
+
+            if (typeof res === 'string') {
+              ok = /success|ok/i.test(res);
+              note = res;
+              return { ok, salesId, cranialId, note };
+            }
+
+            const obj = res as Record<string, any>;
+            const msgObj = obj?.message;
+            const topStatus = obj?.status;
+            const nestedStatus = msgObj && typeof msgObj === 'object' ? msgObj.status : undefined;
+
+            const statusStr =
+              (typeof nestedStatus === 'string' && nestedStatus) ||
+              (typeof topStatus === 'string' && topStatus) ||
+              '';
+
+            ok = /success|ok/i.test(statusStr);
+
+            salesId =
+              msgObj?.sales_order_id ??
+              obj?.sales_order_id ??
+              obj?.data?.sales_order_id;
+
+            cranialId =
+              msgObj?.cranial_order_id ??
+              obj?.cranial_order_id ??
+              obj?.data?.cranial_order_id;
+
+            note =
+              (typeof msgObj?.message === 'string' && msgObj.message) ||
+              (typeof obj?.message === 'string' && obj.message) ||
+              statusStr ||
+              '';
+
+            return { ok, salesId, cranialId, note };
+          }
+
+          const postOrder = async (intent: 'place' | 'later') => {
             if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
             if (!productCode) return alert('Please select Positional Diagnosis + Severity (product code missing).');
             try {
-              setBusy('place');
-              const payload = toApiOrder(values, productCode);
-              await createCranialOrder(payload).unwrap();
-              alert('Order placed successfully.');
-              // >>> Reset everything:
-              resetForm({ values: initialValues });  // reset Formik state
-              setActiveStep(0);                      // go back to first step
-              setFormResetKey((k) => k + 1);         // remount children to flush
+              setBusy(intent);
+
+              const payload = toCreatePayload(values, productCode, {
+                customerId: user?.customer_id,
+                orderId,
+                deviceTypeId,
+              });
+
+              const bodyOrForm = buildBodyOrForm(payload);
+
+              // res type from RTK might be SalesOrdersResponse | string | { message: {...} }
+              const res = (await createCranialOrder(bodyOrForm).unwrap()) as CreateOk;
+
+              const { ok, note, salesId } = normalizeCreateResponse(res);
+
+              if (ok) {
+                // optional toast/alert
+                alert(
+                  intent === 'place'
+                    ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
+                    : 'Order saved. You can pay later.'
+                );
+
+                // go to orders list
+                router.push('/orders');
+                return;
+              }
+
+              // not OK, but we got a response
+              alert(note || 'Order created response not marked as success.');
             } catch (e: any) {
-              const msg = e?.data?.message || e?.data?._server_messages || e?.error || e?.message || 'Failed to place order.';
+              const msg = e?.data?.message || e?.data?._server_messages || e?.error || e?.message || 'Failed to submit order.';
               alert(msg);
             } finally {
               setBusy(null);
             }
           };
 
-          const payLater = async () => {
-            if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
-            if (!productCode)        return alert('Please select Positional Diagnosis + Severity (product code missing).');
-            try {
-              setBusy('later');
-              const payload = toApiOrder(values, productCode);
-              await createCranialOrder(payload).unwrap();
-              alert('Order saved. You can pay later.');
-              // >>> Reset everything:
-              resetForm({ values: initialValues });  // reset Formik state
-              setActiveStep(0);                      // go back to first step
-              setFormResetKey((k) => k + 1);         // remount children to flush
-            } catch (e: any) {
-              const msg = e?.data?.message || e?.data?._server_messages || e?.error || e?.message || 'Failed to save order.';
-              alert(msg);
-            } finally {
-              setBusy(null);
-            }
-          };
+          const placeOrder = () => postOrder('place');
+          const payLater   = () => postOrder('later');
 
           return (
             <Form className="max-w-6xl w-[92%] mx-auto my-6 space-y-6">
@@ -466,15 +738,9 @@ export default function CranialOrderForm({ item_type }: CranialOrderFormProps) {
                 />
               )}
 
-              {activeStep === 1 && (
-                <Measurement
-                  UI={{ Input, Label, Card }}
-                />
-              )}
+              {activeStep === 1 && <Measurement UI={{ Input, Label, Card }} />}
 
-              {activeStep === 2 && (
-                <Computation cr={cr} cvai={cvai} UI={{ Card, Label, Input }} />
-              )}
+              {activeStep === 2 && <Computation cr={cr} cvai={cvai} UI={{ Card, Label, Input }} />}
 
               {activeStep === 3 && (
                 <Assessment

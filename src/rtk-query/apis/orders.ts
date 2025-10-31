@@ -395,6 +395,8 @@ interface GetSalesOrderDetailsRequest {
   order_type: string;
   order_id: string;
 }
+const isFormData = (v: unknown): v is FormData =>
+  typeof FormData !== 'undefined' && v instanceof FormData;
 
 export const ordersApi = createApi({
   reducerPath: 'ordersApi',
@@ -424,23 +426,15 @@ export const ordersApi = createApi({
       }
     }),
     // ----------------------
-    // CREATE CRANIAL ORDER
-    // ----------------------
-    createCranialOrder: builder.mutation<any, any>({
-      /** Try custom RPCs, then fallback to DocType resource create. */
-      async queryFn(arg, _api, _extra, baseQuery) {
-        const res = await tryRpcInOrder(baseQuery as any, [
-          // If this exists on your server:
-          { url: '/method/addiwise.apis.order_types.ch_order.create_ch_order', method: 'POST', body: arg },
-          // The one that currently 417s for you:
-          { url: '/method/addiwise.apis.order_types.cranial_helmet_order.create_cranial_helmet_order', method: 'POST', body: arg },
-          // Guaranteed fallback when the DocType exists:
-          { url: '/resource/Cranial%20Helmet%20Orders', method: 'POST', body: arg },
-        ]);
-
-        if ('error' in res && res.error) return { error: res.error };
-        // normalize: if server put payload in `data` or `message`, just pass through
-        return { data: (res.data as any) ?? res };
+    // CREATE CRANIAL ORDER (same style as createInsoleOrder)
+    createCranialOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.cranial_helmet_order.create_cranial_order',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        return response;
       },
     }),
 
@@ -462,44 +456,13 @@ export const ordersApi = createApi({
     //     return { data: (res.data as any) ?? res };
     //   },
     // }),
-    getCHEstimate: builder.mutation<any, {
-      item_code: string;
-      design_by: string;
-      print_by: string;
-      discount_per: number;
-      discount_amt: number;
-      coupon_code?: string;
-      company?: any;
-      customer?: any;
-      items?: { item_code: string; qty: number }[];
-      price_list?: string;
-    }>({
-      async queryFn(arg, _api, _extra, baseQuery) {
-        const res = await tryRpcInOrder(baseQuery as any, [
-          { url: '/method/addiwise.apis.order_types.ch_order.get_ch_estimate', method: 'POST', body: arg },
-          { url: '/method/addiwise.apis.order_types.cranial_helmet_order.get_ch_estimate', method: 'POST', body: arg },
-        ]);
-        if ('error' in res && res.error) {
-          // Fallback to client-side estimate if company, customer, items are provided
-          if (arg.company && arg.customer && arg.items) {
-            const { result, error } = await estimateOrderClientSide({
-              company: arg.company,
-              customer: arg.customer,
-              items: arg.items,
-              coupon: arg.coupon_code
-                ? { code: arg.coupon_code, discount_type: 'Percent', discount_value: arg.discount_per }
-                : undefined,
-              price_list: arg.price_list,
-              baseQuery,          // ✅ pass baseQuery
-              api: _api,          // ✅ pass api
-            });
-            if (error) return { error: { status: 500, data: { message: error } } };
-            return { data: result };
-          }
-          return { error: res.error };
-        }
-        return { data: (res.data as any) ?? res };
-      },
+    getCHEstimate: builder.mutation<CHEstimateResponse, CHEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.cranial_helmet_order.get_che_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: CHEstimateResponse) => response
     }),
     //     getOrders: builder.query<SalesOrdersResponse, { page: number; page_size: number }>({
     //   query: ({ page, page_size }) => ({

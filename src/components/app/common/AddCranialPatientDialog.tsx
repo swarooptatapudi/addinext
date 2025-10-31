@@ -171,7 +171,6 @@ export function AddCranialPatientDialog({ open, onOpenChange, onConfirm }: AddPa
               name="parent_name"
               value={formik.values.parent_name}
               onChange={formik.handleChange}
-              required
               inVaild={formik.touched.parent_name && !!formik.errors.parent_name}
               error={formik.touched.parent_name ? formik.errors.parent_name : undefined}
               onBlur={formik.handleBlur}
