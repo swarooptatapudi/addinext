@@ -171,6 +171,13 @@ const toNumOrNull = (v?: string | number) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 };
+
+const toFloat = (s?: string): number | null => {
+  if (!s) return null;
+  const n = Number.parseFloat(s.trim());
+  return Number.isFinite(n) ? n : null;
+};
+
 const orEmpty = (v?: string) => (v == null ? '' : v);
 
 const POS_LABEL_BY_CODE: Record<string, string> = {
@@ -442,8 +449,8 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           ml: (d.measurement_of_width_m_to_l_mm ?? d.ml ?? '')?.toString() || '',
           hc: (d.head_circumference_mm ?? '')?.toString() || '',
           tw: (d.temple_width_mm ?? '')?.toString() || '',
-          da: (d.da ?? '')?.toString() || '',
-          db: (d.db ?? '')?.toString() || '',
+          da: (d.diagonal_a_mm ?? '')?.toString() || '',
+          db: (d.diagonal_b_mm ?? '')?.toString() || '',
           occipital_area: d.occipital_area || '',
           parietal_area: d.parietal_area || '',
           frontal_area: d.frontal_area || '',
