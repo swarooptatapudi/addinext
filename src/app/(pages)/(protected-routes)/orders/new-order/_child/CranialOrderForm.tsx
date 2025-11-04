@@ -35,6 +35,7 @@ import {
   useCreateCranialOrderMutation,
   useValidateCouponMutation,
   useGetOrderDetailsMutation,
+  usePreSignedUrlMutation, // 🆕 presign hook
 } from '@/rtk-query/apis/orders';
 
 import { USER } from '@/uttils/Types';
@@ -210,14 +211,14 @@ function toOrderDetails(values: FormValues) {
     parent_mobile: orEmpty(values.parent_mobile),
     email: orEmpty(values.email),
     clinic_name: orEmpty(values.clinic_name),
-    date_of_birth: values.date_of_birth || null,
-    height_cm: toNumOrNull(values.height_cm),             // <-- add
+    date_of_birth: values.date_of_surgery || null,
+    height_cm: toNumOrNull(values.height_cm),
     weight_kg: toNumOrNull(values.weight_kg),
 
     measurement_of_length_a_to_p__mm: ap,
     measurement_of_width_m_to_l_mm: ml,
-    diagonal_a_mm: toNumOrNull(values.da),                // <-- add
-    diagonal_b_mm: toNumOrNull(values.db),                // <-- add
+    diagonal_a_mm: toNumOrNull(values.da),
+    diagonal_b_mm: toNumOrNull(values.db),
     head_circumference_mm: toNumOrNull(values.hc),
     temple_width_mm: toNumOrNull(values.tw),
     cr, cvai,
@@ -248,22 +249,22 @@ function toOrderDetails(values: FormValues) {
 }
 function flattenForSalesOrder(values: FormValues) {
   return {
-    patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),                 // <— add this
+    patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),
     custom_patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),
     first_name: orEmpty(values.first_name),
     last_name: orEmpty(values.last_name),
     parent_mobile: orEmpty(values.parent_mobile),
     email: orEmpty(values.email),
     clinic_name: orEmpty(values.clinic_name),
-    date_of_birth: values.date_of_birth || null,
+    date_of_birth: values.date_of_surgery || null,
     height_cm: toNumOrNull(values.height_cm),
     weight_kg: toNumOrNull(values.weight_kg),
 
     // Measurements
     measurement_of_length_a_to_p__mm: toNumOrNull(values.ap),
     measurement_of_width_m_to_l_mm: toNumOrNull(values.ml),
-    diagonal_a_mm: toNumOrNull(values.da),            // Diagonal A
-    diagonal_b_mm: toNumOrNull(values.db),            // Diagonal B
+    diagonal_a_mm: toNumOrNull(values.da),
+    diagonal_b_mm: toNumOrNull(values.db),
     head_circumference_mm: toNumOrNull(values.hc),
     temple_width_mm: toNumOrNull(values.tw),
 
@@ -272,7 +273,7 @@ function flattenForSalesOrder(values: FormValues) {
     cvai: typeof values.cvai === 'number' ? values.cvai : undefined,
 
     // Clinical / Diagnosis
-    positional: toPositionalLabel(values.positional), // Positional Diagnosis
+    positional: toPositionalLabel(values.positional),
     torticollis: orEmpty(values.torticollis),
     severity: orEmpty(values.severity as string),
     post_surgical: orEmpty(values.post_surgical),
@@ -288,9 +289,9 @@ function flattenForSalesOrder(values: FormValues) {
     ear_alignment: orEmpty(values.ear_alignment),
 
     // UI / selections
-    custom_design_by: orEmpty(values.design_by),      // Design By
-    custom_print_by: orEmpty(values.print_by),        // Print By
-    colour: orEmpty(values.colour),                   // Colour
+    custom_design_by: orEmpty(values.design_by),
+    custom_print_by: orEmpty(values.print_by),
+    colour: orEmpty(values.colour),
     thickness_3d_mm: orEmpty(values.thickness_3d_mm),
 
     // Payment Summary (send as plain numbers; backend can format)
@@ -347,7 +348,7 @@ function toCreatePayload(values: FormValues, productCode: string, ctx: {
   };
 
   if (values.scan_gdrive_link) {
-    payload.custom_scan_items = { primary_scan: values.scan_gdrive_link };
+    payload.custom_scan_items = { scan_file: values.scan_gdrive_link };
     payload.custom_upload_link_with_photos = values.scan_gdrive_link; // (common Frappe field name)
   }
   if (ctx.orderId) {
@@ -380,6 +381,9 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
   const [createCranialOrder] = useCreateCranialOrderMutation();
   const [validateCoupon] = useValidateCouponMutation();
   const [getOrderDetails] = useGetOrderDetailsMutation();
+  const [preSignedUrl] = usePreSignedUrlMutation(); // 🆕 presign hook
+
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]); // 🆕 metadata store
 
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
 
@@ -474,6 +478,74 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, deviceTypeId]);
 
+  // ------------------ presigned upload helper ------------------
+  const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
+    try {
+      // Determine content type to request from backend (browsers often misreport .stl)
+      let contentType = 'application/octet-stream';
+      const lower = (file.name || '').toLowerCase();
+      if (lower.endsWith('.stl')) contentType = 'model/stl';
+      else if (lower.endsWith('.obj')) contentType = 'application/octet-stream';
+      else if (lower.endsWith('.ply')) contentType = 'application/octet-stream';
+      else if (lower.endsWith('.mtl')) contentType = 'application/octet-stream';
+      else if (file.type) contentType = file.type;
+
+      // 1) Request presigned URL
+      const result: any = await preSignedUrl({
+        fileName: file.name,
+        fileType: contentType,
+        userId,
+      }).unwrap();
+
+      // Validate shape — adapt if backend shape differs
+      if (!result?.message?.status) {
+        throw new Error('Presigned URL request failed');
+      }
+      const uploadUrl = result?.message?.data?.uploadUrl;
+      const key = result?.message?.data?.key;
+      if (!uploadUrl) throw new Error('No uploadUrl from presign response');
+
+      const uploadUrlStr = String(uploadUrl);
+      const keyStr = key ? String(key) : uploadUrlStr.split('?')[0];
+
+      // 2) Upload file via XHR so we can track progress and set headers exactly
+      const uploadFileToS3 = (url: string, f: File) =>
+        new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('PUT', url);
+          // Use exact content-type used in presign request
+          xhr.setRequestHeader('Content-Type', contentType);
+
+          xhr.onload = () => {
+            if (xhr.status === 200 || xhr.status === 204) {
+              resolve();
+            } else {
+              reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.responseText}`));
+            }
+          };
+          xhr.onerror = () => reject(new Error('Network error during upload'));
+          xhr.send(f);
+        });
+
+      await uploadFileToS3(uploadUrlStr, file);
+
+      const fileMeta = {
+        key: keyStr,
+        size: file.size,
+        type: contentType,
+        originalName: file.name,
+      };
+
+      setUploadedFiles((prev) => [...prev, fileMeta]);
+      return fileMeta;
+    } catch (err) {
+      console.error('Presigned upload error:', err);
+      throw err;
+    }
+  };
+
+  // ----------------------------------
+
   return (
     <div className="w-full">
       <div className="sticky top-0 z-10 bg-primary text-white px-4 py-3">
@@ -513,7 +585,6 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           }, [user?.customer_id, setFieldValue]);
 
           // Derived metrics (display only)
-          // Replace your existing memo with this
           const { cr, cvai } = useMemo(() => {
             const apN = toNum(values.ap);   // toNum returns number | undefined
             const mlN = toNum(values.ml);
@@ -529,7 +600,6 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
               try {
                 crV = calculateCephalicRatio(apN, mlN).value;
               } catch (err) {
-                // swallow or console.warn if desired
                 console.warn('CR calc error', err);
               }
             }
@@ -705,9 +775,11 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             return { ok, salesId, cranialId, note };
           }
 
+          // 🆕 Updated postOrder with presign upload and fallback
           const postOrder = async (intent: 'place' | 'later') => {
             if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
             if (!productCode) return alert('Please select Positional Diagnosis + Severity (product code missing).');
+
             try {
               setBusy(intent);
 
@@ -717,27 +789,53 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                 deviceTypeId,
               });
 
-              const bodyOrForm = buildBodyOrForm(payload);
+              // If there's a scan file, try presigned upload first (avoid 413)
+              if (values.scan_file instanceof File) {
+                try {
+                  const meta = await uploadFileAndStoreMetadata(values.scan_file, user?.customer_id || '1');
 
-              // res type from RTK might be SalesOrdersResponse | string | { message: {...} }
-              const res = (await createCranialOrder(bodyOrForm).unwrap()) as CreateOk;
+                  // attach reference/key to payload
+                  payload.custom_scan_items = payload.custom_scan_items || {};
+                  payload.custom_scan_items.scan_file = meta.key;
+                  payload.custom_upload_link_with_photos = meta.key;
+                } catch (presignErr) {
+                  // Presign/upload failed — fallback to multipart FormData (old behavior)
+                  console.warn('Presign/upload failed — falling back to multipart POST', presignErr);
 
+                  const bodyOrForm = buildBodyOrForm(payload);
+                  const resFallback = (await createCranialOrder(bodyOrForm).unwrap()) as CreateOk;
+                  const { ok, note, salesId } = normalizeCreateResponse(resFallback);
+
+                  if (ok) {
+                    alert(
+                      intent === 'place'
+                        ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
+                        : 'Order saved. You can pay later.'
+                    );
+                    router.push('/orders');
+                    return;
+                  }
+
+                  alert(note || 'Order created response not marked as success.');
+                  setBusy(null);
+                  return;
+                }
+              }
+
+              // Send JSON payload (no binary) — expected small, no 413
+              const res = (await createCranialOrder(payload).unwrap()) as CreateOk;
               const { ok, note, salesId } = normalizeCreateResponse(res);
 
               if (ok) {
-                // optional toast/alert
                 alert(
                   intent === 'place'
                     ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
                     : 'Order saved. You can pay later.'
                 );
-
-                // go to orders list
                 router.push('/orders');
                 return;
               }
 
-              // not OK, but we got a response
               alert(note || 'Order created response not marked as success.');
             } catch (e: any) {
               const msg = e?.data?.message || e?.data?._server_messages || e?.error || e?.message || 'Failed to submit order.';
