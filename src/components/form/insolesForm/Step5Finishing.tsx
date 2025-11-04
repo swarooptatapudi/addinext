@@ -133,12 +133,13 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
         };
 
         document.body.appendChild(script);
+
       } catch (err) {
         setIsRazorpayLoaded(false);
       }
 
 
-     
+
     };
 
     loadRazorpayScript();
@@ -258,13 +259,13 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
   try {
     // ✅ CRITICAL FIX: Force Content-Type for STL files
     let contentType = "model/stl";
-    
+
     // // Handle STL files specifically - browsers often return empty or incorrect MIME type
     // if (file.name.toLowerCase().endsWith('.stl')) {
     //   contentType = 'application/octet-stream'; // Standard for STL files
     //   console.log("🔧 STL file detected, using application/octet-stream");
     // }
-    
+
     // // If file.type is empty or generic, use application/octet-stream
     // if (!contentType || contentType === '' || contentType === 'application/octet-stream') {
     //   contentType = 'application/octet-stream';
@@ -274,13 +275,13 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
     // Step 1: Get Presigned URL using RTK Query
     const result = await preSignedUrl({
       fileName: file.name,
-      fileType: contentType, 
+      fileType: contentType,
       userId
     }).unwrap();
 
     // console.log("📥 Received presigned URL:", result);
-   
-   
+
+
 // @ts-ignore
     if (!result?.message?.status) {
       throw new Error("Presigned URL request failed");
@@ -294,14 +295,14 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
     // console.log("🆔 S3 Object Key:", key);
     const uploadUrlStr = String(uploadUrl);
 const keyStr       = String(key);
-    
 
-    // Step 2: Upload File to S3 
+
+    // Step 2: Upload File to S3
     const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
       return new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", url);
-        
+
         // ✅ CRITICAL: Use the exact same Content-Type as presigned URL generation
         xhr.setRequestHeader("Content-Type", contentType);
         // console.log(`🎯 Setting Content-Type header to: ${contentType}`);
@@ -412,7 +413,7 @@ for (const f of filesToUpload) {
       },
       item_code: itemCode,
       //  uploaded_files: encodedFiles,
-       
+
       addicoins: parseInt(values.addicoins) || 0, // Deduct coins
       total_price: estimateData?.apiResponse?.total_price ?? 0,
       custom_scan_items: {
@@ -428,7 +429,7 @@ for (const f of filesToUpload) {
     //      const createFormDataWithFiles = (finalOrderPayload: any) => {
     //   const formData = new FormData();
     //   formData.append('data', JSON.stringify(finalOrderPayload));
-      
+
     //   // Extract and append file uploads
     //   const extractAndAppendFiles = (obj: any, prefix: string = '') => {
     //     for (const key in obj) {
@@ -468,7 +469,7 @@ for (const f of filesToUpload) {
 
     //   // Extract files from the values object
     //   extractAndAppendFiles(values);
-      
+
     //   // Also check for direct file fields in values
     //   if (values.left_foot_file && values.left_foot_file instanceof File) {
     //     formData.append('left_foot_file', values.left_foot_file);
@@ -476,7 +477,7 @@ for (const f of filesToUpload) {
     //   if (values.right_foot_file && values.right_foot_file instanceof File) {
     //     formData.append('right_foot_file', values.right_foot_file);
     //   }
-      
+
     //   // Check scan_items for files
     //   if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
     //     values.scan_items.forEach((item: any, index: number) => {
@@ -488,7 +489,7 @@ for (const f of filesToUpload) {
     //       }
     //     });
     //   }
-      
+
     //   return formData;
     // };
     // 🟢 Step 3: Call API directly — no Razorpay flow
@@ -573,7 +574,7 @@ for (const f of filesToUpload) {
       right_foot_file: uploadedUrls[1] || "",
       // obj_file: uploadedUrls[2] || ""
     },
-      //  uploadURL: uploadedUrls[0] || "", 
+      //  uploadURL: uploadedUrls[0] || "",
       addicoins: parseInt(values.addicoins) || 0, // Deduct coins
       total_price: estimateData?.apiResponse?.total_price ?? 0,
     };
@@ -583,7 +584,7 @@ for (const f of filesToUpload) {
     //  const createFormDataWithFiles = (finalOrderPayload: any) => {
     //   const formData = new FormData();
     //   formData.append('data', JSON.stringify(finalOrderPayload));
-      
+
     //   // Extract and append file uploads
     //   const extractAndAppendFiles = (obj: any, prefix: string = '') => {
     //     for (const key in obj) {
@@ -623,7 +624,7 @@ for (const f of filesToUpload) {
 
     //   // Extract files from the values object
     //   extractAndAppendFiles(values);
-      
+
     //   // Also check for direct file fields in values
     //   if (values.left_foot_file && values.left_foot_file instanceof File) {
     //     formData.append('left_foot_file', values.left_foot_file);
@@ -631,7 +632,7 @@ for (const f of filesToUpload) {
     //   if (values.right_foot_file && values.right_foot_file instanceof File) {
     //     formData.append('right_foot_file', values.right_foot_file);
     //   }
-      
+
     //   // Check scan_items for files
     //   if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
     //     values.scan_items.forEach((item: any, index: number) => {
@@ -643,14 +644,14 @@ for (const f of filesToUpload) {
     //       }
     //     });
     //   }
-      
+
     //   return formData;
     // };
     // 🟢 Step 3: Call API directly — no Razorpay flow
     const finalFormData = orderPayload;
     const orderResponse = await createInsoleOrder(finalFormData).unwrap();
     // console.log("✅ Order Response:", orderResponse);
-      
+
  // @ts-ignore
     if (orderResponse?.message?.status === "success") {
       toast.success("Order created successfully");
@@ -702,7 +703,7 @@ for (const f of filesToUpload) {
     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
-    
+
       const uploadedMetadata: any[] = [];
 const uploadedUrls: string[] = [];
     // for (const f of filesToUpload) {
@@ -734,7 +735,7 @@ for (const f of filesToUpload) {
       right_foot_file: uploadedUrls[1] || "",
       // obj_file: uploadedUrls[2] || ""
     },
-        // uploadURL: uploadedUrls[0] || "", 
+        // uploadURL: uploadedUrls[0] || "",
         addicoins: parseInt(values.addicoins) || 0,
         total_price: estimateData?.apiResponse?.total_price ?? 0
       };
@@ -744,7 +745,7 @@ for (const f of filesToUpload) {
     //  const createFormDataWithFiles = (finalOrderPayload: any) => {
     //   const formData = new FormData();
     //   formData.append('data', JSON.stringify(finalOrderPayload));
-      
+
     //   // Extract and append file uploads
     //   const extractAndAppendFiles = (obj: any, prefix: string = '') => {
     //     for (const key in obj) {
@@ -786,7 +787,7 @@ for (const f of filesToUpload) {
 
     //   // Extract files from the values object
     //   extractAndAppendFiles(values);
-      
+
     //   // Also check for direct file fields in values
     //   if (values.left_foot_file && values.left_foot_file instanceof File) {
     //     formData.append('left_foot_file', values.left_foot_file);
@@ -794,7 +795,7 @@ for (const f of filesToUpload) {
     //   if (values.right_foot_file && values.right_foot_file instanceof File) {
     //     formData.append('right_foot_file', values.right_foot_file);
     //   }
-      
+
     //   // Check scan_items for files
     //   if (values.custom_scan_items && Array.isArray(values.custom_scan_items)) {
     //     values.scan_items.forEach((item: any, index: number) => {
@@ -851,10 +852,10 @@ for (const f of filesToUpload) {
               // @ts-ignore
               throw new Error(orderResponse?.message?.message || 'Order creation failed');
             }
-          } 
-          catch (orderError: any) 
+          }
+          catch (orderError: any)
           {
-  console.error(' Order creation failed:', orderError); 
+  console.error(' Order creation failed:', orderError);
 
   // Extract meaningful message
   const backendMessage =
@@ -1105,7 +1106,7 @@ for (const f of filesToUpload) {
   //   } catch (error: any) {
   //     toast.error(error.data?.message || 'Failed to get estimate');
   //     console.error('Estimate error:', error);
-  
+
   //   } finally {
   //     setIsEstimating(false);
   //   }
@@ -1362,7 +1363,7 @@ for (const f of filesToUpload) {
 
         {/* <div className="grid md:grid-cols-2 gap-6 mt-2">
         <div className="flex items-center">
-          <div className="grid md:grid-cols-2 gap-6 mt-2"> 
+          <div className="grid md:grid-cols-2 gap-6 mt-2">
          <div className="flex items-center">
   <label className="font-medium min-w-[100px] text-sm">Thickness:</label>
   <input
@@ -1372,12 +1373,12 @@ for (const f of filesToUpload) {
      onChange={(e) => setThickness(e.target.value)}
     className="border rounded px-2 py-1 w-[350px] rounded-md"
     placeholder="Enter thickness"
-   
+
   />
 </div>
 
           </div>
-         
+
         </div>
       </div> */}
         <div className="grid md:grid-cols-2 gap-6 mt-2">
@@ -1530,7 +1531,7 @@ for (const f of filesToUpload) {
                  </tbody>
                </table>
              </div>
-           </div>        
+           </div>
          </div>
          </>):<>
          <div className="flex gap-8 mb-8 -mt-[230px] ml-[416px]">
@@ -1638,7 +1639,7 @@ for (const f of filesToUpload) {
         {/* <div className="mt-20">
                 <h3 className="text-lg font-medium mb-[-40px]">Finish/ insoletype</h3>
                 <div className="ml-45">
-                <ImageCheckbox 
+                <ImageCheckbox
           options={options}
           value={selectedFinishOptions.length > 0 ? selectedFinishOptions[0].value : ''}
           onChange={(value) => {
@@ -1808,17 +1809,17 @@ for (const f of filesToUpload) {
         <p>The color of the insole padding may vary depending on material availability.</p>
       </div>
       {/* right content */}
-      
+
       {
         showPriceSummary && (
           <div className="flex flex-col gap-6">
-       
- 
-        
+
+
+
 
         {values.Design_by === 'Addiwise' && values.Print_by === 'Addiwise' && (
           <>
-          
+
             <Card
               className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} transition-colors duration-200`}
             >
@@ -2070,7 +2071,7 @@ for (const f of filesToUpload) {
           </>
         )}
          {values.Design_by === 'Self' && values.Print_by === 'Addiwise' && (
-          
+
           <>
             <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg mt-4 cursor-pointer">
               <CardHeader className="pb-2">
@@ -2335,7 +2336,7 @@ for (const f of filesToUpload) {
        {!orderId && !deviceTypeId && (
   <>
     {/* ✅ Show Estimate Button Always */}
-   
+
 
     {/* ✅ Show Payment Buttons ONLY if NOT Self/Self */}
     {!(values.Design_by === 'Self' && values.Print_by === 'Self') && (
@@ -2374,7 +2375,7 @@ for (const f of filesToUpload) {
           Pay Later
         </Button>
       </div></>
-     
+
     )}
   </>
 )}

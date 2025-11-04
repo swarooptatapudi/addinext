@@ -80,7 +80,7 @@ const totalPages = data?.data.total_pages ?? 1;
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const deviceType = searchParams.get("deviceType");
-  
+
   const router = useRouter();
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
@@ -219,6 +219,16 @@ const totalPages = data?.data.total_pages ?? 1;
         }).toString()}`
       );
     }
+    else if (order.device_type === "Cranial Helmet Orders") {
+      // console.log("IN Orders..>", order.order_id, order.device_type)
+      router.push(
+        `/orders/new-order/Cranial?${new URLSearchParams({
+          orderId: order.order_id,
+          deviceType: order.device_type,
+          //  skipValidation: "true"
+        }).toString()}`
+      );
+    }
   };
 
   // table columns
@@ -269,13 +279,13 @@ const totalPages = data?.data.total_pages ?? 1;
         let status = order.status;
         const orderValue = order.order_value || 0;
         // console.log('Order Value:', orderValue);
-     
+
         if (
           status === 'Draft' &&
           (order.custom_payment_reference_id || order.sales_invoices.length > 0)
         ) {
           status = 'Paid';
-        } 
+        }
        if (orderValue === 0) {
       status = 'Paid';
     }
@@ -607,7 +617,7 @@ const totalPages = data?.data.total_pages ?? 1;
 //   };
 
 //   // const handleOrderIdClick = (order: Order) => {
-//   //   console.log("Order data on click:", order); 
+//   //   console.log("Order data on click:", order);
 //   //   if (order.device_type === 'BK Orders') {
 //   //     router.push(
 //   //       `/orders/new-order/BK?${new URLSearchParams({
