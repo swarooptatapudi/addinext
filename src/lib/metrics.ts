@@ -6,15 +6,14 @@ export type CephalicRatioResult = {
   range: string;
 };
 
+/** Type for CVAIResult for consistency with your existing usage */
 export type CVAIResult = {
-  valueShorterDenominator: number;
-  valueLongerDenominator: number;
+  value: number;
   severity: string;
   description: string;
   diagonalDifference: number;
   range: string;
 };
-
 export type CranialAsymmetryResult = {
   value: number;
   severity: string;
@@ -36,28 +35,58 @@ export function calculateCephalicRatio(apLength: number, mlWidth: number): Cepha
   return { value: Number(value.toFixed(2)), severity, description, range };
 }
 
-export function calculateCVAI(diagonalA: number, diagonalB: number): CVAIResult {
-  if (diagonalA <= 0 || diagonalB <= 0) throw new Error('Diagonal measurements must be greater than 0');
-  if (diagonalA < diagonalB) throw new Error('Diagonal A must be the longer diagonal');
+/**
+ * Calculates Cranial Vault Asymmetry Index (CVAI)
+ * Formula: |A - B| * 100 / max(A, B)
+ *
+ * @param a Diagonal A (e.g., mm)
+ * @param b Diagonal B (e.g., mm)
+ * @returns {CVAIResult} CVAI value + metadata
+ */
+export function calculateCVAI(a: number, b: number): CVAIResult {
+  if (a <= 0 && b <= 0) {
+    throw new Error('Both diagonals cannot be zero or negative.');
+  }
 
-  const difference = diagonalA - diagonalB;
-  const valueShorterDenominator = (difference / diagonalB) * 100;
-  const valueLongerDenominator  = (difference / diagonalA) * 100;
+  const maxVal = Math.max(a, b);
+  if (maxVal === 0) {
+    throw new Error('Cannot calculate CVAI when both values are 0.');
+  }
+
+  const diff = Math.abs(a - b);
+  const cvai = (diff * 100) / maxVal;
+  const roundedCVAI = Number(cvai.toFixed(2));
 
   let severity: string, description: string, range: string;
-  if (valueShorterDenominator < 3.5)       { severity = 'Normal';               description = 'Normal cranial symmetry'; range = '<3.5%'; }
-  else if (valueShorterDenominator < 6.25) { severity = 'Mild Plagiocephaly';   description = 'Mild asymmetry';         range = '3.5-6.25%'; }
-  else if (valueShorterDenominator < 8.75) { severity = 'Moderate Plagiocephaly';description = 'Moderate asymmetry';    range = '6.25-8.75%'; }
-  else if (valueShorterDenominator <= 11)  { severity = 'Severe Plagiocephaly'; description = 'Severe asymmetry';       range = '8.75-11.0%'; }
-  else                                     { severity = 'Very Severe';          description = 'Very severe asymmetry';  range = '>11.0%'; }
+
+  if (roundedCVAI < 3.5) {
+    severity = 'Normal';
+    description = 'Normal cranial symmetry';
+    range = '<3.5%';
+  } else if (roundedCVAI < 6.25) {
+    severity = 'Mild Plagiocephaly';
+    description = 'Mild asymmetry';
+    range = '3.5–6.24%';
+  } else if (roundedCVAI < 8.75) {
+    severity = 'Moderate Plagiocephaly';
+    description = 'Moderate asymmetry';
+    range = '6.25–8.74%';
+  } else if (roundedCVAI <= 11) {
+    severity = 'Severe Plagiocephaly';
+    description = 'Severe asymmetry';
+    range = '8.75–11.0%';
+  } else {
+    severity = 'Very Severe';
+    description = 'Very severe asymmetry';
+    range = '>11.0%';
+  }
 
   return {
-    valueShorterDenominator: Number(valueShorterDenominator.toFixed(2)),
-    valueLongerDenominator: Number(valueLongerDenominator.toFixed(2)),
+    value: roundedCVAI,
     severity,
     description,
-    diagonalDifference: Number(difference.toFixed(2)),
-    range
+    diagonalDifference: Number(diff.toFixed(2)),
+    range,
   };
 }
 
