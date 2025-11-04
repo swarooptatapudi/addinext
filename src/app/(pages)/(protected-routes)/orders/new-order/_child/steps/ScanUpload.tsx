@@ -1,69 +1,94 @@
 'use client';
-import React, { useRef, useState } from 'react';
-import { usePreSignedUrlMutation } from '@/rtk-query/apis/orders';
+import React, { useState } from 'react';
+import StlFilePicker from '@/components/app/common/StlPreviewer';
 
-type UISet = { Input:any; Label:any; Card:any; Textarea:any };
-type Props = { values:any; setFieldValue:(f:string,v:any)=>void; UI:UISet };
+type UISet = { Input: any; Label: any; Card: any; Textarea: any };
+type Props = { values: any; setFieldValue: (f: string, v: any) => void; UI: UISet };
+
+const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
 export default function ScanUpload({ values, setFieldValue, UI }: Props) {
   const { Input, Label, Card, Textarea } = UI;
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
-  const [preSignedUrl] = usePreSignedUrlMutation();
-  const [uploading, setUploading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const validateAndSet = (file: File | null) => {
+    setFileError(null);
 
-  const handleUpload = async (file: File) => {
-    setMsg(null);
-    setUploading(true);
-    try {
-      // 1) Ask your backend for a presigned URL
-      const { message, data }: any = await preSignedUrl({
-        file_name: file.name,
-        file_type: file.type,
-      }).unwrap();
-
-      // Your endpoint may return `data.presigned_url` or `data.url`
-      const presignedUrl = (data?.presigned_url || data?.url || data) as string;
-      if (!presignedUrl) throw new Error('No presigned URL returned');
-
-      // 2) Upload file to S3 with PUT
-      const putRes = await fetch(presignedUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
-      });
-      if (!putRes.ok) throw new Error(`S3 upload failed: ${putRes.status}`);
-
-      setMsg('File uploaded successfully!');
-    } catch (e:any) {
-      setMsg(e?.message || 'Upload failed');
-      console.error(e);
-    } finally {
-      setUploading(false);
+    if (!file) {
+      // user cleared selection
+      setFieldValue('scan_file', null);
+      return;
     }
+
+    // extension check (basic)
+    const name = file.name || '';
+    const ext = name.slice(name.lastIndexOf('.')).toLowerCase();
+    if (ext !== '.stl') {
+      setFileError('Please upload a .stl file.');
+      setFieldValue('scan_file', null);
+      return;
+    }
+
+    // size check
+    if (file.size > MAX_BYTES) {
+      setFileError('File is too large — maximum allowed size is 25 MB.');
+      setFieldValue('scan_file', null);
+      return;
+    }
+
+    // passed validation
+    setFieldValue('scan_file', file);
   };
+
+  const removeFile = () => {
+    setFieldValue('scan_file', null);
+    setFileError(null);
+  };
+
+  const selectedName = values?.scan_file?.name ?? null;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-      <h2 className="text-primary text-lg font-semibold border-b pb-2">Scan & Upload</h2>
+      <h2 className="text-primary text-lg font-semibold border-b pb-2">Cranial Helmet — Scan & Upload</h2>
 
-      {/* Row 1: STL upload + Google Drive link */}
+      {/* Row 1: STL Upload + Google Drive link */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
         <Card className="p-4 bg-gray-50">
-          <Label className="mb-2 block">Upload Scan (.stl) — max 25 MB</Label>
-          <Input
-            type="file"
-            ref={fileRef}
-            accept=".stl"
-            onChange={async (e:any) => {
-              const f = e.target.files?.[0];
-              setFieldValue('scan_file', f || null);
-              if (f) await handleUpload(f);
-            }}
-            disabled={uploading}
-          />
-          {msg && <p className="text-xs mt-2">{msg}</p>}
+          <Label className="mb-2 block">Upload STL file — max 25 MB</Label>
+
+          <div className="w-fit">
+            <StlFilePicker
+              label="Upload STL file"
+              buttonText="Upload STL"
+              accept={['.stl']}
+              onFileSelect={(file) => {
+                // expects File | null
+                validateAndSet(file ?? null);
+              }}
+            />
+          </div>
+
+          {/* Inline validation message */}
+          {fileError && (
+            <p className="text-xs text-red-600 mt-2">{fileError}</p>
+          )}
+
+          {/* selected file with remove */}
+          {selectedName && !fileError && (
+            <div className="mt-3 flex items-center gap-3">
+              <div className="text-sm">
+                <div className="font-medium">Selected file</div>
+                <div className="text-xs text-gray-600">{selectedName}</div>
+              </div>
+              <button
+                type="button"
+                onClick={removeFile}
+                className="text-xs px-2 py-1 border rounded bg-white hover:bg-gray-100"
+              >
+                Remove
+              </button>
+            </div>
+          )}
         </Card>
 
         <Card className="p-4 bg-gray-50">
@@ -72,7 +97,7 @@ export default function ScanUpload({ values, setFieldValue, UI }: Props) {
             type="url"
             placeholder="https://drive.google.com/..."
             value={values.scan_gdrive_link || ''}
-            onChange={(e:any) => setFieldValue('scan_gdrive_link', e.target.value)}
+            onChange={(e: any) => setFieldValue('scan_gdrive_link', e.target.value)}
           />
           <p className="text-xs text-gray-500 mt-2">
             Paste a shareable link (anyone with link can view).
@@ -87,25 +112,25 @@ export default function ScanUpload({ values, setFieldValue, UI }: Props) {
           <Input
             type="date"
             value={values.date_of_surgery || ''}
-            onChange={(e:any) => setFieldValue('date_of_surgery', e.target.value)}
+            onChange={(e: any) => setFieldValue('date_of_surgery', e.target.value)}
           />
         </Card>
 
-        <Card className="p-4 bg-gray-50 md:col-span-1">
+        <Card className="p-4 bg-gray-50">
           <Label className="mb-2 block">Surgical Complications</Label>
           <Textarea
             placeholder="Describe any surgical complications"
             value={values.surgical_complications || ''}
-            onChange={(e:any) => setFieldValue('surgical_complications', e.target.value)}
+            onChange={(e: any) => setFieldValue('surgical_complications', e.target.value)}
           />
         </Card>
 
-        <Card className="p-4 bg-gray-50 md:col-span-1">
+        <Card className="p-4 bg-gray-50">
           <Label className="mb-2 block">Other Diagnosis and Syndromes</Label>
           <Textarea
             placeholder="List other diagnosis and syndromes"
             value={values.other_diagnosis_and_syndromes || ''}
-            onChange={(e:any) => setFieldValue('other_diagnosis_and_syndromes', e.target.value)}
+            onChange={(e: any) => setFieldValue('other_diagnosis_and_syndromes', e.target.value)}
           />
         </Card>
       </div>

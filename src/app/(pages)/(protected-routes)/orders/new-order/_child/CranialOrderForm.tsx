@@ -172,11 +172,6 @@ const toNumOrNull = (v?: string | number) => {
   return Number.isFinite(n) ? n : null;
 };
 
-const toFloat = (s?: string): number | null => {
-  if (!s) return null;
-  const n = Number.parseFloat(s.trim());
-  return Number.isFinite(n) ? n : null;
-};
 
 const orEmpty = (v?: string) => (v == null ? '' : v);
 
@@ -202,7 +197,10 @@ function toOrderDetails(values: FormValues) {
   let cr: number | null = null;
   let cvai: number | null = null;
   try { if (ap && ml) cr = calculateCephalicRatio(ap, ml).value; } catch {}
-  try { if (da && db && da >= db) cvai = calculateCVAI(da, db).valueShorterDenominator; } catch {}
+  try {
+    if (da && db)
+      cvai = calculateCVAI(da, db).value;
+  } catch {}
 
   return {
     patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),
@@ -515,16 +513,37 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           }, [user?.customer_id, setFieldValue]);
 
           // Derived metrics (display only)
+          // Replace your existing memo with this
           const { cr, cvai } = useMemo(() => {
-            const apN = toNum(values.ap);
+            const apN = toNum(values.ap);   // toNum returns number | undefined
             const mlN = toNum(values.ml);
             const daN = toNum(values.da);
             const dbN = toNum(values.db);
 
             let crV: number | undefined;
             let cvaiV: number | undefined;
-            try { if (apN && mlN) crV = calculateCephalicRatio(apN, mlN).value; } catch {}
-            try { if (daN && dbN && daN >= dbN) cvaiV = calculateCVAI(daN, dbN).valueShorterDenominator; } catch {}
+
+            // CR: require both ap and ml to be finite numbers > 0
+            if (typeof apN === 'number' && Number.isFinite(apN) && apN > 0 &&
+              typeof mlN === 'number' && Number.isFinite(mlN) && mlN > 0) {
+              try {
+                crV = calculateCephalicRatio(apN, mlN).value;
+              } catch (err) {
+                // swallow or console.warn if desired
+                console.warn('CR calc error', err);
+              }
+            }
+
+            // CVAI: require both diagonals finite and > 0
+            if (typeof daN === 'number' && Number.isFinite(daN) && daN > 0 &&
+              typeof dbN === 'number' && Number.isFinite(dbN) && dbN > 0) {
+              try {
+                cvaiV = calculateCVAI(daN, dbN).value;
+              } catch (err) {
+                console.warn('CVAI calc error', err);
+              }
+            }
+
             return { cr: crV, cvai: cvaiV };
           }, [values.ap, values.ml, values.da, values.db]);
 
