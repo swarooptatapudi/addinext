@@ -1421,11 +1421,11 @@ const Step2 = ({
 )}
 
             {/* ✅ Show existing left foot file if present */}
-            
-            
-            
-           
-              
+
+
+
+
+
           </div>
         )}
 
@@ -1456,7 +1456,7 @@ const Step2 = ({
               <div className="text-red-500 text-xs mt-1">{errors.right_foot_file}</div>
             )}
             {/* ✅ Show existing right foot file if present */}
-           
+
 {/* ✅ Show existing right foot file name or link */}
 {values.right_foot_file && typeof values.right_foot_file === "string" && (
   <div className="mt-2 text-sm text-gray-700">
@@ -1698,7 +1698,6 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     open: false,
     data: null
   });
-
 const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
 
     // 1️⃣ Maintain an array to store uploaded file metadata
@@ -1709,7 +1708,7 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [desgin,setDesgin] = useState(0);
   const [print,setPrint] = useState(0);
   const [couponPer, setCouponPer] =useState(0);
-  
+
 
   // console.log("totalDiscount",totalDiscount)
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
@@ -1727,12 +1726,13 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   // Add these state variables to your component
 
 
-  
+
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
   const mode = searchParams.get('mode'); // "view" or null
-  // S3 FILE UPLOAD STATES 
+  // S3 FILE UPLOAD STATES
+  const isReadOnly = searchParams.get('readonly') === 'true';
 
   useEffect(() => {
     if (orderId && deviceTypeId) {
@@ -1884,13 +1884,13 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
 // }, [orderId, deviceTypeId]);
 
 
- 
+
 
 
   // Add this useEffect to load Razorpay script
-  
-  
-  
+
+
+
 //   useEffect(() => {
 //   if (orderDetails?.data) {
 //     const apiData = orderDetails.data;
@@ -1992,7 +1992,7 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
     setFormValues(mergedData);
   }
 }, [orderDetails]);
- 
+
 
   useEffect(() => {
     const loadRazorpayScript = async () => {
@@ -2075,7 +2075,7 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   //       const formData = new FormData();
   //       formData.append('data', JSON.stringify(basePayload));
 
-        
+
   //       const extractAndAppendFiles = (obj: any, prefix: string = '') => {
   //         for (const key in obj) {
   //           if (obj[key] && typeof obj[key] === 'object') {
@@ -2226,13 +2226,13 @@ if (file.name.endsWith(".stl")) {
 else if (file.name.endsWith(".obj")) {
   contentType = "application/octet-stream"; // OBJ files are text-based
 }
-    
+
     // // Handle STL files specifically - browsers often return empty or incorrect MIME type
     // if (file.name.toLowerCase().endsWith('.stl')) {
     //   contentType = 'application/octet-stream'; // Standard for STL files
     //   console.log("🔧 STL file detected, using application/octet-stream");
     // }
-    
+
     // // If file.type is empty or generic, use application/octet-stream
     // if (!contentType || contentType === '' || contentType === 'application/octet-stream') {
     //   contentType = 'application/octet-stream';
@@ -2242,13 +2242,13 @@ else if (file.name.endsWith(".obj")) {
     // Step 1: Get Presigned URL using RTK Query
     const result = await preSignedUrl({
       fileName: file.name,
-      fileType: contentType, 
+      fileType: contentType,
       userId
     }).unwrap();
 
     // console.log("📥 Received presigned URL:", result);
-   
-   
+
+
 // @ts-ignore
     if (!result?.message?.status) {
       throw new Error("Presigned URL request failed");
@@ -2262,15 +2262,15 @@ else if (file.name.endsWith(".obj")) {
     // console.log("🆔 S3 Object Key:", key);
     const uploadUrlStr = String(uploadUrl);
 const keyStr       = String(key);
-    
- 
 
-    // Step 2: Upload File to S3 
+
+
+    // Step 2: Upload File to S3
     const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
       return new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", url);
-        
+
         // ✅ CRITICAL: Use the exact same Content-Type as presigned URL generation
         xhr.setRequestHeader("Content-Type", contentType);
         // console.log(`🎯 Setting Content-Type header to: ${contentType}`);
@@ -2363,7 +2363,7 @@ const handlePayAndPlaceOrder = async (values: any) => {
     if (values.custom_obj_file_1 instanceof File) filesToUpload.push(values.custom_obj_file_1);
     if (values.custom_mtl_file_2 instanceof File) filesToUpload.push(values.custom_mtl_file_2);
         if (values.custom_jpg_file_3 instanceof File) filesToUpload.push(values.custom_jpg_file_3);
-   
+
 
 
 
@@ -2382,7 +2382,7 @@ for (const f of filesToUpload) {
 console.log("🧾 Uploaded Metadata:", uploadedMetadata);
 
     // 🔥 2) ENCODE METADATA AS BASE64
-    const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
+    const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
 // ✅ Dynamic scan item mapping
 // Assuming your Formik values have separate fields for left/right
 const scan_items = {
@@ -2499,7 +2499,7 @@ console.log(" scan_items mapped:", scan_items);
   }
 };
 
- 
+
 
 
 const handleConfirmOrder = () => {
@@ -2542,7 +2542,7 @@ const handleConfirmOrder = () => {
 //   uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
 // }
 //     // 🔥 2) ENCODE METADATA AS BASE64
-//     const encodedFiles = btoa(JSON.stringify(uploadedMetadata)); 
+//     const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
 //     // Submit the final form
 //     const orderPayload = {
 //       item_type: 'BK',
@@ -2653,7 +2653,7 @@ const handleConfirmOrder = () => {
 //     }
 //   };
 
-  
+
 const OnSubmit = async (values: any) => {
   setFormValues(values);
 
@@ -2718,7 +2718,7 @@ filesToUpload.forEach((file, index) => {
 });
 
 // 2️⃣ Build order payload with URLs instead of files
-  
+
 console.log(" scan_items mapped:", scan_items);
 
 
@@ -2921,6 +2921,8 @@ const getItemCodeByValues = async (payload: any) => {
           isValid
         }) => (
           <div className="flex flex-col gap-6">
+            <fieldset disabled={isReadOnly} className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}>
+
             <WatchFieldReset />
             {/* Socket Type Dialog */}
             <SocketTypeDialog
@@ -3072,10 +3074,11 @@ const getItemCodeByValues = async (payload: any) => {
                 setDesgin={setDesgin}
                 setPrint={setPrint}
                 setCouponPer={setCouponPer}
-               
+
                 setTotalPrice={setTotalPrice}
               />
             )}
+            </fieldset>
 
             {/* Navigation buttons */}
             <div className="sticky bottom-4 left-0 flex justify-between bg-white p-2 rounded-lg shadow-md">
@@ -3149,6 +3152,12 @@ const getItemCodeByValues = async (payload: any) => {
                 )}
               </div>
             </div>
+            {/* If read-only, show an informational bar and disable submit/payment controls */}
+            {isReadOnly && (
+              <div className="mt-4 p-3 rounded bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
+                This form is opened in **read-only** mode from Orders. Editing and payment are disabled.
+              </div>
+            )}
           </div>
         )}
       </Formik>

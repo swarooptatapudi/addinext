@@ -1421,6 +1421,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   const [thicknests, setThickness] = useState<string>('');
   const skipValidation = searchParams.get('skipValidation') === 'true';
   const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
+  const isReadOnly = searchParams.get('readonly') === 'true';
 
   // const { values, setFieldValue } = useFormikContext<any>(); // ✅ Formik hook
   //payment states
@@ -1866,6 +1867,8 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
           isValid
         }) => (
           <div className="flex flex-col gap-6">
+            <fieldset disabled={isReadOnly} className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}>
+
             <WatchFieldReset />
             {/* Socket Type Dialog */}
             <SocketTypeDialog
@@ -2011,6 +2014,7 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
                 handleSubmit={handleSubmit}
               />
             )}
+            </fieldset>
 
             <div className="sticky bottom-4 left-0 flex justify-between bg-white p-2 rounded-lg shadow-md">
               <div>
@@ -2077,8 +2081,15 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
                 )}
               </div>
             </div>
+            {/* If read-only, show an informational bar and disable submit/payment controls */}
+            {isReadOnly && (
+              <div className="mt-4 p-3 rounded bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
+                This form is opened in **read-only** mode from Orders. Editing and payment are disabled.
+              </div>
+            )}
           </div>
         )}
+
       </Formik>
 
       {/* Confirmation dialog after Step 1 */}
