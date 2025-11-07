@@ -99,7 +99,7 @@ const step1Validation = Yup.object().shape({
     .matches(/^\d+(\.\d+)?$/, 'Must contain only digits')
     .test('min-value', 'Size must be at least 20', (value) => parseInt(value) >= 20)
     .test('max-value', 'Size must be no more than 45', (value) => parseInt(value) <= 45),
- 
+
 // foot_length: Yup.string()
 //     .required(FORMIK_ERRORS.REQUIRED)
 //     .matches(/^\d+$/, 'Must contain only digits')
@@ -206,7 +206,7 @@ const step2Validation = Yup.object()
       then: (schema) => schema.required('Foot amputation is required'),
       otherwise: (schema) => schema.nullable()
     }),
-    
+
     left_foot_file: Yup.mixed().nullable(),
     right_foot_file: Yup.mixed().nullable(),
     additional_file_1: Yup.mixed().nullable(),
@@ -812,7 +812,7 @@ const Step1 = ({
             </a>
           </Link> */}
           <a
-            href="https://uaterp.addiwise.com/files/AT_IN_SHOE%20SIZES_v.1%20(1).pdf"
+            href="/assets/order-forms/products/AT_IN_SHOE_SIZES.pdf"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 underline"
@@ -918,7 +918,7 @@ const Step1 = ({
                   options: designVariationOptions
                 })}
               >
-                {values.design_variation 
+                {values.design_variation
                   ? designVariationOptions.find((opt: { value: string }) => opt.value === values.design_variation)?.label
                   : "Select Design Variation"}
               </Button>
@@ -947,7 +947,7 @@ const Step1 = ({
                   options: modelOptions
                 })}
               >
-                {values.model_name 
+                {values.model_name
                   ? modelOptions.find((opt: { value: string }) => opt.value === values.model_name)?.label
                   : "Select Model"}
               </Button>
@@ -1030,7 +1030,7 @@ const Step1 = ({
                 />
               </div>
             </div>
-          </div> 
+          </div>
         </div>
       </div>
       <div className="ml-1 space-y-4">
@@ -1129,7 +1129,7 @@ const Step2 = ({
                 <p className="mb-1 text-[14px]  flex items-center">Upload Scan</p>
                 <div className="w-[190px] ml-8">
                   {/* <SelectBox
-                    options={[{ 
+                    options={[{
                       value: 'Both', label: 'Left Foot/Right Foot '
                      }]}
                     value={values.foot_Amputation}
@@ -1714,11 +1714,11 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
       },
       item_code: itemCode
     };
- 
+
     // createInsoleOrder(orderPayload); // store for later payment step
     setShowStep5Confirmation(true); // open confirmation dialog
     setShowPriceSummary(true); // show price summary
-    
+
   };
 
   const getItemCodeByValues = async (payload: any) => {
