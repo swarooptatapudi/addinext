@@ -82,7 +82,32 @@ export default function Products(): React.JSX.Element {
         {/*  ))}*/}
         {/*</div>*/}
         <div className="flex flex-wrap gap-x-8 gap-y-6">
-          {orthotics?.map((orthotic: any) => {
+          <ProductItem
+            src="/assets/order-forms/products/IN.jpg"
+            label="Insole/UCBL"
+            href="/orders/new-order/Insoles"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/AFO.jpg"
+            label="AFO"
+            href="/orders/new-order/AFO"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/Cranial Helmet.jpg"
+            label="Cranial Helmet"
+            href="/orders/new-order/Cranial"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/Braces.jpg"
+            label="Braces"
+            href="/orders/new-order/Braces"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/Facemask.jpg"
+            label="Face Mask"
+            href="/orders/new-order/Facemask"
+          />
+          {/*{orthotics?.map((orthotic: any) => {
             let href = '';
             switch (orthotic.item_name) {
               case 'AddiSole (Insole)':
@@ -104,7 +129,7 @@ export default function Products(): React.JSX.Element {
                 href={href}
               />
             );
-          })}
+          })}*/}
         </div>
       </div>
       {/* Off the Shelf */}
@@ -125,14 +150,29 @@ export default function Products(): React.JSX.Element {
       <div className="mt-5">
         <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">Scanners</p>
         <div className="flex flex-wrap gap-x-8 gap-y-6">
-          {scanners?.map((scanners: any) => (
+          {/*{scanners?.map((scanners: any) => (
             <ProductItem
               key={scanners.item_name}
               src={scanners.image || '/assets/placeholder.jpg'}
               label={scanners.item_name}
               href={`/products/buyproducts?name=${encodeURIComponent(scanners.item_name)}`}
             />
-          ))}
+          ))}*/}
+          <ProductItem
+            src="/assets/order-forms/products/Addiscan-E.png"
+            label="AddiScan-E"
+            href="/products/buyproducts?name=AddiScan-E"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/AddiPrime.jpg"
+            label="AddiScan-Prime"
+            href="/products/buyproducts?name=AddiScan-Prime"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/Addiscan-RP.png"
+            label="AddiScan-RP"
+            href="/products/buyproducts?name=AddiScan-RP"
+          />
         </div>
       </div>
 
@@ -140,14 +180,29 @@ export default function Products(): React.JSX.Element {
       <div className="mt-5">
         <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">Printers</p>
         <div className="flex flex-wrap gap-x-8 gap-y-6">
-          {printer?.map((printer: any) => (
+          {/*{printer?.map((printer: any) => (
             <ProductItem
               key={printer.item_name}
               src={printer.image || '/assets/placeholder.jpg'}
               label={printer.item_name}
               href={`/products/buyproducts?name=${encodeURIComponent(printer.item_name)}`}
             />
-          ))}
+          ))}*/}
+          <ProductItem
+            src="/assets/order-forms/products/AddIPrint.jpg"
+            label="AddiPrint-P350"
+            href="/products/buyproducts?name=AddiPrint-P350"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/AddIPrint.jpg"
+            label="AddiPrint-P500"
+            href="/products/buyproducts?name=AddiPrint - P500"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/HP MJF.jpg"
+            label="HP-MJF"
+            href="/products/buyproducts?name=HP-MJF"
+          />
         </div>
       </div>
       {/* AddiNxT Design Platform */}
