@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { exportCranialOrderToExcel } from '@/lib/utils';
 
 declare global {
   interface Window {
@@ -195,39 +196,44 @@ const totalPages = data?.data.total_pages ?? 1;
 
   // navigate on order click
   const handleOrderIdClick = (order: Order) => {
-    // console.log("order>>>",order);
     setSelectedOrder(order);
 
+    const baseParams = {
+      orderId: order.order_id,
+      deviceType: order.device_type,
+      readonly: 'true', // <= add this
+    };
+
     if (order.device_type === "BK Orders") {
-      // console.log("BK Orders..>", order.order_id, order.device_type)
-      router.push(
-        `/orders/new-order/BK?${new URLSearchParams({
-          orderId: order.order_id,
-          deviceType: order.device_type,
-          paid: order.status,
-          //  skipValidation: "true"
-        }).toString()}`
-      );
+      router.push(`/orders/new-order/BK?${new URLSearchParams(baseParams).toString()}`);
+    } else if (order.device_type === "Insole Orders") {
+      router.push(`/orders/new-order/Insoles?${new URLSearchParams(baseParams).toString()}`);
+    } else if (order.device_type === "Cranial Helmet Orders") {
+      router.push(`/orders/new-order/Cranial?${new URLSearchParams(baseParams).toString()}`);
     }
-    else if (order.device_type === "Insole Orders") {
-      // console.log("IN Orders..>", order.order_id, order.device_type)
-      router.push(
-        `/orders/new-order/Insoles?${new URLSearchParams({
-          orderId: order.order_id,
-          deviceType: order.device_type,
-          //  skipValidation: "true"
-        }).toString()}`
-      );
-    }
-    else if (order.device_type === "Cranial Helmet Orders") {
-      // console.log("IN Orders..>", order.order_id, order.device_type)
-      router.push(
-        `/orders/new-order/Cranial?${new URLSearchParams({
-          orderId: order.order_id,
-          deviceType: order.device_type,
-          //  skipValidation: "true"
-        }).toString()}`
-      );
+  };
+// Add at top with other React state hooks:
+// inside Orders component (top-level hooks)
+  const [exportingIds, setExportingIds] = useState<Set<string>>(new Set());
+  const isExportingFor = (orderId?: string) => !!orderId && exportingIds.has(orderId);
+
+// inside component
+  const handleExport = async (order: Order) => {
+    if (!order?.order_id) return;
+    const id = order.order_id;
+    setExportingIds((s) => new Set(s).add(id));
+    try {
+      await exportCranialOrderToExcel(order.order_id, order.device_type);
+      toast.success('Export complete');
+    } catch (err) {
+      console.error('Export failed', err);
+      toast.error('Export failed');
+    } finally {
+      setExportingIds((s) => {
+        const next = new Set(s);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -316,7 +322,7 @@ const totalPages = data?.data.total_pages ?? 1;
         const isDisabled =
           order.status === 'Completed' || order.status === 'Paid' || order.order_value === 0;
         return (
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <Button
               size="sm"
               disabled={isDisabled || isPaymentLoading || !razorpayKey}
@@ -336,6 +342,18 @@ const totalPages = data?.data.total_pages ?? 1;
                 Design
               </Button>
             </div>
+            {order.device_type === 'Cranial Helmet Orders' && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleExport(order)}
+                className="ml-2 border"
+                title="Export order to Excel"
+                disabled={isExportingFor(order.order_id)}
+              >
+                {isExportingFor(order.order_id) ? 'Exporting…' : 'Export'}
+              </Button>
+            )}
           </div>
         );
 

@@ -373,6 +373,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
   const orderId = searchParams.get('orderId');
   const deviceTypeId = searchParams.get('deviceType');
   const router = useRouter();
+  const isReadOnly = searchParams.get('readonly') === 'true';
 
   const [activeStep, setActiveStep] = useState(0);
   const [busy, setBusy] = useState<null | 'place' | 'later'>(null);
@@ -850,6 +851,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
           return (
             <Form className="max-w-6xl w-[92%] mx-auto my-6 space-y-6">
+              <fieldset disabled={isReadOnly} className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}>
               {activeStep === 0 && (
                 <PatientDetails
                   values={values}
@@ -910,6 +912,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                   setFieldValue={setFieldValue}
                 />
               )}
+              </fieldset>
 
               {/* Navigation */}
               <div className="flex justify-between gap-3 pt-2">
@@ -922,6 +925,12 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                   </Button>
                 )}
               </div>
+              {/* If read-only, show an informational bar and disable submit/payment controls */}
+              {isReadOnly && (
+                <div className="mt-4 p-3 rounded bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
+                  This form is opened in **read-only** mode from Orders. Editing and payment are disabled.
+                </div>
+              )}
             </Form>
           );
         }}
