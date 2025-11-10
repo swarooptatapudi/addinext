@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
     return false;
   });
 
-  if (request.method === 'POST' && url.pathname.startsWith('/payments/return')) {
+  if (request.method === 'POST' && url.pathname.startsWith('/payments/payment_done')) {
     return NextResponse.next();
   }
 
