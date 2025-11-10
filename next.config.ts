@@ -11,9 +11,9 @@ const nextConfig = {
         // destination: 'https://erp.addiwise.com/api/:path*'
       },
       {
-        // 👇 Add this new rewrite
-        source: '/payments/return',
-        destination: '/payments/return-bridge',
+        // // 👇 Add this new rewrite
+        // source: '/payments/return',
+        // destination: '/payments/return-bridge',
       }
     ];
   },
