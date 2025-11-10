@@ -919,7 +919,7 @@ const Step1 = ({
       <div className="grid grid-cols-3 gap-4 items-center ml-1">
         <div>
           <Image
-            src={'/assets/order-forms/bk-order/stupm.png'}
+            src={'/assets/order-forms/bk-order/stupm1.png'}
             alt="measurements"
             width={500}
             height={300}
