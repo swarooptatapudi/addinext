@@ -1529,7 +1529,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
                       await nextStep(values, setErrors);
                     }}
                     type="button"
-                    disabled
+                  
                   >
                     Next
                   </Button>
