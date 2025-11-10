@@ -37,6 +37,7 @@ import {
   useGetOrderDetailsMutation,
   usePreSignedUrlMutation, // 🆕 presign hook
 } from '@/rtk-query/apis/orders';
+import { useCreatePaymentIntentMutation } from '@/rtk-query/apis/payments'; // ✅ HDFC Payment Integration
 
 import { USER } from '@/uttils/Types';
 import { estimateOrderClientSide } from '@/uttils/getEstimate';
@@ -378,6 +379,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [busy, setBusy] = useState<null | 'place' | 'later'>(null);
   const [formResetKey, setFormResetKey] = useState(0);
+  const [createPaymentIntent] = useCreatePaymentIntentMutation(); // ✅ HDFC
 
   const [createCranialOrder] = useCreateCranialOrderMutation();
   const [validateCoupon] = useValidateCouponMutation();
@@ -777,37 +779,114 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           }
 
           // 🆕 Updated postOrder with presign upload and fallback
-          const postOrder = async (intent: 'place' | 'later') => {
-            if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
-            if (!productCode) return alert('Please select Positional Diagnosis + Severity (product code missing).');
+          const postOrder = async (intent: 'place' | 'later', paymentWindow?: Window | null) => {
+            if (!values.agree_terms)
+              return alert('Please agree to the terms and conditions.');
+            if (!productCode)
+              return alert('Please select Positional Diagnosis + Severity (product code missing).');
 
             try {
               setBusy(intent);
 
+              // 🧩 Build full payload (includes patient, measurements, diagnosis, etc.)
               const payload = toCreatePayload(values, productCode, {
                 customerId: user?.customer_id,
                 orderId,
                 deviceTypeId,
               });
 
-              // If there's a scan file, try presigned upload first (avoid 413)
+// 🧾 If there's a scan file, upload it first using presigned URL
               if (values.scan_file instanceof File) {
                 try {
-                  const meta = await uploadFileAndStoreMetadata(values.scan_file, user?.customer_id || '1');
+                  const meta = await uploadFileAndStoreMetadata(
+                    values.scan_file,
+                    user?.customer_id || '1'
+                  );
 
                   // attach reference/key to payload
                   payload.custom_scan_items = payload.custom_scan_items || {};
                   payload.custom_scan_items.scan_file = meta.key;
                   payload.custom_upload_link_with_photos = meta.key;
                 } catch (presignErr) {
-                  // Presign/upload failed — fallback to multipart FormData (old behavior)
-                  console.warn('Presign/upload failed — falling back to multipart POST', presignErr);
+                  // ⚙️ If presign/upload fails, fallback to multipart FormData POST
+                  console.warn(
+                    'Presign/upload failed — falling back to multipart POST',
+                    presignErr
+                  );
 
                   const bodyOrForm = buildBodyOrForm(payload);
                   const resFallback = (await createCranialOrder(bodyOrForm).unwrap()) as CreateOk;
                   const { ok, note, salesId } = normalizeCreateResponse(resFallback);
 
                   if (ok) {
+                    // 🟢 HDFC integration for fallback path too
+                    if (intent === 'place' && salesId) {
+                      const raw = String(values.total_price ?? '0').replace(/,/g, '');
+                      const parsed = parseFloat(raw || '0');
+                      const amountFloat = Number(parsed.toFixed(2));
+
+                      const paymentInput = {
+                        amount_rupees: amountFloat,
+                        sales_order: salesId,
+                        currency: "INR" as const,
+                        provider: "HDFC" as const,
+                      };
+
+                      // open blank popup before async call (avoids popup-blocking)
+                      const paymentWindow = window.open("", "_blank", "noopener,noreferrer");
+                      if (paymentWindow) {
+                        paymentWindow.document.write(`
+            <html>
+              <head><title>Redirecting to HDFC Payment...</title></head>
+              <body style="font-family:sans-serif;text-align:center;margin-top:40px;">
+                <h2>Redirecting to HDFC Secure Payment...</h2>
+                <p>Please wait a moment.</p>
+              </body>
+            </html>
+          `);
+                        paymentWindow.document.close();
+                      }
+
+                      const paymentRes: any = await createPaymentIntent(paymentInput).unwrap();
+
+                      // ✅ Normalize response safely (works for all shapes)
+                      let success = false;
+                      let paymentLink: string | undefined;
+                      let msgText = "";
+
+                      if (typeof paymentRes === "string") {
+                        msgText = paymentRes;
+                      } else if (paymentRes && typeof paymentRes === "object") {
+                        const msg = paymentRes.message;
+                        if (msg && typeof msg === "object") {
+                          success = !!msg.success;
+                          paymentLink = msg.data?.payment_link;
+                          msgText = msg.message || "";
+                        } else {
+                          success = !!paymentRes.success;
+                          paymentLink = paymentRes.data?.payment_link;
+                          msgText = paymentRes.message || "";
+                        }
+                      }
+
+                      if (success && paymentLink) {
+                        const trimmed = paymentLink.trim();
+                        console.log("✅ Opening HDFC link:", trimmed);
+
+                        if (paymentWindow && !paymentWindow.closed) {
+                          paymentWindow.location.href = trimmed;
+                        } else {
+                          window.open(trimmed, "_blank");
+                        }
+                        return;
+                      }
+
+                      // ❌ On failure
+                      if (paymentWindow && !paymentWindow.closed) paymentWindow.close();
+                      alert(msgText || "Payment initiation failed");
+                      return;
+                    }
+
                     alert(
                       intent === 'place'
                         ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
@@ -823,11 +902,77 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                 }
               }
 
-              // Send JSON payload (no binary) — expected small, no 413
+// 🧾 Create order normally (JSON payload, smaller requests)
               const res = (await createCranialOrder(payload).unwrap()) as CreateOk;
               const { ok, note, salesId } = normalizeCreateResponse(res);
 
               if (ok) {
+                if (intent === 'place' && salesId) {
+                  const raw = String(values.total_price ?? '0').replace(/,/g, '');
+                  const parsed = parseFloat(raw || '0');
+                  const amountFloat = Number(parsed.toFixed(2));
+
+                  const paymentInput = {
+                    amount_rupees: amountFloat,
+                    sales_order: salesId,
+                    currency: "INR" as const,
+                    provider: "HDFC" as const,
+                  };
+
+                  const paymentWindow = window.open("", "_blank", "noopener,noreferrer");
+                  if (paymentWindow) {
+                    paymentWindow.document.write(`
+        <html>
+          <head><title>Redirecting to HDFC Payment...</title></head>
+          <body style="font-family:sans-serif;text-align:center;margin-top:40px;">
+            <h2>Redirecting to HDFC Secure Payment...</h2>
+            <p>Please wait a moment.</p>
+          </body>
+        </html>
+      `);
+                    paymentWindow.document.close();
+                  }
+
+                  const paymentRes: any = await createPaymentIntent(paymentInput).unwrap();
+
+                  // ✅ Safe handling for all backend shapes
+                  let success = false;
+                  let paymentLink: string | undefined;
+                  let msgText = "";
+
+                  if (typeof paymentRes === "string") {
+                    msgText = paymentRes;
+                  } else if (paymentRes && typeof paymentRes === "object") {
+                    const msg = paymentRes.message;
+                    if (msg && typeof msg === "object") {
+                      success = !!msg.success;
+                      paymentLink = msg.data?.payment_link;
+                      msgText = msg.message || "";
+                    } else {
+                      success = !!paymentRes.success;
+                      paymentLink = paymentRes.data?.payment_link;
+                      msgText = paymentRes.message || "";
+                    }
+                  }
+
+                  if (success && paymentLink) {
+                    const trimmed = paymentLink.trim();
+                    console.log("✅ Opening HDFC link:", trimmed);
+
+                    if (paymentWindow && !paymentWindow.closed) {
+                      paymentWindow.location.href = trimmed;
+                    } else {
+                      window.open(trimmed, "_blank");
+                    }
+                    return;
+                  }
+
+                  // ❌ On failure
+                  if (paymentWindow && !paymentWindow.closed) paymentWindow.close();
+                  alert(msgText || "Payment initiation failed");
+                  return;
+                }
+
                 alert(
                   intent === 'place'
                     ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
@@ -839,7 +984,12 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
               alert(note || 'Order created response not marked as success.');
             } catch (e: any) {
-              const msg = e?.data?.message || e?.data?._server_messages || e?.error || e?.message || 'Failed to submit order.';
+              const msg =
+                e?.data?.message ||
+                e?.data?._server_messages ||
+                e?.error ||
+                e?.message ||
+                'Failed to submit order.';
               alert(msg);
             } finally {
               setBusy(null);
@@ -847,7 +997,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           };
 
           const placeOrder = () => postOrder('place');
-          const payLater   = () => postOrder('later');
+          const payLater = () => postOrder('later');
 
           return (
             <Form className="max-w-6xl w-[92%] mx-auto my-6 space-y-6">
