@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { ROUTES } from './uttils/Routes';
 
 export function middleware(request: NextRequest) {
+  // Allow bank POST to return endpoint without login/redirects
+
   // const PROTECTED_ROUTES = ['/dashboard', '/orders', '/organization', '/products', '/subscription'];
   const url = request.nextUrl.clone();
   //   const role = request.cookies.get('role')?.value;
@@ -18,6 +20,10 @@ export function middleware(request: NextRequest) {
     }
     return false;
   });
+
+  if (request.method === 'POST' && url.pathname.startsWith('/payments/return')) {
+    return NextResponse.next();
+  }
 
   //   if (!isLogin) {
   //     return NextResponse.redirect(url);
