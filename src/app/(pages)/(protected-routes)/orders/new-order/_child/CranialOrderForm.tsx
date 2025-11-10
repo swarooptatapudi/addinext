@@ -20,7 +20,7 @@ import {
   calculateCVAI,
   makeProductCode,
   type SeverityCode,
-  type ConditionCode,
+  type ConditionCode
 } from '@/lib/metrics';
 
 import PatientDetails from './steps/PatientDetails';
@@ -35,8 +35,9 @@ import {
   useCreateCranialOrderMutation,
   useValidateCouponMutation,
   useGetOrderDetailsMutation,
-  usePreSignedUrlMutation, // 🆕 presign hook
+  usePreSignedUrlMutation
 } from '@/rtk-query/apis/orders';
+import { useCreatePaymentIntentMutation } from '@/rtk-query/apis/payments';
 
 import { USER } from '@/uttils/Types';
 import { estimateOrderClientSide } from '@/uttils/getEstimate';
@@ -63,10 +64,16 @@ type FormValues = {
   consultant?: string;
 
   // Measurements
-  ap?: string; ml?: string; da?: string; db?: string; hc?: string; tw?: string;
+  ap?: string;
+  ml?: string;
+  da?: string;
+  db?: string;
+  hc?: string;
+  tw?: string;
 
   // Derived (display)
-  cr?: number; cvai?: number;
+  cr?: number;
+  cvai?: number;
 
   // Clinical
   occipital_area?: string;
@@ -76,7 +83,7 @@ type FormValues = {
 
   // Diagnosis
   positional?: string;
-  severity?: 'L'|'M'|'S'|'' | 'Light' | 'Moderate' | 'Severe';
+  severity?: 'L' | 'M' | 'S' | '' | 'Light' | 'Moderate' | 'Severe';
   torticollis?: string;
 
   // Surgical & others
@@ -102,7 +109,7 @@ type FormValues = {
   coupon_id?: string;
   agree_terms?: boolean;
 
-  // From SERVER ONLY (strings are fine; server formats Indian numbers)
+  // From SERVER ONLY
   design_price?: string | number;
   print_price?: string | number;
   item_special_discount?: string | number;
@@ -124,7 +131,7 @@ const Schema = Yup.object({
   ml: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable(),
   da: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable(),
   db: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable(),
-  hc: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable(),
+  hc: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable()
 });
 
 /* --------------------------------- Steps ---------------------------------- */
@@ -136,7 +143,7 @@ const steps = [
   { key: 'assessment', label: 'Clinical Assessment' },
   { key: 'summary', label: 'Summary' },
   { key: 'scan', label: 'Scan & Upload' },
-  { key: 'finish', label: 'Finish & Payment' },
+  { key: 'finish', label: 'Finish & Payment' }
 ] as const;
 
 /* -------------------------------- Helpers --------------------------------- */
@@ -173,7 +180,6 @@ const toNumOrNull = (v?: string | number) => {
   return Number.isFinite(n) ? n : null;
 };
 
-
 const orEmpty = (v?: string) => (v == null ? '' : v);
 
 const POS_LABEL_BY_CODE: Record<string, string> = {
@@ -181,7 +187,7 @@ const POS_LABEL_BY_CODE: Record<string, string> = {
   B: 'Brachycephaly',
   SC: 'Scaphocephaly',
   ASB: 'Asymmetrical Brachycephaly (Combo)',
-  ASSC: 'Asymmetrical Scaphocephaly',
+  ASSC: 'Asymmetrical Scaphocephaly'
 };
 const toPositionalLabel = (pos?: string) => {
   const raw = (pos || '').trim();
@@ -197,11 +203,12 @@ function toOrderDetails(values: FormValues) {
 
   let cr: number | null = null;
   let cvai: number | null = null;
-  try { if (ap && ml) cr = calculateCephalicRatio(ap, ml).value; } catch {}
   try {
-    if (da && db)
-      cvai = calculateCVAI(da, db).value;
-  } catch {}
+    if (ap && ml) cr = calculateCephalicRatio(ap, ml).value;
+  } catch { }
+  try {
+    if (da && db) cvai = calculateCVAI(da, db).value;
+  } catch { }
 
   return {
     patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),
@@ -221,7 +228,8 @@ function toOrderDetails(values: FormValues) {
     diagonal_b_mm: toNumOrNull(values.db),
     head_circumference_mm: toNumOrNull(values.hc),
     temple_width_mm: toNumOrNull(values.tw),
-    cr, cvai,
+    cr,
+    cvai,
 
     occipital_area: orEmpty(values.occipital_area),
     parietal_area: orEmpty(values.parietal_area),
@@ -244,9 +252,10 @@ function toOrderDetails(values: FormValues) {
     thickness_3d_mm: orEmpty(values.thickness_3d_mm),
 
     patient_remarks: orEmpty(values.patient_remarks),
-    other_remarks: orEmpty(values.other_remarks),
+    other_remarks: orEmpty(values.other_remarks)
   };
 }
+
 function flattenForSalesOrder(values: FormValues) {
   return {
     patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),
@@ -303,20 +312,23 @@ function flattenForSalesOrder(values: FormValues) {
     discounted_price: values.discounted_price ?? 0,
     gst_5_amt: values.gst_5_amt ?? 0,
     gst_18_amt: values.gst_18_amt ?? 0,
-    gst_rate: values.gst_rate ?? 0.05,
+    gst_rate: values.gst_rate ?? 0.05
   };
 }
 
-function toCreatePayload(values: FormValues, productCode: string, ctx: {
-  customerId?: string;
-  orderId?: string | null;
-  deviceTypeId?: string | null;
-}) {
+function toCreatePayload(
+  values: FormValues,
+  productCode: string,
+  ctx: {
+    customerId?: string;
+    orderId?: string | null;
+    deviceTypeId?: string | null;
+  }
+) {
   const order_details = toOrderDetails(values);
 
-  // numeric GST flags for server's rate derivation
   const gst_18_num = Number(String(values.gst_18_amt ?? 0).replace(/,/g, '')) || 0;
-  const gst_5_num  = Number(String(values.gst_5_amt  ?? 0).replace(/,/g, '')) || 0;
+  const gst_5_num = Number(String(values.gst_5_amt ?? 0).replace(/,/g, '')) || 0;
 
   const today = new Date();
   const ymd = today.toISOString().slice(0, 10);
@@ -329,9 +341,8 @@ function toCreatePayload(values: FormValues, productCode: string, ctx: {
     customer: ctx.customerId || values.customer || '',
     item_code: productCode || '',
     qty: 1,
-    // Pricing
-    rate: Number(values.print_price ?? 0),            // subtotal
-    total_price: String(values.total_price ?? ''),    // final total as string if you prefer
+    rate: Number(values.print_price ?? 0),
+    total_price: String(values.total_price ?? ''),
 
     addicoins: 0,
     custom_payment_reference_id: orEmpty(values.coupon_code),
@@ -342,14 +353,13 @@ function toCreatePayload(values: FormValues, productCode: string, ctx: {
     transaction_date: ymd,
     delivery_date: in7,
 
-    // for SO labels only (safe)
     order_details,
-    ...flattened,
+    ...flattened
   };
 
   if (values.scan_gdrive_link) {
     payload.custom_scan_items = { scan_file: values.scan_gdrive_link };
-    payload.custom_upload_link_with_photos = values.scan_gdrive_link; // (common Frappe field name)
+    payload.custom_upload_link_with_photos = values.scan_gdrive_link;
   }
   if (ctx.orderId) {
     payload.order_id = ctx.orderId;
@@ -362,6 +372,39 @@ function toCreatePayload(values: FormValues, productCode: string, ctx: {
   }
 
   return payload;
+}
+
+/* ---------- Payment helpers: normalize + redirect (no popup) ---------- */
+
+function normalizePaymentResponse(paymentRes: any) {
+  let success = false;
+  let paymentLink: string | undefined;
+  let msgText = '';
+
+  if (typeof paymentRes === 'string') {
+    msgText = paymentRes;
+  } else if (paymentRes && typeof paymentRes === 'object') {
+    const msg = paymentRes.message;
+    if (msg && typeof msg === 'object') {
+      success = !!msg.success || msg.status === 'success' || msg.ok === true;
+      paymentLink = msg.data?.payment_link || msg.payment_link;
+      msgText = msg.message || '';
+    } else {
+      success = !!paymentRes.success || paymentRes.status === 'success' || paymentRes.ok === true;
+      paymentLink = paymentRes.data?.payment_link || paymentRes.payment_link;
+      msgText = paymentRes.message || '';
+    }
+  }
+
+  return { success, paymentLink, msgText };
+}
+
+/** Redirect current tab to payment link (no popup). */
+function redirectToPayment(link: string) {
+  const trimmed = (link || '').trim();
+  if (!trimmed) throw new Error('Empty payment link');
+  // Top-level navigation (works reliably on mobile & desktop).
+  window.location.assign(trimmed);
 }
 
 /* -------------------------------- Component -------------------------------- */
@@ -378,65 +421,97 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [busy, setBusy] = useState<null | 'place' | 'later'>(null);
   const [formResetKey, setFormResetKey] = useState(0);
+  const [createPaymentIntent] = useCreatePaymentIntentMutation();
 
   const [createCranialOrder] = useCreateCranialOrderMutation();
   const [validateCoupon] = useValidateCouponMutation();
   const [getOrderDetails] = useGetOrderDetailsMutation();
-  const [preSignedUrl] = usePreSignedUrlMutation(); // 🆕 presign hook
+  const [preSignedUrl] = usePreSignedUrlMutation();
 
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]); // 🆕 metadata store
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
 
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
 
   const pill = (i: number) =>
     `text-xs border rounded-full px-3 py-1 ${i === activeStep ? 'bg-primary text-white border-primary' : 'text-violet-300 border-violet-400'}`;
 
-  const initialValues: FormValues = useMemo(() => ({
-    first_name: '', last_name: '', parent_mobile: '',
-    date_of_birth: '', gender: '', height_cm: '', weight_kg: '',
-    email: '', clinic_name: '', consultant: '',
+  const initialValues: FormValues = useMemo(
+    () => ({
+      first_name: '',
+      last_name: '',
+      parent_mobile: '',
+      date_of_birth: '',
+      gender: '',
+      height_cm: '',
+      weight_kg: '',
+      email: '',
+      clinic_name: '',
+      consultant: '',
 
-    item_code: '', // computed from positional + severity
-    customer: user?.customer_id || '',
+      item_code: '',
+      customer: user?.customer_id || '',
 
-    ap: '', ml: '', da: '', db: '', hc: '', tw: '',
-    cr: undefined, cvai: undefined,
+      ap: '',
+      ml: '',
+      da: '',
+      db: '',
+      hc: '',
+      tw: '',
+      cr: undefined,
+      cvai: undefined,
 
-    occipital_area: '', parietal_area: '', frontal_area: '', ear_alignment: '',
-    positional: '', severity: '', torticollis: '',
-    post_surgical: '', suture_type_surgical_diagnoses_only: '',
-    date_of_surgery: '', surgical_complications: '',
-    other_diagnosis_and_syndromes: '',
+      occipital_area: '',
+      parietal_area: '',
+      frontal_area: '',
+      ear_alignment: '',
+      positional: '',
+      severity: '',
+      torticollis: '',
+      post_surgical: '',
+      suture_type_surgical_diagnoses_only: '',
+      date_of_surgery: '',
+      surgical_complications: '',
+      other_diagnosis_and_syndromes: '',
 
-    scan_file: null, extra_files: [],
-    patient_remarks: '', other_remarks: '',
-    scan_gdrive_link: '',
+      scan_file: null,
+      extra_files: [],
+      patient_remarks: '',
+      other_remarks: '',
+      scan_gdrive_link: '',
 
-    design_by: 'Addiwise', print_by: 'Addiwise', colour: '', thickness_3d_mm: '3.5',
-    coupon_code: '', coupon_id: '', agree_terms: false,
+      design_by: 'Addiwise',
+      print_by: 'Addiwise',
+      colour: '',
+      thickness_3d_mm: '3.5',
+      coupon_code: '',
+      coupon_id: '',
+      agree_terms: false,
 
-    // from server; default empty
-    design_price: '',
-    print_price: '',
-    item_special_discount: '',
-    item_standard_discount: '',
-    additional_discount: '',
-    discounted_price: '',
-    gst_5_amt: '',
-    gst_18_amt: '',
-    total_price: '',
-    gst_rate: 0.05,
-  }), [user?.customer_id]);
+      design_price: '',
+      print_price: '',
+      item_special_discount: '',
+      item_standard_discount: '',
+      additional_discount: '',
+      discounted_price: '',
+      gst_5_amt: '',
+      gst_18_amt: '',
+      total_price: '',
+      gst_rate: 0.05
+    }),
+    [user?.customer_id]
+  );
 
   const [formSeed, setFormSeed] = useState<FormValues>(initialValues);
   const [prefilled, setPrefilled] = useState(false);
 
-  // Prefill (optional)
   useEffect(() => {
     const hydrate = async () => {
       if (!orderId || !deviceTypeId) return;
       try {
-        const resp: any = await getOrderDetails({ order_type: deviceTypeId, order_id: orderId }).unwrap();
+        const resp: any = await getOrderDetails({
+          order_type: deviceTypeId,
+          order_id: orderId
+        }).unwrap();
         const d = resp?.data || {};
         const seed: FormValues = {
           ...initialValues,
@@ -467,7 +542,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           surgical_complications: d.surgical_complications || '',
           other_diagnosis_and_syndromes: d.other_diagnosis_and_syndromes || '',
           item_code: d.item_code || '',
-          scan_gdrive_link: d.custom_upload_link_with_photos || '',
+          scan_gdrive_link: d.custom_upload_link_with_photos || ''
         };
         setFormSeed(seed);
         setPrefilled(true);
@@ -482,23 +557,17 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
   // ------------------ presigned upload helper ------------------
   const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
     try {
-      // Determine content type to request from backend (browsers often misreport .stl)
       let contentType = 'application/octet-stream';
       const lower = (file.name || '').toLowerCase();
       if (lower.endsWith('.stl')) contentType = 'model/stl';
-      else if (lower.endsWith('.obj')) contentType = 'application/octet-stream';
-      else if (lower.endsWith('.ply')) contentType = 'application/octet-stream';
-      else if (lower.endsWith('.mtl')) contentType = 'application/octet-stream';
       else if (file.type) contentType = file.type;
 
-      // 1) Request presigned URL
       const result: any = await preSignedUrl({
         fileName: file.name,
         fileType: contentType,
-        userId,
+        userId
       }).unwrap();
 
-      // Validate shape — adapt if backend shape differs
       if (!result?.message?.status) {
         throw new Error('Presigned URL request failed');
       }
@@ -509,20 +578,14 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
       const uploadUrlStr = String(uploadUrl);
       const keyStr = key ? String(key) : uploadUrlStr.split('?')[0];
 
-      // 2) Upload file via XHR so we can track progress and set headers exactly
       const uploadFileToS3 = (url: string, f: File) =>
         new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open('PUT', url);
-          // Use exact content-type used in presign request
           xhr.setRequestHeader('Content-Type', contentType);
-
           xhr.onload = () => {
-            if (xhr.status === 200 || xhr.status === 204) {
-              resolve();
-            } else {
-              reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.responseText}`));
-            }
+            if (xhr.status === 200 || xhr.status === 204) resolve();
+            else reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.responseText}`));
           };
           xhr.onerror = () => reject(new Error('Network error during upload'));
           xhr.send(f);
@@ -534,7 +597,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
         key: keyStr,
         size: file.size,
         type: contentType,
-        originalName: file.name,
+        originalName: file.name
       };
 
       setUploadedFiles((prev) => [...prev, fileMeta]);
@@ -544,8 +607,6 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
       throw err;
     }
   };
-
-  // ----------------------------------
 
   return (
     <div className="w-full">
@@ -566,12 +627,12 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
         key={formResetKey + (prefilled ? 1 : 0)}
         initialValues={prefilled ? formSeed : initialValues}
         validationSchema={Schema}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         enableReinitialize
         validateOnChange
         validateOnBlur
       >
-        {({ values, errors, touched, setFieldValue, resetForm }) => {
+        {({ values, errors, touched, setFieldValue }) => {
           const handleChange = (field: string) => (eOrVal: any) => {
             const next =
               eOrVal && typeof eOrVal === 'object' && 'target' in eOrVal
@@ -580,14 +641,12 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             setFieldValue(field, next);
           };
 
-          // keep Formik.customer in sync with Redux
           useEffect(() => {
             setFieldValue('customer', user?.customer_id || '');
           }, [user?.customer_id, setFieldValue]);
 
-          // Derived metrics (display only)
           const { cr, cvai } = useMemo(() => {
-            const apN = toNum(values.ap);   // toNum returns number | undefined
+            const apN = toNum(values.ap);
             const mlN = toNum(values.ml);
             const daN = toNum(values.da);
             const dbN = toNum(values.db);
@@ -595,33 +654,22 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             let crV: number | undefined;
             let cvaiV: number | undefined;
 
-            // CR: require both ap and ml to be finite numbers > 0
             if (typeof apN === 'number' && Number.isFinite(apN) && apN > 0 &&
               typeof mlN === 'number' && Number.isFinite(mlN) && mlN > 0) {
-              try {
-                crV = calculateCephalicRatio(apN, mlN).value;
-              } catch (err) {
-                console.warn('CR calc error', err);
-              }
+              try { crV = calculateCephalicRatio(apN, mlN).value; } catch { }
             }
 
-            // CVAI: require both diagonals finite and > 0
             if (typeof daN === 'number' && Number.isFinite(daN) && daN > 0 &&
               typeof dbN === 'number' && Number.isFinite(dbN) && dbN > 0) {
-              try {
-                cvaiV = calculateCVAI(daN, dbN).value;
-              } catch (err) {
-                console.warn('CVAI calc error', err);
-              }
+              try { cvaiV = calculateCVAI(daN, dbN).value; } catch { }
             }
 
             return { cr: crV, cvai: cvaiV };
           }, [values.ap, values.ml, values.da, values.db]);
 
-          // Product Code
           const productCode = useMemo(() => {
             const cond = normalizeCondition(values.positional);
-            const sev  = normalizeSeverity(values.severity as string, cvai);
+            const sev = normalizeSeverity(values.severity as string, cvai);
             return cond && sev ? makeProductCode(sev, cond) : '';
           }, [values.positional, values.severity, cvai]);
 
@@ -629,31 +677,36 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             setFieldValue('item_code', productCode || '');
           }, [productCode, setFieldValue]);
 
-          // --- Estimate (calls estimateOrderClientSide directly) ---
-          const onEstimate = async (
-            p: { design_by: string; print_by: string; coupon_code?: string; product_code?: string }
-          ): Promise<void | { design: number; print: number; stdDiscPct?: number; gstRate?: number }> => {
+          const onEstimate = async (p: {
+            design_by: string;
+            print_by: string;
+            coupon_code?: string;
+            product_code?: string;
+          }): Promise<void | {
+            design: number;
+            print: number;
+            stdDiscPct?: number;
+            gstRate?: number;
+          }> => {
             if (!productCode) {
               alert('Select Positional Diagnosis and Severity to generate Product Code first.');
               return;
             }
 
             const qty = 1;
-
-            // literal union to satisfy CouponInput type
             const couponPayload =
               p.coupon_code && p.coupon_code.trim()
                 ? { code: p.coupon_code.trim(), discount_type: 'Percent' as const, discount_value: 0 }
                 : undefined;
 
             const { result, error } = await estimateOrderClientSide({
-              company: undefined,     // utility will fetch from item defaults if needed
-              customer: undefined,    // pass a loaded Customer doc if you need in/out state accuracy
+              company: undefined,
+              customer: undefined,
               items: [{ item_code: productCode, qty }],
               coupon: couponPayload,
               price_list: 'Standard Selling',
               baseQuery: baseQueryWithReauth,
-              api: {} as any,         // baseQueryWithReauth doesn't use this
+              api: {} as any
             });
 
             if (error) { alert(error); return; }
@@ -662,39 +715,31 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             const subtotal = Number(result.subtotal || 0);
             const totalDisc = Number(result.total_discount || 0);
             const baseBeforeCoupon = Math.max(0, subtotal - totalDisc);
-
-            // Standard discount pct (0..1) against subtotal
             const stdPct = subtotal > 0 ? totalDisc / subtotal : 0;
 
-            // pick current GST rate from form or default
-            const prevGstRate = (typeof values.gst_rate === 'number' && values.gst_rate > 0)
-              ? values.gst_rate!
-              : 0.05;
+            const prevGstRate =
+              typeof values.gst_rate === 'number' && values.gst_rate > 0 ? values.gst_rate! : 0.05;
 
-            // take first line's tax_rate if present; else keep previous or default
             const firstLine = result.breakdown?.items?.[0];
             const computedGstRate =
               typeof firstLine?.tax_rate === 'number' && firstLine.tax_rate > 0
                 ? firstLine.tax_rate / 100
                 : prevGstRate;
 
-            // Push into form state
             setFieldValue('design_price', 0);
             setFieldValue('print_price', baseBeforeCoupon);
             setFieldValue('standard_discount_pct', stdPct);
             setFieldValue('gst_rate', computedGstRate);
-            // prefer server totals if present; else compute from GST
-            const totalAmount =
-              Number(result.total ?? result.grand_total ?? (baseBeforeCoupon * (1 + (computedGstRate || 0))));
 
-            // store final amount for submit
+            const totalAmount = Number(
+              result.total ?? result.grand_total ?? baseBeforeCoupon * (1 + (computedGstRate || 0))
+            );
+
             setFieldValue('total_price', totalAmount);
 
-            // Return for FinishPayment
             return { design: 0, print: baseBeforeCoupon, stdDiscPct: stdPct, gstRate: computedGstRate };
           };
 
-          // --- Coupon validate ---
           const onValidateCoupon = async (code: string) => {
             if (!code) return null;
             try {
@@ -705,7 +750,6 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             }
           };
 
-          // ===== Submit (Place/Pay later) =====
           const [isPlacing, isSavingLater] = [busy === 'place', busy === 'later'] as const;
 
           const buildBodyOrForm = (payload: any) => {
@@ -721,15 +765,10 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             return fd;
           };
 
-
-          // ---- helpers to safely read "success" from varying API shapes ----
           type CreateOk =
-            | { message: { status: string; message?: string; sales_order_id?: string; cranial_order_id?: string } }
-            | { status: string; message?: string; sales_order_id?: string; cranial_order_id?: string }
-            | string
-            | Record<string, any>
-            | undefined
-            | null;
+            | { message: { status: string; message?: string; sales_order_id?: string; cranial_order_id?: string; }; }
+            | { status: string; message?: string; sales_order_id?: string; cranial_order_id?: string; }
+            | string | Record<string, any> | undefined | null;
 
           function normalizeCreateResponse(res: unknown) {
             let ok = false;
@@ -757,15 +796,8 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
             ok = /success|ok/i.test(statusStr);
 
-            salesId =
-              msgObj?.sales_order_id ??
-              obj?.sales_order_id ??
-              obj?.data?.sales_order_id;
-
-            cranialId =
-              msgObj?.cranial_order_id ??
-              obj?.cranial_order_id ??
-              obj?.data?.cranial_order_id;
+            salesId = msgObj?.sales_order_id ?? obj?.sales_order_id ?? obj?.data?.sales_order_id;
+            cranialId = msgObj?.cranial_order_id ?? obj?.cranial_order_id ?? obj?.data?.cranial_order_id;
 
             note =
               (typeof msgObj?.message === 'string' && msgObj.message) ||
@@ -776,10 +808,38 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             return { ok, salesId, cranialId, note };
           }
 
-          // 🆕 Updated postOrder with presign upload and fallback
+          // ---------- NO-POPUP payment initiation ----------
+          const startPaymentForSalesOrder = async (salesId: string) => {
+            const raw = String(values.total_price ?? '0').replace(/,/g, '');
+            const parsed = parseFloat(raw || '0');
+            const amountFloat = Number(parsed.toFixed(2));
+
+            const paymentInput = {
+              amount_rupees: amountFloat,
+              sales_order: salesId,
+              currency: 'INR' as const,
+              provider: 'HDFC' as const
+            };
+
+            try {
+              const paymentRes: any = await createPaymentIntent(paymentInput).unwrap();
+              const { success, paymentLink, msgText } = normalizePaymentResponse(paymentRes);
+              if (success && paymentLink) {
+                redirectToPayment(paymentLink); // current tab navigation
+                return;
+              }
+              alert(msgText || 'Payment initiation failed.');
+            } catch (err: any) {
+              console.error('Payment error:', err);
+              alert('Payment initiation failed. Please try again.');
+            }
+          };
+
+          // 🆕 Updated postOrder with presign upload and no-popup payment
           const postOrder = async (intent: 'place' | 'later') => {
             if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
-            if (!productCode) return alert('Please select Positional Diagnosis + Severity (product code missing).');
+            if (!productCode)
+              return alert('Please select Positional Diagnosis + Severity (product code missing).');
 
             try {
               setBusy(intent);
@@ -787,32 +847,31 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
               const payload = toCreatePayload(values, productCode, {
                 customerId: user?.customer_id,
                 orderId,
-                deviceTypeId,
+                deviceTypeId
               });
 
-              // If there's a scan file, try presigned upload first (avoid 413)
+              // If there's a scan file, try presign upload first
               if (values.scan_file instanceof File) {
                 try {
                   const meta = await uploadFileAndStoreMetadata(values.scan_file, user?.customer_id || '1');
-
-                  // attach reference/key to payload
                   payload.custom_scan_items = payload.custom_scan_items || {};
                   payload.custom_scan_items.scan_file = meta.key;
                   payload.custom_upload_link_with_photos = meta.key;
                 } catch (presignErr) {
-                  // Presign/upload failed — fallback to multipart FormData (old behavior)
-                  console.warn('Presign/upload failed — falling back to multipart POST', presignErr);
-
+                  // Fallback to multipart POST
+                  console.warn('Presign/upload failed — using multipart POST', presignErr);
                   const bodyOrForm = buildBodyOrForm(payload);
                   const resFallback = (await createCranialOrder(bodyOrForm).unwrap()) as CreateOk;
                   const { ok, note, salesId } = normalizeCreateResponse(resFallback);
 
                   if (ok) {
-                    alert(
-                      intent === 'place'
-                        ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
-                        : 'Order saved. You can pay later.'
-                    );
+                    if (intent === 'place' && salesId) {
+                      await startPaymentForSalesOrder(salesId);
+                      return;
+                    }
+                    alert(intent === 'place'
+                      ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
+                      : 'Order saved. You can pay later.');
                     router.push('/orders');
                     return;
                   }
@@ -823,11 +882,16 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                 }
               }
 
-              // Send JSON payload (no binary) — expected small, no 413
+              // JSON payload path (preferred)
               const res = (await createCranialOrder(payload).unwrap()) as CreateOk;
               const { ok, note, salesId } = normalizeCreateResponse(res);
 
               if (ok) {
+                if (intent === 'place' && salesId) {
+                  await startPaymentForSalesOrder(salesId);
+                  return;
+                }
+
                 alert(
                   intent === 'place'
                     ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
@@ -839,7 +903,12 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
               alert(note || 'Order created response not marked as success.');
             } catch (e: any) {
-              const msg = e?.data?.message || e?.data?._server_messages || e?.error || e?.message || 'Failed to submit order.';
+              const msg =
+                e?.data?.message ||
+                e?.data?._server_messages ||
+                e?.error ||
+                e?.message ||
+                'Failed to submit order.';
               alert(msg);
             } finally {
               setBusy(null);
@@ -847,88 +916,101 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           };
 
           const placeOrder = () => postOrder('place');
-          const payLater   = () => postOrder('later');
+          const payLater = () => postOrder('later');
 
           return (
             <Form className="max-w-6xl w-[92%] mx-auto my-6 space-y-6">
-              <fieldset disabled={isReadOnly} className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}>
-              {activeStep === 0 && (
-                <PatientDetails
-                  values={values}
-                  errors={errors}
-                  touched={touched}
-                  setFieldValue={setFieldValue}
-                  handleChange={handleChange}
-                  shouldShowError={() => false}
-                  UI={{ Input, Label, SelectBox, DatePicker, Textarea }}
-                />
-              )}
+              <fieldset
+                disabled={isReadOnly}
+                className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}
+              >
+                {activeStep === 0 && (
+                  <PatientDetails
+                    values={values}
+                    errors={errors}
+                    touched={touched}
+                    setFieldValue={setFieldValue}
+                    handleChange={handleChange}
+                    shouldShowError={() => false}
+                    UI={{ Input, Label, SelectBox, DatePicker, Textarea }}
+                  />
+                )}
 
-              {activeStep === 1 && <Measurement UI={{ Input, Label, Card }} />}
+                {activeStep === 1 && <Measurement UI={{ Input, Label, Card }} />}
 
-              {activeStep === 2 && <Computation cr={cr} cvai={cvai} UI={{ Card, Label, Input }} />}
+                {activeStep === 2 && (
+                  <Computation cr={cr} cvai={cvai} UI={{ Card, Label, Input }} />
+                )}
 
-              {activeStep === 3 && (
-                <Assessment
-                  values={values}
-                  errors={errors}
-                  touched={touched}
-                  setFieldValue={setFieldValue}
-                  handleChange={handleChange}
-                  shouldShowError={() => false}
-                  UI={{ RadioGroup, RadioGroupItem, Input, SelectBox, Label, Textarea }}
-                />
-              )}
+                {activeStep === 3 && (
+                  <Assessment
+                    values={values}
+                    errors={errors}
+                    touched={touched}
+                    setFieldValue={setFieldValue}
+                    handleChange={handleChange}
+                    shouldShowError={() => false}
+                    UI={{ RadioGroup, RadioGroupItem, Input, SelectBox, Label, Textarea }}
+                  />
+                )}
 
-              {activeStep === 4 && (
-                <SummaryStep
-                  values={values}
-                  cr={cr}
-                  cvai={cvai}
-                  productCode={productCode}
-                  UI={{ Input, Label }}
-                />
-              )}
+                {activeStep === 4 && (
+                  <SummaryStep
+                    values={values}
+                    cr={cr}
+                    cvai={cvai}
+                    productCode={productCode}
+                    UI={{ Input, Label }}
+                  />
+                )}
 
-              {activeStep === 5 && (
-                <ScanUpload
-                  values={values}
-                  setFieldValue={setFieldValue}
-                  UI={{ Input, Label, Card, Textarea }}
-                />
-              )}
+                {activeStep === 5 && (
+                  <ScanUpload
+                    values={values}
+                    setFieldValue={setFieldValue}
+                    UI={{ Input, Label, Card, Textarea }}
+                  />
+                )}
 
-              {activeStep === 6 && (
-                <FinishPayment
-                  values={values}
-                  productCode={productCode}
-                  UI={{ Input, Button, Label, Card, SelectBox }}
-                  onEstimate={onEstimate}
-                  onValidateCoupon={onValidateCoupon}
-                  onPlaceOrder={placeOrder}
-                  onPayLater={payLater}
-                  isPlacing={isPlacing}
-                  isSavingLater={isSavingLater}
-                  setFieldValue={setFieldValue}
-                />
-              )}
+                {activeStep === 6 && (
+                  <FinishPayment
+                    values={values}
+                    productCode={productCode}
+                    UI={{ Input, Button, Label, Card, SelectBox }}
+                    onEstimate={onEstimate}
+                    onValidateCoupon={onValidateCoupon}
+                    onPlaceOrder={placeOrder}
+                    onPayLater={payLater}
+                    isPlacing={isPlacing}
+                    isSavingLater={isSavingLater}
+                    setFieldValue={setFieldValue}
+                  />
+                )}
               </fieldset>
 
               {/* Navigation */}
               <div className="flex justify-between gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={() => setActiveStep((s) => Math.max(s - 1, 0))}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setActiveStep((s) => Math.max(s - 1, 0))}
+                >
                   Previous
                 </Button>
                 {activeStep < steps.length - 1 && (
-                  <Button type="button" onClick={() => setActiveStep((s) => Math.min(s + 1, steps.length - 1))}>
+                  <Button
+                    type="button"
+                    onClick={() => setActiveStep((s) => Math.min(s + 1, steps.length - 1))}
+                  >
                     Next
                   </Button>
                 )}
               </div>
-              {/* If read-only, show an informational bar and disable submit/payment controls */}
+
               {isReadOnly && (
                 <div className="mt-4 p-3 rounded bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
-                  This form is opened in **read-only** mode from Orders. Editing and payment are disabled.
+                  This form is opened in <strong>read-only</strong> mode from Orders. Editing and payment are
+                  disabled.
                 </div>
               )}
             </Form>
