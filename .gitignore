@@ -44,3 +44,4 @@ next-env.d.ts
 .eslintcache
 package-lock.json
 /.idea/.gitignore
+.idea/workspace.xml
