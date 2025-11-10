@@ -9,11 +9,6 @@ const nextConfig = {
         // destination: 'https://prderp.addiwise.com/api/:path*'
         destination: 'https://uaterp.addiwise.com/api/:path*'
         // destination: 'https://erp.addiwise.com/api/:path*'
-      },
-      {
-        // // 👇 Add this new rewrite
-        // source: '/payments/return',
-        // destination: '/payments/return-bridge',
       }
     ];
   },
