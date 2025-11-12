@@ -24,6 +24,8 @@ import { useGetItemNameInByDetailsMutation } from '@/rtk-query/apis/products';
 import { INSOLES_FORM_INITIAL_VALUES } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
+import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
+
 type LayeringImageType = {
   Standard: string;
   Premium: string;
@@ -109,7 +111,7 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
   {
     /**payment */
   }
-  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
+  /*const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
@@ -143,7 +145,9 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
     };
 
     loadRazorpayScript();
-  }, []);
+  }, []);*/
+  const { startPayment } = usePaymentLauncher();
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
 
   //    const handlePayAndPlaceOrder = async (values: any) => {
   //   if (!razorpayKey || !isRazorpayLoaded) {
@@ -361,6 +365,97 @@ setUploadURL(key);
     throw error;
   }
 };
+  const handlePayAndPlaceOrder = async (values: any) => {
+    setIsPaymentProcessing(true);
+    setFormValues(values);
+
+    try {
+      // 1️⃣ Ensure estimate data exists
+      const amount = Number(String(estimateData?.apiResponse?.total_price || 0).replace(/,/g, ''));
+      if (!amount || amount <= 0) {
+        toast.error('Please generate an estimate before proceeding to payment.');
+        setIsPaymentProcessing(false);
+        return;
+      }
+
+      // 2️⃣ Build item code payload
+      const payload = {
+        item_type: 'IN',
+        insole_model: values.insole_model,
+        design_variation: values.design_variation,
+        activity_level: values.activity_level,
+        model_name: values.model_name,
+        stump_length: values.stump_length,
+        weight: values.weight,
+        insoletype: values.insoletype,
+        insole_design_variation: values.insole_design_variation,
+        thickness: thicknests
+      };
+      const itemCode = await getItemCodeByValues(payload);
+      setSelectedItemcode(itemCode);
+
+      // 3️⃣ Upload files to S3
+      const filesToUpload: File[] = [];
+      if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+      if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+      if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
+
+      const uploadedUrls: string[] = [];
+      for (const f of filesToUpload) {
+        const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || '1');
+        uploadedUrls.push(meta.key);
+      }
+
+      // 4️⃣ Create insole order first
+      const orderPayload = {
+        item_type: 'IN',
+        customer: user?.customer_id,
+        order_details: { ...values, thickness: thicknests },
+        item_code: itemCode,
+        addicoins: parseInt(values.addicoins) || 0,
+        total_price: amount,
+        custom_scan_items: {
+          left_foot_file: uploadedUrls[0] || '',
+          right_foot_file: uploadedUrls[1] || ''
+        }
+      };
+
+      const orderResponse: any = await createInsoleOrder(orderPayload).unwrap();
+
+      const salesId =
+        orderResponse?.message?.sales_order_id ||
+        orderResponse?.message?.data?.sales_order_id ||
+        orderResponse?.data?.sales_order_id ||
+        orderResponse?.sales_order_id ||
+        orderResponse?.data?.order_id;
+
+      if (!salesId) throw new Error('Failed to create sales order before payment.');
+
+      // 5️⃣ Start payment with your reusable launcher
+      await startPayment({
+        amount,
+        salesOrder: String(salesId),
+        provider: 'HDFC',
+        returnUrl: `${window.location.origin}/api/payments/return`,
+        openInPopup: true,
+        pollingAttempts: 20,
+        pollingIntervalMs: 2000,
+        onSuccess: async () => {
+          toast.success('Payment successful! Order created.');
+          router.push('/orders');
+        },
+        onFailure: (err) => {
+          console.error('Payment failed:', err);
+          toast.error('Payment failed or cancelled. Please try again.');
+        }
+      });
+    } catch (err: any) {
+      console.error('Payment/order error:', err);
+      toast.error(err?.message || 'Failed to complete payment.');
+    } finally {
+      setIsPaymentProcessing(false);
+    }
+  };
 
  const handlePayAndPlaceOrderWithAddicoins = async (values: any) => {
   try {
@@ -670,6 +765,7 @@ for (const f of filesToUpload) {
   }
 };
 
+/*
   const handlePayAndPlaceOrder = async (values: any) => {
     if (!razorpayKey || !isRazorpayLoaded) {
       toast.error('Payment gateway is not available. Please try again.');
@@ -912,6 +1008,7 @@ for (const f of filesToUpload) {
       setIsPaymentProcessing(false);
     }
   };
+*/
   const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
     // console.log('Item code fetch response:', res);
@@ -2326,7 +2423,7 @@ for (const f of filesToUpload) {
                   !estimateConform ||
                   isOrderCreating ||
                   isPaymentProcessing ||
-                  ((values.Design_by !== 'Self' || values.Print_by !== 'Self') && !isRazorpayLoaded)
+                  ((values.Design_by !== 'Self' || values.Print_by !== 'Self'))
                 }
               >
                 {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
@@ -2354,16 +2451,9 @@ for (const f of filesToUpload) {
         <Button
           className="shadow-2xl"
           onClick={() => handlePayAndPlaceOrder(values)}
-          disabled={
-            !estimateConform ||
-            isOrderCreating ||
-            isPaymentProcessing ||
-            !isRazorpayLoaded
-          }
+          disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
         >
-          {isPaymentProcessing
-            ? 'Processing Payment...'
-            : 'Pay & Place Order'}
+          {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
         </Button>
 
         <Button

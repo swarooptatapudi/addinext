@@ -42,6 +42,7 @@ import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 import { BK_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/bkForm/Step5Finishing';
 import { PatientPortalDialog } from '@/components/app/common/ResidualLimbForm';
+import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
 
 declare global {
   interface Window {
@@ -1699,6 +1700,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     data: null
   });
 const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
+  const { startPayment } = usePaymentLauncher();
 
     // 1️⃣ Maintain an array to store uploaded file metadata
 const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
@@ -2330,9 +2332,154 @@ setUploadURL(fileMeta.key);
   }
 };
 
+// Replace your existing handlePayAndPlaceOrder with this
+  const handlePayAndPlaceOrder = async (values: any) => {
+
+    setIsPaymentProcessing(true);
+    setFormValues(values);
+
+    try {
+      // 1) Build item code payload & fetch item code
+      const payload = {
+        item_type: 'BK',
+        socket_type: values.socket_type,
+        design_variation: values.design_variation,
+        activity_level: values.activity_level,
+        model_name: values.model_name,
+        stump_length: values.stump_length,
+        weight: values.weight
+      };
+      const itemCode = await getItemCodeByValues(payload);
+      setSelectedItem(itemCode);
+
+      // 2) UPLOAD FILES TO S3 (if present)
+      const filesToUpload: File[] = [];
+      if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+      if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+      if (values.custom_obj_file_1 instanceof File) filesToUpload.push(values.custom_obj_file_1);
+      if (values.custom_mtl_file_2 instanceof File) filesToUpload.push(values.custom_mtl_file_2);
+      if (values.custom_jpg_file_3 instanceof File) filesToUpload.push(values.custom_jpg_file_3);
+
+      const uploadedMetadata: any[] = [];
+      const uploadedUrls: string[] = [];
+
+      for (const f of filesToUpload) {
+        const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || '1');
+        uploadedMetadata.push(meta);
+        uploadedUrls.push(meta.key);
+      }
+      console.log('🧾 Uploaded Metadata:', uploadedMetadata);
+
+      // 3) map scan_items: prefer uploaded URLs for new File objects otherwise use existing string values
+      const scan_items: Record<string, string> = {
+        left_foot_file:
+          values.left_foot_file instanceof File ? uploadedUrls[0] || '' : values.left_foot_file || '',
+        right_foot_file:
+          values.right_foot_file instanceof File ? uploadedUrls[1] || '' : values.right_foot_file || '',
+        custom_obj_file_1:
+          values.custom_obj_file_1 instanceof File ? uploadedUrls[2] || '' : values.custom_obj_file_1 || '',
+        custom_mtl_file_2:
+          values.custom_mtl_file_2 instanceof File ? uploadedUrls[3] || '' : values.custom_mtl_file_2 || '',
+        custom_jpg_file_3:
+          values.custom_jpg_file_3 instanceof File ? uploadedUrls[4] || '' : values.custom_jpg_file_3 || ''
+      };
+
+      // additionally map by filename heuristics (if any uploaded files are out of order)
+      filesToUpload.forEach((file, index) => {
+        const url = uploadedUrls[index];
+        const name = (file.name || '').toLowerCase();
+        if (!url) return;
+        if (name.includes('left')) scan_items.left_foot_file = url;
+        else if (name.includes('right')) scan_items.right_foot_file = url;
+        else if (name.endsWith('.obj')) scan_items.custom_obj_file_1 = url;
+        else if (name.endsWith('.mtl')) scan_items.custom_mtl_file_2 = url;
+        else if (/\.(jpg|jpeg|png)$/.test(name)) scan_items.custom_jpg_file_3 = url;
+      });
+
+      console.log('scan_items mapped:', scan_items);
+
+      // 4) Build final order payload (no file binaries, only metadata/URLs)
+      const orderPayload: any = {
+        item_type: 'BK',
+        customer: user?.customer_id,
+        order_details: { ...values },
+        item_code: itemCode,
+        scan_items,
+        addicoins: parseInt(values.addicoins) || 0,
+        totalPrice: totalPrice,
+        print,
+        design: desgin,
+        coupon_per: couponPer,
+        discount_amount: totalDiscount
+        // uploaded_files_meta: uploadedMetadata  // optional if you want to send metadata too
+      };
+
+      // NOTE: your backend earlier expected a FormData with "data" key — keep that if required.
+      // If your createOrder API accepts JSON object directly use createOrder(orderPayload)
+      // Here I'll build FormData the same way your original code did (stringified `data`)
+      const finalFormData = new FormData();
+      finalFormData.append('data', JSON.stringify(orderPayload));
+
+      // 5) Create order on server (so backend returns an order/sales id used by payment gateway)
+      const createRes: any = await createOrder(finalFormData).unwrap();
+      console.log('createOrder response:', createRes);
+      const frontendTotal = createRes?.frontend_values?.total_price || createRes?.data?.frontend_values?.total_price ||createRes?.message?.frontend_values?.total_price || createRes?.data?.total_price || createRes?.data?.message?.frontend_values?.total_price || createRes?.message?.data?.frontend_values?.total_price || null;
+
+      const amountNumber = Number(String(frontendTotal ?? 0).replace(/,/g, ''));
+
+      // extract sales/order id from the response (try common fields)
+      const salesId =
+        createRes?.message?.sales_order_id ||
+        createRes?.message?.data?.sales_order_id ||
+        createRes?.data?.sales_order_id ||
+        createRes?.sales_order_id ||
+        createRes?.data?.order_id ||
+        createRes?.insole_order_id || // fallback for some endpoints
+        null;
+
+      if (!salesId) {
+        // if backend created the order but didn't provide a sales id, show/create fallback
+        console.error('No sales/order id returned by createOrder', createRes);
+        toast.error('Order created but no sales id returned; cannot start payment.');
+        setIsPaymentProcessing(false);
+        return;
+      }
+
+      // 6) Launch payment using your reusable launcher (usePaymentLauncher / startPayment)
+      // Assumes you have `startPayment` in scope (from the hook). Adapt provider if needed (e.g. 'RAZORPAY' or 'HDFC').
+      await startPayment({
+        amount: amountNumber,
+        salesOrder: String(salesId),
+        provider: 'HDFC', // or 'HDFC' if that is your provider constant for BK
+        returnUrl: `${window.location.origin}/api/payments/return`,
+        openInPopup: true,
+        pollingAttempts: 20,
+        pollingIntervalMs: 2000,
+        onSuccess: async () => {
+          // server should have already created the order; confirm UI + navigate
+          toast.success('Payment successful! Order created successfully.');
+          setSelectedItem('');
+          setIsPaymentProcessing(false);
+          setFormDisable(true);
+          router.push('/orders');
+        },
+        onFailure: (err: any) => {
+          console.error('Payment failed/cancelled', err);
+          toast.error('Payment failed or cancelled. Please try again.');
+          setIsPaymentProcessing(false);
+        }
+      });
+    } catch (error: any) {
+      console.error('prepare/order/payment error:', error);
+      const message = error?.data?.message || error?.message || 'Failed to prepare payment. Please try again.';
+      toast.error(message);
+      setIsPaymentProcessing(false);
+    }
+  };
 
 
 // 3️⃣ Modified handlePayAndPlaceOrder
+/*
 const handlePayAndPlaceOrder = async (values: any) => {
 
   if (!razorpayKey || !isRazorpayLoaded) {
@@ -2498,6 +2645,7 @@ console.log(" scan_items mapped:", scan_items);
     toast.error('Failed to prepare payment. Please try again.');
   }
 };
+*/
 
 
 
@@ -3132,8 +3280,7 @@ const getItemCodeByValues = async (payload: any) => {
                           disabled={
                             !estimateConform ||
                             isOrderCreating ||
-                            isPaymentProcessing ||
-                            !isRazorpayLoaded
+                            isPaymentProcessing
                           }
                         >
                           {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
