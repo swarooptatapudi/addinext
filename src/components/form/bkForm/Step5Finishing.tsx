@@ -33,7 +33,7 @@ interface EstimateResponse {
   gst_18: string;
   gst_5: string;
   total_price: string;
-  totalDiscount:string;
+  totalDiscount: string;
   customer_available_coins: string;
   design_coin_use: string;
 }
@@ -64,7 +64,7 @@ export const Step5 = ({
   setCouponPer,
   setTotalDiscount,
   setTotalPrice,
- 
+
 
 }: any) => {
   const [showEstimateCard, setShowEstimateCard] = useState(false);
@@ -171,7 +171,7 @@ export const Step5 = ({
       discount_amt: couponData?.discount_amount || 0,
       coupon_code: couponCode.trim()
     };
-    
+
     // console.log('Estimate Payload:', estimatePayload);
 
     try {
@@ -180,19 +180,19 @@ export const Step5 = ({
       // console.log('Estimate Response:', response);
       setTotalDiscount(response?.data?.total_distcounted_price);
       setDesgin(response?.data?.design);
-         setPrint(response?.data?.print);
-         setCouponPer(response?.data?.additional_discount);
+      setPrint(response?.data?.print);
+      setCouponPer(response?.data?.additional_discount);
       setTotalPrice(response?.data?.total_price);
       // Parse coins to numbers for comparison
-       const data = response.data;
-      
+      const data = response.data;
 
 
-    // ✅ Safely parse and calculate combined discount
-    
-    
-   
-;
+
+      // ✅ Safely parse and calculate combined discount
+
+
+
+      ;
 
       // @ts-ignore
       const availableCoins = parseFloat(response.data.customer_available_coins.replace(/,/g, ''));
@@ -240,12 +240,12 @@ export const Step5 = ({
       const orderPayload = {
         item_type: 'BK',
         customer: user?.customer_id || 'Not specified', // Use user prop
-         order_details: {
-    ...values, // keep all form values
-    totalDiscount: totalDiscount // add totalDiscount inside order_details
-  }
+        order_details: {
+          ...values, // keep all form values
+          totalDiscount: totalDiscount // add totalDiscount inside order_details
+        }
       };
-      console.log("orderPayload>>",orderPayload)
+      console.log("orderPayload>>", orderPayload)
       // @ts--ignore
       // console.log('orderPayload MOdal', orderPayload);
       setOrderData(orderPayload);
@@ -405,7 +405,7 @@ export const Step5 = ({
     return true;
   };
 
-  
+
   const handleCouponValidation = async () => {
     if (!couponCode.trim()) {
       setCouponData(null);
@@ -477,7 +477,7 @@ export const Step5 = ({
               <label className="font-sm min-w-[100px] text-sm">Design by</label>
               <div className="w-[300px] min-w-[200px]">
                 <SelectBox
-                  options={FORM_OPTIONS.design_by || []}
+                  options={FORM_OPTIONS.Design_by || []}
                   value={values.design_by || ''}
                   onValueChange={(value) => {
                     setFieldValue('design_by', value);
@@ -499,7 +499,7 @@ export const Step5 = ({
               <label className="font-medium min-w-[100px] text-sm">Print by</label>
               <div className="w-[300px] min-w-[200px]">
                 <SelectBox
-                  options={FORM_OPTIONS.print_by || []}
+                  options={FORM_OPTIONS.Print_by || []}
                   value={values.print_by || ''}
                   onValueChange={(value) => {
                     setFieldValue('print_by', value);
