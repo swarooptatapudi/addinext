@@ -37,11 +37,15 @@ import {
   useGetOrderDetailsMutation,
   usePreSignedUrlMutation
 } from '@/rtk-query/apis/orders';
-import { useCreatePaymentIntentMutation } from '@/rtk-query/apis/payments';
+// ❌ removed paymentsApi + useCreatePaymentOrderMutation imports
+// import { paymentsApi, useCreatePaymentOrderMutation } from '@/rtk-query/apis/payments';
 
 import { USER } from '@/uttils/Types';
 import { estimateOrderClientSide } from '@/uttils/getEstimate';
 import { baseQueryWithReauth } from '@/rtk-query/apis';
+
+// ✅ reusable payment launcher
+import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
 
 /* ------------------------------- Types/Schema ------------------------------ */
 
@@ -205,10 +209,10 @@ function toOrderDetails(values: FormValues) {
   let cvai: number | null = null;
   try {
     if (ap && ml) cr = calculateCephalicRatio(ap, ml).value;
-  } catch { }
+  } catch {}
   try {
     if (da && db) cvai = calculateCVAI(da, db).value;
-  } catch { }
+  } catch {}
 
   return {
     patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),
@@ -374,7 +378,7 @@ function toCreatePayload(
   return payload;
 }
 
-/* ---------- Payment helpers: normalize + redirect (no popup) ---------- */
+/* ---------- Payment helpers (keep) ---------- */
 
 function normalizePaymentResponse(paymentRes: any) {
   let success = false;
@@ -399,11 +403,9 @@ function normalizePaymentResponse(paymentRes: any) {
   return { success, paymentLink, msgText };
 }
 
-/** Redirect current tab to payment link (no popup). */
 function redirectToPayment(link: string) {
   const trimmed = (link || '').trim();
   if (!trimmed) throw new Error('Empty payment link');
-  // Top-level navigation (works reliably on mobile & desktop).
   window.location.assign(trimmed);
 }
 
@@ -421,16 +423,18 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [busy, setBusy] = useState<null | 'place' | 'later'>(null);
   const [formResetKey, setFormResetKey] = useState(0);
-  const [createPaymentIntent] = useCreatePaymentIntentMutation();
 
   const [createCranialOrder] = useCreateCranialOrderMutation();
   const [validateCoupon] = useValidateCouponMutation();
   const [getOrderDetails] = useGetOrderDetailsMutation();
   const [preSignedUrl] = usePreSignedUrlMutation();
 
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
+  const { startPayment } = usePaymentLauncher(); // ✅ get reusable payment launcher
 
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
+
+  // ❌ removed popup/status hooks & listeners
 
   const pill = (i: number) =>
     `text-xs border rounded-full px-3 py-1 ${i === activeStep ? 'bg-primary text-white border-primary' : 'text-violet-300 border-violet-400'}`;
@@ -562,11 +566,11 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
       if (lower.endsWith('.stl')) contentType = 'model/stl';
       else if (file.type) contentType = file.type;
 
-      const result: any = await preSignedUrl({
+      const result: any = await usePreSignedUrlMutationResult(preSignedUrl, {
         fileName: file.name,
         fileType: contentType,
         userId
-      }).unwrap();
+      });
 
       if (!result?.message?.status) {
         throw new Error('Presigned URL request failed');
@@ -575,26 +579,14 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
       const key = result?.message?.data?.key;
       if (!uploadUrl) throw new Error('No uploadUrl from presign response');
 
-      const uploadUrlStr = String(uploadUrl);
-      const keyStr = key ? String(key) : uploadUrlStr.split('?')[0];
-
-      const uploadFileToS3 = (url: string, f: File) =>
-        new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open('PUT', url);
-          xhr.setRequestHeader('Content-Type', contentType);
-          xhr.onload = () => {
-            if (xhr.status === 200 || xhr.status === 204) resolve();
-            else reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.responseText}`));
-          };
-          xhr.onerror = () => reject(new Error('Network error during upload'));
-          xhr.send(f);
-        });
-
-      await uploadFileToS3(uploadUrlStr, file);
+      await fetch(String(uploadUrl), {
+        method: 'PUT',
+        headers: { 'Content-Type': contentType },
+        body: file
+      });
 
       const fileMeta = {
-        key: keyStr,
+        key: key ? String(key) : String(uploadUrl).split('?')[0],
         size: file.size,
         type: contentType,
         originalName: file.name
@@ -607,6 +599,14 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
       throw err;
     }
   };
+
+  // small helper so we can await the RTK mutation (since we already have the hook instance)
+  async function usePreSignedUrlMutationResult(
+    mutate: ReturnType<typeof usePreSignedUrlMutation>[0],
+    args: any
+  ) {
+    return await mutate(args).unwrap();
+  }
 
   return (
     <div className="w-full">
@@ -627,7 +627,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
         key={formResetKey + (prefilled ? 1 : 0)}
         initialValues={prefilled ? formSeed : initialValues}
         validationSchema={Schema}
-        onSubmit={() => { }}
+        onSubmit={() => {}}
         enableReinitialize
         validateOnChange
         validateOnBlur
@@ -654,14 +654,30 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             let crV: number | undefined;
             let cvaiV: number | undefined;
 
-            if (typeof apN === 'number' && Number.isFinite(apN) && apN > 0 &&
-              typeof mlN === 'number' && Number.isFinite(mlN) && mlN > 0) {
-              try { crV = calculateCephalicRatio(apN, mlN).value; } catch { }
+            if (
+              typeof apN === 'number' &&
+              Number.isFinite(apN) &&
+              apN > 0 &&
+              typeof mlN === 'number' &&
+              Number.isFinite(mlN) &&
+              mlN > 0
+            ) {
+              try {
+                crV = calculateCephalicRatio(apN, mlN).value;
+              } catch {}
             }
 
-            if (typeof daN === 'number' && Number.isFinite(daN) && daN > 0 &&
-              typeof dbN === 'number' && Number.isFinite(dbN) && dbN > 0) {
-              try { cvaiV = calculateCVAI(daN, dbN).value; } catch { }
+            if (
+              typeof daN === 'number' &&
+              Number.isFinite(daN) &&
+              daN > 0 &&
+              typeof dbN === 'number' &&
+              Number.isFinite(dbN) &&
+              dbN > 0
+            ) {
+              try {
+                cvaiV = calculateCVAI(daN, dbN).value;
+              } catch {}
             }
 
             return { cr: crV, cvai: cvaiV };
@@ -682,12 +698,15 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             print_by: string;
             coupon_code?: string;
             product_code?: string;
-          }): Promise<void | {
+          }): Promise<
+            | void
+            | {
             design: number;
             print: number;
             stdDiscPct?: number;
             gstRate?: number;
-          }> => {
+          }
+          > => {
             if (!productCode) {
               alert('Select Positional Diagnosis and Severity to generate Product Code first.');
               return;
@@ -709,7 +728,10 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
               api: {} as any
             });
 
-            if (error) { alert(error); return; }
+            if (error) {
+              alert(error);
+              return;
+            }
             if (!result) return;
 
             const subtotal = Number(result.subtotal || 0);
@@ -718,7 +740,9 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             const stdPct = subtotal > 0 ? totalDisc / subtotal : 0;
 
             const prevGstRate =
-              typeof values.gst_rate === 'number' && values.gst_rate > 0 ? values.gst_rate! : 0.05;
+              typeof values.gst_rate === 'number' && values.gst_rate > 0
+                ? values.gst_rate!
+                : 0.05;
 
             const firstLine = result.breakdown?.items?.[0];
             const computedGstRate =
@@ -766,9 +790,19 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           };
 
           type CreateOk =
-            | { message: { status: string; message?: string; sales_order_id?: string; cranial_order_id?: string; }; }
-            | { status: string; message?: string; sales_order_id?: string; cranial_order_id?: string; }
-            | string | Record<string, any> | undefined | null;
+            | {
+            message: {
+              status: string;
+              message?: string;
+              sales_order_id?: string;
+              cranial_order_id?: string;
+            };
+          }
+            | { status: string; message?: string; sales_order_id?: string; cranial_order_id?: string }
+            | string
+            | Record<string, any>
+            | undefined
+            | null;
 
           function normalizeCreateResponse(res: unknown) {
             let ok = false;
@@ -796,8 +830,10 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
             ok = /success|ok/i.test(statusStr);
 
-            salesId = msgObj?.sales_order_id ?? obj?.sales_order_id ?? obj?.data?.sales_order_id;
-            cranialId = msgObj?.cranial_order_id ?? obj?.cranial_order_id ?? obj?.data?.cranial_order_id;
+            salesId =
+              msgObj?.sales_order_id ?? obj?.sales_order_id ?? obj?.data?.sales_order_id;
+            cranialId =
+              msgObj?.cranial_order_id ?? obj?.cranial_order_id ?? obj?.data?.cranial_order_id;
 
             note =
               (typeof msgObj?.message === 'string' && msgObj.message) ||
@@ -808,36 +844,12 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
             return { ok, salesId, cranialId, note };
           }
 
-          // ---------- NO-POPUP payment initiation ----------
-          const startPaymentForSalesOrder = async (salesId: string) => {
-            const raw = String(values.total_price ?? '0').replace(/,/g, '');
-            const parsed = parseFloat(raw || '0');
-            const amountFloat = Number(parsed.toFixed(2));
-
-            const paymentInput = {
-              amount_rupees: amountFloat,
-              sales_order: salesId,
-              currency: 'INR' as const,
-              provider: 'HDFC' as const
-            };
-
-            try {
-              const paymentRes: any = await createPaymentIntent(paymentInput).unwrap();
-              const { success, paymentLink, msgText } = normalizePaymentResponse(paymentRes);
-              if (success && paymentLink) {
-                redirectToPayment(paymentLink); // current tab navigation
-                return;
-              }
-              alert(msgText || 'Payment initiation failed.');
-            } catch (err: any) {
-              console.error('Payment error:', err);
-              alert('Payment initiation failed. Please try again.');
-            }
-          };
-
-          // 🆕 Updated postOrder with presign upload and no-popup payment
+          // ✅ postOrder now uses the reusable payment launcher
           const postOrder = async (intent: 'place' | 'later') => {
             if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
+            const cond = normalizeCondition(values.positional);
+            const sev = normalizeSeverity(values.severity as string, cvai);
+            const productCode = cond && sev ? makeProductCode(sev, cond) : '';
             if (!productCode)
               return alert('Please select Positional Diagnosis + Severity (product code missing).');
 
@@ -853,7 +865,10 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
               // If there's a scan file, try presign upload first
               if (values.scan_file instanceof File) {
                 try {
-                  const meta = await uploadFileAndStoreMetadata(values.scan_file, user?.customer_id || '1');
+                  const meta = await uploadFileAndStoreMetadata(
+                    values.scan_file,
+                    user?.customer_id || '1'
+                  );
                   payload.custom_scan_items = payload.custom_scan_items || {};
                   payload.custom_scan_items.scan_file = meta.key;
                   payload.custom_upload_link_with_photos = meta.key;
@@ -866,12 +881,27 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
                   if (ok) {
                     if (intent === 'place' && salesId) {
-                      await startPaymentForSalesOrder(salesId);
+                      // ✅ Use reusable payment launcher
+                      const raw = String(values.total_price ?? '0').replace(/,/g, '');
+                      const amount = Number(parseFloat(raw || '0').toFixed(2));
+                      await startPayment({
+                        amount,
+                        salesOrder: salesId,
+                        onSuccess: () => {
+                          alert('Payment successful.');
+                          router.push('/orders');
+                        },
+                        onFailure: () => {
+                          alert('Payment failed or timed out. Please check status in Orders.');
+                        }
+                      });
                       return;
                     }
-                    alert(intent === 'place'
-                      ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
-                      : 'Order saved. You can pay later.');
+                    alert(
+                      intent === 'place'
+                        ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
+                        : 'Order saved. You can pay later.'
+                    );
                     router.push('/orders');
                     return;
                   }
@@ -888,7 +918,20 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
               if (ok) {
                 if (intent === 'place' && salesId) {
-                  await startPaymentForSalesOrder(salesId);
+                  // ✅ Use reusable payment launcher
+                  const raw = String(values.total_price ?? '0').replace(/,/g, '');
+                  const amount = Number(parseFloat(raw || '0').toFixed(2));
+                  await startPayment({
+                    amount,
+                    salesOrder: salesId,
+                    onSuccess: () => {
+                      alert('Payment successful.');
+                      router.push('/orders');
+                    },
+                    onFailure: () => {
+                      alert('Payment failed or timed out. Please check status in Orders.');
+                    }
+                  });
                   return;
                 }
 
