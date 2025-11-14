@@ -135,7 +135,6 @@ export default function PatientDetails({
           label="Parent / Guardian"
           value={values.parent_name || ''}
           onChange={handleChange('parent_name')}
-          required
           placeholder="Parent or Guardian"
         />
         <Input
@@ -156,7 +155,6 @@ export default function PatientDetails({
           label="Gender"
           value={values.gender ?? ''}
           onValueChange={handleChange('gender')}
-          required
           inVaild={shouldShowError('gender')}
           error={errors?.gender}
         />
@@ -164,7 +162,6 @@ export default function PatientDetails({
           label="Height (cm)"
           value={values.height_cm || ''}
           onChange={handleChange('height_cm')}
-          required
           placeholder="cm"
         />
         <Input
@@ -177,7 +174,6 @@ export default function PatientDetails({
           label="Mobile"
           value={values.parent_mobile || ''}
           onChange={handleChange('parent_mobile')}
-          required
           placeholder="10-digit"
         />
         <Input
@@ -200,7 +196,6 @@ export default function PatientDetails({
           label="Consultant"
           value={values.consultant || ''}
           onChange={handleChange('consultant')}
-          required
           placeholder="Doctor name"
         />
       </div>
