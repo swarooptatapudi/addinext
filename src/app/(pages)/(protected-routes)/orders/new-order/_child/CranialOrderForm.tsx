@@ -584,6 +584,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           parent_mobile: d.parent_mobile || d.custom_mobile_no || '',
           date_of_birth: d.date_of_birth || d.dob || '',
           gender: d.gender || '',
+          height_cm: d.height_cm || '',
           weight_kg: d.weight || d.weight_kg || '',
           email: d.email || d.custom_email || '',
           clinic_name: d.clinic_name || '',
@@ -606,7 +607,8 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           surgical_complications: d.surgical_complications || '',
           other_diagnosis_and_syndromes: d.other_diagnosis_and_syndromes || '',
           item_code: d.item_code || '',
-          scan_gdrive_link: d.custom_upload_link_with_photos || ''
+          scan_gdrive_link: d.custom_upload_link_with_photos || '',
+          colour: d.colour || '',
         };
         setFormSeed(seed);
         setPrefilled(true);
