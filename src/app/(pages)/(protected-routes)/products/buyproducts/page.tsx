@@ -1,21 +1,32 @@
-"use client";
+// app/(your-path)/buy-product-with-hdfc.tsx
+'use client';
 
-import { useSearchParams } from "next/navigation";
-import { useState, useCallback, useEffect, } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShoppingCartIcon, CreditCardIcon, BookmarkIcon, InfoIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { useValidateCouponMutation } from "@/rtk-query/apis/orders";
-import { useGetProductsListQuery } from "@/rtk-query/apis/products";
-import { toast } from "react-toastify";
-import { useCreateProductOrderMutation } from "@/rtk-query/apis/orders";
+import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
+import {
+  ShoppingCartIcon,
+  CreditCardIcon,
+  BookmarkIcon,
+  InfoIcon
+} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { useValidateCouponMutation, useCreateProductOrderMutation } from '@/rtk-query/apis/orders';
+import { useGetProductsListQuery } from '@/rtk-query/apis/products';
+import { toast } from 'react-toastify';
 import { RootState } from '@/rtk-query/store';
 import { USER } from '@/uttils/Types';
 import { useSelector } from 'react-redux';
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 import { Loader, Check, X } from 'lucide-react';
-
+import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
 
 declare global {
   interface Window {
@@ -23,256 +34,253 @@ declare global {
   }
 }
 
-export default function BuyProductsPage() {
-  const [quantity, setQuantity] = useState<number | "">("");
-  const [couponCode, setCouponCode] = useState("");
+export default function BuyProductsWithHdfc() {
+  const [quantity, setQuantity] = useState<number | ''>('');
+  const [couponCode, setCouponCode] = useState('');
   const [couponData, setCouponData] = useState<any>(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+
   const [validateCoupon] = useValidateCouponMutation();
   const [createProductOrder, { isLoading: isOrderCreating }] = useCreateProductOrderMutation();
 
   const { user }: { user: USER } = useSelector((state: RootState) => state.userReducer);
-
-  
   const router = useRouter();
 
-  // Debounced coupon check
+  const searchParams = useSearchParams();
+  const productName = searchParams.get('name') || 'Unknown Product';
+
+  const { data: products, isLoading, error } = useGetProductsListQuery();
+
+  // payment launcher hook
+  const { startPayment } = usePaymentLauncher();
+
+  // coupon debounce
   useEffect(() => {
-    if (!couponCode) return;
-
-    const timer = setTimeout(() => {
+    if (!couponCode) {
+      setCouponData(null);
+      return;
+    }
+    const t = setTimeout(() => {
       handleCouponValidation();
-    }, 800);
-
-    return () => clearTimeout(timer);
+    }, 700);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [couponCode]);
 
+  const selectedProduct = products?.find((p: any) => p.item_name === productName);
 
-
-  const searchParams = useSearchParams();
-  const productName = searchParams.get("name") || "Unknown Product";
-
-
-  // Fetch products
-  const { data: products, isLoading, error } = useGetProductsListQuery();
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Failed to load products</p>;
-
-  // 🎯 Find product by name (from query params)
-  const selectedProduct = products?.find(
-    (item: any) => item.item_name === productName
-  );
-  // console.log("selectedProduct", selectedProduct);
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => {
-        resolve(true);
-      };
-      script.onerror = () => {
-        resolve(false);
-      };
-      document.body.appendChild(script);
-    });
-  };
-
-  const onPayNow = async () => {
-    if (!quantity || quantity <= 0) {
-      toast.error("Please enter a valid quantity");
-      return;
-      
-    }
-
-    try {
-      const isScriptLoaded = await loadRazorpayScript();
-      if (!isScriptLoaded) {
-        toast.error("Failed to load payment gateway");
-        return;
-      }
-
-      // 🎯 Amount in paise (Razorpay expects INR * 100)
-      const amountInPaise = Math.round(finalAmount * 100);
-
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: amountInPaise.toString(),
-        currency: "INR",
-        name: "Addiwise Company",
-        description: `Purchase of ${quantity} x ${productName}`,
-
-        // 👉 Only ONE handler function
-        handler: async function (response: any) {
-          // console.log("Payment response:", response);
-
-          try {
-            // Build order payload
-            const orderPayload = {
-              orderPayload: {
-                product_name: productName,
-                item_code: selectedProduct?.item_code,
-                product_id: selectedProduct?.id,
-                quantity,
-                amount: finalAmount.toFixed(2), // makes "11100.00"
-                coupon_code: couponCode || null,
-                payment_reference_id: response.razorpay_payment_id, // ✅ corrected key name
-              },
-            };
-
-            // console.log("Order Payload (object):", orderPayload);
-
-            // 🟢 Logs as raw JSON string (exact body you send)
-            // console.log("Order Payload (JSON):", JSON.stringify(orderPayload, null, 2));
-            // Call your API
-            const orderRes = await createProductOrder(orderPayload).unwrap();
-
-            toast.success("Order placed successfully!");
-            // console.log("Order Response:", orderRes);
-            router.push(`/transcations`);
-          } catch (err) {
-            toast.error("Failed to create order after payment");
-            // console.error("Create Order Error:", err);
-          }
-        },
-
-        prefill: {
-          name: user?.full_name || '',
-          // email: user?. || '',
-          contact: user?.phone_number || '',
-        },
-        notes: {
-          customer_id: user?.customer_id,
-          product: productName,
-          quantity: quantity.toString(),
-        },
-        theme: {
-          color: "#3399cc",
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-
-      rzp.on("payment.failed", function (response: any) {
-        toast.error("Payment failed. Please try again.");
-        console.error("Payment failed:", response.error);
-      });
-    } catch (err) {
-      toast.error("An error occurred during payment process");
-      console.error(err);
-    }
-  };
-
-
-const custom_product_image = selectedProduct?.custom_product_image; // Or whatever field holds the image
-// console.log("🖼️ custom_product_image:", custom_product_image);
-
-  const description = selectedProduct?.description || "";
-  // console.log("description",description)
-  // ✅ MRP & Discount come from selected product
+  // pricing fields
   const mrp = selectedProduct?.mrp || 0;
-  // console.log("mrp", mrp);
-  const discountAmount = selectedProduct?.standard_discount || 0;
-  // console.log("discountAmount", discountAmount);
+  const discountAmountPercent = selectedProduct?.standard_discount || 0;
 
-  // Coupon validation with debounce
-  const handleCouponValidation = async () => {
-    if (!couponCode.trim()) {
+  const baseAmount = mrp * (typeof quantity === 'number' ? quantity : 0);
+  const netAmount = baseAmount - (discountAmountPercent / 100) * baseAmount - (couponData?.discount_amount || 0);
+  const tax = netAmount * 0.18;
+  const totalAmount = netAmount + tax;
+  const finalAmount = totalAmount - (totalAmount * (couponData?.discount_percentage || 0) / 100 || 0);
+
+  async function handleCouponValidation() {
+    if (!couponCode || couponCode.trim().length < 3) {
       setCouponData(null);
       return;
     }
-
-    if (couponCode.trim().length < 5) {
-      setCouponData(null);
-      return;
-    }
-
     setIsValidatingCoupon(true);
     try {
-      const response = await validateCoupon({ coupon_code: couponCode }).unwrap();
-      // console.log("Coupon Validation Response:", response);
-      setCouponData(response.message);
-      toast.success("Coupon applied successfully!");
-    } catch (error: any) {
+      const res: any = await validateCoupon({ coupon_code: couponCode }).unwrap();
+      setCouponData(res.message || res.data || null);
+      toast.success('Coupon validated');
+    } catch (err: any) {
       setCouponData(null);
-      setTimeout(() => { toast.error(error.data?.message || "Invalid coupon code"); }, 10000);
-      // console.error("Coupon Validation Error:", error);
-
+      toast.error(err?.data?.message || 'Invalid coupon code');
     } finally {
       setIsValidatingCoupon(false);
     }
+  }
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Failed to load products</p>;
+  if (!selectedProduct) return <p>No product selected</p>;
+
+  // ---------- Helper: robust extractor ----------
+  const extractSalesAndPrice = (res: any) => {
+    const sales =
+      res?.sales_order ||
+      res?.sales_order_id ||
+      res?.bk_order_id ||
+      res?.message?.sales_order ||
+      res?.message?.sales_order_id ||
+      res?.data?.sales_order_id ||
+      null;
+
+    let total_price =
+      res?.frontend_values?.total_price ??
+      res?.message?.frontend_values?.total_price ??
+      res?.message?.data?.total_price ??
+      res?.data?.frontend_values?.total_price ??
+      res?.data?.total_price ??
+      null;
+
+    // convert to number if possible
+    if (total_price !== null && total_price !== undefined) {
+      total_price = Number(total_price);
+      // If backend returned paise (very large compared to UI amounts), convert to rupees.
+      // Heuristic: if > 100000 (₹1,000) in paise OR if value >> local UI estimate, divide by 100.
+      if (!isNaN(total_price)) {
+        // If it looks like paise (very large), convert:
+        if (total_price > 100000) {
+          total_price = total_price / 100;
+        }
+      }
+    }
+
+    return { sales, total_price, raw: res };
   };
 
+  // ---------- Create Draft Order ----------
+  const createDraftOrder = useCallback(async () => {
+    const draftPayload = {
+      orderPayload: {
+        product_name: productName,
+        item_code: selectedProduct?.item_code,
+        product_id: selectedProduct?.id,
+        quantity,
+        amount: Number(finalAmount || 0),
+        coupon_code: couponCode || null,
+        create_draft: true
+      }
+    };
 
+    const res: any = await createProductOrder(draftPayload).unwrap();
+    return extractSalesAndPrice(res);
+  }, [createProductOrder, productName, selectedProduct, quantity, couponCode, finalAmount]);
 
+  // ---------- Finalize Order (called after payment success) ----------
+  const finalizeOrder = useCallback(
+    async (salesOrderId: string, paymentRef: string | null) => {
+      // assume createProductOrder accepts finalize payload; adapt if you have a dedicated endpoint
+      const finalizePayload = {
+        orderPayload: {
+          sales_order_id: salesOrderId,
+          payment_reference_id: paymentRef,
+          finalize: true
+        }
+      };
 
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
-  if (error) {
-    return <p>Failed to load products</p>;
-  }
-
-  // 🧮 Price calculations
-  const baseAmount = mrp * (typeof quantity === "number" ? quantity : 0);
-
-  const netAmount = baseAmount - discountAmount / 100 * baseAmount - (couponData?.discount_amount || 0);
-
-  const tax = netAmount * 0.18;
-  const totalAmount = netAmount + tax;
-
-  // 📌 Coupon discount applied (if available)
-  const finalAmount =
-    totalAmount - totalAmount * (couponData?.discount_percentage || 0) / 100
-
-  if (!selectedProduct) {
-    return <p>No product selected</p>; // conditions go *after* hooks
-  }
-
-  
-  // 📌 AddiStud Description
- const getProductDescriptionCard = () => {
-  if (!selectedProduct) return null;
-
-  // Handle HTML safely if the description contains tags
-  const safeDescription =
-    description?.includes("<a") || description?.includes("<p")
-      ? <div dangerouslySetInnerHTML={{ __html: description }} />
-      : <p>{description}</p>;
-
-  return (
-    <Card className="border border-gray-200 bg-gray-50 shadow-sm rounded-lg mb-6">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <InfoIcon className="w-5 h-5 text-primary" />
-          <CardTitle className="text-lg font-semibold text-primary">
-            {selectedProduct.item_name}
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="text-sm text-gray-700">
-        {safeDescription}
-
-        {/* ✅ Product image (if exists) */}
-        {custom_product_image && (
-          <img
-            src={custom_product_image}
-            alt={selectedProduct.item_name}
-            className="mt-3 rounded-md w-full max-w-sm"
-          />
-        )}
-      </CardContent>
-    </Card>
+      const res: any = await createProductOrder(finalizePayload).unwrap();
+      return res;
+    },
+    [createProductOrder]
   );
-};
 
+  // ---------- Main payment handler ----------
+  const onPayNow = async () => {
+    if (!quantity || Number(quantity) <= 0) {
+      toast.error('Please enter a valid quantity');
+      return;
+    }
 
+    try {
+      // 1) create draft
+      const draft = await createDraftOrder();
+      const salesOrderId = draft.sales;
+      const backendPrice = draft.total_price;
+
+      if (!salesOrderId) {
+        console.error('Draft created but did not return sales id', draft.raw);
+        toast.error('Could not create draft order. Please try again.');
+        return;
+      }
+
+      // 2) determine canonical amount (prefer backend)
+      const canonicalAmountRupees =
+        backendPrice !== null && backendPrice !== undefined
+          ? Number(backendPrice)
+          : Number(finalAmount || 0);
+
+      if (!canonicalAmountRupees || canonicalAmountRupees <= 0) {
+        toast.error('Amount must be greater than 0');
+        return;
+      }
+
+      // 3) Call startPayment (pass rupees, NOT paise). Do NOT pass returnUrl to let hook use its default.
+      await startPayment({
+        amount: canonicalAmountRupees, // rupees
+        salesOrder: String(salesOrderId),
+        provider: 'HDFC',
+        openInPopup: true,
+        pollingAttempts: 20,
+        pollingIntervalMs: 2000,
+        // finalize the order when payment confirmed
+        onSuccess: async (payload) => {
+          try {
+            // try to extract payment reference id from payload delivered by HDFC / hook
+            const paymentRef =
+              payload?.data?.payment_reference_id ||
+              payload?.data?.order_id ||
+              payload?.payment_id ||
+              payload?.order_id ||
+              payload?.payment_reference_id ||
+              null;
+
+            await finalizeOrder(String(salesOrderId), paymentRef);
+            toast.success('Payment successful & order finalized');
+            router.push('/transcations'); // or /orders as you prefer
+          } catch (err) {
+            console.error('Failed to finalize after success:', err);
+            toast.error('Payment succeeded but finalizing failed.');
+            // Keep user on page or redirect depending on your UX choice
+          }
+        },
+        onFailure: (err) => {
+          console.error('Payment failed/cancelled', err);
+          toast.error('Payment failed or cancelled. Please try again.');
+        }
+      });
+    } catch (err: any) {
+      console.error('Error in payment flow', err);
+      toast.error(err?.data?.message || err?.message || 'Failed to prepare payment. Try again.');
+    }
+  };
+
+  // ----- UI card helpers -----
+  const custom_product_image = selectedProduct?.custom_product_image;
+  const description = selectedProduct?.description || '';
+
+  const getProductDescriptionCard = () => {
+    if (!selectedProduct) return null;
+    const safeDescription =
+      description?.includes('<a') || description?.includes('<p')
+        ? <div dangerouslySetInnerHTML={{ __html: description }} />
+        : <p>{description}</p>;
+
+    return (
+      <Card className="border border-gray-200 bg-gray-50 shadow-sm rounded-lg mb-6">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <InfoIcon className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg font-semibold text-primary">
+              {selectedProduct.item_name}
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="text-sm text-gray-700">
+          {safeDescription}
+          {custom_product_image && (
+            <img
+              src={custom_product_image}
+              alt={selectedProduct.item_name}
+              className="mt-3 rounded-md w-full max-w-sm"
+            />
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-      {/* LEFT COLUMN */}
+      {/* LEFT */}
       <div>
-        {/* Summary Card */}
         <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border border-gray-200 rounded-lg mb-6">
           <CardHeader className="pb-0">
             <CardTitle className="text-lg font-bold text-blue-800">
@@ -285,26 +293,22 @@ const custom_product_image = selectedProduct?.custom_product_image; // Or whatev
           <CardContent className="pt-4">
             <ul className="text-l space-y-3">
               <li>Quantity: {quantity}</li>
-              <li>MRP: ₹{baseAmount}</li>
-              <li>Standard Discount: {discountAmount}%</li>
+              <li>MRP: ₹{baseAmount.toFixed(2)}</li>
+              <li>Standard Discount: {discountAmountPercent}%</li>
               {couponData?.discount_amount > 0 && (
-                <li className="text-green-600">
-                  Coupon Applied: -₹{couponData.discount_amount}
-                </li>
+                <li className="text-green-600">Coupon Applied: -₹{couponData.discount_amount}</li>
               )}
-              <li>Net Amount: <span className="font-semibold">₹{netAmount}</span></li>
-              {/* <li>Taxes @ 18%: ₹{tax.toFixed(2)}</li> */}
+              <li>Net Amount: <span className="font-semibold">₹{netAmount.toFixed(2)}</span></li>
               <li>Taxes @ 18%</li>
-              <li className="font-bold text-primary">
-                Total Amount: ₹{finalAmount.toFixed(2)}
-              </li>
+              <li className="font-bold text-primary">Total Amount: ₹{finalAmount.toFixed(2)}</li>
             </ul>
           </CardContent>
         </Card>
+
         {getProductDescriptionCard()}
       </div>
 
-      {/* RIGHT COLUMN: Buy Card */}
+      {/* RIGHT */}
       <Card className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
@@ -325,12 +329,11 @@ const custom_product_image = selectedProduct?.custom_product_image; // Or whatev
               min={1}
               value={quantity}
               onChange={(e) => {
-                const val = e.target.value.replace(/^0+/, ""); // remove leading zeros
-                setQuantity(val === "" ? "" : Number(val));
+                const val = e.target.value.replace(/^0+/, '');
+                setQuantity(val === '' ? '' : Number(val));
               }}
               className="mt-1"
             />
-
           </div>
 
           <div className="space-y-2 mt-3">
@@ -340,12 +343,7 @@ const custom_product_image = selectedProduct?.custom_product_image; // Or whatev
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 placeholder="Enter coupon code"
-                className={`w-full pr-10 ${couponCode.length >= 5 && !couponData && !isValidatingCoupon
-                  ? 'border-orange-200'
-                  : couponData
-                    ? 'border-green-200'
-                    : ''
-                  }`}
+                className={`w-full pr-10 ${couponCode.length >= 5 && !couponData && !isValidatingCoupon ? 'border-orange-200' : couponData ? 'border-green-200' : ''}`}
               />
               <div className="absolute right-3 top-2">
                 {isValidatingCoupon ? (
@@ -378,15 +376,16 @@ const custom_product_image = selectedProduct?.custom_product_image; // Or whatev
               <CreditCardIcon className="w-5 h-5" />
               <span className="font-medium ">Total Amount:</span>
             </div>
-            <div className="text-xl font-bold text-primary">
-              ₹{finalAmount.toFixed(2)}
-            </div>
+            <div className="text-xl font-bold text-primary">₹{finalAmount.toFixed(2)}</div>
           </div>
+
           <Button
             onClick={onPayNow}
-            className="w-full py-6 bg-primary text-white font-semibold shadow-md transition-all">
-            <ShoppingCartIcon className="w-5 h-5" />
-            Buy Now
+            disabled={isOrderCreating}
+            className="w-full py-6 bg-primary text-white font-semibold shadow-md transition-all"
+          >
+            <ShoppingCartIcon className="w-5 h-5 mr-2" />
+            {isOrderCreating ? 'Processing...' : 'Buy Now'}
           </Button>
         </CardFooter>
       </Card>

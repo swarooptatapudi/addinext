@@ -145,10 +145,12 @@ export default function Assessment({
                        name,
                        value,
                        options,
+    required
                      }: {
     name: string;
     value: string;
     options: { label: string; value: string }[];
+    required?: boolean;
   }) => (
     <RadioGroup value={value} onValueChange={(v: string) => setFieldValue(name, v)}>
       <div className="flex flex-col gap-2">
@@ -174,19 +176,19 @@ export default function Assessment({
       {/* Top: four radio cards (no images) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <CardShell title={TEXT.occipital}>
-          <RadioList name="occipital_area" value={values.occipital_area || ''} options={areaOptions} />
+          <RadioList name="occipital_area" value={values.occipital_area || ''} options={areaOptions} required={true}/>
         </CardShell>
 
         <CardShell title={TEXT.parietal}>
-          <RadioList name="parietal_area" value={values.parietal_area || ''} options={areaOptions} />
+          <RadioList name="parietal_area" value={values.parietal_area || ''} options={areaOptions} required={true}/>
         </CardShell>
 
         <CardShell title={TEXT.frontal}>
-          <RadioList name="frontal_area" value={values.frontal_area || ''} options={areaOptions} />
+          <RadioList name="frontal_area" value={values.frontal_area || ''} options={areaOptions} required={true} />
         </CardShell>
 
         <CardShell title={TEXT.earAlignment}>
-          <RadioList name="ear_alignment" value={values.ear_alignment || ''} options={earOptions} />
+          <RadioList name="ear_alignment" value={values.ear_alignment || ''} options={earOptions} required={true} />
         </CardShell>
       </div>
 
@@ -198,6 +200,7 @@ export default function Assessment({
             label=""
             value={values.positional ?? ''}
             onValueChange={handleChange ? handleChange('positional') : (v: string) => setFieldValue('positional', v)}
+            required={true}
             inVaild={shouldShowError ? shouldShowError('positional') : false}
             error={errors?.positional}
             placeholder="Select"
@@ -217,7 +220,7 @@ export default function Assessment({
       {/* Next row: Torticollis with images 11–12 on the side */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <CardShell title={TEXT.torticollis}>
-          <RadioList name="torticollis" value={values.torticollis || ''} options={torticollisOptions} />
+          <RadioList name="torticollis" value={values.torticollis || ''} options={torticollisOptions} required={true}/>
         </CardShell>
 
         <div className="lg:col-span-2 grid grid-cols-2 gap-4">
@@ -238,7 +241,7 @@ export default function Assessment({
             value={values.severity ?? ''}
             onValueChange={handleChange ? handleChange('severity') : (v: string) => setFieldValue('severity', v)}
             inVaild={shouldShowError ? shouldShowError('severity') : false}
-            required={false}
+            required={true}
             error={errors?.severity}
             placeholder="Select"
           />
