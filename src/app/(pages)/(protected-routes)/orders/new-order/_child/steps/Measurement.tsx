@@ -65,6 +65,7 @@ function FieldCard({
             value={field.value ?? ''}
             className={`text-center ${showError ? 'border-red-500' : ''}`}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => helpers.setValue(e.target.value)}
+            required
             onBlur={() => helpers.setValue(normalizeOnBlur(field.value))}
             onWheel={(e: React.WheelEvent<HTMLInputElement>) => e.currentTarget.blur()}
             onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
