@@ -129,14 +129,74 @@ type FormValues = {
 };
 
 const Schema = Yup.object({
-  first_name: Yup.string().required('Required'),
-  date_of_birth: Yup.string().required('Required'),
-  ap: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable(),
-  ml: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable(),
-  da: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable(),
-  db: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable(),
-  hc: Yup.number().typeError('Enter a number').positive('Must be > 0').nullable()
+  // Patient details (step 0)
+  first_name: Yup.string().required('First name is required'),
+  last_name: Yup.string().required('Last name is required'),
+  parent_mobile: Yup.string().required('Parent / guardian mobile is required'),
+  date_of_birth: Yup.string().required('Date of birth is required'),
+  weight_kg: Yup.number().typeError('Enter weight (kg)').positive('Must be > 0').required('Weight is required'),
+  email: Yup.string().email('Invalid email').required('Email is required'),
+  clinic_name: Yup.string().required('Clinic name is required'),
+
+  // Measurements (step 1) - require numeric > 0
+  ap: Yup.number().typeError('Enter a number').positive('Must be > 0').required('AP is required'),
+  ml: Yup.number().typeError('Enter a number').positive('Must be > 0').required('ML is required'),
+  da: Yup.number().typeError('Enter a number').positive('Must be > 0').required('Diagonal A is required'),
+  db: Yup.number().typeError('Enter a number').positive('Must be > 0').required('Diagonal B is required'),
+  hc: Yup.number().typeError('Enter a number').positive('Must be > 0').required('Head circumference is required'),
+  tw: Yup.number().typeError('Enter a number').positive('Must be > 0').required('Temple width is required'),
+
+  // Computation doesn't add new fields — cr/cvai are derived so no required validation here
+
+  // Assessment (step 3) - require the clinical/diagnosis fields
+  occipital_area: Yup.string().required('Occipital area is required'),
+  parietal_area: Yup.string().required('Parietal area is required'),
+  frontal_area: Yup.string().required('Frontal area is required'),
+  ear_alignment: Yup.string().required('Ear alignment is required'),
+
+  positional: Yup.string().required('Positional diagnosis is required'),
+  severity: Yup.string().required('Severity is required'),
+  torticollis: Yup.string().required('Torticollis is required'),
+
+
+  // UI / selections that appear on the form
+  design_by: Yup.string().required('Design by is required'),
+  print_by: Yup.string().required('Print by is required'),
+  colour: Yup.string().required('Colour is required'),
+  agree_terms: Yup.boolean().oneOf([true], 'You must agree to terms'),
+
+  // keep numbers monetary optional or validated elsewhere
 });
+const STEP_FIELDS: Record<number, string[]> = {
+  0: [
+    'first_name',
+    'last_name',
+    'parent_mobile',
+    'date_of_birth',
+    'height_cm',
+    'weight_kg',
+    'email',
+    'clinic_name',
+  ],
+  1: ['ap', 'ml', 'da', 'db', 'hc', 'tw'],
+  2: [
+    // Computation uses ap/ml/da/db/hc/tw (already required in step 1) — keep step-level check minimal.
+    // If you want to force user to review computed values explicitly, add 'cr','cvai' here (but they are derived).
+  ],
+  3: [
+    'occipital_area',
+    'parietal_area',
+    'frontal_area',
+    'ear_alignment',
+    'positional',
+    'severity',
+    'torticollis'
+  ],
+  4: [], // Summary - no requirements to move forward
+  5: [], // Scan & Upload - intentionally excluded from mandatory set
+  6: [] // Finish & Payment - excluded
+};
+
 
 /* --------------------------------- Steps ---------------------------------- */
 
@@ -524,6 +584,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           parent_mobile: d.parent_mobile || d.custom_mobile_no || '',
           date_of_birth: d.date_of_birth || d.dob || '',
           gender: d.gender || '',
+          height_cm: d.height_cm || '',
           weight_kg: d.weight || d.weight_kg || '',
           email: d.email || d.custom_email || '',
           clinic_name: d.clinic_name || '',
@@ -546,7 +607,8 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           surgical_complications: d.surgical_complications || '',
           other_diagnosis_and_syndromes: d.other_diagnosis_and_syndromes || '',
           item_code: d.item_code || '',
-          scan_gdrive_link: d.custom_upload_link_with_photos || ''
+          scan_gdrive_link: d.custom_upload_link_with_photos || '',
+          colour: d.colour || '',
         };
         setFormSeed(seed);
         setPrefilled(true);
@@ -632,7 +694,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
         validateOnChange
         validateOnBlur
       >
-        {({ values, errors, touched, setFieldValue }) => {
+        {({ values, errors, touched, setFieldValue, validateForm, setTouched }) => {
           const handleChange = (field: string) => (eOrVal: any) => {
             const next =
               eOrVal && typeof eOrVal === 'object' && 'target' in eOrVal
@@ -960,6 +1022,42 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
           const placeOrder = () => postOrder('place');
           const payLater = () => postOrder('later');
+// validate current step fields and move forward only if there are no errors
+          // validate current step fields and move forward only if there are no errors
+          const handleNextStep = async () => {
+            // If form is read-only, skip validation and just move
+            if (isReadOnly) {
+              setActiveStep((s) => Math.min(s + 1, steps.length - 1));
+              return;
+            }
+
+            const fields = STEP_FIELDS[activeStep] ?? [];
+
+            // mark fields touched so Formik shows errors (only when not read-only)
+            const touchedObj = fields.reduce((acc, f) => ({ ...acc, [f]: true }), {});
+            setTouched(touchedObj);
+
+            // run full validation (returns errors object)
+            const errs = await validateForm();
+
+            // if there are no fields to check, allow progress
+            if (fields.length === 0) {
+              setActiveStep((s) => Math.min(s + 1, steps.length - 1));
+              return;
+            }
+
+            // check for any errors in the current step
+            const hasError = fields.some((f) => Boolean((errs as any)[f]));
+
+            if (hasError) {
+              // errors will be visible next to inputs; optionally focus first invalid input here
+              alert('Please fill all required fields on this step before proceeding.');
+              return;
+            }
+
+            // ok — move to next step
+            setActiveStep((s) => Math.min(s + 1, steps.length - 1));
+          }
 
           return (
             <Form className="max-w-6xl w-[92%] mx-auto my-6 space-y-6">
@@ -1041,11 +1139,8 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                   Previous
                 </Button>
                 {activeStep < steps.length - 1 && (
-                  <Button
-                    type="button"
-                    onClick={() => setActiveStep((s) => Math.min(s + 1, steps.length - 1))}
-                  >
-                    Next
+                  <Button type="button" onClick={handleNextStep}>
+                  Next
                   </Button>
                 )}
               </div>

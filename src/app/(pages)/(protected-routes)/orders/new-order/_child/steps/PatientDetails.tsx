@@ -128,6 +128,7 @@ export default function PatientDetails({
           label="Patient Last Name"
           value={values.last_name || ''}
           onChange={handleChange('last_name')}
+          required
           placeholder="Last name"
         />
         <Input
@@ -180,6 +181,7 @@ export default function PatientDetails({
           type="email"
           value={values.email || ''}
           onChange={handleChange('email')}
+          required
           placeholder="name@example.com"
           error={errors?.email}
         />
@@ -187,6 +189,7 @@ export default function PatientDetails({
           label="Clinic / Hospital"
           value={values.clinic_name || ''}
           onChange={handleChange('clinic_name')}
+          required
           placeholder="Clinic name"
         />
         <Input
