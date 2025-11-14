@@ -1021,10 +1021,17 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           const placeOrder = () => postOrder('place');
           const payLater = () => postOrder('later');
 // validate current step fields and move forward only if there are no errors
+          // validate current step fields and move forward only if there are no errors
           const handleNextStep = async () => {
+            // If form is read-only, skip validation and just move
+            if (isReadOnly) {
+              setActiveStep((s) => Math.min(s + 1, steps.length - 1));
+              return;
+            }
+
             const fields = STEP_FIELDS[activeStep] ?? [];
 
-            // mark fields touched so Formik shows errors
+            // mark fields touched so Formik shows errors (only when not read-only)
             const touchedObj = fields.reduce((acc, f) => ({ ...acc, [f]: true }), {});
             setTouched(touchedObj);
 
@@ -1048,7 +1055,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
             // ok — move to next step
             setActiveStep((s) => Math.min(s + 1, steps.length - 1));
-          };
+          }
 
           return (
             <Form className="max-w-6xl w-[92%] mx-auto my-6 space-y-6">
