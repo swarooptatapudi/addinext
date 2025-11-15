@@ -598,27 +598,9 @@ export const Step5 = ({
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 mt-2">
-            <div className="flex items-center gap-4">
-              <label className="font-medium min-w-[100px] text-sm">Print by</label>
-              <div className="w-[300px] min-w-[200px]">
-                <SelectBox
-                  options={FORM_OPTIONS.Print_by || []}
-                  value={values.print_by || ''}
-                  onValueChange={(value) => {
-                    setFieldValue('print_by', value);
-                    setEstimateConform(false);
-                  }}
-                  inVaild={!!errors.print_by && !!touched.print_by}
-                  required
-                  disabled={isViewMode}
-                />
-                {errors.print_by && touched.print_by && (
-                  <p className="text-red-500 text-xs mt-1">{errors.print_by}</p>
-                )}
-              </div>
-            </div>
-          </div>
+          {/*<div className="grid md:grid-cols-2 gap-6 mt-2">*/}
+          {/* */}
+          {/*</div>*/}
 
           {showLaticesField && !hideLaticesAndFinish && (
             <div className="grid md:grid-cols-2 gap-6 mt-2">
