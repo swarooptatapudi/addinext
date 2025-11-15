@@ -1505,6 +1505,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
                 setFieldValue={setFieldValue}
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
+                selectedItem={selectedItem}
               />
             )}
 
@@ -1529,7 +1530,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
                       await nextStep(values, setErrors);
                     }}
                     type="button"
-                    disabled
+                  
                   >
                     Next
                   </Button>

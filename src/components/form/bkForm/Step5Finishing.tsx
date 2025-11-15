@@ -46,28 +46,28 @@ interface OrderSummaryModal {
 }
 
 export const Step5 = ({
-                        values,
-                        errors,
-                        touched,
-                        setFieldValue,
-                        FORM_OPTIONS,
-                        selectedItem,
-                        handleSubmit,
-                        currentStep,
-                        isActiveStep,
-                        setEstimateConform,
-                        orderId,
-                        deviceTypeId,
-                        user, // Add user prop to access customer_id
-                        isViewMode,
-                        setDesgin,
-                        setPrint,
-                        setCouponPer,
-                        setTotalDiscount,
-                        setTotalPrice,
+  values,
+  errors,
+  touched,
+  setFieldValue,
+  FORM_OPTIONS,
+  selectedItem,
+  handleSubmit,
+  currentStep,
+  isActiveStep,
+  setEstimateConform,
+  orderId,
+  deviceTypeId,
+  user, // Add user prop to access customer_id
+  isViewMode,
+  setDesgin,
+  setPrint,
+  setCouponPer,
+  setTotalDiscount,
+  setTotalPrice,
 
 
-                      }: any) => {
+}: any) => {
   const [showEstimateCard, setShowEstimateCard] = useState(false);
   const [estimateData, setEstimateData] = useState<any>(null);
   const [estimateDataLabel, setEstimateDataLabel] = useState<any>('');
