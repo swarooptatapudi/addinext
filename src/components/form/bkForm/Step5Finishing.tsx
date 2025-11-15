@@ -117,54 +117,66 @@ export const Step5 = ({
 
   const [getProductColorStep5] = useGetProductColorStep5Mutation();
   const [subColors, setSubColors] = useState<{ label: string; hex: string }[]>([]);
-  const { data, refetch } = useGetFormSettingsQuery('BK');
+  const { data: formSettings } = useGetFormSettingsQuery('BK');
 
-// This is a workaround for fetching data for select options
+  const [designOptions, setDesignOptions] = useState<{ value: string; label: string }[]>([]);
+  const [printOptions, setPrintOptions] = useState<{ value: string; label: string }[]>([]);
+
+
+// Auto-set default Design by / Print by from form settings
   useEffect(() => {
-    if (!values.design_by || !values.print_by) {
-      refetch().then((response) => {
-        const formSettings = response?.data;
-        console.error('Form Settings Data:', formSettings);
+    if (!formSettings) return;
 
-        // The child rows are in `order_from_details`
-        const rows = Array.isArray(formSettings?.order_from_details)
-          ? formSettings.order_from_details
-          : [];
+    console.log('Form Settings Data (raw):', formSettings);
 
-        if (!rows.length) {
-          console.error('No order_from_details found in form settings');
-          return;
-        }
+    let rows: any[] = [];
 
-        const designOption = rows.find(
-          (item: any) => item.field_name === 'design_by'
-        );
-        const printOption = rows.find(
-          (item: any) => item.field_name === 'print_by'
-        );
-
-        if (designOption && !values.design_by && designOption.select_options) {
-          const designOptions = designOption.select_options
-            .split(',')
-            .map((option: string) => ({
-              value: option.trim(),
-              label: option.trim(),
-            }));
-          setFieldValue('design_by', designOptions[0]?.value || '');
-        }
-
-        if (printOption && !values.print_by && printOption.select_options) {
-          const printOptions = printOption.select_options
-            .split(',')
-            .map((option: string) => ({
-              value: option.trim(),
-              label: option.trim(),
-            }));
-          setFieldValue('print_by', printOptions[0]?.value || '');
-        }
-      });
+    // Support both shapes:
+    // 1) API returns array directly
+    if (Array.isArray(formSettings)) {
+      rows = formSettings;
     }
-  }, [values.design_by, values.print_by, refetch, setFieldValue]);
+    // 2) API returns object with order_from_details
+    else if (Array.isArray((formSettings as any).order_from_details)) {
+      rows = (formSettings as any).order_from_details;
+    }
+
+    if (!rows.length) {
+      console.error('No rows found for form settings (BK)');
+      return;
+    }
+
+    const designRow = rows.find((r: any) => r.field_name === 'design_by');
+    const printRow  = rows.find((r: any) => r.field_name === 'print_by');
+
+    if (designRow?.select_options) {
+      const opts = designRow.select_options.split(',').map((option: string) => {
+        const v = option.trim();
+        return { value: v, label: v };
+      });
+      setDesignOptions(opts);
+
+      // Set default value only if empty
+      if (!values.design_by && opts[0]) {
+        setFieldValue('design_by', opts[0].value);
+      }
+    }
+
+    if (printRow?.select_options) {
+      const opts = printRow.select_options.split(',').map((option: string) => {
+        const v = option.trim();
+        return { value: v, label: v };
+      });
+      setPrintOptions(opts);
+
+      // Set default value only if empty
+      if (!values.print_by && opts[0]) {
+        setFieldValue('print_by', opts[0].value);
+      }
+    }
+  }, [formSettings, setFieldValue, values.design_by, values.print_by]);
+
+
 
   const handleEstimateClick = async () => {
     const designByRes = values.design_by || '';
@@ -488,7 +500,7 @@ export const Step5 = ({
           value: 'Dye',
           label: 'Black Dye',
           color: 'bg-black text-white'
-        },
+        }
         // {
         //   value: 'Colour',
         //   label: selectedSubColor?.label || 'Colour',
@@ -503,7 +515,7 @@ export const Step5 = ({
           value: 'Dye',
           label: 'Black Dye',
           color: 'bg-black text-white'
-        },
+        }
         // {
         //   value: 'Epoxy',
         //   label: 'Epoxy',
@@ -521,12 +533,33 @@ export const Step5 = ({
       <div className="flex flex-col md:flex-row gap-6">
         <div className="flex-1 p-2 ml-5">
           <h3 className="text-lg font-semibold text-primary">Design & Printing</h3>
+          {/*<div className="grid md:grid-cols-2 gap-6 mt-5">*/}
+          {/*  <div className="flex items-center gap-4">*/}
+          {/*    <label className="font-sm min-w-[100px] text-sm">Design by</label>*/}
+          {/*    <div className="w-[300px] min-w-[200px]">*/}
+          {/*      <SelectBox*/}
+          {/*        options={FORM_OPTIONS.Design_by || []}*/}
+          {/*        value={values.design_by || ''}*/}
+          {/*        onValueChange={(value) => {*/}
+          {/*          setFieldValue('design_by', value);*/}
+          {/*          setEstimateConform(false);*/}
+          {/*        }}*/}
+          {/*        inVaild={!!errors.design_by && !!touched.design_by}*/}
+          {/*        required*/}
+          {/*        disabled={isViewMode}*/}
+          {/*      />*/}
+          {/*      {errors.design_by && touched.design_by && (*/}
+          {/*        <p className="text-red-500 text-xs mt-1">{errors.design_by}</p>*/}
+          {/*      )}*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
+          {/*</div>*/}
           <div className="grid md:grid-cols-2 gap-6 mt-5">
             <div className="flex items-center gap-4">
               <label className="font-sm min-w-[100px] text-sm">Design by</label>
               <div className="w-[300px] min-w-[200px]">
                 <SelectBox
-                  options={FORM_OPTIONS.Design_by || []}
+                  options={designOptions.length ? designOptions : FORM_OPTIONS.Design_by || []}
                   value={values.design_by || ''}
                   onValueChange={(value) => {
                     setFieldValue('design_by', value);
@@ -538,6 +571,28 @@ export const Step5 = ({
                 />
                 {errors.design_by && touched.design_by && (
                   <p className="text-red-500 text-xs mt-1">{errors.design_by}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 mt-2">
+            <div className="flex items-center gap-4">
+              <label className="font-medium min-w-[100px] text-sm">Print by</label>
+              <div className="w-[300px] min-w-[200px]">
+                <SelectBox
+                  options={printOptions.length ? printOptions : FORM_OPTIONS.Print_by || []}
+                  value={values.print_by || ''}
+                  onValueChange={(value) => {
+                    setFieldValue('print_by', value);
+                    setEstimateConform(false);
+                  }}
+                  inVaild={!!errors.print_by && !!touched.print_by}
+                  required
+                  disabled={isViewMode}
+                />
+                {errors.print_by && touched.print_by && (
+                  <p className="text-red-500 text-xs mt-1">{errors.print_by}</p>
                 )}
               </div>
             </div>
@@ -586,14 +641,17 @@ export const Step5 = ({
             {showFinishOptions && !hideLaticesAndFinish && (
               <>
                 <label className="font-medium text-sm">
-                  {(isAddiEase || isAddiEaseL || isAddiEaseEco) ? 'Finish' : ''}
+                  {isAddiEase || isAddiEaseL || isAddiEaseEco ? 'Finish' : ''}
                 </label>
 
                 {showFinishOptionsMould && (
                   <div className="ml-10 mb-5">
                     <div className="flex items-center gap-8 -mt-7 ml-12 ">
                       {finishOptions.map((option) => (
-                        <label key={option.value} className="flex flex-col items-center cursor-pointer">
+                        <label
+                          key={option.value}
+                          className="flex flex-col items-center cursor-pointer"
+                        >
                           <input
                             type="radio"
                             name="finish_type"
@@ -605,10 +663,13 @@ export const Step5 = ({
                             }}
                             className="sr-only peer"
                           />
-                          <div className={`w-8 h-8 rounded-full border-2 ${option.color} ${values.finish_type === option.value
-                            ? 'border-blue-200 ring-2 ring-blue-300'
-                            : 'border-gray-300'
-                          }`} />
+                          <div
+                            className={`w-8 h-8 rounded-full border-2 ${option.color} ${
+                              values.finish_type === option.value
+                                ? 'border-blue-200 ring-2 ring-blue-300'
+                                : 'border-gray-300'
+                            }`}
+                          />
                           <span className="text-sm mt-1 capitalize">{option.label}</span>
                         </label>
                       ))}
@@ -629,11 +690,12 @@ export const Step5 = ({
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                   placeholder="Enter coupon code"
-                  className={`w-full pr-10 ${couponCode.length >= 5 && !couponData && !isValidatingCoupon
-                    ? 'border-orange-200'
-                    : couponData
-                      ? 'border-green-200'
-                      : ''
+                  className={`w-full pr-10 ${
+                    couponCode.length >= 5 && !couponData && !isValidatingCoupon
+                      ? 'border-orange-200'
+                      : couponData
+                        ? 'border-green-200'
+                        : ''
                   }`}
                 />
                 <div className="absolute right-3 top-2">
@@ -686,7 +748,6 @@ export const Step5 = ({
               </div>
             )}
           </div>
-
         </div>
 
         {showInsufficientCoinsModal ? (
@@ -786,7 +847,7 @@ export const Step5 = ({
                         </li>
 
                         {parseFloat(availableAddicoins?.replace(/,/g, '') || '0') -
-                        parseFloat(requiredAddicoins?.replace(/,/g, '') || '0') >
+                          parseFloat(requiredAddicoins?.replace(/,/g, '') || '0') >
                         0 ? (
                           <li className="flex items-start gap-2">
                             <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800"></div>
@@ -808,7 +869,8 @@ export const Step5 = ({
                   </Card>
                 ) : !isDesignSelf && !isPrintSelf ? (
                   <Card
-                    className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'
+                    className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${
+                      isEstimateStale ? 'border-gray-200' : 'border-gray-200'
                     } transition-colors duration-200`}
                   >
                     <CardHeader className="pb-2">
@@ -818,7 +880,8 @@ export const Step5 = ({
                             className={`w-5 h-5 ${isEstimateStale ? 'text-gray-600' : 'text-gray-700'}`}
                           />
                           <p
-                            className={`text-sm font-semibold ${isEstimateStale ? 'text-gray-700' : 'text-gray-700'
+                            className={`text-sm font-semibold ${
+                              isEstimateStale ? 'text-gray-700' : 'text-gray-700'
                             }`}
                           >
                             PRICE SUMMARY {isEstimateStale && ''}
@@ -832,7 +895,8 @@ export const Step5 = ({
                           {parseFloat(estimateData.apiResponse.design.replace(/,/g, '')) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
-                                className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
@@ -846,7 +910,8 @@ export const Step5 = ({
                           {parseFloat(estimateData.apiResponse.print.replace(/,/g, '')) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
-                                className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
@@ -863,7 +928,8 @@ export const Step5 = ({
                             parseFloat(estimateData.apiResponse.laticess.replace(/,/g, '')) > 0 && (
                               <li className="flex items-start gap-2">
                                 <div
-                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                    isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                   }`}
                                 ></div>
                                 <div className="flex justify-between w-full">
@@ -879,7 +945,8 @@ export const Step5 = ({
                             parseFloat(estimateData.apiResponse.finish.replace(/,/g, '')) > 0 && (
                               <li className="flex items-start gap-2">
                                 <div
-                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                    isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                   }`}
                                 ></div>
                                 <div className="flex justify-between w-full">
@@ -895,7 +962,8 @@ export const Step5 = ({
                           ></div>
                           <li className="flex items-start gap-2 pt-0">
                             <div
-                              className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                              className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                               }`}
                             ></div>
                             <div className="flex justify-between w-full">
@@ -905,43 +973,47 @@ export const Step5 = ({
                               </span>
                             </div>
                           </li>
-                          {parseFloat(estimateData.apiResponse.item_standard_discount.replace(/,/g, '')) >
-                            0 && (
-                              <li className="flex items-start gap-2">
-                                <div
-                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
-                                  }`}
-                                ></div>
-                                <div className="flex justify-between w-full">
-                                  <span className="font-medium text-gray-700">Standard Discount</span>
-                                  <span className="text-gray-700">
-                                    (-)₹{estimateData.apiResponse.item_standard_discount}
-                                  </span>
-                                </div>
-                              </li>
-                            )}
+                          {parseFloat(
+                            estimateData.apiResponse.item_standard_discount.replace(/,/g, '')
+                          ) > 0 && (
+                            <li className="flex items-start gap-2">
+                              <div
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                }`}
+                              ></div>
+                              <div className="flex justify-between w-full">
+                                <span className="font-medium text-gray-700">Standard Discount</span>
+                                <span className="text-gray-700">
+                                  (-)₹{estimateData.apiResponse.item_standard_discount}
+                                </span>
+                              </div>
+                            </li>
+                          )}
                           {parseFloat(
                             estimateData.apiResponse.additional_discount.replace(/,/g, '')
                           ) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
-                                className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
-                                  <span className="font-medium text-gray-700">
-                                    Additional Discount
-                                  </span>
+                                <span className="font-medium text-gray-700">
+                                  Additional Discount
+                                </span>
                                 <span className="text-gray-700">
-                                    (-)₹{estimateData.apiResponse.additional_discount}
-                                  </span>
+                                  (-)₹{estimateData.apiResponse.additional_discount}
+                                </span>
                               </div>
                             </li>
                           )}
                           {parseFloat(estimateData.apiResponse.gst_18.replace(/,/g, '')) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
-                                className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
@@ -955,7 +1027,8 @@ export const Step5 = ({
                           {parseFloat(estimateData.apiResponse.gst_5.replace(/,/g, '')) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
-                                className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
@@ -970,7 +1043,8 @@ export const Step5 = ({
                             className={`border-t ${isEstimateStale ? 'border-gray-300' : 'border-gray-200'} my-2`}
                           ></div>
                           <div
-                            className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'
+                            className={`flex justify-between text-base font-bold ${
+                              isEstimateStale ? 'text-primary' : 'text-primary'
                             }`}
                           >
                             <span>Total Amount</span>
@@ -1058,7 +1132,8 @@ export const Step5 = ({
                         </CardContent>
                       </Card>
                       <Card
-                        className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg gap-0 ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'
+                        className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg gap-0 ${
+                          isEstimateStale ? 'border-gray-200' : 'border-gray-200'
                         } transition-colors duration-200`}
                       >
                         <CardHeader className="pb-2">
@@ -1068,7 +1143,8 @@ export const Step5 = ({
                                 className={`w-5 h-5 ${isEstimateStale ? 'text-gray-600' : 'text-gray-700'}`}
                               />
                               <p
-                                className={`text-sm font-semibold ${isEstimateStale ? 'text-gray-700' : 'text-gray-700'
+                                className={`text-sm font-semibold ${
+                                  isEstimateStale ? 'text-gray-700' : 'text-gray-700'
                                 }`}
                               >
                                 PRICE SUMMARY {isEstimateStale && ''}
@@ -1081,23 +1157,25 @@ export const Step5 = ({
                             <div className="space-y-3 text-sm">
                               {parseFloat(estimateData.apiResponse.design.replace(/,/g, '')) >
                                 0 && (
-                                  <li className="flex items-start gap-2">
-                                    <div
-                                      className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
-                                      }`}
-                                    ></div>
-                                    <div className="flex justify-between w-full">
-                                      <span className="font-medium text-gray-700">Design</span>
-                                      <span className="text-gray-700">
-                                        ₹{estimateData.apiResponse.design}
-                                      </span>
-                                    </div>
-                                  </li>
-                                )}
+                                <li className="flex items-start gap-2">
+                                  <div
+                                    className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                      isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                    }`}
+                                  ></div>
+                                  <div className="flex justify-between w-full">
+                                    <span className="font-medium text-gray-700">Design</span>
+                                    <span className="text-gray-700">
+                                      ₹{estimateData.apiResponse.design}
+                                    </span>
+                                  </div>
+                                </li>
+                              )}
                               {parseFloat(estimateData.apiResponse.print.replace(/,/g, '')) > 0 && (
                                 <li className="flex items-start gap-2">
                                   <div
-                                    className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                    className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                      isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                     }`}
                                   ></div>
                                   <div className="flex justify-between w-full">
@@ -1112,10 +1190,11 @@ export const Step5 = ({
                                 estimateData.laticess === 'Yes' &&
                                 showLaticesField &&
                                 parseFloat(estimateData.apiResponse.laticess.replace(/,/g, '')) >
-                                0 && (
+                                  0 && (
                                   <li className="flex items-start gap-2">
                                     <div
-                                      className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                      className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                        isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                       }`}
                                     ></div>
                                     <div className="flex justify-between w-full">
@@ -1128,10 +1207,11 @@ export const Step5 = ({
                                 )}
                               {values.finish_type &&
                                 parseFloat(estimateData.apiResponse.finish.replace(/,/g, '')) >
-                                0 && (
+                                  0 && (
                                   <li className="flex items-start gap-2">
                                     <div
-                                      className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                      className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                        isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                       }`}
                                     ></div>
                                     <div className="flex justify-between w-full">
@@ -1147,7 +1227,8 @@ export const Step5 = ({
                               ></div>
                               <li className="flex items-start gap-2 pt-0">
                                 <div
-                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                    isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                   }`}
                                 ></div>
                                 <div className="flex justify-between w-full">
@@ -1162,16 +1243,17 @@ export const Step5 = ({
                               ) > 0 && (
                                 <li className="flex items-start gap-2">
                                   <div
-                                    className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                    className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                      isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                     }`}
                                   ></div>
                                   <div className="flex justify-between w-full">
-                                      <span className="font-medium text-gray-700">
-                                        Standard Discount
-                                      </span>
+                                    <span className="font-medium text-gray-700">
+                                      Standard Discount
+                                    </span>
                                     <span className="text-gray-700">
-                                        (-)₹{estimateData.apiResponse.item_standard_discount}
-                                      </span>
+                                      (-)₹{estimateData.apiResponse.item_standard_discount}
+                                    </span>
                                   </div>
                                 </li>
                               )}
@@ -1180,38 +1262,41 @@ export const Step5 = ({
                               ) > 0 && (
                                 <li className="flex items-start gap-2">
                                   <div
-                                    className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                    className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                      isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                     }`}
                                   ></div>
                                   <div className="flex justify-between w-full">
-                                      <span className="font-medium text-gray-700">
-                                        Additional Discount
-                                      </span>
+                                    <span className="font-medium text-gray-700">
+                                      Additional Discount
+                                    </span>
                                     <span className="text-gray-700">
-                                        (-)₹{estimateData.apiResponse.additional_discount}
-                                      </span>
+                                      (-)₹{estimateData.apiResponse.additional_discount}
+                                    </span>
                                   </div>
                                 </li>
                               )}
                               {parseFloat(estimateData.apiResponse.gst_18.replace(/,/g, '')) >
                                 0 && (
-                                  <li className="flex items-start gap-2">
-                                    <div
-                                      className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
-                                      }`}
-                                    ></div>
-                                    <div className="flex justify-between w-full">
-                                      <span className="font-medium text-gray-700">GST (18%)</span>
-                                      <span className="text-gray-700">
-                                        ₹{estimateData.apiResponse.gst_18}
-                                      </span>
-                                    </div>
-                                  </li>
-                                )}
+                                <li className="flex items-start gap-2">
+                                  <div
+                                    className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                      isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                    }`}
+                                  ></div>
+                                  <div className="flex justify-between w-full">
+                                    <span className="font-medium text-gray-700">GST (18%)</span>
+                                    <span className="text-gray-700">
+                                      ₹{estimateData.apiResponse.gst_18}
+                                    </span>
+                                  </div>
+                                </li>
+                              )}
                               {parseFloat(estimateData.apiResponse.gst_5.replace(/,/g, '')) > 0 && (
                                 <li className="flex items-start gap-2">
                                   <div
-                                    className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                    className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                      isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                     }`}
                                   ></div>
                                   <div className="flex justify-between w-full">
@@ -1226,7 +1311,8 @@ export const Step5 = ({
                                 className={`border-t ${isEstimateStale ? 'border-gray-300' : 'border-gray-200'} my-2`}
                               ></div>
                               <div
-                                className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'
+                                className={`flex justify-between text-base font-bold ${
+                                  isEstimateStale ? 'text-primary' : 'text-primary'
                                 }`}
                               >
                                 <span>Total Amount</span>
@@ -1268,7 +1354,8 @@ export const Step5 = ({
                   </>
                 ) : !isDesignSelf && isPrintSelf ? (
                   <Card
-                    className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'
+                    className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${
+                      isEstimateStale ? 'border-gray-200' : 'border-gray-200'
                     } transition-colors duration-200`}
                   >
                     <CardHeader className="pb-2">
@@ -1278,7 +1365,8 @@ export const Step5 = ({
                             className={`w-5 h-5 ${isEstimateStale ? 'text-gray-600' : 'text-gray-700'}`}
                           />
                           <p
-                            className={`text-sm font-semibold ${isEstimateStale ? 'text-gray-700' : 'text-gray-700'
+                            className={`text-sm font-semibold ${
+                              isEstimateStale ? 'text-gray-700' : 'text-gray-700'
                             }`}
                           >
                             PRICE SUMMARY {isEstimateStale && ''}
@@ -1292,7 +1380,8 @@ export const Step5 = ({
                           {parseFloat(estimateData.apiResponse.design.replace(/,/g, '')) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
-                                className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
@@ -1306,7 +1395,8 @@ export const Step5 = ({
                           {parseFloat(estimateData.apiResponse.print.replace(/,/g, '')) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
-                                className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
@@ -1323,7 +1413,8 @@ export const Step5 = ({
                             parseFloat(estimateData.apiResponse.laticess.replace(/,/g, '')) > 0 && (
                               <li className="flex items-start gap-2">
                                 <div
-                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                    isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                   }`}
                                 ></div>
                                 <div className="flex justify-between w-full">
@@ -1338,7 +1429,8 @@ export const Step5 = ({
                             parseFloat(estimateData.apiResponse.finish.replace(/,/g, '')) > 0 && (
                               <li className="flex items-start gap-2">
                                 <div
-                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                    isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                   }`}
                                 ></div>
                                 <div className="flex justify-between w-full">
@@ -1354,7 +1446,8 @@ export const Step5 = ({
                           ></div>
                           <li className="flex items-start gap-2 pt-0">
                             <div
-                              className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                              className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                               }`}
                             ></div>
                             <div className="flex justify-between w-full">
@@ -1364,43 +1457,47 @@ export const Step5 = ({
                               </span>
                             </div>
                           </li>
-                          {parseFloat(estimateData.apiResponse.item_standard_discount.replace(/,/g, '')) >
-                            0 && (
-                              <li className="flex items-start gap-2">
-                                <div
-                                  className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
-                                  }`}
-                                ></div>
-                                <div className="flex justify-between w-full">
-                                  <span className="font-medium text-gray-700">Standard Discount</span>
-                                  <span className="text-gray-700">
-                                    (-)₹{estimateData.apiResponse.item_standard_discount}
-                                  </span>
-                                </div>
-                              </li>
-                            )}
+                          {parseFloat(
+                            estimateData.apiResponse.item_standard_discount.replace(/,/g, '')
+                          ) > 0 && (
+                            <li className="flex items-start gap-2">
+                              <div
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                }`}
+                              ></div>
+                              <div className="flex justify-between w-full">
+                                <span className="font-medium text-gray-700">Standard Discount</span>
+                                <span className="text-gray-700">
+                                  (-)₹{estimateData.apiResponse.item_standard_discount}
+                                </span>
+                              </div>
+                            </li>
+                          )}
                           {parseFloat(
                             estimateData.apiResponse.additional_discount.replace(/,/g, '')
                           ) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
-                                className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
-                                  <span className="font-medium text-gray-700">
-                                    Additional Discount
-                                  </span>
+                                <span className="font-medium text-gray-700">
+                                  Additional Discount
+                                </span>
                                 <span className="text-gray-700">
-                                    (-)₹{estimateData.apiResponse.additional_discount}
-                                  </span>
+                                  (-)₹{estimateData.apiResponse.additional_discount}
+                                </span>
                               </div>
                             </li>
                           )}
                           {parseFloat(estimateData.apiResponse.gst_18.replace(/,/g, '')) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
-                                className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
@@ -1414,7 +1511,8 @@ export const Step5 = ({
                           {parseFloat(estimateData.apiResponse.gst_5.replace(/,/g, '')) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
-                                className={`w-1.5 h-1.5 mt-2 rounded-full ${isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
+                                className={`w-1.5 h-1.5 mt-2 rounded-full ${
+                                  isEstimateStale ? 'bg-purple-800' : 'bg-purple-800'
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
@@ -1429,7 +1527,8 @@ export const Step5 = ({
                             className={`border-t ${isEstimateStale ? 'border-gray-300' : 'border-gray-200'} my-2`}
                           ></div>
                           <div
-                            className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'
+                            className={`flex justify-between text-base font-bold ${
+                              isEstimateStale ? 'text-primary' : 'text-primary'
                             }`}
                           >
                             <span>Total Amount</span>
@@ -1469,7 +1568,8 @@ export const Step5 = ({
                   </Card>
                 ) : (
                   <Card
-                    className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'
+                    className={`bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border rounded-lg ${
+                      isEstimateStale ? 'border-gray-200' : 'border-gray-200'
                     } transition-colors duration-200`}
                   >
                     <CardHeader className="pb-2">
@@ -1477,7 +1577,8 @@ export const Step5 = ({
                         <div className="flex items-center gap-2">
                           <span className="w-5 h-5" />
                           <p
-                            className={`text-sm font-semibold ${isEstimateStale ? 'text-gray-700' : 'text-gray-700'
+                            className={`text-sm font-semibold ${
+                              isEstimateStale ? 'text-gray-700' : 'text-gray-700'
                             }`}
                           >
                             PRICE SUMMARY {isEstimateStale && '(Stale Estimate)'}
@@ -1540,18 +1641,19 @@ export const Step5 = ({
                             </span>
                           </div>
                         </li>
-                        {parseFloat(estimateData.apiResponse.item_standard_discount.replace(/,/g, '')) >
-                          0 && (
-                            <li className="flex items-start gap-2">
-                              <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
-                              <div className="flex justify-between w-full">
-                                <span className="font-medium text-gray-700">Item Discount</span>
-                                <span className="text-gray-700">
-                                  -₹{estimateData.apiResponse.item_standard_discount}
-                                </span>
-                              </div>
-                            </li>
-                          )}
+                        {parseFloat(
+                          estimateData.apiResponse.item_standard_discount.replace(/,/g, '')
+                        ) > 0 && (
+                          <li className="flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
+                            <div className="flex justify-between w-full">
+                              <span className="font-medium text-gray-700">Item Discount</span>
+                              <span className="text-gray-700">
+                                -₹{estimateData.apiResponse.item_standard_discount}
+                              </span>
+                            </div>
+                          </li>
+                        )}
                         {parseFloat(
                           estimateData.apiResponse.additional_discount.replace(/,/g, '')
                         ) > 0 && (
@@ -1560,8 +1662,8 @@ export const Step5 = ({
                             <div className="flex justify-between w-full">
                               <span className="font-medium text-gray-700">Additional Discount</span>
                               <span className="text-gray-700">
-                                  (-)₹{estimateData.apiResponse.additional_discount}
-                                </span>
+                                (-)₹{estimateData.apiResponse.additional_discount}
+                              </span>
                             </div>
                           </li>
                         )}
@@ -1591,7 +1693,8 @@ export const Step5 = ({
                           className={`border-t ${isEstimateStale ? 'border-gray-200' : 'border-gray-200'} my-2`}
                         ></div>
                         <div
-                          className={`flex justify-between text-base font-bold ${isEstimateStale ? 'text-primary' : 'text-primary'
+                          className={`flex justify-between text-base font-bold ${
+                            isEstimateStale ? 'text-primary' : 'text-primary'
                           }`}
                         >
                           <span>Total Amount</span>
