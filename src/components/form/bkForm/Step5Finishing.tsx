@@ -122,21 +122,27 @@ export const Step5 = ({
   useEffect(() => {
     if (!values.design_by || !values.print_by) {
       refetch().then((response) => {
-        if (response.data) {
-          response.data.forEach((item: any) => {
-            if (item.field_name === 'design_by' && !values.design_by) {
-              const designOptions = item.select_options
-                .split(',')
-                .map((option: string) => ({ value: option.trim(), label: option.trim() }));
-              setFieldValue('design_by', designOptions[0]?.value || '');
-            }
-            if (item.field_name === 'print_by' && !values.print_by) {
-              const printOptions = item.select_options
-                .split(',')
-                .map((option: string) => ({ value: option.trim(), label: option.trim() }));
-              setFieldValue('print_by', printOptions[0]?.value || '');
-            }
-          });
+        const data = response?.data;
+        console.error('Form Settings Data:', data);
+        if (Array.isArray(data)) {
+          const designOption = data.find((item: any) => item.field_name === 'design_by');
+          const printOption = data.find((item: any) => item.field_name === 'print_by');
+
+          if (designOption && !values.design_by) {
+            const designOptions = designOption.select_options
+              .split(',')
+              .map((option: string) => ({ value: option.trim(), label: option.trim() }));
+            setFieldValue('design_by', designOptions[0]?.value || '');
+          }
+
+          if (printOption && !values.print_by) {
+            const printOptions = printOption.select_options
+              .split(',')
+              .map((option: string) => ({ value: option.trim(), label: option.trim() }));
+            setFieldValue('print_by', printOptions[0]?.value || '');
+          }
+        } else {
+          console.error('Expected data to be an array, but got:', data);
         }
       });
     }
