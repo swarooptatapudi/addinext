@@ -117,7 +117,7 @@ export const Step5 = ({
 
   const [getProductColorStep5] = useGetProductColorStep5Mutation();
   const [subColors, setSubColors] = useState<{ label: string; hex: string }[]>([]);
-  const { data, refetch } = useGetFormSettingsQuery('itemType');
+  const { data, refetch } = useGetFormSettingsQuery('BK');
   // This is a workaround for fetching data for select options
   useEffect(() => {
     if (!values.design_by || !values.print_by) {
