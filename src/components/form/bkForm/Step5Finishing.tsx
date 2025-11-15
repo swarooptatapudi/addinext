@@ -118,31 +118,49 @@ export const Step5 = ({
   const [getProductColorStep5] = useGetProductColorStep5Mutation();
   const [subColors, setSubColors] = useState<{ label: string; hex: string }[]>([]);
   const { data, refetch } = useGetFormSettingsQuery('BK');
-  // This is a workaround for fetching data for select options
+
+// This is a workaround for fetching data for select options
   useEffect(() => {
     if (!values.design_by || !values.print_by) {
       refetch().then((response) => {
-        const data = response?.data;
-        console.error('Form Settings Data:', data);
-        if (Array.isArray(data)) {
-          const designOption = data.find((item: any) => item.field_name === 'design_by');
-          const printOption = data.find((item: any) => item.field_name === 'print_by');
+        const formSettings = response?.data;
+        console.error('Form Settings Data:', formSettings);
 
-          if (designOption && !values.design_by) {
-            const designOptions = designOption.select_options
-              .split(',')
-              .map((option: string) => ({ value: option.trim(), label: option.trim() }));
-            setFieldValue('design_by', designOptions[0]?.value || '');
-          }
+        // The child rows are in `order_from_details`
+        const rows = Array.isArray(formSettings?.order_from_details)
+          ? formSettings.order_from_details
+          : [];
 
-          if (printOption && !values.print_by) {
-            const printOptions = printOption.select_options
-              .split(',')
-              .map((option: string) => ({ value: option.trim(), label: option.trim() }));
-            setFieldValue('print_by', printOptions[0]?.value || '');
-          }
-        } else {
-          console.error('Expected data to be an array, but got:', data);
+        if (!rows.length) {
+          console.error('No order_from_details found in form settings');
+          return;
+        }
+
+        const designOption = rows.find(
+          (item: any) => item.field_name === 'design_by'
+        );
+        const printOption = rows.find(
+          (item: any) => item.field_name === 'print_by'
+        );
+
+        if (designOption && !values.design_by && designOption.select_options) {
+          const designOptions = designOption.select_options
+            .split(',')
+            .map((option: string) => ({
+              value: option.trim(),
+              label: option.trim(),
+            }));
+          setFieldValue('design_by', designOptions[0]?.value || '');
+        }
+
+        if (printOption && !values.print_by && printOption.select_options) {
+          const printOptions = printOption.select_options
+            .split(',')
+            .map((option: string) => ({
+              value: option.trim(),
+              label: option.trim(),
+            }));
+          setFieldValue('print_by', printOptions[0]?.value || '');
         }
       });
     }
