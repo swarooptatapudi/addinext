@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useRef } from 'react';
 import {
   paymentsApi,
-  useCreatePaymentOrderMutation,
+  useCreatePaymentOrderMutation, useUpdateStatusMutation
 } from '@/rtk-query/apis/payments';
 
 /* -------------------------------------------------------------------------- */
@@ -49,6 +49,8 @@ export function usePaymentLauncher() {
 
   const popupRef = useRef<Window | null>(null);
   const lastIntentRef = useRef<string | null>(null);
+
+  const [updateStatus] = useUpdateStatusMutation(); // Import and use the hook here
 
   /* ---------------------------- Polling Function --------------------------- */
   async function pollForStatus(
@@ -189,7 +191,17 @@ export function usePaymentLauncher() {
             .toUpperCase();
 
         if (returnedStatus === 'CHARGED') {
+
           onSuccess?.(payload);
+          try {
+            await updateStatus({
+              order_id: returnedIntentId,
+              status: returnedStatus,
+              raw: payload,
+            }).unwrap(); // Call the mutation here
+          } catch (err) {
+            console.error('Failed to update status:', err);
+          }
           if (autoNavigateOnSuccess) router.push('/orders');
         } else {
           const pollRes = await pollForStatus(
