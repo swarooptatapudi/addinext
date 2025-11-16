@@ -5,6 +5,20 @@ import { baseQueryWithReauth } from '@/rtk-query/apis';
 export type Provider = 'HDFC';
 export type Currency = 'INR';
 
+// Request interface for updateStatus
+export interface UpdateStatusRequest {
+  order_id: string;
+  provider_ref?: string;
+  status: string;
+  raw?: any;
+}
+
+// Response interface for updateStatus
+export interface UpdateStatusResponse {
+  message: string;
+  success: boolean;
+}
+
 export interface CreatePaymentOrderInput {
   amount_rupees: number;
   sales_order: string;
@@ -105,11 +119,25 @@ export const paymentsApi = createApi({
         },
       }),
     }),
+    updateStatus: builder.mutation<UpdateStatusResponse, UpdateStatusRequest>({
+      query: (body) => ({
+        url:
+          '/method/addiwise.apis.payments.return_update.return_payment',
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      }),
+    }),
   }),
+
 });
 
 export const {
   useCreatePaymentOrderMutation,
   useGetPaymentStatusQuery,
   useConfirmPaymentMutation,
+  useUpdateStatusMutation,
 } = paymentsApi;
