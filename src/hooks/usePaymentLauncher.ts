@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useRef } from 'react';
 import {
   paymentsApi,
-  useCreatePaymentOrderMutation,
+  useCreatePaymentOrderMutation, useUpdateStatusMutation
 } from '@/rtk-query/apis/payments';
 
 /* -------------------------------------------------------------------------- */
@@ -49,6 +49,8 @@ export function usePaymentLauncher() {
 
   const popupRef = useRef<Window | null>(null);
   const lastIntentRef = useRef<string | null>(null);
+
+  const [updateStatus] = useUpdateStatusMutation(); // Import and use the hook here
 
   /* ---------------------------- Polling Function --------------------------- */
   async function pollForStatus(
@@ -132,7 +134,8 @@ export function usePaymentLauncher() {
       const intentId =
         data?.order_id || data?.intent_id || data?.payment_intent_id;
       const paymentLink = data?.paymentlink || data?.payment_link;
-
+      const provider_ref =
+        data?.providerref || data?.provider_ref
       if (!intentId || !paymentLink) {
         throw new Error(
           'Invalid payment response: Missing intent/order ID or payment link.'
@@ -189,7 +192,27 @@ export function usePaymentLauncher() {
             .toUpperCase();
 
         if (returnedStatus === 'CHARGED') {
+          // 🔹 Extract provider_ref from the popup payload
+          const providerref =
+            payload?.data?.processed_providerref ||
+            payload?.data?.providerref ||
+            payload?.forwarded?.received?.body?.providerref ||
+            payload?.providerref ||
+            provider_ref;
+
           onSuccess?.(payload);
+
+          try {
+            await updateStatus({
+              order_id: returnedIntentId,
+              provider_ref: providerref,
+              status: returnedStatus,
+              raw: payload,
+            }).unwrap();
+          } catch (err) {
+            console.error('Failed to update status:', err);
+          }
+
           if (autoNavigateOnSuccess) router.push('/orders');
         } else {
           const pollRes = await pollForStatus(
@@ -203,7 +226,7 @@ export function usePaymentLauncher() {
           } else {
             onFailure?.(pollRes);
           }
-        }
+      }
 
         window.removeEventListener('message', onMessage);
       };
