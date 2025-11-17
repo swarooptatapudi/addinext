@@ -174,7 +174,8 @@ export default function PatientDetails({
           label="Mobile"
           value={values.parent_mobile || ''}
           onChange={handleChange('parent_mobile')}
-          placeholder="10-digit"
+          placeholder="+91xxxxxxxxxx"
+          required
         />
         <Input
           label="Email"
