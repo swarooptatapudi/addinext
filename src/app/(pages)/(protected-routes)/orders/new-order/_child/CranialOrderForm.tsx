@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { Formik, Form } from 'formik';
+import { Formik, Form, type FormikTouched } from 'formik';
 import * as Yup from 'yup';
 import { useSelector } from 'react-redux';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -132,11 +132,11 @@ const Schema = Yup.object({
   // Patient details (step 0)
   first_name: Yup.string().required('First name is required'),
   last_name: Yup.string().required('Last name is required'),
-  parent_mobile: Yup.string().required('Parent / guardian mobile is required'),
   date_of_birth: Yup.string().required('Date of birth is required'),
   weight_kg: Yup.number().typeError('Enter weight (kg)').positive('Must be > 0').required('Weight is required'),
   email: Yup.string().email('Invalid email').required('Email is required'),
   clinic_name: Yup.string().required('Clinic name is required'),
+  parent_mobile: Yup.string().required('Mobile number is required along with country code'),
 
   // Measurements (step 1) - require numeric > 0
   ap: Yup.number().typeError('Enter a number').positive('Must be > 0').required('AP is required'),
@@ -199,6 +199,35 @@ const STEP_FIELDS: Record<number, string[]> = {
 
 
 /* --------------------------------- Steps ---------------------------------- */
+const FIELD_LABELS: Record<string, string> = {
+  // Step 0
+  first_name: 'First name',
+  last_name: 'Last name',
+  parent_mobile: 'Parent mobile number',
+  date_of_birth: 'Date of birth',
+  height_cm: 'Height (cm)',
+  weight_kg: 'Weight (kg)',
+  email: 'Email',
+  clinic_name: 'Clinic name',
+
+  // Step 1
+  ap: 'AP measurement',
+  ml: 'ML measurement',
+  da: 'Diagonal A',
+  db: 'Diagonal B',
+  hc: 'Head circumference',
+  tw: 'Temple width',
+
+  // Step 3
+  occipital_area: 'Occipital area',
+  parietal_area: 'Parietal area',
+  frontal_area: 'Frontal area',
+  ear_alignment: 'Ear alignment',
+  positional: 'Positional diagnosis',
+  severity: 'Severity',
+  torticollis: 'Torticollis',
+
+};
 
 const steps = [
   { key: 'patient', label: 'Basic Details' },
@@ -1033,31 +1062,67 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
             const fields = STEP_FIELDS[activeStep] ?? [];
 
-            // mark fields touched so Formik shows errors (only when not read-only)
-            const touchedObj = fields.reduce((acc, f) => ({ ...acc, [f]: true }), {});
-            setTouched(touchedObj);
+            // Build touched object for current step
+            const stepTouched = fields.reduce(
+              (acc, f) => ({ ...acc, [f]: true }),
+              {} as FormikTouched<FormValues>
+            );
 
-            // run full validation (returns errors object)
+            // Merge with existing touched so Formik shows errors
+            setTouched({
+              ...(touched as FormikTouched<FormValues>),
+              ...stepTouched
+            });
+
+            // Run full validation (returns errors object)
             const errs = await validateForm();
 
-            // if there are no fields to check, allow progress
+            // If there are no fields to check on this step, allow progress
             if (fields.length === 0) {
               setActiveStep((s) => Math.min(s + 1, steps.length - 1));
               return;
             }
 
-            // check for any errors in the current step
-            const hasError = fields.some((f) => Boolean((errs as any)[f]));
+            // Collect errors for this step only
+            const stepErrors = fields.filter((f) => Boolean((errs as any)[f]));
 
-            if (hasError) {
-              // errors will be visible next to inputs; optionally focus first invalid input here
-              alert('Please fill all required fields on this step before proceeding.');
+            if (stepErrors.length > 0) {
+              const stepName = steps[activeStep]?.label ?? `Step ${activeStep + 1}`;
+
+              const lines = stepErrors.map((fieldKey) => {
+                const label = FIELD_LABELS[fieldKey] || fieldKey;
+                const errMsg = (errs as any)[fieldKey];
+                if (typeof errMsg === 'string' && errMsg.trim()) {
+                  return `• ${label}: ${errMsg}`;
+                }
+                return `• ${label}: Please fill this field.`;
+              });
+
+              const header =
+                stepErrors.length === 1
+                  ? `Please correct the following field in "${stepName}":`
+                  : `Please correct the following fields in "${stepName}":`;
+
+              alert(`${header}\n\n${lines.join('\n')}`);
+
+              // Focus the first invalid field if possible
+              const firstField = stepErrors[0];
+              if (firstField) {
+                const el = document.querySelector<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >(`[name="${firstField}"]`);
+                if (el && typeof el.focus === 'function') {
+                  el.focus();
+                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              }
+
               return;
             }
 
-            // ok — move to next step
+            // No errors in this step – move to next
             setActiveStep((s) => Math.min(s + 1, steps.length - 1));
-          }
+          };
 
           return (
             <Form className="max-w-6xl w-[92%] mx-auto my-6 space-y-6">
