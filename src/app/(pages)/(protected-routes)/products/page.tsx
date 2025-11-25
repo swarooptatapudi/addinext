@@ -190,13 +190,13 @@ export default function Products(): React.JSX.Element {
           ))}*/}
           <ProductItem
             src="/assets/order-forms/products/AddIPrint.jpg"
-            label="AddiPrint-P350"
-            href="/products/buyproducts?name=AddiPrint-P350"
+            label="AddiPrint-P400"
+            href="/products/buyproducts?name=AddiPrint-P400"
           />
           <ProductItem
             src="/assets/order-forms/products/AddIPrint.jpg"
-            label="AddiPrint-P500"
-            href="/products/buyproducts?name=AddiPrint - P500"
+            label="AddiPrint-P600"
+            href="/products/buyproducts?name=AddiPrint - P600"
           />
           <ProductItem
             src="/assets/order-forms/products/HP MJF.jpg"

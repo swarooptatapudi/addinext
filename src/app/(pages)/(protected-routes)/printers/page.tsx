@@ -13,11 +13,11 @@ const printers = [
     image: '/assets/order-forms/products/HP-MJF.jpg', // Replace with actual image path
   },
   {
-    name: 'AddiPrint-P500',
+    name: 'AddiPrint-P600',
     image: '/assets/order-forms/products/AddIPrint.jpg', // Replace with actual image path
   },
     {
-    name: 'AddiPrint-P350 ',
+    name: 'AddiPrint-P400 ',
     image: '/assets/order-forms/products/AddIPrint.jpg', // Replace with actual image path
   },
 ];
@@ -37,9 +37,9 @@ return (
     {printers.map((printer, index) => (
       <div
         key={index}
-        className="group relative text-center p-3 rounded-2xl 
+        className="group relative text-center p-3 rounded-2xl
                    bg-white/10 backdrop-blur-lg border border-white/20
-                   transition-all duration-500 
+                   transition-all duration-500
                    hover:scale-[1.03] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)]
                    hover:border-primary/40"
       >
@@ -60,7 +60,7 @@ return (
         {/* Name */}
         <p className="mt-3 font-medium text-gray-900 text-xs sm:text-sm">
           {printer.name}
-        </p> 
+        </p>
          <Button
            onClick={() => handleClickBuy(printer.name)}
               className="mt-3 w-full text-xs sm:text-sm transition-transform duration-300 group-hover:scale-[1.05]"
@@ -71,7 +71,7 @@ return (
       </div>
     ))}
   </div>
- 
+
 </div>
 
 );

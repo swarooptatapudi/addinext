@@ -26,7 +26,7 @@ import { USER } from '@/uttils/Types';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { Loader, Check, X } from 'lucide-react';
-import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
+import { usePaymentLauncher } from '@/hooks/usePaymentLauncherForScannersPrinters';
 
 declare global {
   interface Window {
@@ -224,7 +224,7 @@ export default function BuyProductsWithHdfc() {
 
             await finalizeOrder(String(salesOrderId), paymentRef);
             toast.success('Payment successful & order finalized');
-            router.push('/transcations'); // or /orders as you prefer
+            router.push('/transcations#other-transcation-history');
           } catch (err) {
             console.error('Failed to finalize after success:', err);
             toast.error('Payment succeeded but finalizing failed.');

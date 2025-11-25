@@ -689,8 +689,8 @@ export default function Transcations(): React.JSX.Element {
             </div>
           </div>
           {/* Other buying transcation history */}
-          <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
-            <div className="overflow-x-auto">
+          <div id="other-transcation-history" className="bg-white shadow rounded-lg overflow-hidden mt-10">
+          <div className="overflow-x-auto">
               <Card>
                 <CardHeader className="border-b">
                   <div className="flex items-center gap-3">
