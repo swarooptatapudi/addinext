@@ -2,7 +2,7 @@
 import { NextRequest } from 'next/server';
 
 const FRAPPE_BASE = 'https://uataddinext.addiwise.com/';
-const FRAPPE_CONFIRM = `${FRAPPE_BASE}/api/method/addiwise.apis.payments.hdfc_payments.confirm_payment`;
+const FRAPPE_CONFIRM = `${FRAPPE_BASE}api/method/addiwise.apis.payments.hdfc_payments.confirm_payment`;
 
 function jsSafe(obj: any) {
   try {
@@ -16,7 +16,6 @@ function jsSafe(obj: any) {
 }
 
 export async function POST(req: NextRequest) {
-  // Read raw body (HDFC may send urlencoded or JSON)
   const raw = await req.text();
 
   let parsed: any = null;
@@ -33,26 +32,39 @@ export async function POST(req: NextRequest) {
 
   const payloadJson = jsSafe(parsed);
 
-  // HTML page shown in popup
+  // HTML page shown in popup — note: we DO NOT auto-close the window now
   const html = `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <title>Payment Result</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: system-ui, sans-serif; padding: 24px; color: #111; }
-    .box { background: #f7f7f8; border: 1px solid #eee; padding: 16px; border-radius: 6px; white-space: pre-wrap; }
-    button { margin-top: 18px; padding: 8px 14px; border-radius: 6px; background: #0b64d1; color: #fff; border: none; }
+    body { font-family: system-ui, sans-serif; padding: 20px; color: #111; background: #f9fafb; }
+    .box { background: #fff; border: 1px solid #eee; padding: 16px; border-radius: 8px; white-space: pre-wrap; }
+    .bar { margin-top: 14px; display:flex; gap:8px; }
+    button { padding: 8px 14px; border-radius: 6px; background: #0b64d1; color: #fff; border: none; cursor: pointer; }
+    .secondary { background: #6b7280; }
+    .status { font-weight: 600; margin-bottom: 8px; }
+    .small { font-size: 13px; color: #374151; }
   </style>
 </head>
 <body>
-  <h2>Processing Payment Result...</h2>
-  <div class="box" id="log"></div>
+  <h2>Processing Payment Result</h2>
+  <div class="box" id="log">Initializing...</div>
+
+  <div class="bar">
+    <button id="closeBtn">Close</button>
+    <button id="copyBtn" class="secondary">Copy payload</button>
+  </div>
 
   <script>
     (async function(){
       const payload = ${payloadJson};
       const logEl = document.getElementById('log');
+      const closeBtn = document.getElementById('closeBtn');
+      const copyBtn = document.getElementById('copyBtn');
+
       const log = (msg) => {
         logEl.textContent += (logEl.textContent ? "\\n" : "") + msg;
         console.log(msg);
@@ -82,17 +94,17 @@ export async function POST(req: NextRequest) {
 
       const orderId = findOrderId(payload);
       const status = findStatus(payload) || 'UNKNOWN';
-      const signature_valid = true;
 
       log('Extracted order_id=' + orderId + ', status=' + status);
 
       if (!orderId) {
         log('❌ No order_id found in payload.');
         if (window.opener) window.opener.postMessage({ type: 'HDFC_RETURN', payload: { raw: payload } }, '*');
+        // keep the page open for debugging — user can close manually
         return;
       }
 
-      const confirmBody = { order_id: orderId, status, signature_valid };
+      const confirmBody = { order_id: orderId, status, signature_valid: true };
 
       try {
         const resp = await fetch('${FRAPPE_CONFIRM}', {
@@ -103,18 +115,37 @@ export async function POST(req: NextRequest) {
         const result = await resp.json();
         log('Confirm payment result: ' + JSON.stringify(result));
 
+        // notify parent window that payment return has arrived
         if (window.opener) {
           window.opener.postMessage({ type: 'HDFC_RETURN', payload: { data: payload, confirm: result } }, '*');
+          log('✅ Message posted to opener window.');
+        } else {
+          log('⚠️ No opener window to post message to.');
         }
 
-        log('✅ Message sent to main window.');
-        setTimeout(() => window.close(), 2000);
+        // DO NOT auto-close — let user inspect and manually close
+        log('\\nYou may now close this window when ready.');
       } catch (err) {
         log('❌ confirm_payment error: ' + String(err));
         if (window.opener) {
           window.opener.postMessage({ type: 'HDFC_RETURN', payload: { data: payload, error: String(err) } }, '*');
         }
+        log('There was an error confirming payment. Please copy payload for debugging and close manually.');
       }
+
+      // wire up buttons
+      closeBtn.addEventListener('click', () => {
+        try { window.close(); } catch {}
+      });
+
+      copyBtn.addEventListener('click', () => {
+        try {
+          navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+          alert('Payload copied to clipboard');
+        } catch (e) {
+          alert('Copy failed: ' + String(e));
+        }
+      });
     })();
   </script>
 </body>
