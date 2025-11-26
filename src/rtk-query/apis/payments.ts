@@ -122,7 +122,7 @@ export const paymentsApi = createApi({
     updateStatus: builder.mutation<UpdateStatusResponse, UpdateStatusRequest>({
       query: (body) => ({
         url:
-          '/method/addiwise.apis.payments.return_update.return_payment',
+          '/method/addiwise.apis.payments.hdfc_payments.confirm_payment',
         method: 'POST',
         body: JSON.stringify(body),
         headers: {
