@@ -92,6 +92,11 @@ export default function Products(): React.JSX.Element {
             label="AFO"
             href="/orders/new-order/AFO"
           />
+           <ProductItem
+            src="/assets/order-forms/products/Cranial Helmet.jpg"
+            label="HKAFO/KAFO"
+            href="/orders/new-order/HkAFO"
+          />
           <ProductItem
             src="/assets/order-forms/products/Cranial Helmet.jpg"
             label="Cranial Helmet"

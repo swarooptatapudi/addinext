@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import StlFilePicker from '@/components/app/common/StlPreviewer';
 
 type UISet = { Input: any; Label: any; Card: any; Textarea: any };
-type Props = { values: any; setFieldValue: (f: string, v: any) => void; UI: UISet };
+type Props = { values: any; setFieldValue: (f: string, v: any) => void; UI: UISet; title?: string };
 
 const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
-export default function ScanUpload({ values, setFieldValue, UI }: Props) {
+export default function ScanUpload({ values, setFieldValue, UI, title }: Props) {
   const { Input, Label, Card, Textarea } = UI;
   const [fileError, setFileError] = useState<string | null>(null);
 
@@ -49,7 +49,7 @@ export default function ScanUpload({ values, setFieldValue, UI }: Props) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-      <h2 className="text-primary text-lg font-semibold border-b pb-2">Cranial Helmet — Scan & Upload</h2>
+      <h2 className="text-primary text-lg font-semibold border-b pb-2">{title || 'Cranial Helmet — Scan & Upload'}</h2>
 
       {/* Row 1: STL Upload + Google Drive link */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
