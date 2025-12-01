@@ -21,6 +21,8 @@ export type SelectFieldConfig = {
   name: string;
   label: string;
   options: { value: string; label: string }[];
+  placeholder?: string;
+  required?: boolean;
 };
 type PartSectionConfig = {
   id: string;
@@ -356,7 +358,7 @@ export function LengthField({
           id={config.name}
           placeholder={placeholder}
           value={field.value ?? ''}
-          className={`flex-1 w-30 text-center ${showError ? 'border-red-500' : ''}`}
+          className={`flex-1 max-w-24 text-center ${showError ? 'border-red-500' : ''}`}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => helpers.setValue(e.target.value)}
           onBlur={handleBlur}
           onWheel={(e: React.WheelEvent<HTMLInputElement>) => e.currentTarget.blur()}
@@ -380,16 +382,23 @@ export function SelectField({
   const { SelectBox } = UI;
   const [field, meta, helpers] = useField(config.name);
 
-  const showError = !!(meta.touched && meta.error);
+  const hasError = !!(meta.touched && meta.error);
+  const isEmpty = field.value === '' || field.value == null;
+  const showError = hasError && isEmpty;
 
   return (
     <SelectBox
       options={config.options}
       label={config.label}
+      placeholder={config.placeholder}
+      required={config.required}
       value={field.value ?? ''}
       onValueChange={(val: string) => {
-        helpers.setValue(val);
-        helpers.setTouched(true);
+        helpers.setValue(val, true);
+        helpers.setTouched(true, true);
+        if (val !== '' && val != null) {
+          helpers.setError(undefined);
+        }
       }}
       inVaild={showError}
       error={meta.error}

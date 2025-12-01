@@ -137,6 +137,15 @@ export default function HkafoPatientDetails({
           required
           inVaild={shouldShowError('date_of_birth', true)}
           error={errors?.date_of_birth}
+          max={(() => {
+            const now = new Date();
+            const d = new Date(now);
+            d.setMonth(d.getMonth() - 18);
+            const year = d.getFullYear();
+            const month = `${d.getMonth() + 1}`.padStart(2, '0');
+            const day = `${d.getDate()}`.padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          })()}
         />
         <SelectBox
           options={[

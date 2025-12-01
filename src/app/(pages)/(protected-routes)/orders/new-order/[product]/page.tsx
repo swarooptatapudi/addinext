@@ -5,7 +5,7 @@ import AkOrderForm from '../_child/AkOrderForm';
 import InsolesOrderForm from '../_child/InsolesOrderForm';
 import BEOrderForm from '../_child/BEOrderForm';
 import AEOrderForm from '../_child/AEOrderForm';
-import NewProductOrderForm from '../_child/NewProductOrderForm'
+import HkafoAndKafoForm from '../_child/HkaforAndKafoForm'
 import CranialForm from '@/app/(pages)/(protected-routes)/orders/new-order/_child/CranialOrderForm';
 
 export default function NewOrderController({
@@ -38,7 +38,7 @@ export default function NewOrderController({
 
   }
   else if (product?.toLowerCase()?.includes('hkafo')) {
-    return <NewProductOrderForm item_type={"cranial"} />
+    return <HkafoAndKafoForm item_type={"cranial"} />
 
   }
   else {

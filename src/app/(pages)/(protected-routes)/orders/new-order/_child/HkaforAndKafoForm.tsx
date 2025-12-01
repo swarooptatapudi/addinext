@@ -12,7 +12,6 @@ import { SelectBox } from '@/components/ui/selectbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/datepicker';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card } from '@/components/ui/card';
 
 import {
@@ -203,204 +202,232 @@ const HKAFO_LIMITS = {
   length_ground_to_pelvic_line: { min: 37.6, max: 120 },
   length_ground_to_waist_line: { min: 49.1, max: 125 }
 } as const;
+const cmToIn = (cm: number) => cm / 2.54;
 
-const schemaRangeMessage = (key: keyof typeof HKAFO_LIMITS) =>
-  `Value must be between ${HKAFO_LIMITS[key].min} and ${HKAFO_LIMITS[key].max} cm`;
+const MIN_PATIENT_AGE_MONTHS = 18;
+
+const getMinAllowedDob = () => {
+  const now = new Date();
+  const d = new Date(now);
+  d.setMonth(d.getMonth() - MIN_PATIENT_AGE_MONTHS);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const applyHkafoRange = (key: keyof typeof HKAFO_LIMITS, schema: any) =>
+  schema.test('hkafo-range', '', function (this: Yup.TestContext, value: unknown) {
+    if (value === undefined || value === null || value === '') return true;
+
+    const num = typeof value === 'number' ? value : Number(value);
+    if (Number.isNaN(num)) return true;
+
+    const parent = this.parent as { measurement_unit?: 'cm' | 'in' } | undefined;
+    const unit = parent?.measurement_unit === 'in' ? 'in' : 'cm';
+    const { min, max } = HKAFO_LIMITS[key];
+
+    if (unit === 'in') {
+      const minIn = Number(cmToIn(min).toFixed(1));
+      const maxIn = Number(cmToIn(max).toFixed(1));
+      if (num < minIn || num > maxIn) {
+        return this.createError({ message: `Value must be between ${minIn} and ${maxIn} in` });
+      }
+      return true;
+    }
+
+    if (num < min || num > max) {
+      return this.createError({ message: `Value must be between ${min} and ${max} cm` });
+    }
+    return true;
+  });
 
 const Schema = Yup.object({
   // Patient details (step 0)
   patient_name: Yup.string().required('Patient name is required'),
   first_name: Yup.string().required('First name is required'),
   last_name: Yup.string().required('Last name is required'),
-  date_of_birth: Yup.string().required('Date of birth is required'),
-  weight_kg: Yup.number().typeError('Enter weight (kg)').positive('Must be > 0').required('Weight is required'),
+  date_of_birth: Yup.string()
+    .required('Date of birth is required')
+    .test(
+      'min-age-1-5-years',
+      'Patient must be at least 1.5 years old',
+      (value) => {
+        if (!value) return true; // handled by required()
+        const dob = new Date(value);
+        if (Number.isNaN(dob.getTime())) {
+          return false;
+        }
+        const minDob = getMinAllowedDob();
+        return dob <= minDob;
+      }
+    ),
+  weight_kg: Yup.number().typeError('Enter weight (kg)').positive('Must be a positive value').required('Weight is required'),
   email: Yup.string().email('Invalid email').required('Email is required'),
   clinic_name: Yup.string().required('Clinic name is required'),
   parent_mobile: Yup.string().required('Mobile number is required along with country code'),
 
   // Measurements (step 1) - require numeric > 0
-  ap: Yup.number().typeError('Enter a number').positive('Must be > 0').required('AP is required'),
-  ml: Yup.number().typeError('Enter a number').positive('Must be > 0').required('ML is required'),
-  da: Yup.number().typeError('Enter a number').positive('Must be > 0').required('Diagonal A is required'),
-  db: Yup.number().typeError('Enter a number').positive('Must be > 0').required('Diagonal B is required'),
-  hc: Yup.number().typeError('Enter a number').positive('Must be > 0').required('Head circumference is required'),
-  tw: Yup.number().typeError('Enter a number').positive('Must be > 0').required('Temple width is required'),
+  ap: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('AP is required'),
+  ml: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('ML is required'),
+  da: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('Diagonal A is required'),
+  db: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('Diagonal B is required'),
+  hc: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('Head circumference is required'),
+  tw: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('Temple width is required'),
 
   // HKAFO / KAFO measurements (step 1) - all mandatory
-  circ_waist: Yup.number()
-    .transform((value, originalValue) =>
-      originalValue === '' || originalValue == null ? undefined : value
-    )
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.circ_waist.min, schemaRangeMessage('circ_waist'))
-    .max(HKAFO_LIMITS.circ_waist.max, schemaRangeMessage('circ_waist'))
-    .when('type', (deviceType: any, schema) =>
-      deviceType === 'KAFO'
-        ? schema.notRequired()
-        : schema.required('Circumference is required')
-    ),
-  circ_iliac_crest: Yup.number()
-    .transform((value, originalValue) =>
-      originalValue === '' || originalValue == null ? undefined : value
-    )
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.circ_iliac_crest.min, schemaRangeMessage('circ_iliac_crest'))
-    .max(HKAFO_LIMITS.circ_iliac_crest.max, schemaRangeMessage('circ_iliac_crest'))
-    .when('type', (deviceType: any, schema) =>
-      deviceType === 'KAFO'
-        ? schema.notRequired()
-        : schema.required('Circumference is required')
-    ),
-  circ_greater_trochanter: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.circ_greater_trochanter.min, schemaRangeMessage('circ_greater_trochanter'))
-    .max(HKAFO_LIMITS.circ_greater_trochanter.max, schemaRangeMessage('circ_greater_trochanter'))
-    .required('Circumference is required'),
-  circ_perineum: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.circ_perineum.min, schemaRangeMessage('circ_perineum'))
-    .max(HKAFO_LIMITS.circ_perineum.max, schemaRangeMessage('circ_perineum'))
-    .required('Circumference is required'),
-  circ_upper_mid_thigh: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.circ_upper_mid_thigh.min, schemaRangeMessage('circ_upper_mid_thigh'))
-    .max(HKAFO_LIMITS.circ_upper_mid_thigh.max, schemaRangeMessage('circ_upper_mid_thigh'))
-    .required('Circumference is required'),
-  circ_lower_mid_thigh: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.circ_lower_mid_thigh.min, schemaRangeMessage('circ_lower_mid_thigh'))
-    .max(HKAFO_LIMITS.circ_lower_mid_thigh.max, schemaRangeMessage('circ_lower_mid_thigh'))
-    .required('Circumference is required'),
-  circ_upper_mid_calf: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.circ_upper_mid_calf.min, schemaRangeMessage('circ_upper_mid_calf'))
-    .max(HKAFO_LIMITS.circ_upper_mid_calf.max, schemaRangeMessage('circ_upper_mid_calf'))
-    .required('Circumference is required'),
-  circ_lower_mid_calf: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.circ_lower_mid_calf.min, schemaRangeMessage('circ_lower_mid_calf'))
-    .max(HKAFO_LIMITS.circ_lower_mid_calf.max, schemaRangeMessage('circ_lower_mid_calf'))
-    .required('Circumference is required'),
-  ml_waist: Yup.number()
-    .transform((value, originalValue) =>
-      originalValue === '' || originalValue == null ? undefined : value
-    )
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.ml_waist.min, schemaRangeMessage('ml_waist'))
-    .max(HKAFO_LIMITS.ml_waist.max, schemaRangeMessage('ml_waist'))
-    .when('type', (deviceType: any, schema) =>
-      deviceType === 'KAFO'
-        ? schema.notRequired()
-        : schema.required('M-L diameter is required')
-    ),
-  ml_iliac_crest: Yup.number()
-    .transform((value, originalValue) =>
-      originalValue === '' || originalValue == null ? undefined : value
-    )
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.ml_iliac_crest.min, schemaRangeMessage('ml_iliac_crest'))
-    .max(HKAFO_LIMITS.ml_iliac_crest.max, schemaRangeMessage('ml_iliac_crest'))
-    .when('type', (deviceType: any, schema) =>
-      deviceType === 'KAFO'
-        ? schema.notRequired()
-        : schema.required('M-L diameter is required')
-    ),
-  ml_greater_trochanter: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.ml_greater_trochanter.min, schemaRangeMessage('ml_greater_trochanter'))
-    .max(HKAFO_LIMITS.ml_greater_trochanter.max, schemaRangeMessage('ml_greater_trochanter'))
-    .required('M-L diameter is required'),
-  ml_perineum: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.ml_perineum.min, schemaRangeMessage('ml_perineum'))
-    .max(HKAFO_LIMITS.ml_perineum.max, schemaRangeMessage('ml_perineum'))
-    .required('M-L diameter is required'),
-  ml_mid_thigh: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.ml_mid_thigh.min, schemaRangeMessage('ml_mid_thigh'))
-    .max(HKAFO_LIMITS.ml_mid_thigh.max, schemaRangeMessage('ml_mid_thigh'))
-    .required('M-L diameter is required'),
-  ml_knee_axis: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.ml_knee_axis.min, schemaRangeMessage('ml_knee_axis'))
-    .max(HKAFO_LIMITS.ml_knee_axis.max, schemaRangeMessage('ml_knee_axis'))
-    .required('M-L diameter is required'),
-  ml_mid_calf: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.ml_mid_calf.min, schemaRangeMessage('ml_mid_calf'))
-    .max(HKAFO_LIMITS.ml_mid_calf.max, schemaRangeMessage('ml_mid_calf'))
-    .required('M-L diameter is required'),
-  ml_ankle_axis: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.ml_ankle_axis.min, schemaRangeMessage('ml_ankle_axis'))
-    .max(HKAFO_LIMITS.ml_ankle_axis.max, schemaRangeMessage('ml_ankle_axis'))
-    .required('M-L diameter is required'),
-  length_ankle_axis_to_mid_tibia: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.length_ankle_axis_to_mid_tibia.min, schemaRangeMessage('length_ankle_axis_to_mid_tibia'))
-    .max(HKAFO_LIMITS.length_ankle_axis_to_mid_tibia.max, schemaRangeMessage('length_ankle_axis_to_mid_tibia'))
-    .required('Ankle axis to mid tibia length is required'),
-  length_ground_to_fibular_neck: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.length_ground_to_fibular_neck.min, schemaRangeMessage('length_ground_to_fibular_neck'))
-    .max(HKAFO_LIMITS.length_ground_to_fibular_neck.max, schemaRangeMessage('length_ground_to_fibular_neck'))
-    .required('Ground to fibular neck length is required'),
-  length_ground_to_knee_axis: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.length_ground_to_knee_axis.min, schemaRangeMessage('length_ground_to_knee_axis'))
-    .max(HKAFO_LIMITS.length_ground_to_knee_axis.max, schemaRangeMessage('length_ground_to_knee_axis'))
-    .required('Ground to knee axis length is required'),
-  length_ground_to_perineum_30mm_down: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.length_ground_to_perineum_30mm_down.min, schemaRangeMessage('length_ground_to_perineum_30mm_down'))
-    .max(HKAFO_LIMITS.length_ground_to_perineum_30mm_down.max, schemaRangeMessage('length_ground_to_perineum_30mm_down'))
-    .required('Ground to 30 mm below perineum level length is required'),
-  length_ground_to_ischial_tuberosity: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.length_ground_to_ischial_tuberosity.min, schemaRangeMessage('length_ground_to_ischial_tuberosity'))
-    .max(HKAFO_LIMITS.length_ground_to_ischial_tuberosity.max, schemaRangeMessage('length_ground_to_ischial_tuberosity'))
-    .required('Ground to ischial tuberosity length is required'),
-  length_ground_to_greater_trochanter: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.length_ground_to_greater_trochanter.min, schemaRangeMessage('length_ground_to_greater_trochanter'))
-    .max(HKAFO_LIMITS.length_ground_to_greater_trochanter.max, schemaRangeMessage('length_ground_to_greater_trochanter'))
-    .required('Ground to greater trochanter length is required'),
-  length_ground_to_pelvic_line: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.length_ground_to_pelvic_line.min, schemaRangeMessage('length_ground_to_pelvic_line'))
-    .max(HKAFO_LIMITS.length_ground_to_pelvic_line.max, schemaRangeMessage('length_ground_to_pelvic_line'))
-    .required('Ground to pelvic line length is required'),
-  length_ground_to_waist_line: Yup.number()
-    .typeError('Enter a number')
-    .min(HKAFO_LIMITS.length_ground_to_waist_line.min, schemaRangeMessage('length_ground_to_waist_line'))
-    .max(HKAFO_LIMITS.length_ground_to_waist_line.max, schemaRangeMessage('length_ground_to_waist_line'))
-    .required('Ground to waist line length is required'),
+  circ_waist: applyHkafoRange(
+    'circ_waist',
+    Yup.number()
+      .transform((value, originalValue) =>
+        originalValue === '' || originalValue == null ? undefined : value
+      )
+      .typeError('Enter a number')
+  ).when('type', (deviceType: any, schema:any) =>
+    deviceType === 'KAFO'
+      ? schema.notRequired()
+      : schema.required('Circumference is required')
+  ),
+  circ_iliac_crest: applyHkafoRange(
+    'circ_iliac_crest',
+    Yup.number()
+      .transform((value, originalValue) =>
+        originalValue === '' || originalValue == null ? undefined : value
+      )
+      .typeError('Enter a number')
+  ).when('type', (deviceType: any, schema:any) =>
+    deviceType === 'KAFO'
+      ? schema.notRequired()
+      : schema.required('Circumference is required')
+  ),
+  circ_greater_trochanter: applyHkafoRange(
+    'circ_greater_trochanter',
+    Yup.number().typeError('Enter a number')
+  ).required('Circumference is required'),
+  circ_perineum: applyHkafoRange(
+    'circ_perineum',
+    Yup.number().typeError('Enter a number')
+  ).required('Circumference is required'),
+  circ_upper_mid_thigh: applyHkafoRange(
+    'circ_upper_mid_thigh',
+    Yup.number().typeError('Enter a number')
+  ).required('Circumference is required'),
+  circ_lower_mid_thigh: applyHkafoRange(
+    'circ_lower_mid_thigh',
+    Yup.number().typeError('Enter a number')
+  ).required('Circumference is required'),
+  circ_upper_mid_calf: applyHkafoRange(
+    'circ_upper_mid_calf',
+    Yup.number().typeError('Enter a number')
+  ).required('Circumference is required'),
+  circ_lower_mid_calf: applyHkafoRange(
+    'circ_lower_mid_calf',
+    Yup.number().typeError('Enter a number')
+  ).required('Circumference is required'),
+  ml_waist: applyHkafoRange(
+    'ml_waist',
+    Yup.number()
+      .transform((value, originalValue) =>
+        originalValue === '' || originalValue == null ? undefined : value
+      )
+      .typeError('Enter a number')
+  ).when('type', (deviceType: any, schema:any) =>
+    deviceType === 'KAFO'
+      ? schema.notRequired()
+      : schema.required('M-L diameter is required')
+  ),
+  ml_iliac_crest: applyHkafoRange(
+    'ml_iliac_crest',
+    Yup.number()
+      .transform((value, originalValue) =>
+        originalValue === '' || originalValue == null ? undefined : value
+      )
+      .typeError('Enter a number')
+  ).when('type', (deviceType: any, schema:any) =>
+    deviceType === 'KAFO'
+      ? schema.notRequired()
+      : schema.required('M-L diameter is required')
+  ),
+  ml_greater_trochanter: applyHkafoRange(
+    'ml_greater_trochanter',
+    Yup.number().typeError('Enter a number')
+  ).required('M-L diameter is required'),
+  ml_perineum: applyHkafoRange(
+    'ml_perineum',
+    Yup.number().typeError('Enter a number')
+  ).required('M-L diameter is required'),
+  ml_mid_thigh: applyHkafoRange(
+    'ml_mid_thigh',
+    Yup.number().typeError('Enter a number')
+  ).required('M-L diameter is required'),
+  ml_knee_axis: applyHkafoRange(
+    'ml_knee_axis',
+    Yup.number().typeError('Enter a number')
+  ).required('M-L diameter is required'),
+  ml_mid_calf: applyHkafoRange(
+    'ml_mid_calf',
+    Yup.number().typeError('Enter a number')
+  ).required('M-L diameter is required'),
+  ml_ankle_axis: applyHkafoRange(
+    'ml_ankle_axis',
+    Yup.number().typeError('Enter a number')
+  ).required('M-L diameter is required'),
+  length_ankle_axis_to_mid_tibia: applyHkafoRange(
+    'length_ankle_axis_to_mid_tibia',
+    Yup.number().typeError('Enter a number')
+  ).required('Ankle axis to mid tibia length is required'),
+  length_ground_to_fibular_neck: applyHkafoRange(
+    'length_ground_to_fibular_neck',
+    Yup.number().typeError('Enter a number')
+  ).required('Ground to fibular neck length is required'),
+  length_ground_to_knee_axis: applyHkafoRange(
+    'length_ground_to_knee_axis',
+    Yup.number().typeError('Enter a number')
+  ).required('Ground to knee axis length is required'),
+  length_ground_to_perineum_30mm_down: applyHkafoRange(
+    'length_ground_to_perineum_30mm_down',
+    Yup.number().typeError('Enter a number')
+  ).required('Ground to 30 mm below perineum level length is required'),
+  length_ground_to_ischial_tuberosity: applyHkafoRange(
+    'length_ground_to_ischial_tuberosity',
+    Yup.number().typeError('Enter a number')
+  ).required('Ground to ischial tuberosity length is required'),
+  length_ground_to_greater_trochanter: applyHkafoRange(
+    'length_ground_to_greater_trochanter',
+    Yup.number().typeError('Enter a number')
+  ).required('Ground to greater trochanter length is required'),
+  length_ground_to_pelvic_line: applyHkafoRange(
+    'length_ground_to_pelvic_line',
+    Yup.number().typeError('Enter a number')
+  ).required('Ground to pelvic line length is required'),
+  length_ground_to_waist_line: applyHkafoRange(
+    'length_ground_to_waist_line',
+    Yup.number().typeError('Enter a number')
+  ).required('Ground to waist line length is required'),
   ankle_frontal_alignment: Yup.string().required('Ankle frontal alignment is required'),
   ankle_flexibility: Yup.string().required('Ankle flexibility is required'),
   ankle_rotation: Yup.string().required('Ankle rotation is required'),
   ankle_plane: Yup.string().required('Ankle plane is required'),
   ankle_frontal_degrees: Yup.number()
     .typeError('Enter a number')
-    .min(0, 'Must be >= 0')
+    .min(0, 'Must be zero or greater')
     .required('Ankle alignment degrees are required'),
   ankle_plane_degrees: Yup.number()
     .typeError('Enter a number')
-    .min(0, 'Must be >= 0')
+    .min(0, 'Must be 0 or greater than 0')
     .required('Ankle plane degrees are required'),
   ankle_heel_height: Yup.number()
     .typeError('Enter a number')
-    .min(0, 'Must be >= 0')
+    .min(0, 'Must be 0 or greater than 0')
     .required('Heel height is required'),
   knee_alignment: Yup.string().required('Knee alignment is required'),
   knee_flexibility: Yup.string().required('Knee flexibility is required'),
   knee_sagittal_condition: Yup.string().required('Knee sagittal condition is required'),
   knee_alignment_degrees: Yup.number()
     .typeError('Enter a number')
-    .min(0, 'Must be >= 0')
+    .min(0, 'Must be 0 or greater than 0')
     .required('Knee alignment degrees are required'),
   knee_sagittal_degrees: Yup.number()
     .typeError('Enter a number')
-    .min(0, 'Must be >= 0')
+    .min(0, 'Must be 0 or greater than 0')
     .required('Knee sagittal degrees are required'),
 
   // Computation doesn't add new fields  cr/cvai are derived so no required validation here
@@ -810,7 +837,7 @@ function redirectToPayment(link: string) {
 
 type CranialOrderFormProps = { item_type?: string };
 
-export default function NewProductOrderForm(_: CranialOrderFormProps) {
+export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const deviceTypeId = searchParams.get('deviceType');
@@ -1519,10 +1546,11 @@ export default function NewProductOrderForm(_: CranialOrderFormProps) {
               return;
             }
 
-            const stepErrors = await validateStepAndShowErrors(activeStep);
-            if (stepErrors.length === 0) {
-              setActiveStep(targetStep);
-            }
+            // const stepErrors = await validateStepAndShowErrors(activeStep);
+            // if (stepErrors.length === 0) {
+            //   setActiveStep(targetStep); 
+            // }
+            setActiveStep(targetStep)
           };
 
           return (
@@ -1570,7 +1598,13 @@ export default function NewProductOrderForm(_: CranialOrderFormProps) {
                     />
                   )}
                   {activeStep === 2 && (
-                    <HkafoClinicalAssessment UI={{ Input, Label, Card, SelectBox }} />
+                    <HkafoClinicalAssessment
+                      UI={{ Input, Label, Card, SelectBox }}
+                      values={values}
+                      errors={errors}
+                      setFieldValue={setFieldValue}
+                      shouldShowError={shouldShowError}
+                    />
                   )}
                   {activeStep === 3 && (
                     <ScanUpload
