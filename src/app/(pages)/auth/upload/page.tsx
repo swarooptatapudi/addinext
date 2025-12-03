@@ -17,7 +17,7 @@ export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
- const baseUrl='https://uaterp.addiwise.com/api/:path*'
+ const baseUrl='https://erp.addiwise.com/api/:path*'
   const handleUpload = async () => {
     if (!file) {
       alert("Please select a file first");
@@ -28,7 +28,7 @@ export default function UploadPage() {
 
     try {
       // 1. Request presigned URL from Flask backend
-      const presignedRes = await fetch("https://uaterp.addiwise.com/api/method/addiwise.apis.utils.generate_presigned_url", {
+      const presignedRes = await fetch("https://erp.addiwise.com/api/method/addiwise.apis.utils.generate_presigned_url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -44,9 +44,9 @@ export default function UploadPage() {
       // 2. Upload file directly to S3 with progress tracking
 
       ///  use this function with aysnc and wait ok in stl file picker page or s3 predigned url pasge ?
-      // in submit event handler .  do it when you submit form.  first ok now understoo so i need to do it for bk and insole also 
-      // do it same ok anna 
-      // disconnecting now ok 
+      // in submit event handler .  do it when you submit form.  first ok now understoo so i need to do it for bk and insole also
+      // do it same ok anna
+      // disconnecting now ok
       await uploadFileToS3(result.data.uploadUrl, file);
 
       const body = JSON.stringify({
@@ -59,22 +59,22 @@ export default function UploadPage() {
       // console.log("Uploaded", body);
 
       // Here you uploading multiple file right and asking backend pre signed url separately for each file  ? yes the only chnages i ahve is url only...
-      // are you storeing uploaded details in array like 
+      // are you storeing uploaded details in array like
       //  i tried got issue so stopped reached u
-      // in api result sai givign filename righ tand locationtiiiiion  
+      // in api result sai givign filename righ tand locationtiiiiion
 
-      // store in array like    
+      // store in array like
       // uploaded_files = [
       //   {"key": "uploads/user_1/file1.txt", "size": 12345, "type": "text/plain", "originalName": "file1.txt" },
       //   { "key": "uploads/user_1/file2.jpg", "size": 67890, "type": "image/jpeg", "originalName": "file2.jpg" }
       // ]
 
-      // adn encode this result to base64encdoe and give in multiple form Field.  sai decode his side and store in db 
+      // adn encode this result to base64encdoe and give in multiple form Field.  sai decode his side and store in db
       // got it   ?  hello vunava una anna ....
       // give above array in ecodeed forat and add in multpart form and send in backend api (maybe insole order )
 
 
-      // where you sending this data to backend ?ok wait 
+      // where you sending this data to backend ?ok wait
 
 
 
@@ -86,7 +86,7 @@ export default function UploadPage() {
       //     key: result.data.key,
       //     size: file.size,
       //     type: file.type,
-      //     originalName: file.name, 
+      //     originalName: file.name,
       3
       //   }),
       // });
