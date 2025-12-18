@@ -1,7 +1,7 @@
 // app/api/payments/return/route.ts
 import { NextRequest } from 'next/server';
 
-const BASE = 'https://localhost:4701/';
+const BASE = 'https://uaterp.addiwise.com/';
 const FRAPPE_CONFIRM = `${BASE}api/method/addiwise.apis.payments.hdfc_payments.confirm_payment`;
 
 function jsSafe(obj: any) {
