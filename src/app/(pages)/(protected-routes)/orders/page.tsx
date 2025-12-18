@@ -156,6 +156,15 @@ const totalPages = data?.data.total_pages ?? 1;
     } else if (order.device_type === "Cranial Helmet Orders") {
       router.push(`/orders/new-order/Cranial?${new URLSearchParams(baseParams).toString()}`);
     }
+    else if (order.device_type === "AddiShield Pro Order") {
+      router.push(`/orders/new-order/ASP?${new URLSearchParams(baseParams).toString()}`);
+    }
+    else if (order.device_type === "AddiShield EpiPro Order") {
+      router.push(`/orders/new-order/ASEP?${new URLSearchParams(baseParams).toString()}`);
+    }
+    else if (order.device_type === "AddiShield EpiPro Active Order") {
+      router.push(`/orders/new-order/ASEPA?${new URLSearchParams(baseParams).toString()}`);
+    }
   };
 // Add at top with other React state hooks:
 // inside Orders component (top-level hooks)

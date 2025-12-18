@@ -278,6 +278,7 @@ export interface SalesOrdersResponse {
     sales_orders: SalesOrder[];
   };
 }
+
 interface SalesOrderDetailsResponse {
   message: string;
   data: SalesOrderDetails;
@@ -301,6 +302,26 @@ interface INEstimateRequest {
   discount_amt: number;
   coupon_code?: string;
 }
+interface ASPEstimateData {
+  design: string;
+  print: string;
+  estimate_price: string;
+  item_standard_discount: string;
+  item_special_discount: string;
+  additional_discount: string;
+  discounted_price: string;
+  gst_5: string;
+  gst_18: string;
+  total_price: string;
+  customer_available_coins?: string;
+  design_coin_use?: string;
+}
+
+interface ASPEstimateResponse {
+  message: string;
+  data: ASPEstimateData;
+}
+
 interface CHEstimateRequest {
   item_code: string;
   design_by: string;
@@ -437,7 +458,60 @@ export const ordersApi = createApi({
         return response;
       },
     }),
-
+    createASPOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_pro_orders.create_addishield_pro_order',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        return response;
+      },
+    }),
+    getASPEstimate: builder.mutation<ASPEstimateResponse, INEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_pro_orders.get_addishield_pro_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: ASPEstimateResponse) => response
+    }),
+    createASEPOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_epipro_orders.create_addishield_epipro_order',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        return response;
+      },
+    }),
+    getASEPEstimate: builder.mutation<ASPEstimateResponse, INEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_epipro_orders.get_addishield_epipro_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: ASPEstimateResponse) => response
+    }),
+    createASEPAOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_epipro_active_orders.create_addishield_epipro_active_order',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        return response;
+      },
+    }),
+    getASEPAEstimate: builder.mutation<ASPEstimateResponse, INEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_epipro_active_orders.get_addishield_epipro_active_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: ASPEstimateResponse) => response
+    }),
     // ----------------------
     // CRANIAL ESTIMATE
     // ----------------------
@@ -565,7 +639,13 @@ export const {
   useCreateCranialOrderMutation,
   useGetCHEstimateMutation,
   useGetINEstimateMutation,
-  usePreSignedUrlMutation
+  usePreSignedUrlMutation,
+  useGetASPEstimateMutation,
+  useCreateASPOrderMutation,
+  useGetASEPEstimateMutation,
+  useCreateASEPOrderMutation,
+  useGetASEPAEstimateMutation,
+  useCreateASEPAOrderMutation
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;
 
