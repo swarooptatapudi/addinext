@@ -5,7 +5,11 @@ import AkOrderForm from '../_child/AkOrderForm';
 import InsolesOrderForm from '../_child/InsolesOrderForm';
 import BEOrderForm from '../_child/BEOrderForm';
 import AEOrderForm from '../_child/AEOrderForm';
+import HkafoAndKafoForm from '../_child/HkaforAndKafoForm'
 import CranialForm from '@/app/(pages)/(protected-routes)/orders/new-order/_child/CranialOrderForm';
+import ASPOrderForm from '../_child/ASPOrderForm';
+import ASEPOrderForm from '../_child/ASEPOrderForm';
+import ASEPAOrderForm from '../_child/ASEPAOrderForm';
 
 export default function NewOrderController({
   params
@@ -35,6 +39,19 @@ export default function NewOrderController({
   else if (product?.toLowerCase()?.includes('ae')) {
     return <AEOrderForm item_type={product} />
 
+  }
+  else if (product?.toLowerCase()?.includes('hkafo')) {
+    return <HkafoAndKafoForm item_type={"cranial"} />
+
+  }
+  else if (product?.toLowerCase()?.includes('asepa')) {
+    return <ASEPAOrderForm item_type={product} />
+  }
+  else if (product?.toLowerCase()?.includes('asep')) {
+    return <ASEPOrderForm item_type={product} />
+  }
+  else if (product?.toLowerCase()?.includes('asp')) {
+    return <ASPOrderForm item_type={product} />
   }
   else {
     return <p>Invalid product</p>;

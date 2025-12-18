@@ -7,7 +7,7 @@ type Props = { values: any; setFieldValue: (f: string, v: any) => void; UI: UISe
 
 const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
-export default function ScanUpload({ values, setFieldValue, UI, title }: Props) {
+export default function ASPScanUpload({ values, setFieldValue, UI, title }: Props) {
   const { Input, Label, Card, Textarea } = UI;
   const [fileError, setFileError] = useState<string | null>(null);
 
@@ -16,7 +16,7 @@ export default function ScanUpload({ values, setFieldValue, UI, title }: Props) 
 
     if (!file) {
       // user cleared selection
-      setFieldValue('scan_file', null);
+      setFieldValue('uploaded_stl_file', null);
       return;
     }
 
@@ -25,27 +25,27 @@ export default function ScanUpload({ values, setFieldValue, UI, title }: Props) 
     const ext = name.slice(name.lastIndexOf('.')).toLowerCase();
     if (ext !== '.stl') {
       setFileError('Please upload a .stl file.');
-      setFieldValue('scan_file', null);
+      setFieldValue('uploaded_stl_file', null);
       return;
     }
 
     // size check
     if (file.size > MAX_BYTES) {
       setFileError('File is too large — maximum allowed size is 25 MB.');
-      setFieldValue('scan_file', null);
+      setFieldValue('uploaded_stl_file', null);
       return;
     }
 
     // passed validation
-    setFieldValue('scan_file', file);
+    setFieldValue('uploaded_stl_file', file);
   };
 
   const removeFile = () => {
-    setFieldValue('scan_file', null);
+    setFieldValue('uploaded_stl_file', null);
     setFileError(null);
   };
 
-  const selectedName = values?.scan_file?.name ?? null;
+  const selectedName = values?.uploaded_stl_file?.name ?? null;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">

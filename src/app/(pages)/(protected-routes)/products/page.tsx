@@ -32,12 +32,12 @@ export default function Products(): React.JSX.Element {
           <div className="flex flex-wrap gap-x-8 gap-y-6">
             <ProductItem
               src="/assets/order-forms/products/BK.jpg"
-              label="Below Knee (BK)"
+              label="AddiEase LE (BK)"
               href="/orders/new-order/BK"
             />
             <ProductItem
               src="/assets/order-forms/products/AK.jpg"
-              label="Above Knee (AK)"
+              label="AddiEase LE (AK)"
               href="/orders/new-order/AK"
             />
           </div>
@@ -52,12 +52,12 @@ export default function Products(): React.JSX.Element {
           <div className="flex flex-wrap gap-x-8 gap-y-6 justify-start">
             <ProductItem
               src="/assets/order-forms/products/BE.jpg"
-              label="Below Elbow (BE)"
+              label="AddiEase UE (BE)"
               href="/orders/new-order/BE"
             />
             <ProductItem
               src="/assets/order-forms/products/AE.jpg"
-              label="Above Elbow (AE)"
+              label="AddiEase UE (AE)"
               href="/orders/new-order/AE"
             />
           </div>
@@ -84,18 +84,38 @@ export default function Products(): React.JSX.Element {
         <div className="flex flex-wrap gap-x-8 gap-y-6">
           <ProductItem
             src="/assets/order-forms/products/IN.jpg"
-            label="Insole/UCBL"
+            label="AddiSole (Insole/UCBL)"
             href="/orders/new-order/Insoles"
           />
           <ProductItem
             src="/assets/order-forms/products/AFO.jpg"
-            label="AFO"
+            label="AddiFlex (AFO/DAFO)"
             href="/orders/new-order/AFO"
+          />
+           <ProductItem
+            src="/assets/order-forms/products/Cranial Helmet.jpg"
+            label="AddiKneeFlex (KAFO/HKFO)"
+            href="/orders/new-order/HkAFO"
           />
           <ProductItem
             src="/assets/order-forms/products/Cranial Helmet.jpg"
-            label="Cranial Helmet"
+            label="AddiShield (Cranial Helmets)"
             href="/orders/new-order/Cranial"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/Cranial Helmet.jpg"
+            label="AddiShield+ (Pro)"
+            href="/orders/new-order/ASP"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/Cranial Helmet.jpg"
+            label="AddiShield+ (Epilepsy)"
+            href="/orders/new-order/ASEP"
+          />
+          <ProductItem
+            src="/assets/order-forms/products/Cranial Helmet.jpg"
+            label="AddiShield+ (Epilepsy Pro)"
+            href="/orders/new-order/ASEPA"
           />
           <ProductItem
             src="/assets/order-forms/products/Braces.jpg"
