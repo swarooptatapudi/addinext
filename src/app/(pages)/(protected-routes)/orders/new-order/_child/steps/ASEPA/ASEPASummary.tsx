@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 
 type UISet = { Input: any; Label: any };
@@ -13,52 +12,83 @@ type Props = {
 export default function ASEPASummary({ values, productCode, UI }: Props) {
   const { Input, Label } = UI;
 
-  const Row = ({ label, value }: { label: string; value: any }) => (
-    <tr>
-      <td className="px-4 py-2 font-medium">{label}</td>
-      <td className="px-4 py-2">{value || '—'}</td>
-    </tr>
-  );
+  const fullName = `${values.first_name ?? ''}${
+    values.last_name ? ` ${values.last_name}` : ''
+  }`;
 
   return (
-    <div className="bg-white border rounded-lg p-6 shadow-sm">
+    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
       <h2 className="text-primary text-lg font-semibold border-b pb-2">
         Summary
       </h2>
 
+      {/* ================= Product Code ================= */}
       <div className="mt-4">
-        <Label>Product Code</Label>
-        <Input readOnly value={productCode} className="mt-1 bg-gray-50 text-center" />
+        <Label className="block font-semibold">Product Code</Label>
+        <Input
+          readOnly
+          value={productCode}
+          className="mt-2 bg-gray-50 text-center"
+        />
       </div>
 
-      <table className="w-full text-sm mt-6 border">
-        <tbody className="divide-y">
-        <Row label="Patient Name" value={`${values.first_name} ${values.last_name}`} />
-        <Row label="Parent / Guardian" value={values.parent_name} />
-        <Row label="Date of Birth" value={values.date_of_birth} />
+      {/* ================= Summary Table ================= */}
+      <div className="mt-6 overflow-hidden rounded-md border border-gray-200">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-gray-700">
+          <tr className="text-left">
+            <th className="px-4 py-3 font-semibold w-[40%]">Field</th>
+            <th className="px-4 py-3 font-semibold">Value</th>
+          </tr>
+          </thead>
 
-        <Row label="Length A–P (cm)" value={values.length_ap_cm} />
-        <Row label="Head Circumference (cm)" value={values.head_circumference_cm} />
-        <Row label="Temple Width (cm)" value={values.temple_width_cm} />
-        <Row label="Width M–L (cm)" value={values.width_ml_cm} />
+          <tbody className="divide-y divide-gray-200">
+          {/* ================= Patient ================= */}
+          <tr>
+            <td className="px-4 py-3">Patient Name</td>
+            <td className="px-4 py-3">{fullName}</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3">Parent / Guardian</td>
+            <td className="px-4 py-3">{values.parent_name || '—'}</td>
+          </tr>
+          <tr>
+            <td className="px-4 py-3">Date of Birth</td>
+            <td className="px-4 py-3">{values.date_of_birth || '—'}</td>
+          </tr>
 
-        <Row label="Eyebrow → Vertex" value={values.eyebrow_to_vertex_cm} />
-        <Row label="Tragus → Vertex" value={values.tragus_to_vertex_cm} />
-        <Row label="Occiput → Vertex" value={values.occiput_to_vertex_cm} />
-        <Row label="Suboccipital → Chin" value={values.suboccipital_chin_cm} />
-        <Row label="Ear Clearance (R)" value={values.ear_clearance_right_cm} />
-        <Row label="Ear Clearance (L)" value={values.ear_clearance_left_cm} />
-        <Row label="Neck Clearance" value={values.neck_clearance_cm} />
+          {/* ================= Measurements ================= */}
 
-        <Row label="Site of Craniectomy" value={values.site_of_craniectomy} />
-        <Row label="Side of Craniectomy" value={values.side_of_craniectomy} />
-        <Row
-          label="Scalp Condition"
-          value={(values.scalp_skin_condition || []).join(', ')}
-        />
-        <Row label="Mobility Level" value={values.mobility_level} />
-        </tbody>
-      </table>
+          <tr><td className="px-4 py-3">Length A–P (cm)</td><td className="px-4 py-3">{values.length_ap_cm}</td></tr>
+          <tr><td className="px-4 py-3">Head Circumference (cm)</td><td className="px-4 py-3">{values.head_circumference_cm}</td></tr>
+          <tr><td className="px-4 py-3">Temple Width (cm)</td><td className="px-4 py-3">{values.temple_width_cm}</td></tr>
+          <tr><td className="px-4 py-3">Width M–L (cm)</td><td className="px-4 py-3">{values.width_ml_cm}</td></tr>
+          <tr><td className="px-4 py-3">Eyebrow → Vertex (cm)</td><td className="px-4 py-3">{values.eyebrow_to_vertex_cm}</td></tr>
+          <tr><td className="px-4 py-3">Tragus → Vertex (cm)</td><td className="px-4 py-3">{values.tragus_to_vertex_cm}</td></tr>
+          <tr><td className="px-4 py-3">Occiput → Vertex (cm)</td><td className="px-4 py-3">{values.occiput_to_vertex_cm}</td></tr>
+          <tr><td className="px-4 py-3">Suboccipital → Chin (cm)</td><td className="px-4 py-3">{values.suboccipital_chin_cm}</td></tr>
+          <tr><td className="px-4 py-3">Ear Clearance (cm)</td><td className="px-4 py-3">{values.ear_clearance_cm}</td></tr>
+          <tr><td className="px-4 py-3">Neck Clearance (cm)</td><td className="px-4 py-3">{values.neck_clearance_cm}</td></tr>
+
+          {/* ================= Clinical Assessment ================= */}
+
+          <tr><td className="px-4 py-3">Site of Craniectomy</td><td className="px-4 py-3">{values.site_of_craniectomy}</td></tr>
+          <tr><td className="px-4 py-3">Side of Craniectomy</td><td className="px-4 py-3">{values.side_of_craniectomy}</td></tr>
+          <tr><td className="px-4 py-3">Scalp / Skin Condition</td><td className="px-4 py-3">{values.scalp_skin_condition}</td></tr>
+          <tr><td className="px-4 py-3">Mobility Level</td><td className="px-4 py-3">{values.mobility_level}</td></tr>
+          <tr><td className="px-4 py-3">Assessment Notes</td><td className="px-4 py-3">{values.assessment_notes}</td></tr>
+          <tr><td className="px-4 py-3">Date of Surgery</td><td className="px-4 py-3">{values.date_of_surgery}</td></tr>
+          <tr><td className="px-4 py-3">Surgical Complications</td><td className="px-4 py-3">{values.surgical_complications}</td></tr>
+          <tr><td className="px-4 py-3">Other Diagnosis & Syndromes</td><td className="px-4 py-3">{values.other_diagnosis}</td></tr>
+
+          {/* ================= Footer ================= */}
+          <tr className="bg-gray-50">
+            <td className="px-4 py-3 font-medium">Product Code</td>
+            <td className="px-4 py-3 font-medium">{productCode}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
