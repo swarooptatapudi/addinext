@@ -10,9 +10,6 @@ type Props = {
   UI: UISet;
 };
 
-const csv = (v?: string[] | string) =>
-  Array.isArray(v) ? v.join(', ') : v || '';
-
 export default function ASEPSummary({ values, productCode, UI }: Props) {
   const { Input, Label } = UI;
 
@@ -28,16 +25,23 @@ export default function ASEPSummary({ values, productCode, UI }: Props) {
       </div>
 
       <table className="w-full text-sm mt-6 border">
-        <tbody className="divide-y">
-        <tr><td className="p-3 font-medium">Patient Name</td><td className="p-3">{fullName}</td></tr>
-        <tr><td className="p-3 font-medium">Parent / Guardian</td><td className="p-3">{values.parent_name}</td></tr>
-        <tr><td className="p-3 font-medium">DOB</td><td className="p-3">{values.date_of_birth}</td></tr>
+        <tbody className="divide-y divide-gray-200">
+        {/* ================= Patient ================= */}
 
-        <tr className="bg-gray-50">
-          <td colSpan={2} className="px-4 py-2 font-medium">
-            Measurements (with Stockinet)
-          </td>
+        <tr>
+          <td className="px-4 py-3">Patient Name</td>
+          <td className="px-4 py-3">{fullName}</td>
         </tr>
+        <tr>
+          <td className="px-4 py-3">Parent / Guardian</td>
+          <td className="px-4 py-3">{values.parent_name || '—'}</td>
+        </tr>
+        <tr>
+          <td className="px-4 py-3">Date of Birth</td>
+          <td className="px-4 py-3">{values.date_of_birth || '—'}</td>
+        </tr>
+
+        {/* ================= Measurements ================= */}
 
         <tr><td className="px-4 py-3">Length A–P (cm)</td><td className="px-4 py-3">{values.length_ap_cm}</td></tr>
         <tr><td className="px-4 py-3">Head Circumference (cm)</td><td className="px-4 py-3">{values.head_circumference_cm}</td></tr>
@@ -47,14 +51,14 @@ export default function ASEPSummary({ values, productCode, UI }: Props) {
         <tr><td className="px-4 py-3">Tragus → Vertex (cm)</td><td className="px-4 py-3">{values.tragus_to_vertex_cm}</td></tr>
         <tr><td className="px-4 py-3">Occiput → Vertex (cm)</td><td className="px-4 py-3">{values.occiput_to_vertex_cm}</td></tr>
         <tr><td className="px-4 py-3">Suboccipital → Chin (cm)</td><td className="px-4 py-3">{values.suboccipital_chin_cm}</td></tr>
-        <tr><td className="px-4 py-3">Ear Clearance Right (cm)</td><td className="px-4 py-3">{values.ear_clearance_right_cm}</td></tr>
-        <tr><td className="px-4 py-3">Ear Clearance Left (cm)</td><td className="px-4 py-3">{values.ear_clearance_left_cm}</td></tr>
+        <tr><td className="px-4 py-3">Ear Clearance (cm)</td><td className="px-4 py-3">{values.ear_clearance_cm}</td></tr>
         <tr><td className="px-4 py-3">Neck Clearance (cm)</td><td className="px-4 py-3">{values.neck_clearance_cm}</td></tr>
 
-        <tr className="bg-gray-50"><td colSpan={2} className="p-3 font-semibold">Clinical Assessment</td></tr>
+        {/* ================= Clinical Assessment ================= */}
+
         <tr><td className="p-3">Seizure Frequency</td><td className="p-3">{values.seizure_frequency}</td></tr>
         <tr><td className="p-3">Epilepsy Type</td><td className="p-3">{values.epilepsy_type}</td></tr>
-        <tr><td className="p-3">Risk Situations</td><td className="p-3">{csv(values.risk_situations)}</td></tr>
+        <tr><td className="p-3">Risk Situations</td><td className="p-3">{values.risk_situations}</td></tr>
         <tr><td className="p-3">Fall Pattern</td><td className="p-3">{values.fall_pattern}</td></tr>
 
         <tr className="bg-gray-50"><td colSpan={2} className="p-3 font-semibold">Scan & Upload</td></tr>
