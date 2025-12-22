@@ -37,7 +37,7 @@ export function middleware(request: NextRequest) {
   }
   if (isLogin) {
     if (url.pathname === '/auth' || url.pathname === '/') {
-      url.pathname = '/dashboard';
+      url.pathname = '/products';
       return NextResponse.redirect(url);
     }
   }
