@@ -44,42 +44,42 @@ export default function Sidebar() {
           {!open && (
             <div className="relative">
               <Avatar className="border border-gray-100 w-12 h-12 overflow-hidden">
-  {currentProfilePicture ? (
-    <AvatarImage
-      src={currentProfilePicture}
-      alt={user?.company_name ? `${user.company_name} logo` : 'Profile'}
-      className={user?.company_name ? 'object-contain p-1 w-full h-full' : 'object-cover w-full h-full'}
+                {currentProfilePicture ? (
+                  <AvatarImage
+                    src={currentProfilePicture}
+                    alt={user?.company_name ? `${user.company_name} logo` : 'Profile'}
+                    className={user?.company_name ? 'object-contain p-1 w-full h-full' : 'object-cover w-full h-full'}
                     style={{
                       objectPosition: 'center',
                       minWidth: '100%',
                       minHeight: '100%'
                     }}
-      onError={(e) => {
-        e.currentTarget.src = '';
-        e.currentTarget.className = 'hidden';
-      }}
-    />
-  ) : null}
-  <AvatarFallback
-    className={`text-sm font-medium w-full h-full flex items-center justify-center ${
-      user?.company_name ? 'bg-white text-gray-800' : 'bg-gray-100'
-    }`}
-  >
-    {user?.company_name ? (
-      <span className="truncate max-w-[32px]">
+                    onError={(e) => {
+                      e.currentTarget.src = '';
+                      e.currentTarget.className = 'hidden';
+                    }}
+                  />
+                ) : null}
+                <AvatarFallback
+                  className={`text-sm font-medium w-full h-full flex items-center justify-center ${
+                    user?.company_name ? 'bg-white text-gray-800' : 'bg-gray-100'
+                  }`}
+                >
+                  {user?.company_name ? (
+                    <span className="truncate max-w-[32px]">
         {user.company_name
           .split(' ')
           .map((word: string) => word.charAt(0).toUpperCase())
           .join('')}
       </span>
-    ) : (
-      <span>
+                  ) : (
+                    <span>
         {user?.first_name?.charAt(0).toUpperCase()}
-        {user?.last_name?.charAt(0).toUpperCase()}
+                      {user?.last_name?.charAt(0).toUpperCase()}
       </span>
-    )}
-  </AvatarFallback>
-</Avatar> 
+                  )}
+                </AvatarFallback>
+              </Avatar>
               {user?.company_name && (
                 <span className="absolute -bottom-2 -right-2 bg-white rounded-full p-1 border border-gray-200">
                   <Building2 className="w-3 h-3 text-gray-500" />
