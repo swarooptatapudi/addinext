@@ -9,11 +9,17 @@ export interface ROUTE_INTERFACE {
 }
 
 export const ROUTES: ROUTE_INTERFACE[] = [
+  // {
+  //   path: '/dashboard',
+  //   name: 'Dashboard',
+  //   icon: LayoutDashboardIcon,
+  //   roles: ['admin', 'customer']
+  // },
   {
-    path: '/dashboard',
-    name: 'Dashboard',
-    icon: LayoutDashboardIcon,
-    roles: ['admin', 'customer']
+    path: '/products',
+    name: 'Products',
+    icon: Package,
+    roles: ['admin']
   },
   {
     path: '/orders',
@@ -33,11 +39,6 @@ export const ROUTES: ROUTE_INTERFACE[] = [
     name: 'Transcations',
     icon: ReceiptText,
     roles: ['admin']
-  },
-  {
-    path: '/products',
-    name: 'Products',
-    icon: Package,
-    roles: ['admin']
   }
+
 ];

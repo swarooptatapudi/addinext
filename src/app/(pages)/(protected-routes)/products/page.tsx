@@ -120,12 +120,15 @@ export default function Products(): React.JSX.Element {
           <ProductItem
             src="/assets/order-forms/products/Braces.jpg"
             label="Braces"
-            href="/orders/new-order/Braces"
+            href="#"
+            disabled={true}
+
           />
           <ProductItem
             src="/assets/order-forms/products/Facemask.jpg"
             label="Face Mask"
-            href="/orders/new-order/Facemask"
+            href="#"
+            disabled={true}
           />
           {/*{orthotics?.map((orthotic: any) => {
             let href = '';
@@ -239,23 +242,62 @@ export default function Products(): React.JSX.Element {
   );
 }
 
-function ProductItem({ src, label, href }: { src: string; label: string; href: string }) {
+// function ProductItem({ src, label, href }: { src: string; label: string; href: string }) {
+//   return (
+//     <div className="flex flex-col items-center w-35">
+//       <Link href={href} passHref>
+//         <div className="cursor-pointer hover:scale-105 transition-transform">
+//           <Image
+//             alt={label}
+//             height={150}
+//             width={150}
+//             src={src}
+//             className="object-contain rounded-lg mb-2 shadow-md border border-gray-200"
+//             loading="lazy"
+//             priority={false}
+//             unoptimized={true}
+//           />
+//         </div>
+//       </Link>
+//       <span className="text-xs text-black text-center">{label}</span>
+//     </div>
+//   );
+// }
+
+function ProductItem({
+                       src,
+                       label,
+                       href,
+                       disabled = false,
+                     }: {
+  src: string;
+  label: string;
+  href: string;
+  disabled?: boolean;
+}) {
+  const content = (
+    <div
+      className={`cursor-pointer hover:scale-105 transition-transform ${
+        disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+      }`}
+      aria-disabled={disabled}
+    >
+      <Image
+        alt={label}
+        height={150}
+        width={150}
+        src={src}
+        className="object-contain rounded-lg mb-2 shadow-md border border-gray-200"
+        loading="lazy"
+        priority={false}
+        unoptimized={true}
+      />
+    </div>
+  );
+
   return (
     <div className="flex flex-col items-center w-35">
-      <Link href={href} passHref>
-        <div className="cursor-pointer hover:scale-105 transition-transform">
-          <Image
-            alt={label}
-            height={150}
-            width={150}
-            src={src}
-            className="object-contain rounded-lg mb-2 shadow-md border border-gray-200"
-            loading="lazy"
-            priority={false}
-            unoptimized={true}
-          />
-        </div>
-      </Link>
+      {disabled ? content : <Link href={href} passHref>{content}</Link>}
       <span className="text-xs text-black text-center">{label}</span>
     </div>
   );
