@@ -56,7 +56,7 @@ export default function Products(): React.JSX.Element {
               href="/orders/new-order/BE"
             />
             <ProductItem
-              src="/assets/order-forms/products/ae-temp.jpg"
+              src="/assets/order-forms/products/AE.jpg"
               label="AddiEase UE (AE)"
               href="/orders/new-order/AE"
             />
