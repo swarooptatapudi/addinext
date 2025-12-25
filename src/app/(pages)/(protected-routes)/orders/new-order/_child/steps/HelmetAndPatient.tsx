@@ -13,6 +13,11 @@ const ITEM_CODE_TO_HELMET: Record<string, HelmetType> = {
   'ASH-EP': 'ASEP',
   'ASH-EP-A': 'ASEPA',
 };
+const HELMET_LABELS: Record<HelmetType, string> = {
+  ASP: 'AddiShield Pro',
+  ASEP: 'AddiShield EpiPro',
+  ASEPA: 'AddiShield EpiPro Active',
+};
 
 type Props = {
   values: any;
@@ -155,14 +160,22 @@ export default function HelmetAndPatient({
       <h2 className="font-semibold text-primary">Helmet Selection</h2>
 
       <div className="grid md:grid-cols-3 gap-4">
-        {(['ASP', 'ASEP', 'ASEPA'] as HelmetType[]).map(h => (
-          <label key={h} className={`border p-4 rounded cursor-pointer ${helmetType === h ? 'border-primary bg-primary/5' : ''}`}>
+        {(Object.keys(HELMET_LABELS) as HelmetType[]).map((h) => (
+          <label
+            key={h}
+            className={`border p-4 rounded-lg cursor-pointer flex items-center gap-3
+        ${helmetType === h ? 'border-primary bg-primary/5' : 'border-gray-200'}`}
+          >
             <input
               type="radio"
+              name="helmetType"
+              value={h}
               checked={helmetType === h}
               onChange={() => setHelmetType(h)}
-            />{' '}
-            {h}
+            />
+            <span className="font-medium">
+        {HELMET_LABELS[h]}
+      </span>
           </label>
         ))}
       </div>
