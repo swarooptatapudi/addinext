@@ -93,7 +93,7 @@ export default function Products(): React.JSX.Element {
             href="/orders/new-order/AFO"
           />
            <ProductItem
-            src="/assets/order-forms/products/Cranial Helmet.jpg"
+            src="/assets/order-forms/products/kafo_icon.jpg"
             label="AddiKneeFlex (KAFO/HKFO)"
             href="/orders/new-order/HkAFO"
           />
@@ -103,11 +103,11 @@ export default function Products(): React.JSX.Element {
             href="/orders/new-order/Cranial"
           />
           <ProductItem
-            src="/assets/order-forms/products/Cranial Helmet.jpg"
-            label="AddiShield+ (Pro)"
-            href="/orders/new-order/ASP"
+            src="/assets/order-forms/products/Addisheild_icon.jpg"
+            label="AddiShield+"
+            href="/orders/new-order/AddiShieldPlus"
           />
-          <ProductItem
+          {/*<ProductItem
             src="/assets/order-forms/products/Cranial Helmet.jpg"
             label="AddiShield+ (Epilepsy)"
             href="/orders/new-order/ASEP"
@@ -116,7 +116,7 @@ export default function Products(): React.JSX.Element {
             src="/assets/order-forms/products/Cranial Helmet.jpg"
             label="AddiShield+ (Epilepsy Pro)"
             href="/orders/new-order/ASEPA"
-          />
+          />*/}
           <ProductItem
             src="/assets/order-forms/products/Braces.jpg"
             label="Braces"
