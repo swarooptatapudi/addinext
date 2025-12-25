@@ -12,7 +12,7 @@ export function useWikySession(orderId: string, product: WikyProduct) {
 
   async function start() {
     try {
-      const res = await wikyApi.startScan(orderId);
+      const res = await wikyApi.startScan(orderId) as { session_id: string; scan_id: string };
       setSessionId(res.session_id);
       setScanId(res.scan_id);
       setStep("UPLOAD");
@@ -29,7 +29,7 @@ export function useWikySession(orderId: string, product: WikyProduct) {
 
   async function openIframe(action: "CLEANING" | "DESIGN") {
     if (!sessionId) return;
-    const res = await wikyApi.getIframe(sessionId, action, product);
+    const res = await wikyApi.getIframe(sessionId, action, product) as { iframe_url: string };
     setIframeUrl(res.iframe_url);
     setStep(action === "CLEANING" ? "CLEANING" : "DESIGN");
   }
@@ -42,7 +42,7 @@ export function useWikySession(orderId: string, product: WikyProduct) {
 
   async function syncFiles() {
     if (!sessionId) return;
-    const res = await wikyApi.syncFiles(sessionId);
+    const res = await wikyApi.syncFiles(sessionId) as { files?: any[] };
     setFiles(res.files || []);
     setStep("FILES");
   }
