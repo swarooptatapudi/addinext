@@ -1,8 +1,3 @@
-// ===============================
-// ASPOrderForm.tsx
-// Product: ASP (AddiShield-Pro)
-// Item Code: ASH-P
-// ===============================
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
@@ -11,7 +6,6 @@ import * as Yup from 'yup';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
-import PatientDetails from './steps/PatientDetails';
 import ASEPAMeasurement from './steps/ASEP/ASEPMeasurement';
 import ASEPAAssessment from './steps/ASEP/ASEPAssessment';
 import SummaryStep from './steps/ASEP/ASEPSummary';
@@ -61,16 +55,17 @@ const Schema = Yup.object({
 
 });
 const steps = [
-  { key: 'patient', label: 'Basic Details' },
   { key: 'measurement', label: 'Measurement' },
   { key: 'assessment', label: 'Clinical Assessment' },
   { key: 'summary', label: 'Summary' },
   { key: 'scan', label: 'Scan & Upload' },
   { key: 'finish', label: 'Finish & Payment' }
 ] as const;
-type CranialOrderFormProps = { item_type?: string };
+type Props = {
+  initialPatient: any;
+};
+export default function ASEPOrderForm({ initialPatient }: Props) {
 
-export default function ASEPOrderForm(_: CranialOrderFormProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [isPlacing, setIsPlacing] = useState(false);
   const [isSavingLater, setIsSavingLater] = useState(false);
@@ -93,6 +88,8 @@ export default function ASEPOrderForm(_: CranialOrderFormProps) {
   const [getOrderDetails] = useGetOrderDetailsMutation();
 
   const initialValues = {
+    ...initialPatient,
+
     first_name: '',
     last_name: '',
     parent_name: '',
@@ -459,26 +456,15 @@ export default function ASEPOrderForm(_: CranialOrderFormProps) {
                 disabled={isReadOnly}
                 className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}
               >
-              {activeStep === 0 && (
-                <PatientDetails
-                  values={values}
-                  errors={errors}
-                  touched={touched}
-                  setFieldValue={setFieldValue}
-                  handleChange={handleChange}
-                  shouldShowError={shouldShowError}
-                  UI={{ Input, Label, SelectBox, Textarea }}
-                />
-              )}
 
-              {activeStep === 1 && <ASEPAMeasurement UI={{ Input, Label, Card }}/>}
-              {activeStep === 2 && <ASEPAAssessment />}
+              {activeStep === 0 && <ASEPAMeasurement UI={{ Input, Label, Card }}/>}
+              {activeStep === 1 && <ASEPAAssessment />}
 
-              {activeStep === 3 && (
+              {activeStep === 2 && (
                 <SummaryStep values={values} productCode={ITEM_CODE} UI={{ Input, Label }} />
               )}
 
-              {activeStep === 4 && (
+              {activeStep === 3 && (
                 <ScanUpload
                   values={values}
                   setFieldValue={setFieldValue}
@@ -486,7 +472,7 @@ export default function ASEPOrderForm(_: CranialOrderFormProps) {
                 />
               )}
 
-              {activeStep === 5 && (
+              {activeStep === 4 && (
                 <ASPFinishPayment
                   values={values}
                   productCode={ITEM_CODE}
@@ -503,7 +489,7 @@ export default function ASEPOrderForm(_: CranialOrderFormProps) {
               </fieldset>
 
               <div className="flex justify-between mt-6">
-                <Button disabled={activeStep === 0} type="button" onClick={() => setActiveStep(s => s - 1)}>
+                <Button type="button" onClick={() => setActiveStep(s => s - 1)}>
                   Back
                 </Button>
                 {activeStep < steps.length - 1 && (
@@ -513,8 +499,7 @@ export default function ASEPOrderForm(_: CranialOrderFormProps) {
                       const errors = await validateForm();
 
                       const stepFields: Record<number, (keyof FormValues)[]> = {
-                        0: ['first_name', 'last_name', 'parent_mobile', 'date_of_birth'],
-                        1: [
+                        0: [
                           'length_ap_cm',
                           'head_circumference_cm',
                           'temple_width_cm',
@@ -526,7 +511,7 @@ export default function ASEPOrderForm(_: CranialOrderFormProps) {
                           'ear_clearance_cm',
                           'neck_clearance_cm',
                         ],
-                        2: [
+                        1: [
                           'seizure_frequency',
                           'epilepsy_type',
                           'risk_situations',
@@ -535,7 +520,9 @@ export default function ASEPOrderForm(_: CranialOrderFormProps) {
                       };
 
                       const fields = stepFields[activeStep] || [];
-                      const hasError = fields.some(f => errors[f]);
+                      const hasError = fields.some(
+                        (f) => Boolean((errors as Record<string,any>)[f as string])
+                      );
 
                       if (hasError) {
                         const touched: any = {};

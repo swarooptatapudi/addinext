@@ -6,7 +6,6 @@ import * as Yup from 'yup';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
-import PatientDetails from './steps/PatientDetails';
 import ASPMeasurement from './steps/ASP/ASPMeasurement';
 import ASPAssessment from './steps/ASP/ASPAssessment';
 import ASPSummary from './steps/ASP/ASPSummary';
@@ -63,16 +62,16 @@ const Schema = Yup.object({
 });
 
 const steps = [
-  { key: 'patient', label: 'Basic Details' },
   { key: 'measurement', label: 'Measurement' },
   { key: 'assessment', label: 'Clinical Assessment' },
   { key: 'summary', label: 'Summary' },
   { key: 'scan', label: 'Scan & Upload' },
   { key: 'finish', label: 'Finish & Payment' }
 ] as const;
-type CranialOrderFormProps = { item_type?: string };
-
-export default function ASPOrderForm(_: CranialOrderFormProps) {
+type Props = {
+  initialPatient: any;
+};
+export default function ASPOrderForm({ initialPatient }: Props) {
   const [activeStep, setActiveStep] = useState(0);
   const [isPlacing, setIsPlacing] = useState(false);
   const [isSavingLater, setIsSavingLater] = useState(false);
@@ -96,15 +95,7 @@ export default function ASPOrderForm(_: CranialOrderFormProps) {
   const [getOrderDetails] = useGetOrderDetailsMutation();
 
   const initialValues = {
-    first_name: '',
-    last_name: '',
-    parent_mobile: '',
-    date_of_birth: '',
-    gender: '',
-    height_cm: '',
-    weight_kg:'',
-    email:'',
-    clinic_name:'',
+    ...initialPatient,
 
     length_ap_cm: '',
     head_circumference_cm: '',
@@ -464,26 +455,15 @@ export default function ASPOrderForm(_: CranialOrderFormProps) {
                 disabled={isReadOnly}
                 className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}
               >
-                {activeStep === 0 && (
-                  <PatientDetails
-                    values={values}
-                    errors={errors}
-                    touched={touched}
-                    setFieldValue={setFieldValue}
-                    handleChange={handleChange}
-                    shouldShowError={shouldShowError}
-                    UI={{ Input, Label, SelectBox, Textarea }}
-                  />
-                )}
 
-                {activeStep === 1 && <ASPMeasurement UI={{ Input, Label, Card }}/>}
-                {activeStep === 2 && <ASPAssessment />}
+                {activeStep === 0 && <ASPMeasurement UI={{ Input, Label, Card }}/>}
+                {activeStep === 1 && <ASPAssessment />}
 
-                {activeStep === 3 && (
+                {activeStep === 2 && (
                   <ASPSummary values={values} productCode={ITEM_CODE} UI={{ Input, Label }} />
                 )}
 
-                {activeStep === 4 && (
+                {activeStep === 3 && (
                   <ASPScanUpload
                     values={values}
                     setFieldValue={setFieldValue}
@@ -491,7 +471,7 @@ export default function ASPOrderForm(_: CranialOrderFormProps) {
                   />
                 )}
 
-                {activeStep === 5 && (
+                {activeStep === 4 && (
                   <ASPFinishPayment
                     values={values}
                     productCode={ITEM_CODE}
@@ -508,7 +488,7 @@ export default function ASPOrderForm(_: CranialOrderFormProps) {
               </fieldset>
 
               <div className="flex justify-between mt-6">
-                <Button disabled={activeStep === 0} type="button" onClick={() => setActiveStep(s => s - 1)}>
+                <Button type="button" onClick={() => setActiveStep(s => s - 1)}>
                   Previous
                 </Button>
                 {activeStep < steps.length - 1 && (
@@ -518,8 +498,7 @@ export default function ASPOrderForm(_: CranialOrderFormProps) {
                       const errors = await validateForm();
 
                       const stepFields: Record<number, (keyof FormValues)[]> = {
-                        0: ['first_name', 'last_name', 'parent_mobile', 'date_of_birth'],
-                        1: [
+                        0: [
                           'length_ap_cm',
                           'head_circumference_cm',
                           'temple_width_cm',
@@ -532,7 +511,7 @@ export default function ASPOrderForm(_: CranialOrderFormProps) {
                           'neck_clearance_cm',
                           'bony_defect_size'
                         ],
-                        2: [
+                        1: [
                           'site_of_craniectomy',
                           'side_of_craniectomy',
                           'scalp_skin_condition',
@@ -541,8 +520,9 @@ export default function ASPOrderForm(_: CranialOrderFormProps) {
                       };
 
                       const fields = stepFields[activeStep] || [];
-                      const hasError = fields.some(f => errors[f]);
-
+                      const hasError = fields.some(
+                        (f) => Boolean((errors as Record<string,any>)[f as string])
+                      );
                       if (hasError) {
                         const touched: any = {};
                         fields.forEach(f => (touched[f] = true));
