@@ -1,52 +1,84 @@
-// src/components/wiky/wikyApi.ts
+import { WikyProduct } from "./types";
 
-const BASE = process.env.NEXT_PUBLIC_ADDIWISE_BACKEND_BASE_URL!;
-
-async function post<T>(method: string, body: any): Promise<T> {
-  const res = await fetch(
-    `${BASE}/api/method/addiwise.apis.wiky_scan.${method}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }
-  );
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
+type StartScanReq = {
+  insole_order_id: string;
+  product: WikyProduct;
+  patient: any;
+  shoe_size: number;
+};
 
 export const wikyApi = {
-  startScan: (orderId: string) =>
-    post("start_scan", { insole_order_id: orderId }),
+  async startScan(req: StartScanReq) {
+    const res = await fetch(
+      "/api/method/addiwise.apis.wiky_scan.wiky_scan.start_scan",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(req),
+      }
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.message || "start_scan failed");
+    return json?.message || json; // frappe sometimes wraps
+  },
 
-  uploadZip: (sessionId: string, file: File) => {
+  async uploadZip(sessionId: string, file: File) {
     const fd = new FormData();
     fd.append("session_id", sessionId);
     fd.append("zip_file", file);
-    return fetch(
-      `${BASE}/api/method/addiwise.apis.wiky_scan.upload_zip`,
+
+    const res = await fetch(
+      "/api/method/addiwise.apis.wiky_scan.wiky_scan.upload_zip",
       { method: "POST", body: fd }
-    ).then(r => r.json());
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.message || "upload_zip failed");
+    return json?.message || json;
   },
 
-  getIframe: (
-    sessionId: string,
-    action: "CLEANING" | "DESIGN",
-    product: string
-  ) =>
-    post("get_iframe", { session_id: sessionId, action, product }),
+  async getIframe(sessionId: string, action: "CLEANING" | "DESIGN", product: WikyProduct) {
+    const res = await fetch(
+      "/api/method/addiwise.apis.wiky_scan.wiky_scan.get_iframe",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, action, product }),
+      }
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.message || "get_iframe failed");
+    return json?.message || json;
+  },
 
-  submitForm: (
-    sessionId: string,
-    scanId: string,
-    formResponseId: string
-  ) =>
-    post("custom_form_submitted", {
-      session_id: sessionId,
-      scan_id: scanId,
-      form_response_id: formResponseId,
-    }),
+  async submitCustomForm(sessionId: string, scanId: string, formResponseId: string) {
+    const res = await fetch(
+      "/api/method/addiwise.apis.wiky_scan.wiky_scan.custom_form_submitted",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          scan_id: scanId,
+          form_response_id: formResponseId,
+        }),
+      }
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.message || "custom_form_submitted failed");
+    return json?.message || json;
+  },
 
-  syncFiles: (sessionId: string) =>
-    post("sync_files", { session_id: sessionId }),
+  async syncFiles(sessionId: string) {
+    const res = await fetch(
+      "/api/method/addiwise.apis.wiky_scan.wiky_scan.sync_files",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId }),
+      }
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.message || "sync_files failed");
+    return json?.message || json;
+  },
 };

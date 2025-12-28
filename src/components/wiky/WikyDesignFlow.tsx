@@ -1,90 +1,45 @@
-// src/components/wiky/WikyDesignFlow.tsx
+'use client';
 
-import { useEffect } from "react";
-import { WikyProduct } from "./types";
-import { useWikySession } from "./useWikySession";
+import React, { useEffect } from 'react';
+import { WikyProduct } from './types';
+import { useWikySession } from './useWikySession';
 
 type Props = {
   orderId: string;
-  product?: WikyProduct;
+  product: WikyProduct;
+  patient: any;          // patient object from PatientPicker
+  shoeSize: number;      // required by Wiky form
 };
 
-export function WikyDesignFlow({
-                                 orderId,
-                                 product = "INSOLES",
-                               }: Props) {
-  const wiky = useWikySession(orderId, product);
+export function WikyDesignFlow({ orderId, product, patient, shoeSize }: Props) {
+  const wiky = useWikySession(orderId, product, { patient, shoeSize });
 
   useEffect(() => {
-    function onMessage(e: MessageEvent) {
-      if (e.data?.event === "customFormSubmitted") {
-        wiky.submitForm(e.data.scanId, e.data.formResponseId);
-      }
-
-      if (e.data?.EVENT_NAME === "loaded_IFrame") {
-        const iframe = document.getElementById("wiky_iframe");
-        if (iframe instanceof HTMLIFrameElement) {
-          iframe.contentWindow?.postMessage(e.data, "*");
-        }
-      }
-    }
-
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, [wiky]);
-
+    // auto start once mounted (you can remove if you want manual start button)
+    wiky.start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div>
-      <h3>Wiky Design – {product}</h3>
+    <div className="border rounded p-4 space-y-3">
+      <div className="font-medium">Wiky Flow</div>
 
-      {wiky.error && <div style={{ color: "red" }}>{wiky.error}</div>}
+      {wiky.error ? <div className="text-red-600 text-sm">{wiky.error}</div> : null}
 
-      {wiky.step === "START" && (
-        <button onClick={wiky.start}>Start Design</button>
+      {wiky.step === 'UPLOAD' && (
+        <div className="text-sm">Session created. Upload ZIP in your existing UI step.</div>
       )}
 
-      {wiky.step === "UPLOAD" && (
-        <input
-          type="file"
-          accept=".zip"
-          onChange={(e) =>
-            e.target.files && wiky.uploadZip(e.target.files[0])
-          }
-        />
-      )}
-
-      {(wiky.step === "PRESCRIPTION" ||
-        wiky.step === "CLEANING" ||
-        wiky.step === "DESIGN") && (
-        <div style={{ marginTop: 12 }}>
-          <button onClick={() => wiky.openIframe("CLEANING")}>
-            Cleaning
-          </button>
-          <button onClick={() => wiky.openIframe("DESIGN")}>
-            Design
-          </button>
-        </div>
-      )}
-
-      {wiky.iframeUrl && (
+      {wiky.iframeUrl ? (
         <iframe
-          id="wiky_iframe"
           src={wiky.iframeUrl}
-          width="100%"
-          height="600"
-          sandbox="allow-scripts allow-same-origin allow-forms"
+          className="w-full h-[75vh] border rounded"
+          allow="clipboard-read; clipboard-write"
         />
-      )}
-
-      {wiky.step === "FILES" && (
-        <ul>
-          {wiky.files.map((f, i) => (
-            <li key={i}>
-              <a href={f.path} target="_blank">{f.name}</a>
-            </li>
-          ))}
-        </ul>
+      ) : (
+        <div className="text-xs text-gray-600">
+          Step: <b>{wiky.step}</b>
+        </div>
       )}
     </div>
   );
