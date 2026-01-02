@@ -110,10 +110,6 @@ export default function Dashboard(): React.JSX.Element {
       <div style={{ padding: 20 }}>
         <h2>Wiky Integration – Test Page</h2>
 
-        <WikyDesignFlow
-          orderId="INS-ORD-0427"
-          product="INSOLES"
-        />
       </div>
     </div>
   );
