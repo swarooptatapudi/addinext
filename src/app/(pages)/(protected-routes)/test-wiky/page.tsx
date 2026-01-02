@@ -203,7 +203,7 @@ export default function TestWikyPage() {
           onClick={openWikyPopup}
           className="mb-6 inline-flex items-center gap-2 rounded-lg bg-purple-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-purple-700 transition"
         >
-          Open Wiky Scan
+          Open Wiky Selection
         </button>
 
         {/* ❗ FORM GRID — UNCHANGED */}
