@@ -51,15 +51,14 @@ export const productsApi = createApi({
       }),
       transformResponse: (response: any) => response.message.data,
     }),
-    getProductsSalesOrderList: builder.query({
-      query: () => ({
+    getProductsSalesOrderList: builder.query<any[], { customer?: string }>({
+      query: ({ customer }) => ({
         url: '/method/addiwise.apis.order_types.bk_order.get_sales_order_offthe_shelf',
         method: 'GET',
-        // params: customer ? { customer } : undefined, // ✅ pass query param
+        params: customer ? { customer } : undefined,
       }),
       transformResponse: (response: any) => {
-        // console.log("Full API Response >>>", response); // 🔍 debug
-        return response?.data?.sales_orders ?? [];
+        return response?.message?.orders ?? [];
       },
     }),
 

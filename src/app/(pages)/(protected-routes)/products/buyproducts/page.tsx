@@ -237,39 +237,8 @@ export default function BuyProductsWithHdfc() {
       }
 
       // 3) Call startPayment (pass rupees, NOT paise). Do NOT pass returnUrl to let hook use its default.
-      await startPayment({
-        amount: canonicalAmountRupees, // rupees
-        salesOrder: String(salesOrderId),
-        provider: 'HDFC',
-        openInPopup: true,
-        pollingAttempts: 20,
-        pollingIntervalMs: 2000,
-        // finalize the order when payment confirmed
-        onSuccess: async (payload) => {
-          try {
-            // try to extract payment reference id from payload delivered by HDFC / hook
-            const paymentRef =
-              payload?.data?.payment_reference_id ||
-              payload?.data?.order_id ||
-              payload?.payment_id ||
-              payload?.order_id ||
-              payload?.payment_reference_id ||
-              null;
+      await startPayment(salesOrderId);
 
-            await finalizeOrder(String(salesOrderId), paymentRef);
-            toast.success('Payment successful & order finalized');
-            router.push('/transcations#other-transcation-history');
-          } catch (err) {
-            console.error('Failed to finalize after success:', err);
-            toast.error('Payment succeeded but finalizing failed.');
-            // Keep user on page or redirect depending on your UX choice
-          }
-        },
-        onFailure: (err) => {
-          console.error('Payment failed/cancelled', err);
-          toast.error('Payment failed or cancelled. Please try again.');
-        }
-      });
     } catch (err: any) {
       console.error('Error in payment flow', err);
       toast.error(err?.data?.message || err?.message || 'Failed to prepare payment. Try again.');

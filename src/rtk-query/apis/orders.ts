@@ -446,6 +446,17 @@ export const ordersApi = createApi({
         return response;
       }
     }),
+    createAfoOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.afo_order.create_afo_order',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        // console.log("create_bk_order", response);
+        return response;
+      }
+    }),
     // ----------------------
     // CREATE CRANIAL ORDER (same style as createInsoleOrder)
     createCranialOrder: builder.mutation({
@@ -636,6 +647,7 @@ export const {
   useGetOrderDetailIdsMutation,
   useCreateProductOrderMutation,
   useCreateInsoleOrderMutation,
+  useCreateAfoOrderMutation,
   useCreateCranialOrderMutation,
   useGetCHEstimateMutation,
   useGetINEstimateMutation,

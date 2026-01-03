@@ -419,20 +419,8 @@ export default function ASPOrderForm({ initialPatient }: Props) {
                 return;
               }
 
-              await startPayment({
-                amount,
-                salesOrder: salesId,
-                provider: 'HDFC',
-                currency: 'INR',
-                onSuccess: () => {
-                  alert('Payment successful.');
-                  router.push('/orders');
-                },
-                onFailure: () => {
-                  alert('Payment failed or timed out. Please check Orders.');
-                  router.push('/orders');
-                },
-              });
+              await startPayment(salesId);
+
             } catch (e: any) {
               alert(
                 e?.data?.message ||

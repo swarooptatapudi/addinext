@@ -31,6 +31,10 @@ export default function PaymentReturnPage() {
 
   const handleClose = () => {
     if (window.opener) {
+      window.opener.postMessage(
+        { type: 'PAYMENT_POPUP_CLOSED', redirect: '/orders' },
+        '*'
+      );
       window.close();
     } else {
       window.location.href = '/orders';
