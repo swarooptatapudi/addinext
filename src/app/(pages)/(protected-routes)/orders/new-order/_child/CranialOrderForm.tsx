@@ -975,17 +975,8 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                       // ✅ Use reusable payment launcher
                       const raw = String(values.total_price ?? '0').replace(/,/g, '');
                       const amount = Number(parseFloat(raw || '0').toFixed(2));
-                      await startPayment({
-                        amount,
-                        salesOrder: salesId,
-                        onSuccess: () => {
-                          alert('Payment successful.');
-                          router.push('/orders');
-                        },
-                        onFailure: () => {
-                          alert('Payment failed or timed out. Please check status in Orders.');
-                        }
-                      });
+                      await startPayment(salesId);
+
                       return;
                     }
                     alert(
@@ -1012,17 +1003,8 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                   // ✅ Use reusable payment launcher
                   const raw = String(values.total_price ?? '0').replace(/,/g, '');
                   const amount = Number(parseFloat(raw || '0').toFixed(2));
-                  await startPayment({
-                    amount,
-                    salesOrder: salesId,
-                    onSuccess: () => {
-                      alert('Payment successful.');
-                      router.push('/orders');
-                    },
-                    onFailure: () => {
-                      alert('Payment failed or timed out. Please check status in Orders.');
-                    }
-                  });
+                  await startPayment(salesId);
+
                   return;
                 }
 

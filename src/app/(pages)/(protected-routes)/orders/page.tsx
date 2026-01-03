@@ -112,27 +112,10 @@ const totalPages = data?.data.total_pages ?? 1;
         return;
       }
 
-      const salesOrderId = response?.data?.so_order_id || order.order_id;
+      const salesId = response?.data?.so_order_id || order.order_id;
 
-      await startPayment({
-        amount: orderAmount,
-        salesOrder: String(salesOrderId),
-        provider: 'HDFC',
-        returnUrl: `${window.location.origin}/api/payments/return`,
-        openInPopup: true,
-        onSuccess: async () => {
-          toast.success('Payment successful!');
-          await getOrderDetailIds({
-            order_id: order.order_id,
-            order_type: getOrderType(order),
-          } as any);
-          refetch();
-        },
-        onFailure: (err) => {
-          console.error('Payment failed:', err);
-          toast.error('Payment failed or cancelled. Please try again.');
-        },
-      });
+      await startPayment(salesId);
+
     } catch (err) {
       console.error('Payment initiation failed:', err);
       toast.error('Failed to process payment.');
@@ -164,6 +147,9 @@ const totalPages = data?.data.total_pages ?? 1;
     }
     else if (order.device_type === "AddiShield EpiPro Active Order") {
       router.push(`/orders/new-order/AddiShieldPlus?${new URLSearchParams(baseParams).toString()}`);
+    }
+    else if (order.device_type === "Afo Orders") {
+      router.push(`/orders/new-order/Afo?${new URLSearchParams(baseParams).toString()}`);
     }
   };
 // Add at top with other React state hooks:

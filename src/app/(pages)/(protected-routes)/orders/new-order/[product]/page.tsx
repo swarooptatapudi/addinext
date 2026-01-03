@@ -11,6 +11,7 @@ import ASPOrderForm from '../_child/ASPOrderForm';
 import ASEPOrderForm from '../_child/ASEPOrderForm';
 import ASEPAOrderForm from '../_child/ASEPAOrderForm';
 import HelmetOrderEntryPage from '@/app/(pages)/(protected-routes)/orders/new-order/_child/HelmetOrderEntryPage';
+import AFOOrderForm from '../_child/AFOOrderForm';
 
 export default function NewOrderController({
   params
@@ -48,7 +49,10 @@ export default function NewOrderController({
   else if (product?.toLowerCase()==='addishieldplus') {
     return <HelmetOrderEntryPage />
   }
+  else if (product?.toLowerCase()?.includes('afo')) {
+    return <AFOOrderForm item_type={product} />
 
+  }
   /*else if (product?.toLowerCase()?.includes('asep')) {
     return <ASEPOrderForm item_type={product} />
   }
