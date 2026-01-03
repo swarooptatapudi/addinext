@@ -36,7 +36,14 @@ export const productsApi = createApi({
       }),
       transformResponse: (response: any) => response.message
     }),
-
+    getItemNameAfoByDetails: builder.mutation({
+      query: (payload) => ({
+        url: `/method/addiwise.apis.item_details.get_afo_item_details`,
+        method: 'POST',
+        body: payload
+      }),
+      transformResponse: (response: any) => response.message
+    }),
     getProductColorStep5: builder.mutation({
       query: (_unusedArg) => ({
         url: '/method/addiwise.apis.color_api.get_colors',
@@ -76,4 +83,5 @@ export const {
   useGetProductsListQuery,
   useGetProductsSalesOrderListQuery,
   useGetItemNameInByDetailsMutation,
+  useGetItemNameAfoByDetailsMutation
 } = productsApi;
