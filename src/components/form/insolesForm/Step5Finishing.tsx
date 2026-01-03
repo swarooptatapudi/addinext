@@ -432,23 +432,8 @@ setUploadURL(key);
       if (!salesId) throw new Error('Failed to create sales order before payment.');
 
       // 5️⃣ Start payment with your reusable launcher
-      await startPayment({
-        amount,
-        salesOrder: String(salesId),
-        provider: 'HDFC',
-        returnUrl: `${window.location.origin}/api/payments/return`,
-        openInPopup: true,
-        pollingAttempts: 20,
-        pollingIntervalMs: 2000,
-        onSuccess: async () => {
-          toast.success('Payment successful! Order created.');
-          router.push('/orders');
-        },
-        onFailure: (err) => {
-          console.error('Payment failed:', err);
-          toast.error('Payment failed or cancelled. Please try again.');
-        }
-      });
+      await startPayment(salesId);
+
     } catch (err: any) {
       console.error('Payment/order error:', err);
       toast.error(err?.message || 'Failed to complete payment.');

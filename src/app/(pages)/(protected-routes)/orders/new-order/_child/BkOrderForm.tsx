@@ -2447,28 +2447,8 @@ setUploadURL(fileMeta.key);
 
       // 6) Launch payment using your reusable launcher (usePaymentLauncher / startPayment)
       // Assumes you have `startPayment` in scope (from the hook). Adapt provider if needed (e.g. 'RAZORPAY' or 'HDFC').
-      await startPayment({
-        amount: amountNumber,
-        salesOrder: String(salesId),
-        provider: 'HDFC', // or 'HDFC' if that is your provider constant for BK
-        returnUrl: `${window.location.origin}/api/payments/return`,
-        openInPopup: true,
-        pollingAttempts: 20,
-        pollingIntervalMs: 2000,
-        onSuccess: async () => {
-          // server should have already created the order; confirm UI + navigate
-          toast.success('Payment successful! Order created successfully.');
-          setSelectedItem('');
-          setIsPaymentProcessing(false);
-          setFormDisable(true);
-          router.push('/orders');
-        },
-        onFailure: (err: any) => {
-          console.error('Payment failed/cancelled', err);
-          toast.error('Payment failed or cancelled. Please try again.');
-          setIsPaymentProcessing(false);
-        }
-      });
+      await startPayment(salesId);
+
     } catch (error: any) {
       console.error('prepare/order/payment error:', error);
       const message = error?.data?.message || error?.message || 'Failed to prepare payment. Please try again.';
