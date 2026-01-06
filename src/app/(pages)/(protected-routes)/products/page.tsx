@@ -229,15 +229,15 @@ export default function Products(): React.JSX.Element {
         </div>
       </div>
       {/* AddiNxT Design Platform */}
-      <div className="mt-5">
-        <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">
-          AddiNxT Design Platform
-        </p>
-        <div className="flex flex-wrap gap-x-8 gap-y-6">
-          <ProductItem src="/assets/order-forms/products/Standard.jpg" label="Standard" href={''} />
-          <ProductItem src="/assets/order-forms/products/Premium.jpg" label="Premium" href={''} />
-        </div>
-      </div>
+      {/*<div className="mt-5">*/}
+      {/*  <p className="text-xs font-extrabold text-[#2e2a6f] mb-3 uppercase">*/}
+      {/*    AddiNxT Design Platform*/}
+      {/*  </p>*/}
+      {/*  <div className="flex flex-wrap gap-x-8 gap-y-6">*/}
+      {/*    <ProductItem src="/assets/order-forms/products/Standard.jpg" label="Standard" href={''} />*/}
+      {/*    <ProductItem src="/assets/order-forms/products/Premium.jpg" label="Premium" href={''} />*/}
+      {/*  </div>*/}
+      {/*</div>*/}
     </div>
   );
 }
