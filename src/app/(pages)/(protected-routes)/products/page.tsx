@@ -221,11 +221,11 @@ export default function Products(): React.JSX.Element {
             label="AddiPrint-P600"
             href="/products/buyproducts?name=AddiPrint - P600"
           />
-          <ProductItem
-            src="/assets/order-forms/products/HP MJF.jpg"
-            label="HP-MJF"
-            href="/products/buyproducts?name=HP-MJF"
-          />
+          {/*<ProductItem*/}
+          {/*  src="/assets/order-forms/products/HP MJF.jpg"*/}
+          {/*  label="HP-MJF"*/}
+          {/*  href="/products/buyproducts?name=HP-MJF"*/}
+          {/*/>*/}
         </div>
       </div>
       {/* AddiNxT Design Platform */}
