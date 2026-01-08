@@ -223,6 +223,40 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import baseQueryWithReauth from '../base/baseQueryReAuth';
 import { estimateOrderClientSide } from '@/uttils/getEstimate';
 
+interface AKEstimateRequest {
+  item_code: string;
+  design_by: string;
+  print_by: string;
+  discount_per: number;
+  discount_amt: number;
+  coupon_code?: string;
+}
+
+interface AKEstimateResponse {
+  message: {
+    status: number;
+    message: string;
+    data: {
+      design: string;
+      print: string;
+      estimate_price: string;
+      item_standard_discount: string;
+      item_special_discount?: string;
+      additional_discount: string;
+      discounted_price: string;
+      discounted_price_18: string;
+      discounted_price_5: string;
+      gst_18: string;
+      gst_5: string;
+      total_price: string;
+      customer_available_coins?: string;
+      design_coin_use?: string;
+    };
+  };
+}
+
+
+
 interface SalesOrder {
   order_id: string;
   customer: string;
@@ -523,6 +557,15 @@ export const ordersApi = createApi({
       }),
       transformResponse: (response: ASPEstimateResponse) => response
     }),
+    getAKEstimate: builder.mutation<AKEstimateResponse, AKEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.afo_order.get_afo_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: AKEstimateResponse) => response
+    }),
+
     // ----------------------
     // CRANIAL ESTIMATE
     // ----------------------
@@ -638,6 +681,8 @@ export const ordersApi = createApi({
   })
 });
 
+
+
 export const {
   useCreateOrderMutation,
   useGetOrdersQuery,
@@ -650,6 +695,7 @@ export const {
   useCreateAfoOrderMutation,
   useCreateCranialOrderMutation,
   useGetCHEstimateMutation,
+  useGetAKEstimateMutation,
   useGetINEstimateMutation,
   usePreSignedUrlMutation,
   useGetASPEstimateMutation,
