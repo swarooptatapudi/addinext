@@ -108,7 +108,7 @@ export default function TestWikyPage() {
     setApiPayload(payloadString);
     try {
       const res = await axios.post(
-        'https://wpm30sdhfd.execute-api.eu-west-1.amazonaws.com/prod/scan',
+        'https://f5ut4e55z2.execute-api.eu-west-1.amazonaws.com/dev/scan',
         payload,
         {
           headers: {

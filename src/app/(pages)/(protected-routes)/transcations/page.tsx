@@ -31,6 +31,8 @@ import { RootState } from '@/rtk-query/store';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useGetProductsSalesOrderListQuery } from '@/rtk-query/apis/products';
+import { useLazyGetOrderPdfQuery } from '@/rtk-query/apis/orders';
+
 
 interface Transaction {
   payment_transaction_id?: string;
@@ -126,6 +128,28 @@ export default function Transcations(): React.JSX.Element {
   // console.log('::>>', transactionHistorySeles);
 
   // const { data: transactionHistory, isLoading, isError } = useGetReceiptsPdfQuery('CT-25-050');
+
+  const [fetchPdf, { isFetching }] = useLazyGetOrderPdfQuery();
+
+  const openPdf = async (
+    doctype: 'Sales Invoice' | 'Payment Entry',
+    name?: string
+  ) => {
+    if (!name) return;
+
+    try {
+      const pdfBlob = await fetchPdf({ doctype, name }).unwrap();
+
+      const url = URL.createObjectURL(pdfBlob);
+      window.open(url, '_blank');
+
+      // optional cleanup
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    } catch (err) {
+      console.error('PDF open failed', err);
+      alert('Unable to open PDF');
+    }
+  };
 
   useEffect(() => {
     // console.log('ReceiptsData from API:', transactionHistory);
@@ -742,41 +766,41 @@ export default function Transcations(): React.JSX.Element {
                             {/* Order Value */}
                             <TableCell className="font-medium">
                               <span className="text-gray-600">
-                                {order.rate ? order.invoice_amount.toLocaleString() : "-"}
+                                {order.rate ? order.invoice_amount?.toLocaleString() : "-"}
                               </span>
                             </TableCell>
 
                             {/* Invoice PDF */}
                             <TableCell>
-                              {order.invoice_pdf ? (
-                                <a
-                                  href={order.invoice_pdf}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 underline"
+                              {order.invoice_name ? (
+                                <button
+                                  onClick={() => openPdf('Sales Invoice', order.invoice_name)}
+                                  className="text-blue-600 underline bg-transparent p-0 border-0 cursor-pointer"
                                 >
                                   Invoice
-                                </a>
+                                </button>
                               ) : (
-                                "-"
+                                <span className="text-gray-400">N/A</span>
                               )}
                             </TableCell>
 
+
+
                             {/* Receipt PDF */}
                             <TableCell>
-                              {order.receipt_pdf ? (
-                                <a
-                                  href={order.receipt_pdf}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-green-600 underline"
+                              {order.receipt_name ? (
+                                <button
+                                  onClick={() => openPdf('Payment Entry', order.receipt_name)}
+                                  className="text-green-600 underline bg-transparent p-0 border-0 cursor-pointer"
                                 >
                                   Receipt
-                                </a>
+                                </button>
                               ) : (
-                                "-"
+                                <span className="text-gray-400">N/A</span>
                               )}
                             </TableCell>
+
+
                           </TableRow>
                         ))
                       ) : (
