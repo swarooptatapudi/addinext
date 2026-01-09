@@ -565,6 +565,21 @@ export const ordersApi = createApi({
       }),
       transformResponse: (response: AKEstimateResponse) => response
     }),
+    getOrderPdf: builder.query<
+      Blob,
+      { doctype: 'Sales Invoice' | 'Payment Entry'; name: string }
+    >({
+      query: ({ doctype, name }) => ({
+        url: `/method/addiwise.apis.order_types.bk_order.download_pdf` +
+          `?doctype=${encodeURIComponent(doctype)}` +
+          `&name=${encodeURIComponent(name)}` +
+          `&format=Standard`,
+        method: 'GET',
+        // 🔴 CRITICAL: tell RTK this is binary, not JSON
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
+
 
     // ----------------------
     // CRANIAL ESTIMATE
@@ -703,7 +718,8 @@ export const {
   useGetASEPEstimateMutation,
   useCreateASEPOrderMutation,
   useGetASEPAEstimateMutation,
-  useCreateASEPAOrderMutation
+  useCreateASEPAOrderMutation,
+  useLazyGetOrderPdfQuery
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;
 
