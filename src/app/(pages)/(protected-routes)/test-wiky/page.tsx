@@ -15,8 +15,8 @@ export default function TestWikyPage() {
   const [apiResponse, setApiResponse] = useState<string>('');
   const [apiError, setApiError] = useState<string>('');
 
-  const [userId, setUserId] = useState("rohit.gupta@sarainfoway.in");
-  const [clientId, setClientId] = useState("ba004e9f-f569-4ae2-9793-3a2607fdecac");
+  const [userId, setUserId] = useState("cf34cd1a-362c-45f1-9be6-45f9ff329a63");
+  const [clientId, setClientId] = useState("c023f568-8562-4a1a-b81c-a673a5770c67");
   const [apiPayload,setApiPayload]=useState<any>('');
 
   const [form, setForm] = useState({
@@ -83,7 +83,7 @@ export default function TestWikyPage() {
       identifier: 'none',
       ID: scanId, // ✅ FROM POPUP
       userId: 'cf34cd1a-362c-45f1-9be6-45f9ff329a63', // ✅ AS PROVIDED BY YOU
-      clientId: 'bd06e687-113d-461f-8c87-9f5d7f823a59', // ✅ AS PROVIDED BY YOU - c023f568-8562-4a1a-b81c-a673a5770c67
+      clientId: 'c023f568-8562-4a1a-b81c-a673a5770c67', // ✅ AS PROVIDED BY YOU - c023f568-8562-4a1a-b81c-a673a5770c67
       data: {
         'Patient Data': {
           name: form.name,
