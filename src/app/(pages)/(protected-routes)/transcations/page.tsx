@@ -742,7 +742,7 @@ export default function Transcations(): React.JSX.Element {
                             {/* Order Value */}
                             <TableCell className="font-medium">
                               <span className="text-gray-600">
-                                {order.rate ? order.rate.toLocaleString() : "-"}
+                                {order.rate ? order.invoice_amount.toLocaleString() : "-"}
                               </span>
                             </TableCell>
 
