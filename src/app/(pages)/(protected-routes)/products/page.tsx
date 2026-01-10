@@ -118,7 +118,7 @@ export default function Products(): React.JSX.Element {
           {offtheself?.map((offtheself: any) => (
             <ProductItem
               key={offtheself.item_name}
-              src={getProductImage(offtheself)}
+              src={offtheself.image}
               label={offtheself.item_name}
               href={`/products/buyproducts?name=${encodeURIComponent(offtheself.item_name)}`}
             />
@@ -132,7 +132,7 @@ export default function Products(): React.JSX.Element {
           {scanners?.map((scanner: any) => (
             <ProductItem
               key={scanner.item_name}
-              src={getProductImage(scanner)}
+              src={scanner.image}
               label={scanner.item_name}
               href={`/products/buyproducts?name=${encodeURIComponent(scanner.item_name)}`}
             />
