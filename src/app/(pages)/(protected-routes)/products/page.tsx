@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 import { useGetProductsListQuery } from '@/rtk-query/apis/products';
+import productImageMap from '@/data/product-image-map.json';
 
 export default function Products(): React.JSX.Element {
 
@@ -11,18 +12,8 @@ export default function Products(): React.JSX.Element {
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load products</p>;
 
-  const PRODUCT_IMAGE_MAP: Record<string, string> = {
-    'AddiPrint - P600': '/assets/order-forms/products/AddIPrint.jpg',
-    'AddiPrint-P400': '/assets/order-forms/products/AddIPrint.jpg',
-    'AddiScan-E': '/assets/order-forms/products/Addiscan-E.png',
-    'AddiScan-Prime': '/assets/order-forms/products/AddiPrime.jpg',
-    'AddiScan-RP': '/assets/order-forms/products/Addiscan-RP.png',
-    'AddiStud-P': '/assets/order-forms/products/Addistud.jpg',
-    'HP-MJF': '/assets/order-forms/products/HP-MJF.jpg'
-  };
-
   const getProductImage = (item: any) =>
-    PRODUCT_IMAGE_MAP[item.item_code] ||
+    productImageMap[item.item_code as keyof typeof productImageMap] ||
     item.image ||
     item.custom_product_image ||
     '/assets/placeholder.jpg';
