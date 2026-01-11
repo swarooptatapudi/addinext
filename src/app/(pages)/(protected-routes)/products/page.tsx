@@ -147,7 +147,7 @@ export default function Products(): React.JSX.Element {
           {printer?.map((printer: any) => (
             <ProductItem
               key={printer.item_name}
-              src={getProductImage(printer)}
+              src={printer.image}
               label={printer.item_name}
               href={`/products/buyproducts?name=${encodeURIComponent(printer.item_name)}`}
             />
