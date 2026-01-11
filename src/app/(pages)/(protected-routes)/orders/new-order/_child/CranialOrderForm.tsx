@@ -1182,7 +1182,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                 )}
               </fieldset>
 
-              {isReadOnly && activeStep  === 2 && (
+              {isReadOnly && activeStep  === 5 && (
                 <UploadedFilesPanel
                   leftFootFile={orderDetails?.data?.uploaded_scan_file}
                   driveLink={orderDetails?.data?.custom_upload_link_with_photos}
