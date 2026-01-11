@@ -31,7 +31,8 @@ import { useGetFormSettingsQuery } from '@/rtk-query/apis/forms';
 import {
   useCreateOrderMutation,
   useGetOrderDetailIdsMutation,
-  useGetBKEstimateMutation,usePreSignedUrlMutation
+  useGetBKEstimateMutation,
+  usePreSignedUrlMutation
 } from '@/rtk-query/apis/orders';
 import { useGetItemNameByDetailsMutation } from '@/rtk-query/apis/products';
 
@@ -43,6 +44,7 @@ import { BK_FORM_INITIAL_VALUES } from './constants';
 import { Step5 } from '@/components/form/bkForm/Step5Finishing';
 import { PatientPortalDialog } from '@/components/app/common/ResidualLimbForm';
 import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
+import { UploadedFilesPanel } from '@/components/ui/UploadedFilesPanel';
 
 declare global {
   interface Window {
@@ -865,8 +867,8 @@ const Step1 = ({
               >
                 {values.design_variation
                   ? designVariationOptions.find(
-                    (opt: { value: string }) => opt.value === values.design_variation
-                  )?.label
+                      (opt: { value: string }) => opt.value === values.design_variation
+                    )?.label
                   : 'Select Design Variation'}
               </Button>
               {shouldShowError('design_variation', true) && (
@@ -896,7 +898,7 @@ const Step1 = ({
               >
                 {values.model_name
                   ? modelOptions.find((opt: { value: string }) => opt.value === values.model_name)
-                    ?.label
+                      ?.label
                   : 'Select Model'}
               </Button>
               {shouldShowError('model_name', true) && (
@@ -1147,7 +1149,7 @@ const Step1 = ({
         onSelect={(value) => setFieldValue('model_name', value)}
         socketType={values.socket_type}
 
-      // designVariation={values.design_variation}
+        // designVariation={values.design_variation}
       />
     </div>
   );
@@ -1220,14 +1222,14 @@ const Step2 = ({
   const shouldShowError = (fieldName: string, isRequired = false) => {
     const fieldValue = fieldName.includes('.')
       ? fieldName
-        .split('.')
-        .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+          .split('.')
+          .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
       : values[fieldName];
 
     const fieldError = fieldName.includes('.')
       ? fieldName
-        .split('.')
-        .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+          .split('.')
+          .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
       : errors[fieldName];
 
     if (fieldName === 'direct_body' && fieldValue && fieldError) {
@@ -1273,7 +1275,7 @@ const Step2 = ({
     !values.foot_side &&
     !values.custom_upload_link_with_photos &&
     errors.custom_upload_link_with_photos ===
-    'Either upload scans or provide a photo link is required';
+      'Either upload scans or provide a photo link is required';
 
   return (
     <div className="flex flex-col gap-4">
@@ -1362,8 +1364,9 @@ const Step2 = ({
                   { value: 'right_foot_file', label: 'Right Foot' },
                   { value: 'Both', label: 'Both' }
                 ]}
-                className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''
-                  }`}
+                className={`mt-3 min-w-max ml-0 w-[410px] ${
+                  showEitherOrError ? 'border-red-500' : ''
+                }`}
                 value={values.foot_side || ''}
                 // onValueChange={(value) => {
                 //   // console.log('🦶 Selected foot_side value:', value);
@@ -1371,11 +1374,9 @@ const Step2 = ({
                 //   setFieldValue('left_foot_file', value);
                 //   setFieldValue('right_foot_file', value);
                 // }}
-               onValueChange={(value) => {
-  setFieldValue('foot_side', value);
-}}
-
-
+                onValueChange={(value) => {
+                  setFieldValue('foot_side', value);
+                }}
                 inVaild={shouldShowError('custom_upload_link_with_photos')}
                 disabled={isViewMode}
               />
@@ -1407,33 +1408,27 @@ const Step2 = ({
               <div className="text-red-500 text-xs mt-1">{errors.left_foot_file}</div>
             )}
             {/* ✅ Show existing left foot file name or link */}
-{values.left_foot_file && typeof values.left_foot_file === "string" && (
-  <div className="mt-2 text-sm text-gray-700">
-    <span className="font-medium">Existing Left Foot File: </span>
-    <a
-      href={`https://your-bucket-name.s3.amazonaws.com/${values.left_foot_file}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-600 underline break-all"
-    >
-      {values.left_foot_file.split('/').pop()}
-    </a>
-  </div>
-)}
+            {!isViewMode && values.left_foot_file && typeof values.left_foot_file === 'string' && (
+              <div className="mt-2 text-sm text-gray-700">
+                <span className="font-medium">Existing Left Foot File: </span>
+                <a
+                  href={`https://your-bucket-name.s3.amazonaws.com/${values.left_foot_file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline break-all"
+                >
+                  {values.left_foot_file.split('/').pop()}
+                </a>
+              </div>
+            )}
 
             {/* ✅ Show existing left foot file if present */}
-
-
-
-
-
           </div>
         )}
 
         {/* Right Foot Upload */}
         {(values.foot_side === 'right_foot_file' || values.foot_side === 'Both') && (
           <div className="w-fit">
-
             <StlFilePicker
               label="Upload file (Right Foot)"
               buttonText="Right Foot"
@@ -1458,21 +1453,20 @@ const Step2 = ({
             )}
             {/* ✅ Show existing right foot file if present */}
 
-{/* ✅ Show existing right foot file name or link */}
-{values.right_foot_file && typeof values.right_foot_file === "string" && (
-  <div className="mt-2 text-sm text-gray-700">
-    <span className="font-medium">Existing Right Foot File: </span>
-    <a
-      href={`https://your-bucket-name.s3.amazonaws.com/${values.right_foot_file}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-600 underline break-all"
-    >
-      {values.right_foot_file.split('/').pop()}
-    </a>
-  </div>
-)}
-
+            {/* ✅ Show existing right foot file name or link */}
+            {!isViewMode && values.right_foot_file && typeof values.right_foot_file === 'string' && (
+              <div className="mt-2 text-sm text-gray-700">
+                <span className="font-medium">Existing Right Foot File: </span>
+                <a
+                  href={`https://your-bucket-name.s3.amazonaws.com/${values.right_foot_file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline break-all"
+                >
+                  {values.right_foot_file.split('/').pop()}
+                </a>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1587,8 +1581,8 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted, isViewMod
   const shouldShowError = (fieldName: string, isRequired = false) => {
     const fieldValue = fieldName.includes('.')
       ? fieldName
-        .split('.')
-        .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+          .split('.')
+          .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
       : values[fieldName];
 
     if (!fieldValue) {
@@ -1597,8 +1591,8 @@ const Step4 = ({ values, handleChange, errors, touched, formSubmitted, isViewMod
     }
     const fieldError = fieldName.includes('.')
       ? fieldName
-        .split('.')
-        .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+          .split('.')
+          .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
       : errors[fieldName];
 
     return !!fieldError && (touched[fieldName] || formSubmitted);
@@ -1690,7 +1684,7 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
   const [modelOpen, setModelOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
-    const   [uploadURL,setUploadURL]= useState('');
+  const [uploadURL, setUploadURL] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -1699,18 +1693,17 @@ export default function BkOrderForm({ item_type }: { item_type: string }): React
     open: false,
     data: null
   });
-const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
+  const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
   const { startPayment } = usePaymentLauncher();
 
-    // 1️⃣ Maintain an array to store uploaded file metadata
-const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
+  // 1️⃣ Maintain an array to store uploaded file metadata
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
 
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalDiscount, setTotalDiscount] = useState(0);
-  const [desgin,setDesgin] = useState(0);
-  const [print,setPrint] = useState(0);
-  const [couponPer, setCouponPer] =useState(0);
-
+  const [desgin, setDesgin] = useState(0);
+  const [print, setPrint] = useState(0);
+  const [couponPer, setCouponPer] = useState(0);
 
   // console.log("totalDiscount",totalDiscount)
   const [showStep1Confirmation, setShowStep1Confirmation] = useState(false);
@@ -1726,8 +1719,6 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const isViewMode = !!(deviceTypeId && orderId && isPaid);
 
   // Add these state variables to your component
-
-
 
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
@@ -1750,14 +1741,13 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
           console.log('Fetched order details response =>', apiData);
           const scanItem = response.data?.scan_items?.[0];
           console.log('scanItem=>', scanItem);
-          const validScanItem = apiData.scan_items?.find(
-  (item:any) => item.left_foot_file || item.right_foot_file
-) || {};
+          const validScanItem =
+            apiData.scan_items?.find((item: any) => item.left_foot_file || item.right_foot_file) ||
+            {};
           let mappedFootSide = '';
-//          if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right';
-// if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left';
-// if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
-
+          //          if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right';
+          // if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left';
+          // if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
 
           if (scanItem?.foot_side === 'Right') mappedFootSide = 'Right_Foot';
           if (scanItem?.foot_side === 'Left') mappedFootSide = 'Left_Foot';
@@ -1765,19 +1755,18 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
           // console.log("Full API response =>", response);
           // console.log("API Keys =>", Object.keys(response.data));
 
-          // console.log("Fetched order details =>", response.data);
+          console.log('Fetched order details =>', response.data);
 
           // // 👇 If you want to check specific nested keys
           // console.log("value_c_details =>", response.data?.value_c_details);
           // console.log("socket_design_details =>", response.data?.socket_design_details);
 
           const transformedData = {
-
             ...initialValues,
             ...response.data,
-            left_foot_file: validScanItem.left_foot_file || apiData.left_foot_file || "",
-  right_foot_file: validScanItem.right_foot_file || apiData.right_foot_file || "",
-  foot_side: validScanItem.foot_side || apiData.foot_side || "",
+            left_foot_file: validScanItem.left_foot_file || apiData.left_foot_file || '',
+            right_foot_file: validScanItem.right_foot_file || apiData.right_foot_file || '',
+            foot_side: validScanItem.foot_side || apiData.foot_side || '',
 
             value_c_details:
               response.data?.value_c_details?.map((item: { gap: any; value: any }) => ({
@@ -1815,186 +1804,172 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
           setIsInitialDataLoaded(false); // Ensure it’s false on failure
         });
     }
+    console.warn('Effect triggered for orderId/deviceTypeId change', orderDetails);
   }, [orderId, deviceTypeId]);
-// useEffect(() => {
-//   if (orderId && deviceTypeId) {
-//     getOrderDetails({
-//       order_type: deviceTypeId,
-//       order_id: orderId
-//     })
-//       .unwrap()
-//       .then((response) => {
-//         const apiData = response.data;
-//         console.log('Fetched order details response =>', apiData);
+  // useEffect(() => {
+  //   if (orderId && deviceTypeId) {
+  //     getOrderDetails({
+  //       order_type: deviceTypeId,
+  //       order_id: orderId
+  //     })
+  //       .unwrap()
+  //       .then((response) => {
+  //         const apiData = response.data;
+  //         console.log('Fetched order details response =>', apiData);
 
-//         // ✅ Safely find the valid scan item
-//         const validScanItem =
-//           apiData.scan_items?.find(
-//             (item: any) => item.left_foot_file || item.right_foot_file
-//           ) || {};
-// console.log('validScanItem=>', validScanItem);
-//         // ✅ Normalize foot_side value
-//         let mappedFootSide = '';
-//         if (validScanItem?.foot_side === 'Right') mappedFootSide = 'right_foot_file';
-//         if (validScanItem?.foot_side === 'Left') mappedFootSide = 'left_foot_file';
-//         if (validScanItem?.foot_side === 'Both') mappedFootSide = 'Both';
+  //         // ✅ Safely find the valid scan item
+  //         const validScanItem =
+  //           apiData.scan_items?.find(
+  //             (item: any) => item.left_foot_file || item.right_foot_file
+  //           ) || {};
+  // console.log('validScanItem=>', validScanItem);
+  //         // ✅ Normalize foot_side value
+  //         let mappedFootSide = '';
+  //         if (validScanItem?.foot_side === 'Right') mappedFootSide = 'right_foot_file';
+  //         if (validScanItem?.foot_side === 'Left') mappedFootSide = 'left_foot_file';
+  //         if (validScanItem?.foot_side === 'Both') mappedFootSide = 'Both';
 
-//         // ✅ Merge with form values
-//         const transformedData = {
-//           ...initialValues,
-//           ...apiData,
-//           left_foot_file: validScanItem.left_foot_file || apiData.left_foot_file || '',
-//           right_foot_file: validScanItem.right_foot_file || apiData.right_foot_file || '',
-//           foot_side: mappedFootSide || apiData.foot_side || '',
+  //         // ✅ Merge with form values
+  //         const transformedData = {
+  //           ...initialValues,
+  //           ...apiData,
+  //           left_foot_file: validScanItem.left_foot_file || apiData.left_foot_file || '',
+  //           right_foot_file: validScanItem.right_foot_file || apiData.right_foot_file || '',
+  //           foot_side: mappedFootSide || apiData.foot_side || '',
 
-//           value_c_details:
-//             apiData?.value_c_details?.map(
-//               (item: { gap: any; value: any }) => ({
-//                 gap: item.gap || '',
-//                 value: item.value || ''
-//               })
-//             ) || initialValues.value_c_details,
+  //           value_c_details:
+  //             apiData?.value_c_details?.map(
+  //               (item: { gap: any; value: any }) => ({
+  //                 gap: item.gap || '',
+  //                 value: item.value || ''
+  //               })
+  //             ) || initialValues.value_c_details,
 
-//           socket_design_details:
-//             apiData?.socket_design_details?.map(
-//               (item: {
-//                 area: any;
-//                 area_name: any;
-//                 default_mm: any;
-//                 cpo_input_mm: any;
-//               }) => ({
-//                 area: item.area || '',
-//                 area_name: item.area_name || '',
-//                 default_mm: item.default_mm || '',
-//                 cpo_input_mm: item.cpo_input_mm || ''
-//               })
-//             ) || initialValues.socket_design_details
-//         };
+  //           socket_design_details:
+  //             apiData?.socket_design_details?.map(
+  //               (item: {
+  //                 area: any;
+  //                 area_name: any;
+  //                 default_mm: any;
+  //                 cpo_input_mm: any;
+  //               }) => ({
+  //                 area: item.area || '',
+  //                 area_name: item.area_name || '',
+  //                 default_mm: item.default_mm || '',
+  //                 cpo_input_mm: item.cpo_input_mm || ''
+  //               })
+  //             ) || initialValues.socket_design_details
+  //         };
 
-//         console.log('✅ Transformed Data =>', transformedData);
-//         setFormValues(transformedData as any);
+  //         console.log('✅ Transformed Data =>', transformedData);
+  //         setFormValues(transformedData as any);
 
-//         if (apiData.item_code) setSelectedItem(apiData.item_code);
+  //         if (apiData.item_code) setSelectedItem(apiData.item_code);
 
-//         setIsInitialDataLoaded(true);
-//       })
-//       .catch((error) => {
-//         console.error('Failed to load order details:', error);
-//         setIsInitialDataLoaded(false);
-//       });
-//   }
-// }, [orderId, deviceTypeId]);
-
-
-
-
+  //         setIsInitialDataLoaded(true);
+  //       })
+  //       .catch((error) => {
+  //         console.error('Failed to load order details:', error);
+  //         setIsInitialDataLoaded(false);
+  //       });
+  //   }
+  // }, [orderId, deviceTypeId]);
 
   // Add this useEffect to load Razorpay script
 
+  //   useEffect(() => {
+  //   if (orderDetails?.data) {
+  //     const apiData = orderDetails.data;
 
+  //     const validScanItem =
+  //       apiData.scan_items?.find(
+  //         (item: any) => item.left_foot_file || item.right_foot_file
+  //       ) || {};
 
-//   useEffect(() => {
-//   if (orderDetails?.data) {
-//     const apiData = orderDetails.data;
+  //     const mappedFootSide =
+  //       validScanItem?.foot_side === 'Right'
+  //         ? 'right_foot_file'
+  //         : validScanItem?.foot_side === 'Left'
+  //         ? 'left_foot_file'
+  //         : validScanItem?.foot_side === 'Both'
+  //         ? 'Both'
+  //         : '';
 
-//     const validScanItem =
-//       apiData.scan_items?.find(
-//         (item: any) => item.left_foot_file || item.right_foot_file
-//       ) || {};
+  //     const mergedData = {
+  //       ...initialValues,
+  //       ...apiData,
+  //       left_foot_file: validScanItem.left_foot_file || apiData.left_foot_file || '',
+  //       right_foot_file: validScanItem.right_foot_file || apiData.right_foot_file || '',
+  //       foot_side: mappedFootSide || apiData.foot_side || '',
+  //       design_variation:apiData.design_variation || initialValues.design_variation||'',
+  //       value_c_details:
+  //         apiData?.value_c_details?.map((item: any) => ({
+  //           gap: item.gap || '',
+  //           value: item.value || ''
+  //         })) || initialValues.value_c_details,
+  //       socket_design_details:
+  //         apiData?.socket_design_details?.map((item: any) => ({
+  //           area: item.area || '',
+  //           area_name: item.area_name || '',
+  //           default_mm: item.default_mm || '',
+  //           cpo_input_mm: item.cpo_input_mm || ''
+  //         })) || initialValues.socket_design_details
+  //     };
 
-//     const mappedFootSide =
-//       validScanItem?.foot_side === 'Right'
-//         ? 'right_foot_file'
-//         : validScanItem?.foot_side === 'Left'
-//         ? 'left_foot_file'
-//         : validScanItem?.foot_side === 'Both'
-//         ? 'Both'
-//         : '';
+  //     console.log('✅ Final merged data =>', mergedData);
+  //     setFormValues(mergedData);
+  //   }
+  // }, [orderDetails]);
 
-//     const mergedData = {
-//       ...initialValues,
-//       ...apiData,
-//       left_foot_file: validScanItem.left_foot_file || apiData.left_foot_file || '',
-//       right_foot_file: validScanItem.right_foot_file || apiData.right_foot_file || '',
-//       foot_side: mappedFootSide || apiData.foot_side || '',
-//       design_variation:apiData.design_variation || initialValues.design_variation||'',
-//       value_c_details:
-//         apiData?.value_c_details?.map((item: any) => ({
-//           gap: item.gap || '',
-//           value: item.value || ''
-//         })) || initialValues.value_c_details,
-//       socket_design_details:
-//         apiData?.socket_design_details?.map((item: any) => ({
-//           area: item.area || '',
-//           area_name: item.area_name || '',
-//           default_mm: item.default_mm || '',
-//           cpo_input_mm: item.cpo_input_mm || ''
-//         })) || initialValues.socket_design_details
-//     };
+  //
 
-//     console.log('✅ Final merged data =>', mergedData);
-//     setFormValues(mergedData);
-//   }
-// }, [orderDetails]);
+  //
 
+  //
 
-//
-
-
-//
-
-
-//
-
-
-//
-// useEffect(() => {
-//   if (orderDetails?.data) {
-//     console.log('orderDetails.data=>', orderDetails.data);
-//     setFormValues({
-//       ...initialValues,
-//       ...orderDetails.data
-//     });
-//   }
-// }, [orderDetails]);
+  //
+  // useEffect(() => {
+  //   if (orderDetails?.data) {
+  //     console.log('orderDetails.data=>', orderDetails.data);
+  //     setFormValues({
+  //       ...initialValues,
+  //       ...orderDetails.data
+  //     });
+  //   }
+  // }, [orderDetails]);
 
   //
   useEffect(() => {
-  if (orderDetails?.data) {
-    const apiData = orderDetails.data;
+    if (orderDetails?.data) {
+      const apiData = orderDetails.data;
 
-    // ✅ Find the valid scan item (either left or right)
-    const validScanItem =
-      apiData.scan_items?.find(
-        (item:any) => item.left_foot_file || item.right_foot_file
-      ) || {};
+      // ✅ Find the valid scan item (either left or right)
+      const validScanItem =
+        apiData.scan_items?.find((item: any) => item.left_foot_file || item.right_foot_file) || {};
 
-    // ✅ Determine foot side based on scan item
-    const mappedFootSide =
-      validScanItem?.foot_side === "Right"
-        ? "right_foot_file"
-        : validScanItem?.foot_side === "Left"
-        ? "left_foot_file"
-        : validScanItem?.foot_side === "Both"
-        ? "Both"
-        : apiData.foot_side || "";
+      // ✅ Determine foot side based on scan item
+      const mappedFootSide =
+        validScanItem?.foot_side === 'Right'
+          ? 'right_foot_file'
+          : validScanItem?.foot_side === 'Left'
+            ? 'left_foot_file'
+            : validScanItem?.foot_side === 'Both'
+              ? 'Both'
+              : apiData.foot_side || '';
 
-    // ✅ Merge only what’s needed
-    const mergedData = {
-      ...initialValues,
-      ...apiData,
-      left_foot_file:
-        validScanItem.left_foot_file || apiData.left_foot_file || "",
-      right_foot_file:
-        validScanItem.right_foot_file || apiData.right_foot_file || "",
-      foot_side: mappedFootSide
-    };
+      // ✅ Merge only what’s needed
+      const mergedData = {
+        ...initialValues,
+        ...apiData,
+        left_foot_file: validScanItem.left_foot_file || apiData.left_foot_file || '',
+        right_foot_file: validScanItem.right_foot_file || apiData.right_foot_file || '',
+        foot_side: mappedFootSide
+      };
 
-    console.log("✅ Merged data with scan mapping =>", mergedData);
-    setFormValues(mergedData);
-  }
-}, [orderDetails]);
-
+      console.log('✅ Merged data with scan mapping =>', mergedData);
+      setFormValues(mergedData);
+    }
+  }, [orderDetails]);
 
   useEffect(() => {
     const loadRazorpayScript = async () => {
@@ -2076,7 +2051,6 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   //     const createFormDataWithFiles = (basePayload: any) => {
   //       const formData = new FormData();
   //       formData.append('data', JSON.stringify(basePayload));
-
 
   //       const extractAndAppendFiles = (obj: any, prefix: string = '') => {
   //         for (const key in obj) {
@@ -2209,132 +2183,130 @@ const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   //   }
   // };
 
-const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
-  // console.log("📤 Requesting presigned URL for:", file.name);
-  // console.log("📄 Original file type:", file.type); // Debug log
+  const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
+    // console.log("📤 Requesting presigned URL for:", file.name);
+    // console.log("📄 Original file type:", file.type); // Debug log
 
-  try {
-    // ✅ CRITICAL FIX: Force Content-Type for STL files
-    // let contentType = "model/stl";
-    let contentType = "application/octet-stream"; // default fallback
+    try {
+      // ✅ CRITICAL FIX: Force Content-Type for STL files
+      // let contentType = "model/stl";
+      let contentType = 'application/octet-stream'; // default fallback
 
-if (file.name.endsWith(".stl")) {
-  contentType = "model/stl";
-} else if (file.name.endsWith(".mtl")) {
-  contentType = "application/octet-stream"; // MTL is a text file describing materials
-} else if (file.name.endsWith(".ply")) {
-  contentType = "application/octet-stream"; // or "model/ply" if your backend supports it
-}
-else if (file.name.endsWith(".obj")) {
-  contentType = "application/octet-stream"; // OBJ files are text-based
-}
+      if (file.name.endsWith('.stl')) {
+        contentType = 'model/stl';
+      } else if (file.name.endsWith('.mtl')) {
+        contentType = 'application/octet-stream'; // MTL is a text file describing materials
+      } else if (file.name.endsWith('.ply')) {
+        contentType = 'application/octet-stream'; // or "model/ply" if your backend supports it
+      } else if (file.name.endsWith('.obj')) {
+        contentType = 'application/octet-stream'; // OBJ files are text-based
+      }
 
-    // // Handle STL files specifically - browsers often return empty or incorrect MIME type
-    // if (file.name.toLowerCase().endsWith('.stl')) {
-    //   contentType = 'application/octet-stream'; // Standard for STL files
-    //   console.log("🔧 STL file detected, using application/octet-stream");
-    // }
+      // // Handle STL files specifically - browsers often return empty or incorrect MIME type
+      // if (file.name.toLowerCase().endsWith('.stl')) {
+      //   contentType = 'application/octet-stream'; // Standard for STL files
+      //   console.log("🔧 STL file detected, using application/octet-stream");
+      // }
 
-    // // If file.type is empty or generic, use application/octet-stream
-    // if (!contentType || contentType === '' || contentType === 'application/octet-stream') {
-    //   contentType = 'application/octet-stream';
-    //   console.log("🔧 Using application/octet-stream for content type");
-    // }
+      // // If file.type is empty or generic, use application/octet-stream
+      // if (!contentType || contentType === '' || contentType === 'application/octet-stream') {
+      //   contentType = 'application/octet-stream';
+      //   console.log("🔧 Using application/octet-stream for content type");
+      // }
 
-    // Step 1: Get Presigned URL using RTK Query
-    const result = await preSignedUrl({
-      fileName: file.name,
-      fileType: contentType,
-      userId
-    }).unwrap();
+      // Step 1: Get Presigned URL using RTK Query
+      const result = await preSignedUrl({
+        fileName: file.name,
+        fileType: contentType,
+        userId
+      }).unwrap();
 
-    // console.log("📥 Received presigned URL:", result);
+      // console.log("📥 Received presigned URL:", result);
 
+      // @ts-ignore
+      if (!result?.message?.status) {
+        throw new Error('Presigned URL request failed');
+      }
+      //@ts-ignore
+      const uploadUrl = result?.message?.data?.uploadUrl;
+      // setUploadURL(uploadUrl)
+      // console.log("🔗 Upload URL:", uploadUrl);
+      //   @ts-ignore
+      const key = result?.message?.data?.key;
+      // console.log("🆔 S3 Object Key:", key);
+      const uploadUrlStr = String(uploadUrl);
+      const keyStr = String(key);
 
-// @ts-ignore
-    if (!result?.message?.status) {
-      throw new Error("Presigned URL request failed");
-    }
-//@ts-ignore
-    const uploadUrl = result?.message?.data?.uploadUrl;
-    // setUploadURL(uploadUrl)
-    // console.log("🔗 Upload URL:", uploadUrl);
- //   @ts-ignore
-    const key = result?.message?.data?.key;
-    // console.log("🆔 S3 Object Key:", key);
-    const uploadUrlStr = String(uploadUrl);
-const keyStr       = String(key);
+      // Step 2: Upload File to S3
+      const uploadFileToS3 = async (
+        url: string,
+        file: File,
+        onProgress?: (percent: number) => void
+      ) => {
+        return new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('PUT', url);
 
+          // ✅ CRITICAL: Use the exact same Content-Type as presigned URL generation
+          xhr.setRequestHeader('Content-Type', contentType);
+          // console.log(`🎯 Setting Content-Type header to: ${contentType}`);
 
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable && onProgress) {
+              const percent = Math.round((event.loaded / event.total) * 100);
+              onProgress(percent);
+            }
+          };
 
-    // Step 2: Upload File to S3
-    const uploadFileToS3 = async (url: string, file: File, onProgress?: (percent: number) => void) => {
-      return new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", url);
+          xhr.onload = () => {
+            console.log(`📊 Upload response status: ${xhr.status}`);
+            if (xhr.status === 200) {
+              console.log(`✅ Successfully uploaded ${file.name}`);
+              resolve();
+            } else {
+              console.error(`❌ Upload failed with status ${xhr.status}`);
+              console.error('Response headers:', xhr.getAllResponseHeaders());
+              console.error('Response text:', xhr.responseText);
+              reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.responseText}`));
+            }
+          };
 
-        // ✅ CRITICAL: Use the exact same Content-Type as presigned URL generation
-        xhr.setRequestHeader("Content-Type", contentType);
-        // console.log(`🎯 Setting Content-Type header to: ${contentType}`);
+          xhr.onerror = () => {
+            console.error('❌ Network error during upload');
+            reject(new Error('Network error during upload'));
+          };
 
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable && onProgress) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            onProgress(percent);
-          }
-        };
+          console.log(`🚀 Starting upload to S3...`);
+          console.log(`📎 Final Content-Type: ${contentType}`);
+          xhr.send(file);
+        });
+      };
 
-        xhr.onload = () => {
-          console.log(`📊 Upload response status: ${xhr.status}`);
-          if (xhr.status === 200) {
-            console.log(`✅ Successfully uploaded ${file.name}`);
-            resolve();
-          } else {
-            console.error(`❌ Upload failed with status ${xhr.status}`);
-            console.error("Response headers:", xhr.getAllResponseHeaders());
-            console.error("Response text:", xhr.responseText);
-            reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.responseText}`));
-          }
-        };
-
-        xhr.onerror = () => {
-          console.error("❌ Network error during upload");
-          reject(new Error("Network error during upload"));
-        };
-
-        console.log(`🚀 Starting upload to S3...`);
-        console.log(`📎 Final Content-Type: ${contentType}`);
-        xhr.send(file);
+      await uploadFileToS3(uploadUrl, file, (percent) => {
+        console.log(`Uploading ${file.name}: ${percent}%`);
       });
-    };
 
-    await uploadFileToS3(uploadUrl, file, (percent) => {
-      console.log(`Uploading ${file.name}: ${percent}%`);
-    });
+      // Step 3: Return Metadata
+      const fileMeta = {
+        key,
+        size: file.size,
+        type: contentType, // ✅ Use the determined content type
+        originalName: file.name
+      };
+      setUploadURL(fileMeta.key);
+      console.log('📄 File metadata:', fileMeta);
+      // const fullS3Url = `https://addiwse-tech.s3.amazonaws.com/${keyStr}`;
 
-    // Step 3: Return Metadata
-    const fileMeta = {
-      key,
-      size: file.size,
-      type: contentType, // ✅ Use the determined content type
-      originalName: file.name,
-    };
-setUploadURL(fileMeta.key);
-    console.log("📄 File metadata:", fileMeta);
-    // const fullS3Url = `https://addiwse-tech.s3.amazonaws.com/${keyStr}`;
+      setUploadedFiles((prev) => [...prev, fileMeta]);
+      return { ...fileMeta };
+    } catch (error) {
+      console.error('❌ Upload error:', error);
+      throw error;
+    }
+  };
 
-    setUploadedFiles((prev) => [...prev, fileMeta]);
-    return { ...fileMeta };
-
-  } catch (error) {
-    console.error('❌ Upload error:', error);
-    throw error;
-  }
-};
-
-// Replace your existing handlePayAndPlaceOrder with this
+  // Replace your existing handlePayAndPlaceOrder with this
   const handlePayAndPlaceOrder = async (values: any) => {
-
     setIsPaymentProcessing(true);
     setFormValues(values);
 
@@ -2373,15 +2345,25 @@ setUploadURL(fileMeta.key);
       // 3) map scan_items: prefer uploaded URLs for new File objects otherwise use existing string values
       const scan_items: Record<string, string> = {
         left_foot_file:
-          values.left_foot_file instanceof File ? uploadedUrls[0] || '' : values.left_foot_file || '',
+          values.left_foot_file instanceof File
+            ? uploadedUrls[0] || ''
+            : values.left_foot_file || '',
         right_foot_file:
-          values.right_foot_file instanceof File ? uploadedUrls[1] || '' : values.right_foot_file || '',
+          values.right_foot_file instanceof File
+            ? uploadedUrls[1] || ''
+            : values.right_foot_file || '',
         custom_obj_file_1:
-          values.custom_obj_file_1 instanceof File ? uploadedUrls[2] || '' : values.custom_obj_file_1 || '',
+          values.custom_obj_file_1 instanceof File
+            ? uploadedUrls[2] || ''
+            : values.custom_obj_file_1 || '',
         custom_mtl_file_2:
-          values.custom_mtl_file_2 instanceof File ? uploadedUrls[3] || '' : values.custom_mtl_file_2 || '',
+          values.custom_mtl_file_2 instanceof File
+            ? uploadedUrls[3] || ''
+            : values.custom_mtl_file_2 || '',
         custom_jpg_file_3:
-          values.custom_jpg_file_3 instanceof File ? uploadedUrls[4] || '' : values.custom_jpg_file_3 || ''
+          values.custom_jpg_file_3 instanceof File
+            ? uploadedUrls[4] || ''
+            : values.custom_jpg_file_3 || ''
       };
 
       // additionally map by filename heuristics (if any uploaded files are out of order)
@@ -2423,7 +2405,14 @@ setUploadURL(fileMeta.key);
       // 5) Create order on server (so backend returns an order/sales id used by payment gateway)
       const createRes: any = await createOrder(finalFormData).unwrap();
       console.log('createOrder response:', createRes);
-      const frontendTotal = createRes?.frontend_values?.total_price || createRes?.data?.frontend_values?.total_price ||createRes?.message?.frontend_values?.total_price || createRes?.data?.total_price || createRes?.data?.message?.frontend_values?.total_price || createRes?.message?.data?.frontend_values?.total_price || null;
+      const frontendTotal =
+        createRes?.frontend_values?.total_price ||
+        createRes?.data?.frontend_values?.total_price ||
+        createRes?.message?.frontend_values?.total_price ||
+        createRes?.data?.total_price ||
+        createRes?.data?.message?.frontend_values?.total_price ||
+        createRes?.message?.data?.frontend_values?.total_price ||
+        null;
 
       const amountNumber = Number(String(frontendTotal ?? 0).replace(/,/g, ''));
 
@@ -2448,189 +2437,185 @@ setUploadURL(fileMeta.key);
       // 6) Launch payment using your reusable launcher (usePaymentLauncher / startPayment)
       // Assumes you have `startPayment` in scope (from the hook). Adapt provider if needed (e.g. 'RAZORPAY' or 'HDFC').
       await startPayment(salesId);
-
     } catch (error: any) {
       console.error('prepare/order/payment error:', error);
-      const message = error?.data?.message || error?.message || 'Failed to prepare payment. Please try again.';
+      const message =
+        error?.data?.message || error?.message || 'Failed to prepare payment. Please try again.';
       toast.error(message);
       setIsPaymentProcessing(false);
     }
   };
 
-
-// 3️⃣ Modified handlePayAndPlaceOrder
-/*
-const handlePayAndPlaceOrder = async (values: any) => {
-
-  if (!razorpayKey || !isRazorpayLoaded) {
-    toast.error('Payment gateway is not available. Please try again.');
-    return;
+  // 3️⃣ Modified handlePayAndPlaceOrder
+  /*
+  const handlePayAndPlaceOrder = async (values: any) => {
+  
+    if (!razorpayKey || !isRazorpayLoaded) {
+      toast.error('Payment gateway is not available. Please try again.');
+      return;
+    }
+    setIsPaymentProcessing(true);
+    setFormValues(values);
+  
+    try {
+      // Prepare order data
+      const payload = {
+        item_type: 'BK',
+        socket_type: values.socket_type,
+        design_variation: values.design_variation,
+        activity_level: values.activity_level,
+        model_name: values.model_name,
+        stump_length: values.stump_length,
+        weight: values.weight,
+      };
+      const itemCode = await getItemCodeByValues(payload);
+      setSelectedItem(itemCode);
+  
+      // 🔥 1) UPLOAD FILES TO S3 FIRST (if present)
+      const filesToUpload: File[] = [];
+      if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+      if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+      if (values.custom_obj_file_1 instanceof File) filesToUpload.push(values.custom_obj_file_1);
+      if (values.custom_mtl_file_2 instanceof File) filesToUpload.push(values.custom_mtl_file_2);
+          if (values.custom_jpg_file_3 instanceof File) filesToUpload.push(values.custom_jpg_file_3);
+  
+  
+  
+  
+      const uploadedMetadata: any[] = [];
+  const uploadedUrls: string[] = [];
+      // for (const f of filesToUpload) {
+      //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+      //   uploadedMetadata.push(meta);
+      // }
+  for (const f of filesToUpload) {
+    const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+    uploadedMetadata.push(meta);
+    uploadedUrls.push(meta.key); // ✅ collect URLs
+  
   }
-  setIsPaymentProcessing(true);
-  setFormValues(values);
-
-  try {
-    // Prepare order data
-    const payload = {
-      item_type: 'BK',
-      socket_type: values.socket_type,
-      design_variation: values.design_variation,
-      activity_level: values.activity_level,
-      model_name: values.model_name,
-      stump_length: values.stump_length,
-      weight: values.weight,
-    };
-    const itemCode = await getItemCodeByValues(payload);
-    setSelectedItem(itemCode);
-
-    // 🔥 1) UPLOAD FILES TO S3 FIRST (if present)
-    const filesToUpload: File[] = [];
-    if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
-    if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
-    if (values.custom_obj_file_1 instanceof File) filesToUpload.push(values.custom_obj_file_1);
-    if (values.custom_mtl_file_2 instanceof File) filesToUpload.push(values.custom_mtl_file_2);
-        if (values.custom_jpg_file_3 instanceof File) filesToUpload.push(values.custom_jpg_file_3);
-
-
-
-
-    const uploadedMetadata: any[] = [];
-const uploadedUrls: string[] = [];
-    // for (const f of filesToUpload) {
-    //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-    //   uploadedMetadata.push(meta);
-    // }
-for (const f of filesToUpload) {
-  const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-  uploadedMetadata.push(meta);
-  uploadedUrls.push(meta.key); // ✅ collect URLs
-
-}
-console.log("🧾 Uploaded Metadata:", uploadedMetadata);
-
-    // 🔥 2) ENCODE METADATA AS BASE64
-    const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
-// ✅ Dynamic scan item mapping
-// Assuming your Formik values have separate fields for left/right
-const scan_items = {
-  left_foot_file: values.left_foot_file instanceof File ? uploadedUrls[0] : values.left_foot_file || "",
-  right_foot_file: values.right_foot_file instanceof File ? uploadedUrls[1] : values.right_foot_file || "",
-  custom_obj_file_1: values.custom_obj_file_1 instanceof File ? uploadedUrls[2] : values.custom_obj_file_1 || "",
-  custom_mtl_file_2: values.custom_mtl_file_2 instanceof File ? uploadedUrls[3] : values.custom_mtl_file_2 || "",
-  custom_jpg_file_3: values.custom_jpg_file_3 instanceof File ? uploadedUrls[4] : values.custom_jpg_file_3 || ""
-};
-// console.log(" scan_items before mapping:", scan_items);
-
-// ✅ Make sure to use filesToUpload, not uploadedFiles
-filesToUpload.forEach((file, index) => {
-  const url = uploadedUrls[index];
-  const name = file.name.toLowerCase();
-
-  if (name.includes("left")) {
-    scan_items.left_foot_file = url;
-  } else if (name.includes("right")) {
-    scan_items.right_foot_file = url;
-  } else if (name.endsWith(".obj")) {
-    scan_items.custom_obj_file_1 = url;
-  } else if (name.endsWith(".mtl")) {
-    scan_items.custom_mtl_file_2 = url;
-  } else if (/\.(jpg|jpeg|png)$/.test(name)) {
-    scan_items.custom_jpg_file_3 = url;
-  }
-});
-
-console.log(" scan_items mapped:", scan_items);
-
-    // Build final order payload
-    const orderPayload = {
-      item_type: 'BK',
-      customer: user?.customer_id,
-      order_details: { ...values },
-      item_code: itemCode,
-      // uploaded_files: encodedFiles, // ✅ only sending encoded metadata
-    //    scan_items: {
-    //   left_foot_file: uploadedUrls[0] || "",
-    //   right_foot_file: uploadedUrls[1] || "",
-    //   custom_obj_file_1: uploadedUrls[2] || "",
-    //   custom_mtl_file_2: uploadedUrls[3] || "",
-    //   custom_jpg_file_3: uploadedUrls[4] || ""
-    // },
-    scan_items,
-      addicoins: parseInt(values.addicoins),
-      totalPrice: totalPrice,
-      print,
-      design: desgin,
-      coupon_per: couponPer,
-      discount_amount: totalDiscount,
-      // uploadURL: uploadedUrls[0] || "",
-    };
-
-    // Configure Razorpay
-    const amountInPaise = 100000;
-    const options = {
-      key: razorpayKey,
-      amount: amountInPaise.toString(),
-      currency: 'INR',
-      name: 'Addiwise Company',
-      description: `Payment for BK Order`,
-      handler: async function (response: any) {
-        try {
-          const finalOrderPayload = {
-            ...orderPayload,
-            custom_payment_reference_id: response.razorpay_payment_id,
-          };
-
-          // Use FormData but without files — only data
-          const finalFormData = new FormData();
-          finalFormData.append("data", JSON.stringify(finalOrderPayload));
-
-          console.log("📦 Final Payload:", finalOrderPayload);
-
-          const orderResponse: any = await createOrder(finalFormData).unwrap();
-
-          if (orderResponse?.message?.status === 'success') {
-            toast.success('Payment successful! Order created successfully.');
-            setSelectedItem('');
+  console.log("🧾 Uploaded Metadata:", uploadedMetadata);
+  
+      // 🔥 2) ENCODE METADATA AS BASE64
+      const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
+  // ✅ Dynamic scan item mapping
+  // Assuming your Formik values have separate fields for left/right
+  const scan_items = {
+    left_foot_file: values.left_foot_file instanceof File ? uploadedUrls[0] : values.left_foot_file || "",
+    right_foot_file: values.right_foot_file instanceof File ? uploadedUrls[1] : values.right_foot_file || "",
+    custom_obj_file_1: values.custom_obj_file_1 instanceof File ? uploadedUrls[2] : values.custom_obj_file_1 || "",
+    custom_mtl_file_2: values.custom_mtl_file_2 instanceof File ? uploadedUrls[3] : values.custom_mtl_file_2 || "",
+    custom_jpg_file_3: values.custom_jpg_file_3 instanceof File ? uploadedUrls[4] : values.custom_jpg_file_3 || ""
+  };
+  // console.log(" scan_items before mapping:", scan_items);
+  
+  // ✅ Make sure to use filesToUpload, not uploadedFiles
+  filesToUpload.forEach((file, index) => {
+    const url = uploadedUrls[index];
+    const name = file.name.toLowerCase();
+  
+    if (name.includes("left")) {
+      scan_items.left_foot_file = url;
+    } else if (name.includes("right")) {
+      scan_items.right_foot_file = url;
+    } else if (name.endsWith(".obj")) {
+      scan_items.custom_obj_file_1 = url;
+    } else if (name.endsWith(".mtl")) {
+      scan_items.custom_mtl_file_2 = url;
+    } else if (/\.(jpg|jpeg|png)$/.test(name)) {
+      scan_items.custom_jpg_file_3 = url;
+    }
+  });
+  
+  console.log(" scan_items mapped:", scan_items);
+  
+      // Build final order payload
+      const orderPayload = {
+        item_type: 'BK',
+        customer: user?.customer_id,
+        order_details: { ...values },
+        item_code: itemCode,
+        // uploaded_files: encodedFiles, // ✅ only sending encoded metadata
+      //    scan_items: {
+      //   left_foot_file: uploadedUrls[0] || "",
+      //   right_foot_file: uploadedUrls[1] || "",
+      //   custom_obj_file_1: uploadedUrls[2] || "",
+      //   custom_mtl_file_2: uploadedUrls[3] || "",
+      //   custom_jpg_file_3: uploadedUrls[4] || ""
+      // },
+      scan_items,
+        addicoins: parseInt(values.addicoins),
+        totalPrice: totalPrice,
+        print,
+        design: desgin,
+        coupon_per: couponPer,
+        discount_amount: totalDiscount,
+        // uploadURL: uploadedUrls[0] || "",
+      };
+  
+      // Configure Razorpay
+      const amountInPaise = 100000;
+      const options = {
+        key: razorpayKey,
+        amount: amountInPaise.toString(),
+        currency: 'INR',
+        name: 'Addiwise Company',
+        description: `Payment for BK Order`,
+        handler: async function (response: any) {
+          try {
+            const finalOrderPayload = {
+              ...orderPayload,
+              custom_payment_reference_id: response.razorpay_payment_id,
+            };
+  
+            // Use FormData but without files — only data
+            const finalFormData = new FormData();
+            finalFormData.append("data", JSON.stringify(finalOrderPayload));
+  
+            console.log("📦 Final Payload:", finalOrderPayload);
+  
+            const orderResponse: any = await createOrder(finalFormData).unwrap();
+  
+            if (orderResponse?.message?.status === 'success') {
+              toast.success('Payment successful! Order created successfully.');
+              setSelectedItem('');
+              setIsPaymentProcessing(false);
+              setFormDisable(true);
+              router.push('/orders');
+            } else {
+              throw new Error(orderResponse?.message?.message || 'Order creation failed');
+            }
+          } catch (orderError) {
+            console.error('Order creation error:', orderError);
+            toast.error('Order creation failed.');
             setIsPaymentProcessing(false);
-            setFormDisable(true);
-            router.push('/orders');
-          } else {
-            throw new Error(orderResponse?.message?.message || 'Order creation failed');
           }
-        } catch (orderError) {
-          console.error('Order creation error:', orderError);
-          toast.error('Order creation failed.');
-          setIsPaymentProcessing(false);
-        }
-      },
-      theme: { color: '#3399cc' },
-      modal: {
-        ondismiss: () => {
-          setIsPaymentProcessing(false);
-          toast.info('Payment cancelled');
         },
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.on('payment.failed', function (response: any) {
+        theme: { color: '#3399cc' },
+        modal: {
+          ondismiss: () => {
+            setIsPaymentProcessing(false);
+            toast.info('Payment cancelled');
+          },
+        },
+      };
+  
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+        setIsPaymentProcessing(false);
+        toast.error(`Payment failed: ${response.error.description}`);
+      });
+      rzp.open();
+  
+    } catch (error) {
+      console.error('', error);
       setIsPaymentProcessing(false);
-      toast.error(`Payment failed: ${response.error.description}`);
-    });
-    rzp.open();
+      toast.error('Failed to prepare payment. Please try again.');
+    }
+  };
+  */
 
-  } catch (error) {
-    console.error('', error);
-    setIsPaymentProcessing(false);
-    toast.error('Failed to prepare payment. Please try again.');
-  }
-};
-*/
-
-
-
-
-const handleConfirmOrder = () => {
+  const handleConfirmOrder = () => {
     const payload: any = {};
     payload.item_type = 'BK';
     payload.customer = user?.customer_id;
@@ -2639,260 +2624,257 @@ const handleConfirmOrder = () => {
     createOrder(payload);
   };
 
-//   const OnSubmit = async (values: any) => {
-//     setFormValues(values);
-//     const payload = {
-//       item_type: 'BK',
-//       socket_type: values.socket_type,
-//       design_variation: values.design_variation,
-//       activity_level: values.activity_level,
-//       model_name: values.model_name,
-//       stump_length: values.stump_length,
-//       weight: values.weight
-//     };
-//     const itemCode = await getItemCodeByValues(payload);
-//     setSelectedItem(itemCode);
-//  const filesToUpload: File[] = [];
-//     if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
-//     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
-//     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
+  //   const OnSubmit = async (values: any) => {
+  //     setFormValues(values);
+  //     const payload = {
+  //       item_type: 'BK',
+  //       socket_type: values.socket_type,
+  //       design_variation: values.design_variation,
+  //       activity_level: values.activity_level,
+  //       model_name: values.model_name,
+  //       stump_length: values.stump_length,
+  //       weight: values.weight
+  //     };
+  //     const itemCode = await getItemCodeByValues(payload);
+  //     setSelectedItem(itemCode);
+  //  const filesToUpload: File[] = [];
+  //     if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+  //     if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+  //     if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
 
-//     // const uploadedMetadata: any[] = [];
-//     // for (const f of filesToUpload) {
-//     //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-//     //   uploadedMetadata.push(meta);
-//     // }
-// const uploadedMetadata: any[] = [];
-// const uploadedUrls: string[] = [];
-// for (const f of filesToUpload) {
-//   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-//   uploadedMetadata.push(meta);
-//   uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
-// }
-//     // 🔥 2) ENCODE METADATA AS BASE64
-//     const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
-//     // Submit the final form
-//     const orderPayload = {
-//       item_type: 'BK',
-//       customer: user?.customer_id,
-//       order_details: {
-//         ...values
-//       },
-//       item_code: itemCode,
-//         uploaded_files: {
-//     left_foot: uploadedUrls[0] || "",
-//     right_foot: uploadedUrls[1] || "",
-//     obj_file: uploadedUrls[2] || ""
-//   },
-//         uploadURL: uploadedUrls[0] || "",
-//       // @ts-ignore
-//       addicoins: parseInt(values.addicoins)
-//     };
-
-//     console.log('Create Order orderPayload:', orderPayload);
-
-//     // Create FormData for multipart/form-data
-//     const formData = new FormData();
-
-//     // Add the main data as JSON string
-//     formData.append('data', JSON.stringify(orderPayload));
-
-//     // Extract and append file uploads
-//     const extractAndAppendFiles = (obj: any, prefix: string = '') => {
-//       for (const key in obj) {
-//         if (obj[key] && typeof obj[key] === 'object') {
-//           if (obj[key] instanceof File) {
-//             // Handle File objects directly
-//             if (key.includes('left_foot') || key.includes('scan_file_left')) {
-//               formData.append('scan_file_left', obj[key]);
-//             } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
-//               formData.append('scan_file_right', obj[key]);
-//             } else if (key.includes('obj_file')) {
-//               formData.append(`obj_file_${key}`, obj[key]);
-//             } else if (key.includes('additional_file')) {
-//               formData.append(`additional_file_${key}`, obj[key]);
-//             } else {
-//               // Default to scan file if not specified
-//               formData.append('scan_file_left', obj[key]);
-//             }
-//           } else if (obj[key].constructor === FileList) {
-//             // Handle FileList objects
-//             Array.from(obj[key]).forEach((file: File, index: number) => {
-//               if (key.includes('left_foot')) {
-//                 formData.append('scan_file_left', file);
-//               } else if (key.includes('right_foot')) {
-//                 formData.append('scan_file_right', file);
-//               } else {
-//                 formData.append(`scan_file_${index}`, file);
-//               }
-//             });
-//           } else if (Array.isArray(obj[key])) {
-//             // Handle arrays (like scan_items)
-//             obj[key].forEach((item: any, index: number) => {
-//               extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
-//             });
-//           } else {
-//             // Recursively check nested objects
-//             extractAndAppendFiles(obj[key], `${prefix}${key}.`);
-//           }
-//         }
-//       }
-//     };
-
-//     // Extract files from the values object
-//     extractAndAppendFiles(values);
-
-//     // Also check for direct file fields in values
-//     if (values.left_foot_file && values.left_foot_file instanceof File) {
-//       formData.append('scan_file_left', values.left_foot_file);
-//     }
-//     if (values.right_foot_file && values.right_foot_file instanceof File) {
-//       formData.append('scan_file_right', values.right_foot_file);
-//     }
-
-//     // Check scan_items for files
-//     if (values.scan_items && Array.isArray(values.scan_items)) {
-//       values.scan_items.forEach((item: any, index: number) => {
-//         if (item.left_foot_file && item.left_foot_file instanceof File) {
-//           formData.append('scan_file_left', item.left_foot_file);
-//         }
-//         if (item.right_foot_file && item.right_foot_file instanceof File) {
-//           formData.append('scan_file_right', item.right_foot_file);
-//         }
-//       });
-//     }
-
-//     try {
-//       const res = await createOrder(formData).unwrap();
-//       console.log('res', res);
-//       // @ts-ignore
-//       if (res?.message?.status === 'success') {
-//         toast.success('Order created successfully');
-//         setSelectedItem('');
-//         setFormValues(initialValues);
-//         router.push('/orders');
-//       } else {
-//         // @ts-ignore
-//         toast.error(` ${res?.message?.message || 'Order creation failed'}`);
-//       }
-//     } catch (err) {
-//       console.error('Mutation error:', err);
-//       toast.error('Server error. Please try again.');
-//     }
-//   };
-
-
-const OnSubmit = async (values: any) => {
-  setFormValues(values);
-
-  // Build base payload
-  const payload = {
-    item_type: 'BK',
-    socket_type: values.socket_type,
-    design_variation: values.design_variation,
-    activity_level: values.activity_level,
-    model_name: values.model_name,
-    stump_length: values.stump_length,
-    weight: values.weight
-  };
-
-  const itemCode = await getItemCodeByValues(payload);
-  setSelectedItem(itemCode);
-
-  // 1️⃣ Upload files to S3
-  const filesToUpload: File[] = [];
-  if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
-  if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
-  if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
-
+  //     // const uploadedMetadata: any[] = [];
+  //     // for (const f of filesToUpload) {
+  //     //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+  //     //   uploadedMetadata.push(meta);
+  //     // }
+  // const uploadedMetadata: any[] = [];
   // const uploadedUrls: string[] = [];
   // for (const f of filesToUpload) {
   //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-  //   uploadedUrls.push(meta.key);
+  //   uploadedMetadata.push(meta);
+  //   uploadedUrls.push(meta.fullS3Url); // ✅ collect URLs
   // }
- const uploadedMetadata: any[] = [];
-const uploadedUrls: string[] = [];
-for (const f of filesToUpload) {
-  const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
-  uploadedMetadata.push(meta);
-  uploadedUrls.push(meta.key); // ✅ collect URLs
+  //     // 🔥 2) ENCODE METADATA AS BASE64
+  //     const encodedFiles = btoa(JSON.stringify(uploadedMetadata));
+  //     // Submit the final form
+  //     const orderPayload = {
+  //       item_type: 'BK',
+  //       customer: user?.customer_id,
+  //       order_details: {
+  //         ...values
+  //       },
+  //       item_code: itemCode,
+  //         uploaded_files: {
+  //     left_foot: uploadedUrls[0] || "",
+  //     right_foot: uploadedUrls[1] || "",
+  //     obj_file: uploadedUrls[2] || ""
+  //   },
+  //         uploadURL: uploadedUrls[0] || "",
+  //       // @ts-ignore
+  //       addicoins: parseInt(values.addicoins)
+  //     };
 
-}
+  //     console.log('Create Order orderPayload:', orderPayload);
 
-const scan_items = {
-  left_foot_file: "",
-  right_foot_file: "",
-  custom_obj_file_1: "",
-  custom_mtl_file_2: "",
-  custom_jpg_file_3: ""
-};
+  //     // Create FormData for multipart/form-data
+  //     const formData = new FormData();
 
-// // ✅ Make sure to use filesToUpload, not uploadedFiles
-filesToUpload.forEach((file, index) => {
-  const url = uploadedUrls[index];
-  const name = file.name.toLowerCase();
+  //     // Add the main data as JSON string
+  //     formData.append('data', JSON.stringify(orderPayload));
 
-  if (name.includes("left")) {
-    scan_items.left_foot_file = url;
-  } else if (name.includes("right")) {
-    scan_items.right_foot_file = url;
-  } else if (name.endsWith(".obj")) {
-    scan_items.custom_obj_file_1 = url;
-  } else if (name.endsWith(".mtl")) {
-    scan_items.custom_mtl_file_2 = url;
-  } else if (/\.(jpg|jpeg|png)$/.test(name)) {
-    scan_items.custom_jpg_file_3 = url;
-  }
-});
+  //     // Extract and append file uploads
+  //     const extractAndAppendFiles = (obj: any, prefix: string = '') => {
+  //       for (const key in obj) {
+  //         if (obj[key] && typeof obj[key] === 'object') {
+  //           if (obj[key] instanceof File) {
+  //             // Handle File objects directly
+  //             if (key.includes('left_foot') || key.includes('scan_file_left')) {
+  //               formData.append('scan_file_left', obj[key]);
+  //             } else if (key.includes('right_foot') || key.includes('scan_file_right')) {
+  //               formData.append('scan_file_right', obj[key]);
+  //             } else if (key.includes('obj_file')) {
+  //               formData.append(`obj_file_${key}`, obj[key]);
+  //             } else if (key.includes('additional_file')) {
+  //               formData.append(`additional_file_${key}`, obj[key]);
+  //             } else {
+  //               // Default to scan file if not specified
+  //               formData.append('scan_file_left', obj[key]);
+  //             }
+  //           } else if (obj[key].constructor === FileList) {
+  //             // Handle FileList objects
+  //             Array.from(obj[key]).forEach((file: File, index: number) => {
+  //               if (key.includes('left_foot')) {
+  //                 formData.append('scan_file_left', file);
+  //               } else if (key.includes('right_foot')) {
+  //                 formData.append('scan_file_right', file);
+  //               } else {
+  //                 formData.append(`scan_file_${index}`, file);
+  //               }
+  //             });
+  //           } else if (Array.isArray(obj[key])) {
+  //             // Handle arrays (like scan_items)
+  //             obj[key].forEach((item: any, index: number) => {
+  //               extractAndAppendFiles(item, `${prefix}${key}[${index}].`);
+  //             });
+  //           } else {
+  //             // Recursively check nested objects
+  //             extractAndAppendFiles(obj[key], `${prefix}${key}.`);
+  //           }
+  //         }
+  //       }
+  //     };
 
-// 2️⃣ Build order payload with URLs instead of files
+  //     // Extract files from the values object
+  //     extractAndAppendFiles(values);
 
-console.log(" scan_items mapped:", scan_items);
+  //     // Also check for direct file fields in values
+  //     if (values.left_foot_file && values.left_foot_file instanceof File) {
+  //       formData.append('scan_file_left', values.left_foot_file);
+  //     }
+  //     if (values.right_foot_file && values.right_foot_file instanceof File) {
+  //       formData.append('scan_file_right', values.right_foot_file);
+  //     }
 
+  //     // Check scan_items for files
+  //     if (values.scan_items && Array.isArray(values.scan_items)) {
+  //       values.scan_items.forEach((item: any, index: number) => {
+  //         if (item.left_foot_file && item.left_foot_file instanceof File) {
+  //           formData.append('scan_file_left', item.left_foot_file);
+  //         }
+  //         if (item.right_foot_file && item.right_foot_file instanceof File) {
+  //           formData.append('scan_file_right', item.right_foot_file);
+  //         }
+  //       });
+  //     }
 
-const orderPayload = {
-    item_type: 'BK',
-    customer: user?.customer_id,
-    order_details: { ...values },
-    item_code: itemCode,
-    // scan_items: {
-    //   left_foot_file: uploadedUrls[0] || "",
-    //   right_foot_file: uploadedUrls[1] || "",
-    //   custom_obj_file_1: uploadedUrls[2] || ""
-    // },
-    // Optional: keep for backward compatibility
-    // uploadURL: uploadedUrls[0] || "",
-    scan_items,
-    // @ts-ignore
-    addicoins: parseInt(values.addicoins)
+  //     try {
+  //       const res = await createOrder(formData).unwrap();
+  //       console.log('res', res);
+  //       // @ts-ignore
+  //       if (res?.message?.status === 'success') {
+  //         toast.success('Order created successfully');
+  //         setSelectedItem('');
+  //         setFormValues(initialValues);
+  //         router.push('/orders');
+  //       } else {
+  //         // @ts-ignore
+  //         toast.error(` ${res?.message?.message || 'Order creation failed'}`);
+  //       }
+  //     } catch (err) {
+  //       console.error('Mutation error:', err);
+  //       toast.error('Server error. Please try again.');
+  //     }
+  //   };
+
+  const OnSubmit = async (values: any) => {
+    setFormValues(values);
+
+    // Build base payload
+    const payload = {
+      item_type: 'BK',
+      socket_type: values.socket_type,
+      design_variation: values.design_variation,
+      activity_level: values.activity_level,
+      model_name: values.model_name,
+      stump_length: values.stump_length,
+      weight: values.weight
+    };
+
+    const itemCode = await getItemCodeByValues(payload);
+    setSelectedItem(itemCode);
+
+    // 1️⃣ Upload files to S3
+    const filesToUpload: File[] = [];
+    if (values.left_foot_file instanceof File) filesToUpload.push(values.left_foot_file);
+    if (values.right_foot_file instanceof File) filesToUpload.push(values.right_foot_file);
+    if (values.obj_file instanceof File) filesToUpload.push(values.obj_file);
+
+    // const uploadedUrls: string[] = [];
+    // for (const f of filesToUpload) {
+    //   const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || "1");
+    //   uploadedUrls.push(meta.key);
+    // }
+    const uploadedMetadata: any[] = [];
+    const uploadedUrls: string[] = [];
+    for (const f of filesToUpload) {
+      const meta = await uploadFileAndStoreMetadata(f, user?.customer_id || '1');
+      uploadedMetadata.push(meta);
+      uploadedUrls.push(meta.key); // ✅ collect URLs
+    }
+
+    const scan_items = {
+      left_foot_file: '',
+      right_foot_file: '',
+      custom_obj_file_1: '',
+      custom_mtl_file_2: '',
+      custom_jpg_file_3: ''
+    };
+
+    // // ✅ Make sure to use filesToUpload, not uploadedFiles
+    filesToUpload.forEach((file, index) => {
+      const url = uploadedUrls[index];
+      const name = file.name.toLowerCase();
+
+      if (name.includes('left')) {
+        scan_items.left_foot_file = url;
+      } else if (name.includes('right')) {
+        scan_items.right_foot_file = url;
+      } else if (name.endsWith('.obj')) {
+        scan_items.custom_obj_file_1 = url;
+      } else if (name.endsWith('.mtl')) {
+        scan_items.custom_mtl_file_2 = url;
+      } else if (/\.(jpg|jpeg|png)$/.test(name)) {
+        scan_items.custom_jpg_file_3 = url;
+      }
+    });
+
+    // 2️⃣ Build order payload with URLs instead of files
+
+    console.log(' scan_items mapped:', scan_items);
+
+    const orderPayload = {
+      item_type: 'BK',
+      customer: user?.customer_id,
+      order_details: { ...values },
+      item_code: itemCode,
+      // scan_items: {
+      //   left_foot_file: uploadedUrls[0] || "",
+      //   right_foot_file: uploadedUrls[1] || "",
+      //   custom_obj_file_1: uploadedUrls[2] || ""
+      // },
+      // Optional: keep for backward compatibility
+      // uploadURL: uploadedUrls[0] || "",
+      scan_items,
+      // @ts-ignore
+      addicoins: parseInt(values.addicoins)
+    };
+
+    console.log('Create Order orderPayload:', orderPayload);
+
+    // 3️⃣ Send only JSON (no raw files)
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(orderPayload));
+
+    try {
+      const res = await createOrder(formData).unwrap();
+      console.log('res', res);
+      // @ts-ignore
+      if (res?.message?.status === 'success') {
+        toast.success('Order created successfully');
+        setSelectedItem('');
+        setFormValues(initialValues);
+        router.push('/orders');
+      } else {
+        // @ts-ignore
+        toast.error(`${res?.message?.message || 'Order creation failed'}`);
+      }
+    } catch (err) {
+      console.error('Mutation error:', err);
+      toast.error('Server error. Please try again.');
+    }
   };
 
-  console.log('Create Order orderPayload:', orderPayload);
-
-  // 3️⃣ Send only JSON (no raw files)
-  const formData = new FormData();
-  formData.append("data", JSON.stringify(orderPayload));
-
-  try {
-    const res = await createOrder(formData).unwrap();
-    console.log("res", res);
-    // @ts-ignore
-    if (res?.message?.status === "success") {
-      toast.success("Order created successfully");
-      setSelectedItem("");
-      setFormValues(initialValues);
-      router.push("/orders");
-    } else {
-      // @ts-ignore
-      toast.error(`${res?.message?.message || "Order creation failed"}`);
-    }
-  } catch (err) {
-    console.error("Mutation error:", err);
-    toast.error("Server error. Please try again.");
-  }
-};
-
-const getItemCodeByValues = async (payload: any) => {
+  const getItemCodeByValues = async (payload: any) => {
     const res: any = await getItem(payload);
     //    const itemCode = res?.data?.item_code;
     //   if (itemCode) {
@@ -3002,9 +2984,9 @@ const getItemCodeByValues = async (payload: any) => {
     setCurrentStep(2);
     setFormSubmitted(false);
   };
-  useEffect(() => { }, [formValues]);
+  useEffect(() => {}, [formValues]);
 
-  useEffect(() => { }, [formValues, isInitialDataLoaded]);
+  useEffect(() => {}, [formValues, isInitialDataLoaded]);
 
   if (orderId && !orderDetails?.data) {
     return <div className="flex justify-center p-8">Loading order data...</div>;
@@ -3049,165 +3031,177 @@ const getItemCodeByValues = async (payload: any) => {
           isValid
         }) => (
           <div className="flex flex-col gap-6">
-            <fieldset disabled={isReadOnly} className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}>
-
-            <WatchFieldReset />
-            {/* Socket Type Dialog */}
-            <SocketTypeDialog
-              open={socketTypeDialog.open}
-              onOpenChange={(open) => setSocketTypeDialog((prev) => ({ ...prev, open }))}
-              data={socketTypeDialog.data}
-            />
-            {/* Step indicator */}
-            <div className="flex justify-center mb-8">
-              <div className="flex items-center gap-2">
-                {[
-                  { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
-                  { step: 2, name: 'Scan', icon: '📁' },
-                  { step: 3, name: 'Locking Mechanism', icon: '🔒' },
-                  { step: 4, name: 'Modifications', icon: '✏️' },
-                  { step: 5, name: 'Finish', icon: '🎨' }
-                ].map(({ step, name, icon }) => (
-                  <React.Fragment key={step}>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const errors = await validateCurrentStep(values);
-                        if (Object.keys(errors).length === 0 || step < currentStep) {
-                          setCurrentStep(step);
-                          setFormSubmitted(false);
-                        } else {
-                          setErrors(errors);
-                          setFormSubmitted(true);
-                        }
-                      }}
-                      className="flex flex-col items-center gap-1"
-                    >
-                      <div
-                        className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${currentStep === step
-                            ? 'bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4'
-                            : completedSteps.includes(step)
-                              ? 'bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4'
-                              : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4'
-                          } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+            <fieldset
+              disabled={isReadOnly}
+              className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}
+            >
+              <WatchFieldReset />
+              {/* Socket Type Dialog */}
+              <SocketTypeDialog
+                open={socketTypeDialog.open}
+                onOpenChange={(open) => setSocketTypeDialog((prev) => ({ ...prev, open }))}
+                data={socketTypeDialog.data}
+              />
+              {/* Step indicator */}
+              <div className="flex justify-center mb-8">
+                <div className="flex items-center gap-2">
+                  {[
+                    { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
+                    { step: 2, name: 'Scan', icon: '📁' },
+                    { step: 3, name: 'Locking Mechanism', icon: '🔒' },
+                    { step: 4, name: 'Modifications', icon: '✏️' },
+                    { step: 5, name: 'Finish', icon: '🎨' }
+                  ].map(({ step, name, icon }) => (
+                    <React.Fragment key={step}>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const errors = await validateCurrentStep(values);
+                          if (Object.keys(errors).length === 0 || step < currentStep) {
+                            setCurrentStep(step);
+                            setFormSubmitted(false);
+                          } else {
+                            setErrors(errors);
+                            setFormSubmitted(true);
+                          }
+                        }}
+                        className="flex flex-col items-center gap-1"
                       >
-                        <span className="flex items-center gap-2">
-                          {currentStep === step && <></>}
-                          {completedSteps.includes(step) && !(currentStep === step) && (
-                            <svg
-                              className="w-3 h-3 text-gray-500 flex-shrink-0"
-                              fill="none"
+                        <div
+                          className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${
+                            currentStep === step
+                              ? 'bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4'
+                              : completedSteps.includes(step)
+                                ? 'bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4'
+                                : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4'
+                          } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                        >
+                          <span className="flex items-center gap-2">
+                            {currentStep === step && <></>}
+                            {completedSteps.includes(step) && !(currentStep === step) && (
+                              <svg
+                                className="w-3 h-3 text-gray-500 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                            <span className="whitespace-nowrap">{name}</span>
+                          </span>
+                        </div>
+                      </button>
+                      {step < 5 && (
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                            <path
+                              d="M13 5l7 7-7 7M5 5l7 7-7 7"
                               stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          )}
-                          <span className="whitespace-nowrap">{name}</span>
-                        </span>
-                      </div>
-                    </button>
-                    {step < 5 && (
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                          <path
-                            d="M13 5l7 7-7 7M5 5l7 7-7 7"
-                            stroke="currentColor"
-                            strokeWidth={1.5}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`transition-all duration-500 ${completedSteps.includes(step) ? 'stroke-primary' : 'stroke-gray-300'
+                              strokeWidth={1.5}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className={`transition-all duration-500 ${
+                                completedSteps.includes(step) ? 'stroke-primary' : 'stroke-gray-300'
                               }`}
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </React.Fragment>
-                ))}
+                            />
+                          </svg>
+                        </div>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {currentStep === 1 && (
-              <Step1
-                values={values}
-                handleChange={handleChange}
-                errors={errors}
-                touched={touched}
-                setFieldValue={setFieldValue}
-                FORM_OPTIONS={FORM_OPTIONS}
-                formSubmitted={formSubmitted}
-                setSocketTypeDialog={setSocketTypeDialog}
-                isViewMode={isViewMode}
-              />
-            )}
-            {currentStep === 2 && (
-              <Step2
-                values={values}
-                handleChange={handleChange}
-                errors={errors}
-                touched={touched}
-                setFieldValue={setFieldValue}
-                setErrors={setErrors} // Add this line
-                FORM_OPTIONS={FORM_OPTIONS}
-                formSubmitted={formSubmitted}
-                isViewMode={isViewMode}
-              />
-            )}
-            {currentStep === 3 && (
-              <Step3
-                values={values}
-                handleChange={handleChange}
-                errors={errors}
-                touched={touched}
-                setFieldValue={setFieldValue}
-                FORM_OPTIONS={FORM_OPTIONS}
-                formSubmitted={formSubmitted}
-                isViewMode={isViewMode}
-              />
-            )}
-            {currentStep === 4 && (
-              <Step4
-                values={values}
-                handleChange={handleChange}
-                errors={errors}
-                touched={touched}
-                setFieldValue={setFieldValue}
-                FORM_OPTIONS={FORM_OPTIONS}
-                formSubmitted={formSubmitted}
-                isViewMode={isViewMode}
-              />
-            )}
-            {currentStep === 5 && (
-              <Step5
-                values={values}
-                handleChange={handleChange}
-                errors={errors}
-                touched={touched}
-                setFieldValue={setFieldValue}
-                FORM_OPTIONS={FORM_OPTIONS}
-                formSubmitted={formSubmitted}
-                selectedItem={selectedItem}
-                currentStep={currentStep}
-                isActiveStep={currentStep === 5}
-                setEstimateConform={setEstimateConform}
-                user={user}
-                isViewMode={isViewMode}
-                setTotalDiscount={setTotalDiscount}
-                setDesgin={setDesgin}
-                setPrint={setPrint}
-                setCouponPer={setCouponPer}
-
-                setTotalPrice={setTotalPrice}
-              />
-            )}
+              {currentStep === 1 && (
+                <Step1
+                  values={values}
+                  handleChange={handleChange}
+                  errors={errors}
+                  touched={touched}
+                  setFieldValue={setFieldValue}
+                  FORM_OPTIONS={FORM_OPTIONS}
+                  formSubmitted={formSubmitted}
+                  setSocketTypeDialog={setSocketTypeDialog}
+                  isViewMode={isViewMode}
+                />
+              )}
+              {currentStep === 2 && (
+                <Step2
+                  values={values}
+                  handleChange={handleChange}
+                  errors={errors}
+                  touched={touched}
+                  setFieldValue={setFieldValue}
+                  setErrors={setErrors} // Add this line
+                  FORM_OPTIONS={FORM_OPTIONS}
+                  formSubmitted={formSubmitted}
+                  isViewMode={isViewMode}
+                />
+              )}
+              {currentStep === 3 && (
+                <Step3
+                  values={values}
+                  handleChange={handleChange}
+                  errors={errors}
+                  touched={touched}
+                  setFieldValue={setFieldValue}
+                  FORM_OPTIONS={FORM_OPTIONS}
+                  formSubmitted={formSubmitted}
+                  isViewMode={isViewMode}
+                />
+              )}
+              {currentStep === 4 && (
+                <Step4
+                  values={values}
+                  handleChange={handleChange}
+                  errors={errors}
+                  touched={touched}
+                  setFieldValue={setFieldValue}
+                  FORM_OPTIONS={FORM_OPTIONS}
+                  formSubmitted={formSubmitted}
+                  isViewMode={isViewMode}
+                />
+              )}
+              {currentStep === 5 && (
+                <Step5
+                  values={values}
+                  handleChange={handleChange}
+                  errors={errors}
+                  touched={touched}
+                  setFieldValue={setFieldValue}
+                  FORM_OPTIONS={FORM_OPTIONS}
+                  formSubmitted={formSubmitted}
+                  selectedItem={selectedItem}
+                  currentStep={currentStep}
+                  isActiveStep={currentStep === 5}
+                  setEstimateConform={setEstimateConform}
+                  user={user}
+                  isViewMode={isViewMode}
+                  setTotalDiscount={setTotalDiscount}
+                  setDesgin={setDesgin}
+                  setPrint={setPrint}
+                  setCouponPer={setCouponPer}
+                  setTotalPrice={setTotalPrice}
+                />
+              )}
             </fieldset>
 
+            {isReadOnly && orderDetails?.data && currentStep===2 && (
+              <UploadedFilesPanel
+                leftFootFile={orderDetails.data.scan_items?.[0]?.left_foot_file}
+                rightFootFile={orderDetails.data.scan_items?.[0]?.right_foot_file}
+                additionalFile1={orderDetails.data.custom_additional_file_1}
+                additionalFile2={orderDetails.data.custom_additional_file_2}
+                driveLink={orderDetails.data.custom_upload_link_with_photos}
+              />
+            )}
             {/* Navigation buttons */}
             <div className="sticky bottom-4 left-0 flex justify-between bg-white p-2 rounded-lg shadow-md">
               <div>
@@ -3257,11 +3251,7 @@ const getItemCodeByValues = async (payload: any) => {
                         <Button
                           className="shadow-2xl"
                           onClick={() => handlePayAndPlaceOrder(values)}
-                          disabled={
-                            !estimateConform ||
-                            isOrderCreating ||
-                            isPaymentProcessing
-                          }
+                          disabled={!estimateConform || isOrderCreating || isPaymentProcessing}
                         >
                           {isPaymentProcessing ? 'Processing Payment...' : 'Pay & Place Order'}
                         </Button>
@@ -3282,12 +3272,15 @@ const getItemCodeByValues = async (payload: any) => {
             {/* If read-only, show an informational bar and disable submit/payment controls */}
             {isReadOnly && (
               <div className="mt-4 p-3 rounded bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
-                This form is opened in **read-only** mode from Orders. Editing and payment are disabled.
+                This form is opened in **read-only** mode from Orders. Editing and payment are
+                disabled.
               </div>
             )}
           </div>
         )}
       </Formik>
+
+
       {/* Confirmation dialog after Step 1 */}
       <ConfirmOrderDialog
         open={showStep1Confirmation}
