@@ -100,6 +100,8 @@ export default function Orders(): React.JSX.Element {
   // }, [data, pageSize]);
 
   const getOrderType = (order: Order): string => order.device_type || order.order_type || 'Unknown';
+  const [showDesignSteps, setShowDesignSteps] = useState(false);
+
 
   // ✅ Payment handler using usePaymentLauncher
   const handlePayment = async (order: Order) => {
@@ -252,25 +254,41 @@ export default function Orders(): React.JSX.Element {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => {
-        const order = row.original;
+        // const order = row.original;
         // console.log('Order for Actions:', order);
+       //  const isInsoleOrder = order.device_type === 'Insole Orders';
+       // // added to disable design button for non insole orders
+       //  const canDesign =
+       //    isInsoleOrder &&
+       //    (
+       //      order.status === 'Paid' ||
+       //      order.order_value === 0 ||
+       //      order.custom_payment_reference_id
+       //    );
+       //  // end of added
+       //  const isDisabled =
+       //    order.status === 'Completed' || order.status === 'Paid' || order.order_value === 0;
+       //
+        const order: Order = row.original;
+
+        const isPaid = order.status === 'Paid';
         const isInsoleOrder = order.device_type === 'Insole Orders';
-       // added to disable design button for non insole orders
-        const canDesign =
-          isInsoleOrder &&
-          (
-            order.status === 'Paid' ||
-            order.order_value === 0 ||
-            order.custom_payment_reference_id
-          );
-        // end of added
-        const isDisabled =
-          order.status === 'Completed' || order.status === 'Paid' || order.order_value === 0;
+
+        /* ---------------------------------- */
+        /* Button enable / disable states     */
+        /* ---------------------------------- */
+
+// PAY: allowed only if NOT paid
+        const canPay = !isPaid;
+
+// DESIGN: allowed only for PAID insole orders
+        const canDesign = isInsoleOrder && isPaid;
+
         return (
           <div className="flex gap-2 items-center">
             <Button
               size="sm"
-              disabled={isDisabled || isPaymentLoading}
+              disabled={!canPay || isPaymentLoading}
               className="bg-primary hover:bg-primary/90 text-white shadow-md"
               onClick={() => handlePayment(order)}
             >

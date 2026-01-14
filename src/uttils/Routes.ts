@@ -1,5 +1,6 @@
-import { LayoutDashboardIcon, LayoutList, Network, Package, ReceiptText } from 'lucide-react';
+import { LayoutDashboardIcon, LayoutList, Network, Package, ReceiptText,Rotate3d} from 'lucide-react';
 import React from 'react';
+
 
 export interface ROUTE_INTERFACE {
   path: string;
@@ -39,6 +40,12 @@ export const ROUTES: ROUTE_INTERFACE[] = [
     name: 'Transcations',
     icon: ReceiptText,
     roles: ['admin']
-  }
+  },
+  {
+    name: 'Wiky Sessions',
+    path: '/wiky-sessions',
+    icon: Rotate3d,
+    roles: ['admin'],
+  },
 
 ];
