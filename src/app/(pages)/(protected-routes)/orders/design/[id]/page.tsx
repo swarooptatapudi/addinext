@@ -47,6 +47,7 @@ type WikyCaptureResult = {
 
 export default function DesignWorkflowPage() {
   const { id } = useParams<{ id: string }>();
+
   const router = useRouter();
 
   const [data, setData] = useState<DesignWorkflowResponse | null>(null);
@@ -64,6 +65,7 @@ export default function DesignWorkflowPage() {
 
   /* Load design workflow context */
   useEffect(() => {
+    console.error('Fetching design workflow for order ID:', id);
     fetch('/api/method/addiwise.apis.wiky_scan.wiky_workflow.get_design_workflow', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -105,7 +107,7 @@ export default function DesignWorkflowPage() {
 
       // 2️⃣ Process files (rename + zip + upload)
       const res = await fetch(
-        '/api/method/addiwise.apis.wiky_scan.wiky_workflow.process_wiky_files',
+        '/api/method/addiwise.apis.wiky_scan.wiky_utils.process_wiky_files',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
