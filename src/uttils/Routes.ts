@@ -42,8 +42,8 @@ export const ROUTES: ROUTE_INTERFACE[] = [
     roles: ['admin']
   },
   {
-    name: 'Wiky Sessions',
-    path: '/wiky-sessions',
+    name: 'Design Sessions',
+    path: '/design-sessions',
     icon: Rotate3d,
     roles: ['admin'],
   },

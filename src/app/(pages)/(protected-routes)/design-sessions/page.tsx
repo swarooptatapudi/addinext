@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-type WikySessionRow = {
+type DesignSessionRow = {
   product: string | '';
   name: string;
   scan_id: string;
@@ -21,8 +21,8 @@ type WikySessionRow = {
   modified: string;
 };
 
-export default function WikySessionsListPage() {
-  const [rows, setRows] = useState<WikySessionRow[]>([]);
+export default function DesignSessionsListPage() {
+  const [rows, setRows] = useState<DesignSessionRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -36,13 +36,13 @@ export default function WikySessionsListPage() {
         }
         setRows(res.message);
       })
-      .catch(() => setError('No Wiky Sessions available'))
+      .catch(() => setError('No Design Sessions available'))
       .finally(() => setLoading(false));
   }, []);
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-xl font-semibold">Wiky Scan Sessions</h1>
+      <h1 className="text-xl font-semibold">Design Sessions</h1>
 
       <div className="border rounded-lg overflow-hidden bg-white">
         <table className="w-full text-sm">
@@ -81,7 +81,7 @@ export default function WikySessionsListPage() {
             {!loading && !error && rows.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
-                  No Wiky Sessions found
+                  No Design  Sessions found
                   <div className="text-xs mt-1">Start a scan from an order to see it here</div>
                 </td>
               </tr>
@@ -93,7 +93,7 @@ export default function WikySessionsListPage() {
               rows.map((row) => (
                 <tr
                   key={row.name}
-                  onClick={() => router.push(`/wiky-sessions/${row.name}`)}
+                  onClick={() => router.push(`/design-sessions/${row.name}`)}
                   className="cursor-pointer border-b last:border-b-0 hover:bg-gray-50"
                 >
                   <td className="px-4 py-3 text-sm font-medium">
@@ -140,7 +140,7 @@ export default function WikySessionsListPage() {
 
 
 
-// // /app/wiky-sessions/page.tsx
+// // /app/design-sessions/page.tsx
 // 'use client';
 //
 // import { useEffect, useState } from 'react';
@@ -227,7 +227,7 @@ export default function WikySessionsListPage() {
 //             rows.map(row => (
 //               <tr
 //                 key={row.name}
-//                 onClick={() => router.push(`/wiky-sessions/${row.name}`)}
+//                 onClick={() => router.push(`/design-sessions/${row.name}`)}
 //                 className="cursor-pointer hover:bg-gray-50 border-b last:border-b-0"
 //               >
 //                 <td className="px-4 py-3 font-mono text-sm">

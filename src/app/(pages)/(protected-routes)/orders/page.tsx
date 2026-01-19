@@ -76,6 +76,8 @@ export default function Orders(): React.JSX.Element {
   // console.log("salesorderdetails", data)
   const [getOrderDetails, { isLoading: isPaymentLoading }] = useGetOrderDetailsMutation();
   const [getOrderDetailIds] = useGetOrderDetailIdsMutation();
+  // const [getWikySession] = useGetWikySessionBySaleorderIdMutation();
+
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState<SortingState>([{ id: 'order_date', desc: true }]);
@@ -284,6 +286,45 @@ export default function Orders(): React.JSX.Element {
 // DESIGN: allowed only for PAID insole orders
         const canDesign = isInsoleOrder && isPaid;
 
+        const handleDesignClick = async (order: Order) => {
+          try {
+            const response = await fetch(
+              `/api/method/addiwise.apis.wiky_scan.wiky_workflow.get_wiky_session_by_saleorder_id`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                },
+                body: JSON.stringify({ sales_order_id: order.order_id })
+              }
+            );
+
+            const data = await response.json();
+
+            if (data?.message?.exists) {
+              // Session exists - inform and redirect to specific design session
+              toast.info(
+                `An ongoing design session exists for this order. Redirecting to design session...`,
+                { autoClose: 3000 }
+              );
+
+              router.push(`/design-sessions/${data.message.session_id}`);
+            } else {
+              // No existing session - open WikyScanModal iframe
+              setWikyOrderId(order.order_id);
+            }
+          } catch (err) {
+            console.error('Session check failed:', err);
+            toast.error('Failed to check existing session');
+            // Fallback: open modal anyway
+            setWikyOrderId(order.order_id);
+          }
+        };
+
+
+
+
         return (
           <div className="flex gap-2 items-center">
             <Button
@@ -308,7 +349,7 @@ export default function Orders(): React.JSX.Element {
                 size="sm"
                 variant="outline"
                 disabled={!canDesign}
-                onClick={() => setWikyOrderId(order.order_id)}
+                onClick={() => handleDesignClick(order)}
               >
                 Design
               </Button>

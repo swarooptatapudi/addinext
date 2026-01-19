@@ -107,7 +107,7 @@ export default function DesignWorkflowPage() {
 
       // 2️⃣ Process files (rename + zip + upload)
       const res = await fetch(
-        '/api/method/addiwise.apis.wiky_scan.wiky_utils.process_wiky_files',
+        '/api/method/addiwise.apis.wiky_scan.wiky_workflow.process_wiky_files',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -115,7 +115,7 @@ export default function DesignWorkflowPage() {
         }
       ).then(r => r.json());
 
-      const sessionId = res?.message?.session;
+      const sessionId = res?.message?.session_id;
       if (!sessionId) {
         throw new Error('Failed to prepare Wiky files');
       }
@@ -124,7 +124,7 @@ export default function DesignWorkflowPage() {
       sessionStorage.removeItem('wiky:lastSubmission');
 
       // 4️⃣ Redirect to Wiky Workspace
-      router.push(`/wiky-sessions/${sessionId}`);
+      router.push(`/design-sessions/${sessionId}`);
     } catch (e) {
       console.error(e);
       alert('Unable to proceed to design. Please try again.');

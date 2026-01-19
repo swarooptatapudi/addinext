@@ -1,8 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="8fada69b-f66a-4284-81f6-e16d835404d2" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/CranialOrderForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/CranialOrderForm.tsx" afterDir="false" />
+    <list default="true" id="8fada69b-f66a-4284-81f6-e16d835404d2" name="Changes" comment="WIKY Integration in progress">
+      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/design-sessions/[id]/design/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/design-sessions/[id]/scan-cleaning/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/AFOMeasurementsStep.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/AFOOrderPayload.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/Assessment.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/FinishPayment.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/ProductPatientStep.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/ScanUpload.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/design/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/design/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/wiky-sessions/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/design-sessions/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/wiky-sessions/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/design-sessions/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/uttils/Routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/uttils/Routes.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -10,41 +26,57 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript File" />
+        <option value="TypeScript JSX File" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "conceptiveconsulting"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;conceptiveconsulting&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Addinxt/addinxt.git",
-    "accountId": "4958a9e2-5fbb-49f9-94d2-baff681bcf73"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Addinxt/addinxt.git&quot;,
+    &quot;accountId&quot;: &quot;4958a9e2-5fbb-49f9-94d2-baff681bcf73&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 1
-}]]></component>
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
   <component name="ProjectId" id="35H9IKrTlJBeQ8GfmXCFasNKQOO" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "cranial-helmet",
-    "last_opened_file_path": "C:/work_addiwise/addinxt",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "yarn",
-    "ts.external.directory.path": "C:\\work_addiwise\\addinxt\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature__addishield+__helmets&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/work_addiwise/UI-new/addinxt&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;yarn&quot;,
+    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;C:\\work_addiwise\\UI-new\\addinxt\\node_modules\\prettier&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\work_addiwise\\UI-new\\addinxt\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -61,10 +93,108 @@
       <option name="presentableId" value="Default" />
       <updated>1762756049435</updated>
       <workItem from="1762756050371" duration="72000" />
+      <workItem from="1768112035183" duration="28373000" />
+      <workItem from="1768196384542" duration="1985000" />
+      <workItem from="1768284364654" duration="18847000" />
+      <workItem from="1768329333308" duration="511000" />
+      <workItem from="1768366897977" duration="23348000" />
+      <workItem from="1768415514564" duration="2625000" />
+      <workItem from="1768454342628" duration="15882000" />
+      <workItem from="1768536836079" duration="10077000" />
+      <workItem from="1768629347307" duration="1833000" />
+      <workItem from="1768661600557" duration="2450000" />
+      <workItem from="1768717430250" duration="4205000" />
+      <workItem from="1768798496496" duration="18665000" />
     </task>
+    <task id="LOCAL-00001" summary="new files panel in readonly mode created for BK INSOLE CRANIAL">
+      <option name="closed" value="true" />
+      <created>1768153764042</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1768153764042</updated>
+    </task>
+    <task id="LOCAL-00002" summary="new files panel in readonly mode created for BK INSOLE CRANIAL">
+      <option name="closed" value="true" />
+      <created>1768154690322</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1768154690322</updated>
+    </task>
+    <task id="LOCAL-00003" summary="WIKY Integration in progress">
+      <option name="closed" value="true" />
+      <created>1768328914849</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1768328914849</updated>
+    </task>
+    <task id="LOCAL-00004" summary="WIKY Integration in progress">
+      <option name="closed" value="true" />
+      <created>1768367166610</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1768367166610</updated>
+    </task>
+    <task id="LOCAL-00005" summary="WIKY Integration in progress">
+      <option name="closed" value="true" />
+      <created>1768416257166</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1768416257166</updated>
+    </task>
+    <task id="LOCAL-00006" summary="WIKY Integration in progress">
+      <option name="closed" value="true" />
+      <created>1768418158034</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1768418158034</updated>
+    </task>
+    <task id="LOCAL-00007" summary="WIKY Integration in progress">
+      <option name="closed" value="true" />
+      <created>1768480038296</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1768480038296</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+    <option name="exactExcludedFiles">
+      <list>
+        <option value="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/design/[id]/page.js" />
+      </list>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="new files panel in readonly mode created for BK INSOLE CRANIAL" />
+    <MESSAGE value="WIKY Integration in progress" />
+    <option name="LAST_COMMIT_MESSAGE" value="WIKY Integration in progress" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/InsolesOrderForm.tsx</url>
+          <line>37</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
   </component>
 </project>
