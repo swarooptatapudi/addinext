@@ -10,6 +10,44 @@ export default function WikyDesignPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  function resendToIframe(data: any) {
+    const iframe = document.getElementById(
+      'wiky_iframe'
+    ) as HTMLIFrameElement | null;
+
+    if (!iframe?.contentWindow || !iframe.src) return;
+
+    const iframeOrigin = new URL(iframe.src).origin;
+
+    iframe.contentWindow.postMessage(data, iframeOrigin);
+  }
+
+  useEffect(() => {
+    function debugListener(e: MessageEvent) {
+      console.group('[WIKY IFRAME EVENT]');
+      console.log('Origin:', e.origin);
+      console.log('Data:', e.data);
+      console.log('Type:', typeof e.data);
+      console.groupEnd();
+
+      // Only resend if from the expected origin and has the expected shape
+      if (
+        e.origin === 'https://edserinsole.leopoly.com' &&
+        e.data &&
+        typeof e.data === 'object' &&
+        e.data.EVENT_NAME === 'loaded_IFrame'
+      ) {
+        resendToIframe(e.data);
+      }
+    }
+
+    window.addEventListener('message', debugListener);
+    return () => window.removeEventListener('message', debugListener);
+  }, []);
+
+
+
+
   useEffect(() => {
     async function loadIframe() {
       try {
@@ -33,6 +71,7 @@ export default function WikyDesignPage() {
 
     loadIframe();
   }, [id]);
+
 
   if (loading) {
     return (
