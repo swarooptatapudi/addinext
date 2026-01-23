@@ -87,24 +87,7 @@ export default function DesignSessionWorkspacePage() {
     }
   }
 
-  // async function loadFiles() {
-  //   setFilesLoading(true);
-  //   setError(null);
-  //
-  //   try {
-  //     // Backend should call Wiky API using cached token for this session
-  //     // and return list of files (can be empty)
-  //     const r = await fetch(
-  //       `/api/method/addiwise.apis.wiky_scan.wiky_workflow.list_wiky_files?session_id=${id}`
-  //     );
-  //     const d = await r.json();
-  //     setFiles(d?.message || []);
-  //   } catch {
-  //     setError('Unable to load Wiky files right now.');
-  //   } finally {
-  //     setFilesLoading(false);
-  //   }
-  // }
+
   async function loadFiles() {
     setFilesLoading(true);
     setError(null);
