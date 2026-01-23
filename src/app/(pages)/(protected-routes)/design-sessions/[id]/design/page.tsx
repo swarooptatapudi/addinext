@@ -98,7 +98,7 @@ export default function WikyDesignPage() {
   return (
     <div className="h-screen flex flex-col">
       <div className="bg-white border-b px-4 py-3 flex items-center justify-between">
-        <div className="font-medium">Wiky 3D Design</div>
+        <div className="font-medium">3D Design</div>
         <button
           onClick={() => router.push(`/design-sessions/${id}`)}
           className="text-sm text-primary hover:underline"
