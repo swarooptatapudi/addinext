@@ -5,7 +5,7 @@ import {
   SortingState,
   useReactTable,
   getCoreRowModel,
-  getSortedRowModel,
+  getSortedRowModel
 } from '@tanstack/react-table';
 import { useSearchParams } from 'next/navigation';
 import { DataTable } from '@/components/app/common/DataTable';
@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { exportCranialOrderToExcel } from '@/lib/utils';
 import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
+import { WikyScanModal } from '@/components/wiky/WikyScanModal';
 
 declare global {
   interface Window {
@@ -60,27 +61,30 @@ export type Order = {
 
 export default function Orders(): React.JSX.Element {
   // const { data, isLoading, error, refetch } = useGetOrdersQuery('');
- const [page, setPage] = useState(1);
-const pageSize = 10;
+  // integration for WIKY iframe
+  const [wikyOrderId, setWikyOrderId] = useState<string | null>(null);
 
-const { data, isLoading,error,refetch } = useGetOrdersQuery({ page, page_size: pageSize });
 
-const orders = data?.data.sales_orders ?? [];
-const totalPages = data?.data.total_pages ?? 1;
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const { data, isLoading, error, refetch } = useGetOrdersQuery({ page, page_size: pageSize });
+
+  const orders = data?.data.sales_orders ?? [];
+  const totalPages = data?.data.total_pages ?? 1;
 
   // console.log("salesorderdetails", data)
-  const [getOrderDetails, { isLoading: isPaymentLoading }] =
-    useGetOrderDetailsMutation();
+  const [getOrderDetails, { isLoading: isPaymentLoading }] = useGetOrderDetailsMutation();
   const [getOrderDetailIds] = useGetOrderDetailIdsMutation();
+  // const [getWikySession] = useGetWikySessionBySaleorderIdMutation();
+
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: 'order_date', desc: true },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'order_date', desc: true }]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const searchParams = useSearchParams();
-  const orderId = searchParams.get("orderId");
-  const deviceType = searchParams.get("deviceType");
+  const orderId = searchParams.get('orderId');
+  const deviceType = searchParams.get('deviceType');
 
   const router = useRouter();
   const { startPayment } = usePaymentLauncher();
@@ -89,16 +93,17 @@ const totalPages = data?.data.total_pages ?? 1;
   const tableData: Order[] = (data?.data?.sales_orders || []).map((so: any) => ({
     ...so,
     device_type: so.custom_order_types || '-',
-    sales_invoices: so.sales_invoices || [],
+    sales_invoices: so.sales_invoices || []
   }));
-//   useEffect(() => {
-//   if (data?.data?.total_count) {
-//     setTotalPages(Math.ceil(data.data.total_count / pageSize));
-//   }
-// }, [data, pageSize]);
+  //   useEffect(() => {
+  //   if (data?.data?.total_count) {
+  //     setTotalPages(Math.ceil(data.data.total_count / pageSize));
+  //   }
+  // }, [data, pageSize]);
 
-  const getOrderType = (order: Order): string =>
-    order.device_type || order.order_type || 'Unknown';
+  const getOrderType = (order: Order): string => order.device_type || order.order_type || 'Unknown';
+  const [showDesignSteps, setShowDesignSteps] = useState(false);
+
 
   // ✅ Payment handler using usePaymentLauncher
   const handlePayment = async (order: Order) => {
@@ -115,7 +120,6 @@ const totalPages = data?.data.total_pages ?? 1;
       const salesId = response?.data?.so_order_id || order.order_id;
 
       await startPayment(salesId);
-
     } catch (err) {
       console.error('Payment initiation failed:', err);
       toast.error('Failed to process payment.');
@@ -129,35 +133,31 @@ const totalPages = data?.data.total_pages ?? 1;
     const baseParams = {
       orderId: order.order_id,
       deviceType: order.device_type,
-      readonly: 'true', // <= add this
+      readonly: 'true' // <= add this
     };
 
-    if (order.device_type === "BK Orders") {
+    if (order.device_type === 'BK Orders') {
       router.push(`/orders/new-order/BK?${new URLSearchParams(baseParams).toString()}`);
-    } else if (order.device_type === "Insole Orders") {
+    } else if (order.device_type === 'Insole Orders') {
       router.push(`/orders/new-order/Insoles?${new URLSearchParams(baseParams).toString()}`);
-    } else if (order.device_type === "Cranial Helmet Orders") {
+    } else if (order.device_type === 'Cranial Helmet Orders') {
       router.push(`/orders/new-order/Cranial?${new URLSearchParams(baseParams).toString()}`);
-    }
-    else if (order.device_type === "AddiShield Pro Order") {
+    } else if (order.device_type === 'AddiShield Pro Order') {
       router.push(`/orders/new-order/AddiShieldPlus?${new URLSearchParams(baseParams).toString()}`);
-    }
-    else if (order.device_type === "AddiShield EpiPro Order") {
+    } else if (order.device_type === 'AddiShield EpiPro Order') {
       router.push(`/orders/new-order/AddiShieldPlus?${new URLSearchParams(baseParams).toString()}`);
-    }
-    else if (order.device_type === "AddiShield EpiPro Active Order") {
+    } else if (order.device_type === 'AddiShield EpiPro Active Order') {
       router.push(`/orders/new-order/AddiShieldPlus?${new URLSearchParams(baseParams).toString()}`);
-    }
-    else if (order.device_type === "Afo Orders") {
+    } else if (order.device_type === 'Afo Orders') {
       router.push(`/orders/new-order/Afo?${new URLSearchParams(baseParams).toString()}`);
     }
   };
-// Add at top with other React state hooks:
-// inside Orders component (top-level hooks)
+  // Add at top with other React state hooks:
+  // inside Orders component (top-level hooks)
   const [exportingIds, setExportingIds] = useState<Set<string>>(new Set());
   const isExportingFor = (orderId?: string) => !!orderId && exportingIds.has(orderId);
 
-// inside component
+  // inside component
   const handleExport = async (order: Order) => {
     if (!order?.order_id) return;
     const id = order.order_id;
@@ -192,7 +192,7 @@ const totalPages = data?.data.total_pages ?? 1;
         >
           {row.original.order_id}
         </span>
-      ),
+      )
     },
     {
       accessorKey: 'patient_name',
@@ -208,13 +208,12 @@ const totalPages = data?.data.total_pages ?? 1;
       accessorKey: 'order_date',
       header: 'Order Date',
       cell: ({ row }) => new Date(row.original.order_date).toLocaleDateString(),
-      sortingFn: 'datetime',
+      sortingFn: 'datetime'
     },
     {
       accessorKey: 'order_value',
       header: 'Order Value',
-      cell: ({ row }) =>
-        `${row.original.symbol || ''}${row.original.order_value.toFixed(2)}`,
+      cell: ({ row }) => `${row.original.symbol || ''}${row.original.order_value.toFixed(2)}`
     },
     {
       id: 'status',
@@ -232,40 +231,105 @@ const totalPages = data?.data.total_pages ?? 1;
         ) {
           status = 'Paid';
         }
-       if (orderValue === 0) {
-      status = 'Paid';
-    }
+        if (orderValue === 0) {
+          status = 'Paid';
+        }
         const statusClasses = {
           Draft: 'bg-yellow-100 text-yellow-800',
           Completed: 'bg-green-100 text-green-800',
           Paid: 'bg-blue-100 text-blue-800',
           Cancelled: 'bg-red-100 text-red-800',
-          default: 'bg-gray-100 text-gray-800',
+          default: 'bg-gray-100 text-gray-800'
         };
         return (
           <span
-            className={`px-2 py-1 rounded-full text-xs ${statusClasses[status as keyof typeof statusClasses] ||
-              statusClasses.default
-              }`}
+            className={`px-2 py-1 rounded-full text-xs ${
+              statusClasses[status as keyof typeof statusClasses] || statusClasses.default
+            }`}
           >
             {status}
           </span>
         );
-      },
+      }
     },
     {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => {
-        const order = row.original;
+        // const order = row.original;
         // console.log('Order for Actions:', order);
-        const isDisabled =
-          order.status === 'Completed' || order.status === 'Paid' || order.order_value === 0;
+       //  const isInsoleOrder = order.device_type === 'Insole Orders';
+       // // added to disable design button for non insole orders
+       //  const canDesign =
+       //    isInsoleOrder &&
+       //    (
+       //      order.status === 'Paid' ||
+       //      order.order_value === 0 ||
+       //      order.custom_payment_reference_id
+       //    );
+       //  // end of added
+       //  const isDisabled =
+       //    order.status === 'Completed' || order.status === 'Paid' || order.order_value === 0;
+       //
+        const order: Order = row.original;
+
+        const isPaid = order.status === 'Paid';
+        const isInsoleOrder = order.device_type === 'Insole Orders';
+
+        /* ---------------------------------- */
+        /* Button enable / disable states     */
+        /* ---------------------------------- */
+
+// PAY: allowed only if NOT paid
+        const canPay = !isPaid;
+
+// DESIGN: allowed only for PAID insole orders
+        const canDesign = isInsoleOrder && isPaid;
+
+        const handleDesignClick = async (order: Order) => {
+          try {
+            const response = await fetch(
+              `/api/method/addiwise.apis.wiky_scan.wiky_workflow.get_wiky_session_by_saleorder_id`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                },
+                body: JSON.stringify({ sales_order_id: order.order_id })
+              }
+            );
+
+            const data = await response.json();
+
+            if (data?.message?.exists) {
+              // Session exists - inform and redirect to specific design session
+              toast.info(
+                `An ongoing design session exists for this order. Redirecting to design session...`,
+                { autoClose: 3000 }
+              );
+
+              router.push(`/design-sessions/${data.message.session_id}`);
+            } else {
+              // No existing session - open WikyScanModal iframe
+              setWikyOrderId(order.order_id);
+            }
+          } catch (err) {
+            console.error('Session check failed:', err);
+            toast.error('Failed to check existing session');
+            // Fallback: open modal anyway
+            setWikyOrderId(order.order_id);
+          }
+        };
+
+
+
+
         return (
           <div className="flex gap-2 items-center">
             <Button
               size="sm"
-              disabled={isDisabled || isPaymentLoading }
+              disabled={!canPay || isPaymentLoading}
               className="bg-primary hover:bg-primary/90 text-white shadow-md"
               onClick={() => handlePayment(order)}
             >
@@ -273,14 +337,23 @@ const totalPages = data?.data.total_pages ?? 1;
             </Button>
 
             <div className="relative group ml-2">
+              {/*<Button*/}
+              {/*  size="sm"*/}
+              {/*  variant="outline"*/}
+              {/*  disabled={order.status !== 'Paid'}*/}
+              {/*  onClick={() => router.push(`/orders/design/${order.order_id}`)}*/}
+              {/*>*/}
+              {/*  Design*/}
+              {/*</Button>*/}
               <Button
                 size="sm"
                 variant="outline"
-                disabled={order.status !== 'Paid'}
-                onClick={() => router.push(`/orders/design/${order.order_id}`)}
+                disabled={!canDesign}
+                onClick={() => handleDesignClick(order)}
               >
                 Design
               </Button>
+
             </div>
             {order.device_type === 'Cranial Helmet Orders' && (
               <Button
@@ -296,8 +369,7 @@ const totalPages = data?.data.total_pages ?? 1;
             )}
           </div>
         );
-
-      },
+      }
     },
     {
       id: 'invoice',
@@ -319,7 +391,7 @@ const totalPages = data?.data.total_pages ?? 1;
             ))}
           </div>
         );
-      },
+      }
     },
     {
       id: 'receipt',
@@ -343,8 +415,8 @@ const totalPages = data?.data.total_pages ?? 1;
             )}
           </div>
         );
-      },
-    },
+      }
+    }
   ];
 
   if (isLoading) {
@@ -358,8 +430,7 @@ const totalPages = data?.data.total_pages ?? 1;
   if (error) {
     return (
       <div className="p-4 text-red-500">
-        Error loading orders:{' '}
-        {error instanceof Error ? error.message : 'Unknown error'}
+        Error loading orders: {error instanceof Error ? error.message : 'Unknown error'}
       </div>
     );
   }
@@ -378,34 +449,38 @@ const totalPages = data?.data.total_pages ?? 1;
       <DataTable
         columns={columns}
         data={tableData.filter((order) =>
-          (order.patient_name || '')
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
+          (order.patient_name || '').toLowerCase().includes(searchTerm.toLowerCase())
         )}
         sorting={sorting}
         onSortingChange={setSorting}
       />
       <div className="flex justify-between items-center mt-4">
-  <button
-    onClick={() => setPage((p) => Math.max(p - 1, 1))}
-    disabled={page === 1}
-    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-  >
-    Previous
-  </button>
+        <button
+          onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          disabled={page === 1}
+          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
 
-  <span>
-    Page {page} of {totalPages || 1}
-  </span>
+        <span>
+          Page {page} of {totalPages || 1}
+        </span>
 
-  <button
-    onClick={() => setPage((p) => (totalPages ? Math.min(p + 1, totalPages) : p + 1))}
-    disabled={totalPages ? page >= totalPages : false}
-    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-  >
-    Next
-  </button>
-</div>
+        <button
+          onClick={() => setPage((p) => (totalPages ? Math.min(p + 1, totalPages) : p + 1))}
+          disabled={totalPages ? page >= totalPages : false}
+          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+      {wikyOrderId && (
+        <WikyScanModal
+          salesOrderId={wikyOrderId}
+          // onClose={() => setWikyOrderId(null)}
+        />
+      )}
 
     </div>
   );
