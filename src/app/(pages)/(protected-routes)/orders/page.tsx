@@ -273,18 +273,40 @@ export default function Orders(): React.JSX.Element {
        //
         const order: Order = row.original;
 
-        const isPaid = order.status === 'Paid';
+        /* ---------------------------------- */
+        /* Deterministic PAID detection       */
+        /* Works on first & nth load          */
+        /* ---------------------------------- */
+        const isPaid =
+          order.order_value === 0 ||
+          order.status === 'Paid' ||
+          !!order.custom_payment_reference_id ||
+          (order.sales_invoices?.length ?? 0) > 0;
+
         const isInsoleOrder = order.device_type === 'Insole Orders';
 
         /* ---------------------------------- */
         /* Button enable / disable states     */
         /* ---------------------------------- */
 
-// PAY: allowed only if NOT paid
+        // PAY: allowed only if NOT paid
         const canPay = !isPaid;
 
-// DESIGN: allowed only for PAID insole orders
+        // DESIGN: allowed only for PAID insole orders
         const canDesign = isInsoleOrder && isPaid;
+
+//         const isPaid = order.status === 'Paid';
+//         const isInsoleOrder = order.device_type === 'Insole Orders';
+//
+//         /* ---------------------------------- */
+//         /* Button enable / disable states     */
+//         /* ---------------------------------- */
+//
+// // PAY: allowed only if NOT paid
+//         const canPay = !isPaid;
+//
+// // DESIGN: allowed only for PAID insole orders
+//         const canDesign = isInsoleOrder && isPaid;
 
         const handleDesignClick = async (order: Order) => {
           try {

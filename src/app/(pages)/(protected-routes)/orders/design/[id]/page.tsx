@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Card,
@@ -84,14 +84,69 @@ export default function DesignWorkflowPage() {
 
   /* ---------------- Actions ---------------- */
 
+  // const proceedToDesign = async () => {
+  //   if (!wikyResult?.scanId) return;
+  //
+  //   setSubmitting(true);
+  //
+  //   try {
+  //     // 1️⃣ Ensure Wiky Scan Session exists
+  //     await fetch(
+  //       '/api/method/addiwise.apis.wiky_scan.wiky_workflow.create_wiky_scan_session',
+  //       {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({
+  //           sales_order_id: id,
+  //           scan_id: wikyResult.scanId,
+  //           form_response_id: wikyResult.formResponseId ?? null,
+  //           raw_payload: wikyResult,
+  //         }),
+  //       }
+  //     );
+  //
+  //     // 2️⃣ Process files (rename + zip + upload)
+  //     const res = await fetch(
+  //       '/api/method/addiwise.apis.wiky_scan.wiky_workflow.process_wiky_files',
+  //       {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({ sales_order_id: id }),
+  //       }
+  //     ).then(r => r.json());
+  //
+  //     const sessionId = res?.message?.session_id;
+  //     if (!sessionId) {
+  //       throw new Error('Failed to prepare Wiky files');
+  //     }
+  //
+  //     // 3️⃣ Clear temporary scan capture
+  //     sessionStorage.removeItem('wiky:lastSubmission');
+  //
+  //     // 4️⃣ Redirect to Wiky Workspace
+  //     router.push(`/design-sessions/${sessionId}`);
+  //   } catch (e) {
+  //     console.error(e);
+  //     alert('Unable to proceed to design. Please try again.');
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
+  const submitLock = useRef(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
   const proceedToDesign = async () => {
     if (!wikyResult?.scanId) return;
+
+    // 🔒 HARD client-side lock (prevents double fire)
+    if (submitLock.current) return;
+    submitLock.current = true;
 
     setSubmitting(true);
 
     try {
-      // 1️⃣ Ensure Wiky Scan Session exists
-      await fetch(
+      // 1️⃣ Create or resolve Wiky session (idempotent)
+      const sessionRes = await fetch(
         '/api/method/addiwise.apis.wiky_scan.wiky_workflow.create_wiky_scan_session',
         {
           method: 'POST',
@@ -103,30 +158,37 @@ export default function DesignWorkflowPage() {
             raw_payload: wikyResult,
           }),
         }
-      );
+      ).then(r => r.json());
+
+      const resolvedSessionId =
+        sessionRes?.message?.session ||
+        sessionRes?.message?.session_id;
+
+      if (!resolvedSessionId) {
+        throw new Error('Failed to resolve Wiky session');
+      }
+
+      setSessionId(resolvedSessionId);
 
       // 2️⃣ Process files (rename + zip + upload)
-      const res = await fetch(
+      await fetch(
         '/api/method/addiwise.apis.wiky_scan.wiky_workflow.process_wiky_files',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sales_order_id: id }),
         }
-      ).then(r => r.json());
-
-      const sessionId = res?.message?.session_id;
-      if (!sessionId) {
-        throw new Error('Failed to prepare Wiky files');
-      }
+      );
 
       // 3️⃣ Clear temporary scan capture
       sessionStorage.removeItem('wiky:lastSubmission');
 
       // 4️⃣ Redirect to Wiky Workspace
-      router.push(`/design-sessions/${sessionId}`);
+      router.push(`/design-sessions/${resolvedSessionId}`);
+
     } catch (e) {
       console.error(e);
+      submitLock.current = false; // allow retry
       alert('Unable to proceed to design. Please try again.');
     } finally {
       setSubmitting(false);
