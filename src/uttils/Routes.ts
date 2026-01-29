@@ -1,5 +1,6 @@
-import { LayoutDashboardIcon, LayoutList, Network, Package, ReceiptText } from 'lucide-react';
+import { LayoutDashboardIcon, LayoutList, Network, Package, ReceiptText,Rotate3d} from 'lucide-react';
 import React from 'react';
+
 
 export interface ROUTE_INTERFACE {
   path: string;
@@ -9,11 +10,17 @@ export interface ROUTE_INTERFACE {
 }
 
 export const ROUTES: ROUTE_INTERFACE[] = [
+  // {
+  //   path: '/dashboard',
+  //   name: 'Dashboard',
+  //   icon: LayoutDashboardIcon,
+  //   roles: ['admin', 'customer']
+  // },
   {
-    path: '/dashboard',
-    name: 'Dashboard',
-    icon: LayoutDashboardIcon,
-    roles: ['admin', 'customer']
+    path: '/products',
+    name: 'Products',
+    icon: Package,
+    roles: ['admin']
   },
   {
     path: '/orders',
@@ -35,9 +42,10 @@ export const ROUTES: ROUTE_INTERFACE[] = [
     roles: ['admin']
   },
   {
-    path: '/products',
-    name: 'Products',
-    icon: Package,
-    roles: ['admin']
-  }
+    name: 'Design Sessions',
+    path: '/design-sessions',
+    icon: Rotate3d,
+    roles: ['admin'],
+  },
+
 ];

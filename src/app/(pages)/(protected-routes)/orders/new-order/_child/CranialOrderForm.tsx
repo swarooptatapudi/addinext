@@ -46,6 +46,7 @@ import { baseQueryWithReauth } from '@/rtk-query/apis';
 
 // ✅ reusable payment launcher
 import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
+import { UploadedFilesPanel } from '@/components/ui/UploadedFilesPanel';
 
 /* ------------------------------- Types/Schema ------------------------------ */
 
@@ -596,6 +597,7 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
 
   const [formSeed, setFormSeed] = useState<FormValues>(initialValues);
   const [prefilled, setPrefilled] = useState(false);
+  const [orderDetails, setOrderDetails] = useState<any>(null);
 
   useEffect(() => {
     const hydrate = async () => {
@@ -605,6 +607,10 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
           order_type: deviceTypeId,
           order_id: orderId
         }).unwrap();
+        console.warn('Fetched order details for prefill:', resp);
+
+        setOrderDetails(resp); // ✅ STORE FULL RESPONSE
+
         const d = resp?.data || {};
         const seed: FormValues = {
           ...initialValues,
@@ -975,17 +981,8 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                       // ✅ Use reusable payment launcher
                       const raw = String(values.total_price ?? '0').replace(/,/g, '');
                       const amount = Number(parseFloat(raw || '0').toFixed(2));
-                      await startPayment({
-                        amount,
-                        salesOrder: salesId,
-                        onSuccess: () => {
-                          alert('Payment successful.');
-                          router.push('/orders');
-                        },
-                        onFailure: () => {
-                          alert('Payment failed or timed out. Please check status in Orders.');
-                        }
-                      });
+                      await startPayment(salesId);
+
                       return;
                     }
                     alert(
@@ -1012,17 +1009,8 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                   // ✅ Use reusable payment launcher
                   const raw = String(values.total_price ?? '0').replace(/,/g, '');
                   const amount = Number(parseFloat(raw || '0').toFixed(2));
-                  await startPayment({
-                    amount,
-                    salesOrder: salesId,
-                    onSuccess: () => {
-                      alert('Payment successful.');
-                      router.push('/orders');
-                    },
-                    onFailure: () => {
-                      alert('Payment failed or timed out. Please check status in Orders.');
-                    }
-                  });
+                  await startPayment(salesId);
+
                   return;
                 }
 
@@ -1193,6 +1181,15 @@ export default function CranialOrderForm(_: CranialOrderFormProps) {
                   />
                 )}
               </fieldset>
+
+              {isReadOnly && activeStep  === 5 && (
+                <UploadedFilesPanel
+                  leftFootFile={orderDetails?.data?.uploaded_scan_file}
+                  driveLink={orderDetails?.data?.custom_upload_link_with_photos}
+                  leftLabel={"Uploaded Scan File:"}
+                />
+              )}
+
 
               {/* Navigation */}
               <div className="flex justify-between gap-3 pt-2">

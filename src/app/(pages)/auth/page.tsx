@@ -31,7 +31,7 @@ export default function SignIn(): React.JSX.Element {
 
   return (
     <div className="h-full p-4 flex flex-col items-center justify-center w-full">
-  <div className="flex flex-col items-center justify-center w-[80%] bg-white p-4 rounded-lg drop--lg py-10">
+      <div className="flex flex-col items-center justify-center w-[80%] bg-white p-4 rounded-lg drop--lg py-10">
         <h1 className="text-2xl font-bold">Sign In</h1>
         <p className="text-sm text-gray-500">Sign in to your account</p>
         <div className="flex flex-col gap-4 w-full mt-6">
@@ -98,7 +98,7 @@ export default function SignIn(): React.JSX.Element {
 // useEffect(() => {
 //     if (isSuccess) {
 //       console.log(isSuccess,login);
-      
+
 //       // router.push('/dashboard');
 //       window.location.href = '/dashboard';
 //       // Force a full page reload to ensure all state is reset
@@ -111,7 +111,7 @@ export default function SignIn(): React.JSX.Element {
 //   //     // router.push('/dashboard');
 //   //     window.location.href = '/dashboard';
 //   //     toast.success('Login successful');
-      
+
 //   //   }
 //   // }, [isSuccess, router]);
 
@@ -130,8 +130,8 @@ export default function SignIn(): React.JSX.Element {
 //         <h1 className="text-2xl font-bold">Sign In</h1>
 //         <p className="text-sm text-gray-500">Sign in to your account</p>
 //         <div className="flex flex-col gap-4 w-full mt-6">
-//           <Formik 
-//             initialValues={{ usr: '', pwd: '' }} 
+//           <Formik
+//             initialValues={{ usr: '', pwd: '' }}
 //             onSubmit={(values) => {
 //               console.log('Submitting:', values); // Debug log
 //               login(values)
@@ -147,11 +147,11 @@ export default function SignIn(): React.JSX.Element {
 //             {({ values, handleChange, handleSubmit }) => (
 //               <form onSubmit={handleSubmit}>
 //                 <div className="flex flex-col gap-4">
-//                   <Input 
-//                     placeholder="Email" 
+//                   <Input
+//                     placeholder="Email"
 //                     name="usr"
-//                     value={values.usr} 
-//                     onChange={handleChange} 
+//                     value={values.usr}
+//                     onChange={handleChange}
 //                   />
 //                   <Input
 //                     placeholder="Password"
