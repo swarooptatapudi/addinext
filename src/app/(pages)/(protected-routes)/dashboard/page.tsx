@@ -6,6 +6,7 @@ import { ChartContainer } from '@/components/ui/chart';
 import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { WikyDesignFlow } from '@/components/wiky/WikyDesignFlow';
 const data = [
   { name: 'Page A', uv: 400, pv: 2400, amt: 2400 },
   { name: 'Page B', uv: 300, pv: 1398, amt: 2210 },
@@ -54,7 +55,7 @@ export default function Dashboard(): React.JSX.Element {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle  className='text-primary' >Orders</CardTitle>
+          <CardTitle className='text-primary'>Orders</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
@@ -71,24 +72,24 @@ export default function Dashboard(): React.JSX.Element {
           <CardTitle className='text-primary'>Orders</CardTitle>
         </CardHeader>
         <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart
-            data={data}
-            syncId="anyId"
-            margin={{
-              top: 10,
-              right: 30,
-              left: 0,
-              bottom: 0,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Area type="monotone" dataKey="pv" stroke="#82ca9d" fill="#82ca9d" />
-          </AreaChart>
-        </ResponsiveContainer>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart
+              data={data}
+              syncId="anyId"
+              margin={{
+                top: 10,
+                right: 30,
+                left: 0,
+                bottom: 0,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Area type="monotone" dataKey="pv" stroke="#82ca9d" fill="#82ca9d" />
+            </AreaChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
       <Card>
@@ -106,6 +107,10 @@ export default function Dashboard(): React.JSX.Element {
           </ResponsiveContainer>
         </CardContent>
       </Card>
+      <div style={{ padding: 20 }}>
+        <h2>Wiky Integration – Test Page</h2>
+
+      </div>
     </div>
   );
 }

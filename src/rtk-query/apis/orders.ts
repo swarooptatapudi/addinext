@@ -223,6 +223,40 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import baseQueryWithReauth from '../base/baseQueryReAuth';
 import { estimateOrderClientSide } from '@/uttils/getEstimate';
 
+interface AKEstimateRequest {
+  item_code: string;
+  design_by: string;
+  print_by: string;
+  discount_per: number;
+  discount_amt: number;
+  coupon_code?: string;
+}
+
+interface AKEstimateResponse {
+  message: {
+    status: number;
+    message: string;
+    data: {
+      design: string;
+      print: string;
+      estimate_price: string;
+      item_standard_discount: string;
+      item_special_discount?: string;
+      additional_discount: string;
+      discounted_price: string;
+      discounted_price_18: string;
+      discounted_price_5: string;
+      gst_18: string;
+      gst_5: string;
+      total_price: string;
+      customer_available_coins?: string;
+      design_coin_use?: string;
+    };
+  };
+}
+
+
+
 interface SalesOrder {
   order_id: string;
   customer: string;
@@ -278,6 +312,7 @@ export interface SalesOrdersResponse {
     sales_orders: SalesOrder[];
   };
 }
+
 interface SalesOrderDetailsResponse {
   message: string;
   data: SalesOrderDetails;
@@ -301,6 +336,26 @@ interface INEstimateRequest {
   discount_amt: number;
   coupon_code?: string;
 }
+interface ASPEstimateData {
+  design: string;
+  print: string;
+  estimate_price: string;
+  item_standard_discount: string;
+  item_special_discount: string;
+  additional_discount: string;
+  discounted_price: string;
+  gst_5: string;
+  gst_18: string;
+  total_price: string;
+  customer_available_coins?: string;
+  design_coin_use?: string;
+}
+
+interface ASPEstimateResponse {
+  message: string;
+  data: ASPEstimateData;
+}
+
 interface CHEstimateRequest {
   item_code: string;
   design_by: string;
@@ -425,6 +480,17 @@ export const ordersApi = createApi({
         return response;
       }
     }),
+    createAfoOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.afo_order.create_afo_order',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        // console.log("create_bk_order", response);
+        return response;
+      }
+    }),
     // ----------------------
     // CREATE CRANIAL ORDER (same style as createInsoleOrder)
     createCranialOrder: builder.mutation({
@@ -437,6 +503,83 @@ export const ordersApi = createApi({
         return response;
       },
     }),
+    createASPOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_pro_orders.create_addishield_pro_order',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        return response;
+      },
+    }),
+    getASPEstimate: builder.mutation<ASPEstimateResponse, INEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_pro_orders.get_addishield_pro_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: ASPEstimateResponse) => response
+    }),
+    createASEPOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_epipro_orders.create_addishield_epipro_order',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        return response;
+      },
+    }),
+    getASEPEstimate: builder.mutation<ASPEstimateResponse, INEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_epipro_orders.get_addishield_epipro_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: ASPEstimateResponse) => response
+    }),
+    createASEPAOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_epipro_active_orders.create_addishield_epipro_active_order',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        return response;
+      },
+    }),
+    getASEPAEstimate: builder.mutation<ASPEstimateResponse, INEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.addishield_epipro_active_orders.get_addishield_epipro_active_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: ASPEstimateResponse) => response
+    }),
+    getAKEstimate: builder.mutation<AKEstimateResponse, AKEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.afo_order.get_afo_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: AKEstimateResponse) => response
+    }),
+    getOrderPdf: builder.query<
+      Blob,
+      { doctype: 'Sales Invoice' | 'Payment Entry'; name: string }
+    >({
+      query: ({ doctype, name }) => ({
+        url: `/method/addiwise.apis.order_types.bk_order.download_pdf` +
+          `?doctype=${encodeURIComponent(doctype)}` +
+          `&name=${encodeURIComponent(name)}` +
+          `&format=Standard`,
+        method: 'GET',
+        // 🔴 CRITICAL: tell RTK this is binary, not JSON
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
+
 
     // ----------------------
     // CRANIAL ESTIMATE
@@ -553,6 +696,8 @@ export const ordersApi = createApi({
   })
 });
 
+
+
 export const {
   useCreateOrderMutation,
   useGetOrdersQuery,
@@ -562,10 +707,19 @@ export const {
   useGetOrderDetailIdsMutation,
   useCreateProductOrderMutation,
   useCreateInsoleOrderMutation,
+  useCreateAfoOrderMutation,
   useCreateCranialOrderMutation,
   useGetCHEstimateMutation,
+  useGetAKEstimateMutation,
   useGetINEstimateMutation,
-  usePreSignedUrlMutation
+  usePreSignedUrlMutation,
+  useGetASPEstimateMutation,
+  useCreateASPOrderMutation,
+  useGetASEPEstimateMutation,
+  useCreateASEPOrderMutation,
+  useGetASEPAEstimateMutation,
+  useCreateASEPAOrderMutation,
+  useLazyGetOrderPdfQuery
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;
 

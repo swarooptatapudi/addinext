@@ -81,9 +81,13 @@ const validationSchema = Yup.object().shape({
             'Maximum weight is 150kg',
             (value) => parseFloat(value) <= 150
         ),
-    mobile_no: Yup.string()
-        .matches(FORMIK_ERRORS.MOBILE_NUMBER.VALUE, FORMIK_ERRORS.MOBILE_NUMBER.MESSAGE),
-    email: Yup.string()
+  mobile_no: Yup.string()
+    .required(FORMIK_ERRORS.REQUIRED)
+    .matches(
+      FORMIK_ERRORS.MOBILE_NUMBER.VALUE,
+      FORMIK_ERRORS.MOBILE_NUMBER.MESSAGE
+    ),
+  email: Yup.string()
         .email(FORMIK_ERRORS.INVALID_EMAIL.MESSAGE)
         .max(FORMIK_ERRORS.MAX_320.VALUE, FORMIK_ERRORS.MAX_320.MESSAGE),
     gender: Yup.string().required(FORMIK_ERRORS.REQUIRED),
@@ -94,7 +98,7 @@ const validationSchema = Yup.object().shape({
 export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDialogProps) {
     const [createPatient, { isLoading }] = useCreatePatientMutation();
     const { user } = useSelector((state: RootState) => state.userReducer);
-    
+
 
     const formik = useFormik<PatientFormValues>({
         initialValues: {
@@ -208,17 +212,17 @@ export function AddPatientDialog({ open, onOpenChange, onConfirm }: AddPatientDi
                             inVaild={formik.touched.gender && !!formik.errors.gender}
                             error={formik.touched.gender ? formik.errors.gender : undefined}
                         />
-                        <Input
-                            label="Mobile Number"
-                            name="mobile_no"
-                            placeholder="10 digit phone number"
-                            value={formik.values.mobile_no}
-                            onChange={formik.handleChange}
-                            inVaild={formik.touched.mobile_no && !!formik.errors.mobile_no}
-                            error={formik.touched.mobile_no ? formik.errors.mobile_no : undefined}
-                            onBlur={formik.handleBlur}
-                        />
-                        <Input
+                      <Input
+                        label="Mobile Number"
+                        name="mobile_no"
+                        placeholder="+919876543210"
+                        value={formik.values.mobile_no}
+                        onChange={formik.handleChange}
+                        inVaild={formik.touched.mobile_no && !!formik.errors.mobile_no}
+                        error={formik.touched.mobile_no ? formik.errors.mobile_no : undefined}
+                        onBlur={formik.handleBlur}
+                      />
+                      <Input
                             label="Email"
                             name="email"
                             placeholder="Email"
