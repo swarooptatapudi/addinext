@@ -132,7 +132,7 @@ export default function Orders(): React.JSX.Element {
       'AddiShield Pro Order': '/orders/new-order/AddiShieldPlus',
       'AddiShield EpiPro Order': '/orders/new-order/AddiShieldPlus',
       'AddiShield EpiPro Active Order': '/orders/new-order/AddiShieldPlus',
-      'Afo Orders': '/orders/new-order/Afo'
+      'AFO Orders': '/orders/new-order/AFO'
     };
 
     const route = routes[order.device_type];
