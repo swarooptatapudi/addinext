@@ -48,7 +48,7 @@ export default function Products(): React.JSX.Element {
         </div>
 
         {/* Prosthetics Upper Extremity */}
-        <div>
+        {/*<div>
           <p className="text-xs  font-extrabold text-[#2e2a6f] mb-3 uppercase">Prosthetics</p>{' '}
           <div className="text-xs  font-extrabold text-[#2e2a6f] mb-3  -mt-3 uppercase">
             Upper Extremity
@@ -65,7 +65,7 @@ export default function Products(): React.JSX.Element {
               href="/orders/new-order/AE"
             />
           </div>
-        </div>
+        </div>*/}
       </div>
 
       {/* Orthotics */}
