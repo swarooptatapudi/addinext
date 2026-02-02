@@ -487,7 +487,6 @@ export const ordersApi = createApi({
         body: data
       }),
       transformResponse: (response: SalesOrdersResponse) => {
-        // console.log("create_bk_order", response);
         return response;
       }
     }),
@@ -650,6 +649,22 @@ export const ordersApi = createApi({
       }),
       transformResponse: (response: INEstimateResponse) => response
     }),
+    getAFOEstimate: builder.mutation<ASPEstimateResponse, INEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.afo_order.get_afo_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: ASPEstimateResponse) => response
+    }),
+    getAFOItemOptions: builder.mutation({
+      query: (payload) => ({
+        url: '/method/addiwise.apis.order_types.afo_order.get_itemcode',
+        method: 'POST',
+        body: payload
+      }),
+      transformResponse: (res: any) => res
+    }),
     validateCoupon: builder.mutation<CouponResponse, CouponRequest>({
       query: (data) => ({
         url: '/method/addiwise.apis.utils.coupon_code',
@@ -712,6 +727,7 @@ export const {
   useGetCHEstimateMutation,
   useGetAKEstimateMutation,
   useGetINEstimateMutation,
+  useGetAFOEstimateMutation,
   usePreSignedUrlMutation,
   useGetASPEstimateMutation,
   useCreateASPOrderMutation,
@@ -719,7 +735,8 @@ export const {
   useCreateASEPOrderMutation,
   useGetASEPAEstimateMutation,
   useCreateASEPAOrderMutation,
-  useLazyGetOrderPdfQuery
+  useLazyGetOrderPdfQuery,
+  useGetAFOItemOptionsMutation
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;
 
