@@ -139,7 +139,24 @@ export default function Transcations(): React.JSX.Element {
   //
   //   }
   // };
+// ✅ ADD THIS: Refetch all data on page focus
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page visible - refetching transactions');
+        refetchTransactions();
+        subscriptionTranscationHistorys();
+        refetchTransactionsS();
+        refetchReceipts(); // This is the important one for "Other Transactions"
+      }
+    };
 
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [refetchTransactions, subscriptionTranscationHistorys, refetchTransactionsS, refetchReceipts]);
   async function extractBlobError(err: any): Promise<string> {
     // If error data is a Blob, parse it first
     if (err?.data instanceof Blob) {
