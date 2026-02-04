@@ -77,7 +77,7 @@ export default function DesignSessionsListPage() {
               </tr>
             )}
 
-            {/* Empty */}
+
             {!loading && !error && rows.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
@@ -98,7 +98,7 @@ export default function DesignSessionsListPage() {
                 >
                   <td className="px-4 py-3 text-sm font-medium">
                     {row.product ?? '—'}
-                  </td> {/* 👈 NEW */}
+                  </td>
                   <td className="px-4 py-3 font-mono">{row.scan_id}</td>
 
                   <td className="px-4 py-3">{row.patient_name}</td>

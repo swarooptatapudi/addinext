@@ -25,6 +25,7 @@ import { useLazyGetOrderPdfQuery } from '@/rtk-query/apis/orders';
 import { Button } from '@/components/ui/button';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination } from '@/components/app/common/TablePagination';
+import { toast } from 'react-toastify';
 
 interface Transaction {
   payment_transaction_id?: string;
@@ -122,20 +123,85 @@ export default function Transcations(): React.JSX.Element {
 
   const [fetchPdf, { isFetching }] = useLazyGetOrderPdfQuery();
 
+  // const openPdf = async (doctype: 'Sales Invoice' | 'Payment Entry', name?: string) => {
+  //   if (!name) return;
+  //
+  //   try {
+  //     const pdfBlob = await fetchPdf({ doctype, name }).unwrap();
+  //
+  //     const url = URL.createObjectURL(pdfBlob);
+  //     window.open(url, '_blank');
+  //
+  //     // optional cleanup
+  //     setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  //   } catch (err) {
+  //     console.error('PDF open failed', err);
+  //
+  //   }
+  // };
+// ✅ ADD THIS: Refetch all data on page focus
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page visible - refetching transactions');
+        refetchTransactions();
+        subscriptionTranscationHistorys();
+        refetchTransactionsS();
+        refetchReceipts(); // This is the important one for "Other Transactions"
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [refetchTransactions, subscriptionTranscationHistorys, refetchTransactionsS, refetchReceipts]);
+  async function extractBlobError(err: any): Promise<string> {
+    // If error data is a Blob, parse it first
+    if (err?.data instanceof Blob) {
+      try {
+        const text = await err.data.text();
+        const errorData = JSON.parse(text);
+
+        // Try _server_messages first
+        if (errorData._server_messages) {
+          const messagesArray = JSON.parse(errorData._server_messages);
+          if (Array.isArray(messagesArray) && messagesArray.length > 0) {
+            const messageObj = JSON.parse(messagesArray[0]);
+
+            if (messageObj.message) {
+              // Strip HTML
+              const tempDiv = document.createElement('div');
+              tempDiv.innerHTML = messageObj.message;
+              return tempDiv.textContent || tempDiv.innerText || 'An error occurred';
+            }
+          }
+        }
+
+        // Fallback to _error_message
+        return errorData._error_message || 'Unable to open PDF';
+      } catch (e) {
+        console.error('Failed to parse blob error:', e);
+      }
+    }
+
+    return 'Unable to open PDF. Please try again later.';
+  }
+
   const openPdf = async (doctype: 'Sales Invoice' | 'Payment Entry', name?: string) => {
     if (!name) return;
 
     try {
       const pdfBlob = await fetchPdf({ doctype, name }).unwrap();
-
       const url = URL.createObjectURL(pdfBlob);
       window.open(url, '_blank');
 
-      // optional cleanup
       setTimeout(() => URL.revokeObjectURL(url), 30_000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('PDF open failed', err);
-      alert('Unable to open PDF');
+      const errorMessage = await extractBlobError(err);
+      toast.error(errorMessage);
     }
   };
 
