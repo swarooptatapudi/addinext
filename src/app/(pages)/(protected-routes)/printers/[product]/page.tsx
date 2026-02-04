@@ -64,7 +64,7 @@ interface Transaction {
 
 interface RateAndDiscountData {
   message?: {
-    status_code: number;
+    status_code: number
     message: string;
     data: {
       coin_rules: {

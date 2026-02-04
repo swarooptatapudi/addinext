@@ -1,6 +1,7 @@
 // src/rtk-query/apis/payments.ts
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQueryWithReauth } from '@/rtk-query/apis';
+import  baseQueryWithReauth  from '../base/baseQueryReAuth';
+
 
 export type Provider = 'HDFC';
 export type Currency = 'INR';
