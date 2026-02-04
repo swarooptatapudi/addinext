@@ -131,10 +131,6 @@ export default function BuyProductsWithHdfc() {
     }
   }
 
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Failed to load products</p>;
-  if (!selectedProduct) return <p>No product selected</p>;
-
   // ---------- Helper: robust extractor ----------
   const extractSalesAndPrice = (res: any) => {
     const sales =
@@ -300,6 +296,12 @@ export default function BuyProductsWithHdfc() {
       rel: 'noopener noreferrer',
       className: 'text-blue-600 underline',
     });
+
+
+    if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Failed to load products</p>;
+  if (!selectedProduct) return <p>No product selected</p>;
+
 
     return (
       <Card className="border border-gray-200 bg-gray-50 shadow-sm rounded-lg mb-6">
