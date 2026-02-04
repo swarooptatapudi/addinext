@@ -366,22 +366,33 @@ export default function ASPFinishPayment({
 
       {/* ACTIONS */}
       <div className="mt-6 flex flex-col items-center gap-4">
-        <Button type="button" className="w-full md:w-[360px]" onClick={handleEstimate}>
+        <Button
+          type="button"
+          className="w-full md:w-[360px]"
+          onClick={handleEstimate}
+          disabled={!values.agree_terms}
+        >
           Estimate Now
         </Button>
 
         <div className="flex gap-3">
-          <Button type="button" variant="default" onClick={onPlaceOrder} disabled={!!isPlacing} aria-busy={!!isPlacing}>
+          <Button
+            type="button"
+            variant="default"
+            onClick={onPlaceOrder}
+            disabled={!values.agree_terms || !!isPlacing}
+            aria-busy={!!isPlacing}
+          >
             {isPlacing ? 'Placing…' : 'Pay & Place Order'}
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={onPayLater}
-            disabled={!!isSavingLater}
+            disabled={!values.agree_terms || !!isSavingLater}
             aria-busy={!!isSavingLater}
           >
-            {isSavingLater ? 'Saving…' : 'Pay Later'}
+          {isSavingLater ? 'Saving…' : 'Pay Later'}
           </Button>
         </div>
       </div>

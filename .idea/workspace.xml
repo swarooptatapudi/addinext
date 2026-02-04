@@ -5,21 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8fada69b-f66a-4284-81f6-e16d835404d2" name="Changes" comment="WIKY Integration in progress">
-      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/design-sessions/[id]/design/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/design-sessions/[id]/scan-cleaning/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/AFOMeasurementsStep.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/AFOOrderPayload.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/Assessment.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/FinishPayment.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/ProductPatientStep.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/ScanUpload.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/assets/order-forms/afo/12.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/assets/order-forms/afo/9.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/form/afoForm/ImgproCheck.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/form/afoForm/Step5Finishing.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/rtk-query/apis/coins_transactions.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/design/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/design/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/addicoins/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/addicoins/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/AFOOrderForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/AFOOrderForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/AFOMeasurementsStep.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/AFOMeasurementsStep.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/Assessment.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/Assessment.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/FinishPayment.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/FinishPayment.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/ProductPatientStep.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/ScanUpload.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/new-order/_child/steps/AFO/ScanUpload.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/wiky-sessions/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/design-sessions/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/wiky-sessions/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/design-sessions/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/uttils/Routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/uttils/Routes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/rtk-query/apis/orders.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/rtk-query/apis/orders.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,8 +49,11 @@
     &quot;accountId&quot;: &quot;4958a9e2-5fbb-49f9-94d2-baff681bcf73&quot;
   }
 }</component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
@@ -60,23 +63,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature__addishield+__helmets&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/work_addiwise/UI-new/addinxt&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;yarn&quot;,
-    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;C:\\work_addiwise\\UI-new\\addinxt\\node_modules\\prettier&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\work_addiwise\\UI-new\\addinxt\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "feature__addishield+__helmets",
+    "last_opened_file_path": "C:/work_addiwise/UI-new/addinxt",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.standard": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.standard": "",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "yarn",
+    "prettierjs.PrettierConfiguration.Package": "/Users/swaroop/Documents/GitHub/New/addinxt/node_modules/prettier",
+    "ts.external.directory.path": "/Users/swaroop/Documents/GitHub/New/addinxt/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
+  <component name="ReactDesignerToolWindowState">
+    <option name="myId2Visible">
+      <map>
+        <entry key="com.haulmont.rcb.reactComponents" value="false" />
+        <entry key="com.haulmont.rcb.reactInspector" value="false" />
+      </map>
+    </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/public/assets/order-forms/afo" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -105,6 +122,7 @@
       <workItem from="1768661600557" duration="2450000" />
       <workItem from="1768717430250" duration="4205000" />
       <workItem from="1768798496496" duration="18665000" />
+      <workItem from="1769669796295" duration="55274000" />
     </task>
     <task id="LOCAL-00001" summary="new files panel in readonly mode created for BK INSOLE CRANIAL">
       <option name="closed" value="true" />
@@ -171,6 +189,29 @@
       <list>
         <option value="$PROJECT_DIR$/src/app/(pages)/(protected-routes)/orders/design/[id]/page.js" />
       </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="feature_addishield+_helmets" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
     </option>
   </component>
   <component name="VcsManagerConfiguration">
