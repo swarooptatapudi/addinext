@@ -43,6 +43,15 @@ import { FORMIK_ERRORS } from '@/uttils/constants/formik-errors.constants';
 import { AKB_FORM_INITIAL_VALUES } from './constants';
 import { AKFinish } from '@/components/form/bkForm/AKFinish';
 import CustomTable from '@/components/app/common/CustomTable';
+const sanitizeNumber = (val: any, defaultVal = 0) => {
+  if (val === '' || val === null || val === undefined) return defaultVal;
+  const num = Number(String(val).replace(/,/g, ''));
+  return isNaN(num) ? defaultVal : num;
+};
+
+const sanitizeString = (val: any) => {
+  return val === null || val === undefined ? '' : String(val);
+};
 
 const step1Validation = Yup.object().shape({
   patient_name: Yup.string()
@@ -488,6 +497,44 @@ const ModelDialog = ({
       </DialogContent>
     </Dialog>
   );
+};
+const sanitizeOrderValues = (values: any) => {
+  return {
+    ...values,
+
+    // Main numbers
+    height: sanitizeNumber(values.height),
+    weight: sanitizeNumber(values.weight),
+    stump_length: sanitizeNumber(values.stump_length),
+
+    mpt_distance: sanitizeNumber(values.mpt_distance),
+    floor_distance: sanitizeNumber(values.floor_distance),
+    waist_circumference: sanitizeNumber(values.waist_circumference),
+    Foot_length: sanitizeNumber(values.Foot_length),
+
+    shoe_size: sanitizeNumber(values.shoe_size),
+    flexion_angle: sanitizeNumber(values.flexion_angle),
+    abductionadduction_angle: sanitizeNumber(values.abductionadduction_angle),
+
+    global_volume_reduction: sanitizeString(values.global_volume_reduction),
+
+    // Arrays
+    socket_design_details: (values.socket_design_details || []).map((i: any) => ({
+      ...i,
+      cpo_input_mm: sanitizeNumber(i.cpo_input_mm),
+    })),
+
+    ak_socket_measurements: (values.ak_socket_measurements || []).map((i: any) => ({
+      ...i,
+      measurement_cm: sanitizeNumber(i.measurement_cm),
+      desired_reduction_: i.desired_reduction_ || '0%',
+    })),
+
+    table_zbib: (values.table_zbib || []).map((i: any) => ({
+      ...i,
+      pressure_mm: sanitizeNumber(i.pressure_mm),
+    })),
+  };
 };
 
 const WatchFieldReset = () => {
@@ -1455,22 +1502,24 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
       });
 
       console.log('scan_items mapped:', scan_items);
+      const cleanValues = sanitizeOrderValues(values);
 
       // 4) Build final order payload (no file binaries, only metadata/URLs)
       const orderPayload: any = {
         item_type: 'AK',
         customer: user?.customer_id,
-        order_details: { ...values },
+        order_details: cleanValues,
         item_code: itemCode,
         scan_items,
         addicoins: parseInt(values.addicoins) || 0,
-        totalPrice: totalPrice,
-        print,
-        design: desgin,
+        totalPrice: sanitizeNumber(totalPrice),
+        print: sanitizeNumber(print),
+        design: sanitizeNumber(desgin),
         coupon_per: couponPer,
         discount_amount: totalDiscount
         // uploaded_files_meta: uploadedMetadata  // optional if you want to send metadata too
       };
+      console.log("FINAL ORDER DATA:", cleanValues);
 
       // NOTE: your backend earlier expected a FormData with "data" key — keep that if required.
       // If your createOrder API accepts JSON object directly use createOrder(orderPayload)
@@ -1597,11 +1646,12 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
     // 2️⃣ Build order payload with URLs instead of files
 
     console.log(' scan_items mapped:', scan_items);
+    const cleanValues = sanitizeOrderValues(values);
 
     const orderPayload = {
       item_type: 'AK',
       customer: user?.customer_id,
-      order_details: { ...values },
+      order_details: cleanValues,
       item_code: itemCode,
       // scan_items: {
       //   left_foot_file: uploadedUrls[0] || "",
