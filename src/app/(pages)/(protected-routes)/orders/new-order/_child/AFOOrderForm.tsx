@@ -465,6 +465,130 @@ export default function AFOOrderForm(_: CranialOrderFormProps) {
           }
 
           // 🔥 UPDATED: postOrder with S3 presigned upload
+          // const postOrder = async (intent: 'place' | 'later') => {
+          //   if (!values.agree_terms) {
+          //     alert('Please agree to the terms and conditions.');
+          //     return;
+          //   }
+          //
+          //   try {
+          //     setBusy(intent);
+          //
+          //     const payload: any = {
+          //       ...values,
+          //       item_code: values.afo_item_code,
+          //       customer: user?.customer_id,
+          //       payment_status: intent === 'later' ? 'Draft' : undefined,
+          //       heel_to_sulcus_cm: Number(values.heel_to_sulcus_cm),
+          //       heel_to_toe_cm: Number(values.heel_to_toe_cm),
+          //       ankle_circumference_cm: Number(values.ankle_circumference_cm),
+          //       widest_calf_circumference_cm: Number(values.widest_calf_circumference_cm),
+          //       forefoot_ml_cm: Number(values.forefoot_ml_cm),
+          //       fibula_head_circumference_cm: Number(values.fibula_head_circumference_cm),
+          //       fibula_head_ml_cm: Number(values.fibula_head_ml_cm),
+          //       fibula_head_to_ankle_cm: Number(values.fibula_head_to_ankle_cm),
+          //       widest_calf_ml_cm: Number(values.widest_calf_ml_cm),
+          //       ankle_ml_cm: Number(values.ankle_ml_cm),
+          //       ankle_to_ground_cm: Number(values.ankle_to_ground_cm),
+          //       agree_terms: Boolean(values.agree_terms),
+          //       qty: 1,
+          //     };
+          //
+          //     // 🔥 NEW: Upload files to S3 first
+          //     const uploadedFiles: any = {};
+          //     let useS3 = true;
+          //
+          //     // 🔥 AFTER - Cast to any for instanceof check:
+          //     if ((values.left_leg_file as any) instanceof File) {
+          //       try {
+          //         // ✅ AFTER - Double cast via unknown:
+          //         const meta = await uploadFileAndStoreMetadata(
+          //           values.left_leg_file as unknown as File,
+          //           user?.customer_id || '1'
+          //         );
+          //
+          //         uploadedFiles.left_leg_file = { url: meta.key };
+          //         console.log('✅ Left leg uploaded to S3:', meta.key);
+          //       } catch (err) {
+          //         console.warn('❌ Left leg S3 upload failed, using multipart', err);
+          //         useS3 = false;
+          //       }
+          //     }
+          //
+          //     if ((values.right_leg_file as any) instanceof File && useS3) {
+          //       try {
+          //         const meta = await uploadFileAndStoreMetadata(
+          //           values.right_leg_file as unknown as File,
+          //           user?.customer_id || '1'
+          //         );
+          //
+          //         uploadedFiles.right_leg_file = { url: meta.key };
+          //         console.log('✅ Right leg uploaded to S3:', meta.key);
+          //       } catch (err) {
+          //         console.warn('❌ Right leg S3 upload failed, using multipart', err);
+          //         useS3 = false;
+          //       }
+          //     }
+          //
+          //     let res: CreateOk;
+          //
+          //     // 🔥 If S3 upload succeeded, send JSON with paths
+          //     if (useS3 && Object.keys(uploadedFiles).length > 0) {
+          //       delete payload.left_leg_file;
+          //       delete payload.right_leg_file;
+          //       payload.uploaded_files = uploadedFiles;
+          //
+          //       console.log('📤 Sending JSON payload with S3 paths');
+          //       res = (await createOrder(payload).unwrap()) as CreateOk;
+          //     } else {
+          //       // S3 upload failed, use FormData fallback
+          //       console.log('📤 Sending FormData (S3 failed)');
+          //       const bodyOrForm = buildBodyOrForm(values);
+          //       res = (await createOrder(bodyOrForm).unwrap()) as CreateOk;
+          //     }
+          //
+          //     const { ok, salesId, aspOrderId, note } = normalizeCreateResponse(res);
+          //
+          //     if (!ok) {
+          //       alert(note || 'Order creation failed.');
+          //       return;
+          //     }
+          //
+          //     if (intent === 'later') {
+          //       alert(
+          //         `Order saved. You can pay later.${
+          //           salesId ? ` (SO: ${salesId})` : ''
+          //         }`
+          //       );
+          //       router.push('/orders');
+          //       return;
+          //     }
+          //
+          //     if (!salesId) {
+          //       alert('Order created but Sales Order ID missing.');
+          //       return;
+          //     }
+          //
+          //     const raw = String(values.total_price ?? '0').replace(/,/g, '');
+          //     const amount = Number(parseFloat(raw || '0').toFixed(2));
+          //     if (!amount || amount <= 0) {
+          //       alert('Invalid payment amount.');
+          //       return;
+          //     }
+          //
+          //     await startPayment(salesId);
+          //   } catch (e: any) {
+          //     alert(
+          //       e?.data?.message ||
+          //       e?.data?._server_messages ||
+          //       e?.error ||
+          //       e?.message ||
+          //       'Failed to submit order.'
+          //     );
+          //   } finally {
+          //     setBusy(null);
+          //   }
+          // };
           const postOrder = async (intent: 'place' | 'later') => {
             if (!values.agree_terms) {
               alert('Please agree to the terms and conditions.');
@@ -494,59 +618,68 @@ export default function AFOOrderForm(_: CranialOrderFormProps) {
                 qty: 1,
               };
 
-              // 🔥 NEW: Upload files to S3 first
-              const uploadedFiles: any = {};
-              let useS3 = true;
-
-              // 🔥 AFTER - Cast to any for instanceof check:
-              if ((values.left_leg_file as any) instanceof File) {
-                try {
-                  // ✅ AFTER - Double cast via unknown:
-                  const meta = await uploadFileAndStoreMetadata(
-                    values.left_leg_file as unknown as File,
-                    user?.customer_id || '1'
-                  );
-
-                  uploadedFiles.left_leg_file = { url: meta.key };
-                  console.log('✅ Left leg uploaded to S3:', meta.key);
-                } catch (err) {
-                  console.warn('❌ Left leg S3 upload failed, using multipart', err);
-                  useS3 = false;
-                }
-              }
-
-              if ((values.right_leg_file as any) instanceof File && useS3) {
-                try {
-                  const meta = await uploadFileAndStoreMetadata(
-                    values.right_leg_file as unknown as File,
-                    user?.customer_id || '1'
-                  );
-
-                  uploadedFiles.right_leg_file = { url: meta.key };
-                  console.log('✅ Right leg uploaded to S3:', meta.key);
-                } catch (err) {
-                  console.warn('❌ Right leg S3 upload failed, using multipart', err);
-                  useS3 = false;
-                }
-              }
-
               let res: CreateOk;
 
-              // 🔥 If S3 upload succeeded, send JSON with paths
-              if (useS3 && Object.keys(uploadedFiles).length > 0) {
-                delete payload.left_leg_file;
-                delete payload.right_leg_file;
-                payload.uploaded_files = uploadedFiles;
+              // 🔥 Check if any files exist
+              const hasAnyFiles = (values.left_leg_file as any) instanceof File ||
+                (values.right_leg_file as any) instanceof File;
 
-                console.log('📤 Sending JSON payload with S3 paths');
+              if (!hasAnyFiles) {
+                // ✅ No files - send plain JSON
+                console.log('📤 Sending JSON payload (no files)');
                 res = (await createOrder(payload).unwrap()) as CreateOk;
+
               } else {
-                // S3 upload failed, use FormData fallback
-                console.log('📤 Sending FormData (S3 failed)');
-                const bodyOrForm = buildBodyOrForm(values);
-                res = (await createOrder(bodyOrForm).unwrap()) as CreateOk;
+                // ✅ Has files - try S3 upload first
+                const uploadedFiles: any = {};
+                let useS3 = true;
+
+                if ((values.left_leg_file as any) instanceof File) {
+                  try {
+                    const meta = await uploadFileAndStoreMetadata(
+                      values.left_leg_file as unknown as File,
+                      user?.customer_id || '1'
+                    );
+                    uploadedFiles.left_leg_file = { url: meta.key };
+                    console.log('✅ Left leg uploaded to S3:', meta.key);
+                  } catch (err) {
+                    console.warn('❌ Left leg S3 upload failed, using multipart', err);
+                    useS3 = false;
+                  }
+                }
+
+                if ((values.right_leg_file as any) instanceof File && useS3) {
+                  try {
+                    const meta = await uploadFileAndStoreMetadata(
+                      values.right_leg_file as unknown as File,
+                      user?.customer_id || '1'
+                    );
+                    uploadedFiles.right_leg_file = { url: meta.key };
+                    console.log('✅ Right leg uploaded to S3:', meta.key);
+                  } catch (err) {
+                    console.warn('❌ Right leg S3 upload failed, using multipart', err);
+                    useS3 = false;
+                  }
+                }
+
+                if (useS3 && Object.keys(uploadedFiles).length > 0) {
+                  // S3 upload succeeded - send JSON with paths
+                  delete payload.left_leg_file;
+                  delete payload.right_leg_file;
+                  payload.uploaded_files = uploadedFiles;
+
+                  console.log('📤 Sending JSON payload with S3 paths');
+                  res = (await createOrder(payload).unwrap()) as CreateOk;
+
+                } else {
+                  // S3 upload failed - use FormData fallback
+                  console.log('📤 Sending FormData (S3 failed)');
+                  const bodyOrForm = buildBodyOrForm(values);
+                  res = (await createOrder(bodyOrForm).unwrap()) as CreateOk;
+                }
               }
 
+              // 🔥 Common response handling (no duplication!)
               const { ok, salesId, aspOrderId, note } = normalizeCreateResponse(res);
 
               if (!ok) {
@@ -577,6 +710,7 @@ export default function AFOOrderForm(_: CranialOrderFormProps) {
               }
 
               await startPayment(salesId);
+
             } catch (e: any) {
               alert(
                 e?.data?.message ||
