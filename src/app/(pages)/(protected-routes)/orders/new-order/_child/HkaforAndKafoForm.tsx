@@ -77,12 +77,6 @@ type FormValues = {
   po_number?: string;
 
   // Measurements
-  ap?: string;
-  ml?: string;
-  da?: string;
-  db?: string;
-  hc?: string;
-  tw?: string;
   circ_waist?: string;
   circ_iliac_crest?: string;
   circ_greater_trochanter?: string;
@@ -125,20 +119,6 @@ type FormValues = {
   knee_sagittal_condition?: string;
   knee_sagittal_degrees?: string;
 
-  // Derived (display)
-  cr?: number;
-  cvai?: number;
-
-  // Clinical
-  occipital_area?: string;
-  parietal_area?: string;
-  frontal_area?: string;
-  ear_alignment?: string;
-
-  // Diagnosis
-  positional?: string;
-  severity?: 'L' | 'M' | 'S' | '' | 'Light' | 'Moderate' | 'Severe';
-  torticollis?: string;
 
   // Surgical & others
   post_surgical?: string;
@@ -629,19 +609,7 @@ const toPositionalLabel = (pos?: string) => {
 };
 
 function toOrderDetails(values: FormValues) {
-  const ap = toNumOrNull(values.ap);
-  const ml = toNumOrNull(values.ml);
-  const da = toNumOrNull(values.da);
-  const db = toNumOrNull(values.db);
 
-  let cr: number | null = null;
-  let cvai: number | null = null;
-  try {
-    if (ap && ml) cr = calculateCephalicRatio(ap, ml).value;
-  } catch {}
-  try {
-    if (da && db) cvai = calculateCVAI(da, db).value;
-  } catch {}
 
   return {
     patient_name: `${orEmpty(values.first_name)} ${orEmpty(values.last_name)}`.trim(),
@@ -654,24 +622,6 @@ function toOrderDetails(values: FormValues) {
     date_of_birth: values.date_of_surgery || null,
     height_cm: toNumOrNull(values.height_cm),
     weight_kg: toNumOrNull(values.weight_kg),
-
-    measurement_of_length_a_to_p__mm: ap,
-    measurement_of_width_m_to_l_mm: ml,
-    diagonal_a_mm: toNumOrNull(values.da),
-    diagonal_b_mm: toNumOrNull(values.db),
-    head_circumference_mm: toNumOrNull(values.hc),
-    temple_width_mm: toNumOrNull(values.tw),
-    cr,
-    cvai,
-
-    occipital_area: orEmpty(values.occipital_area),
-    parietal_area: orEmpty(values.parietal_area),
-    frontal_area: orEmpty(values.frontal_area),
-    ear_alignment: orEmpty(values.ear_alignment),
-
-    positional: toPositionalLabel(values.positional),
-    severity: orEmpty(values.severity as string),
-    torticollis: orEmpty(values.torticollis),
 
     post_surgical: orEmpty(values.post_surgical),
     suture_type_surgical_diagnoses_only: orEmpty(values.suture_type_surgical_diagnoses_only),
@@ -703,21 +653,6 @@ function flattenForSalesOrder(values: FormValues) {
     weight_kg: toNumOrNull(values.weight_kg),
 
     // Measurements
-    measurement_of_length_a_to_p__mm: toNumOrNull(values.ap),
-    measurement_of_width_m_to_l_mm: toNumOrNull(values.ml),
-    diagonal_a_mm: toNumOrNull(values.da),
-    diagonal_b_mm: toNumOrNull(values.db),
-    head_circumference_mm: toNumOrNull(values.hc),
-    temple_width_mm: toNumOrNull(values.tw),
-
-    // Derived
-    cr: typeof values.cr === 'number' ? values.cr : undefined,
-    cvai: typeof values.cvai === 'number' ? values.cvai : undefined,
-
-    // Clinical / Diagnosis
-    positional: toPositionalLabel(values.positional),
-    torticollis: orEmpty(values.torticollis),
-    severity: orEmpty(values.severity as string),
     post_surgical: orEmpty(values.post_surgical),
     suture_type_surgical_diagnoses_only: orEmpty(values.suture_type_surgical_diagnoses_only),
     date_of_surgery: values.date_of_surgery || null,
@@ -725,10 +660,6 @@ function flattenForSalesOrder(values: FormValues) {
     other_diagnosis_and_syndromes: orEmpty(values.other_diagnosis_and_syndromes),
 
     // Areas
-    occipital_area: orEmpty(values.occipital_area),
-    parietal_area: orEmpty(values.parietal_area),
-    frontal_area: orEmpty(values.frontal_area),
-    ear_alignment: orEmpty(values.ear_alignment),
 
     // UI / selections
     custom_design_by: orEmpty(values.design_by),
@@ -819,15 +750,12 @@ function toCreatePayload(
   const kafoMeasurements = mapKafoMeasurements(values);
   const kafoAlignment = mapKafoAlignment(values);
 
-  const rate =
-    Number(String(values.print_price || '0').replace(/,/g, ''));
 
   const payload: any = {
     item_type: values.type === 'KAFO' ? 'KAFO' : 'HKAFO',
     customer: ctx.customerId || values.customer || '',
     item_code: values.item_code!,
     qty: 1,
-    rate: Number(values.print_price ?? 0),
     total_price: String(values.total_price ?? ''),
     custom_payment_reference_id: orEmpty(values.coupon_code),
 
@@ -1045,19 +973,6 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
           weight_kg: d.weight || d.weight_kg || '',
           email: d.email || d.custom_email || '',
           clinic_name: d.clinic_name || '',
-          ap: (d.measurement_of_length_a_to_p__mm ?? d.ap ?? '')?.toString() || '',
-          ml: (d.measurement_of_width_m_to_l_mm ?? d.ml ?? '')?.toString() || '',
-          hc: (d.head_circumference_mm ?? '')?.toString() || '',
-          tw: (d.temple_width_mm ?? '')?.toString() || '',
-          da: (d.diagonal_a_mm ?? '')?.toString() || '',
-          db: (d.diagonal_b_mm ?? '')?.toString() || '',
-          occipital_area: d.occipital_area || '',
-          parietal_area: d.parietal_area || '',
-          frontal_area: d.frontal_area || '',
-          ear_alignment: d.ear_alignment || '',
-          positional: d.positional || '',
-          severity: d.severity || '',
-          torticollis: d.torticollis || '',
           post_surgical: d.post_surgical || '',
           suture_type_surgical_diagnoses_only: d.suture_type_surgical_diagnoses_only || '',
           date_of_surgery: d.date_of_surgery || '',
@@ -1235,16 +1150,35 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
 
           const [isPlacing, isSavingLater] = [busy === 'place', busy === 'later'] as const;
 
-          const buildBodyOrForm = (payload: any) => {
-            const hasFiles = !!values.scan_file || (values.extra_files && values.extra_files.length > 0);
-            if (!hasFiles) return payload;
+          const buildBodyOrForm = (values: any) => {
+            const hasFile =
+              values.scan_file instanceof File
+
+            if (!hasFile) {
+              return {
+                data: JSON.stringify({
+                  ...values,
+                  item_code: values.item_code,
+                }),
+              };
+            }
 
             const fd = new FormData();
+            const payload = {
+              ...values,
+              item_code: values.item_code,
+              agree_terms: Boolean(values.agree_terms),
+              qty: 1,
+            };
+
+            delete payload.left_leg_file;
+
             fd.append('data', JSON.stringify(payload));
-            if (values.scan_file) fd.append('scan_file_primary', values.scan_file);
-            for (const [i, f] of (values.extra_files || []).entries()) {
-              fd.append(`additional_file_${i + 1}`, f);
+
+            if (values.scan_file instanceof File) {
+              fd.append('scan_file', values.scan_file);
             }
+
             return fd;
           };
 
@@ -1254,10 +1188,15 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
               status: string;
               message?: string;
               sales_order_id?: string;
-              cranial_order_id?: string;
+              kafo_order_id?: string;
             };
           }
-            | { status: string; message?: string; sales_order_id?: string; cranial_order_id?: string }
+            | {
+            status: string;
+            message?: string;
+            sales_order_id?: string;
+            kafo_order_id?: string;
+          }
             | string
             | Record<string, any>
             | undefined
@@ -1279,20 +1218,23 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
 
             const obj = res as Record<string, any>;
             const msgObj = obj?.message;
-            const topStatus = obj?.status;
-            const nestedStatus = msgObj && typeof msgObj === 'object' ? msgObj.status : undefined;
 
             const statusStr =
-              (typeof nestedStatus === 'string' && nestedStatus) ||
-              (typeof topStatus === 'string' && topStatus) ||
+              (typeof msgObj?.status === 'string' && msgObj.status) ||
+              (typeof obj?.status === 'string' && obj.status) ||
               '';
 
             ok = /success|ok/i.test(statusStr);
 
             salesId =
-              msgObj?.sales_order_id ?? obj?.sales_order_id ?? obj?.data?.sales_order_id;
+              msgObj?.sales_order_id ??
+              obj?.sales_order_id ??
+              obj?.data?.sales_order_id;
+
             hkafoId =
-              msgObj?.kafo_order_id ?? obj?.kafo_order_id ?? obj?.data?.kafo_order_id;
+              msgObj?.kafo_order_id ??
+              obj?.kafo_order_id ??
+              obj?.data?.kafo_order_id;
 
             note =
               (typeof msgObj?.message === 'string' && msgObj.message) ||
@@ -1378,8 +1320,50 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
               };
 
 
-              const bodyOrForm = buildBodyOrForm(payload);
-              const res = (await createOrder(bodyOrForm).unwrap()) as CreateOk;
+              let res: CreateOk;
+
+              // 🔥 Check if any files exist
+              const hasAnyFiles = (values.scan_file as any) instanceof File;
+
+              if (!hasAnyFiles) {
+                // ✅ No files - send plain JSON
+                console.log('📤 Sending JSON payload (no files)');
+                res = (await createOrder(payload).unwrap()) as CreateOk;
+
+              } else {
+                // ✅ Has files - try S3 upload first
+                const uploadedFiles: any = {};
+                let useS3 = true;
+
+                if ((values.scan_file as any) instanceof File) {
+                  try {
+                    const meta = await uploadFileAndStoreMetadata(
+                      values.scan_file as unknown as File,
+                      user?.customer_id || '1'
+                    );
+                    uploadedFiles.scan_file = { url: meta.key };
+                    console.log('✅ Left leg uploaded to S3:', meta.key);
+                  } catch (err) {
+                    console.warn('❌ Left leg S3 upload failed, using multipart', err);
+                    useS3 = false;
+                  }
+                }
+
+                if (useS3 && Object.keys(uploadedFiles).length > 0) {
+                  // S3 upload succeeded - send JSON with paths
+                  delete payload.scan_file;
+                  payload.scan_file = uploadedFiles;
+
+                  console.log('📤 Sending JSON payload with S3 paths');
+                  res = (await createOrder(payload).unwrap()) as CreateOk;
+
+                } else {
+                  // S3 upload failed - use FormData fallback
+                  console.log('📤 Sending FormData (S3 failed)');
+                  const bodyOrForm = buildBodyOrForm(values);
+                  res = (await createOrder(bodyOrForm).unwrap()) as CreateOk;
+                }
+              }
 
               const { ok, salesId, hkafoId, note } = normalizeCreateResponse(res);
 
@@ -1425,7 +1409,8 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
             } finally {
               setBusy(null);
             }
-          };          const placeOrder = () => postOrder('place');
+          };
+          const placeOrder = () => postOrder('place');
           const payLater = () => postOrder('later');
 
           const validateStepAndShowErrors = async (stepIndex: number) => {
