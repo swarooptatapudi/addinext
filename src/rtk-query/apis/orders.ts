@@ -431,7 +431,36 @@ interface INEstimateResponse {
     };
   };
 }
+interface KAFOEstimateRequest {
+  item_code: string;
+  design_by: string;
+  print_by: string;
+  discount_per: number;
+  discount_amt: number;
+  coupon_code?: string;
+}
 
+interface KAFOEstimateResponse {
+  message: string;
+    data: {
+      design: string;
+      print: string;
+      estimate_price: string;
+      item_standard_discount: string;
+      item_special_discount: string;
+      additional_discount: string;
+      discounted_price: string;
+      discounted_price_18: string;
+      discounted_price_5: string;
+      gst_18: string;
+      gst_5: string;
+      total_price: string;
+      item_discount: string;
+      total_distcounted_price: string;
+      customer_available_coins: string;
+      design_coin_use: string;
+    };
+}
 interface CouponRequest {
   coupon_code: string;
 }
@@ -658,6 +687,24 @@ export const ordersApi = createApi({
       }),
       transformResponse: (response: ASPEstimateResponse) => response
     }),
+    getKAFOEstimate: builder.mutation<KAFOEstimateResponse, INEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.kfao_order.get_kafo_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: KAFOEstimateResponse) => response
+    }),
+    createKAFOOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.kfao_order.create_kafo_order',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        return response;
+      },
+    }),
     getAFOItemOptions: builder.mutation({
       query: (payload) => ({
         url: '/method/addiwise.apis.order_types.afo_order.get_itemcode',
@@ -771,7 +818,9 @@ export const {
   useCreateASEPAOrderMutation,
   useLazyGetOrderPdfQuery,
   useGetAFOItemOptionsMutation,
-  useGetAKOrderDetailsMutation
+  useGetAKOrderDetailsMutation,
+  useGetKAFOEstimateMutation,
+  useCreateKAFOOrderMutation
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;
 
