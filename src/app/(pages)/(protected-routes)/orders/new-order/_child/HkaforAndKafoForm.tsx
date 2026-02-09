@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo,useRef, useState, useEffect } from 'react';
 import { Formik, Form, type FormikTouched } from 'formik';
 import * as Yup from 'yup';
 import { useSelector } from 'react-redux';
@@ -22,17 +22,18 @@ import {
   type ConditionCode
 } from '@/lib/metrics';
 
-import HkafoPatientDetails from './steps/HkafoPatientDetails';
-import HkafoMeasurement from './steps/HkafoMeasurement';
-import HkafoClinicalAssessment from './steps/HkafoClinicalAssessment';
+import HkafoPatientDetails from './steps/HKAFO/HkafoPatientDetails';
+import HkafoMeasurement from './steps/HKAFO/HkafoMeasurement';
+import HkafoClinicalAssessment from './steps/HKAFO/HkafoClinicalAssessment';
 import ScanUpload from './steps/ScanUpload';
-import FinishPayment from './steps/FinishPayment';
+import FinishPayment from './steps/HKAFO/FinishPayment';
 
 import {
-  useCreateCranialOrderMutation,
+  useCreateKAFOOrderMutation,
   useValidateCouponMutation,
   useGetOrderDetailsMutation,
-  usePreSignedUrlMutation
+  usePreSignedUrlMutation,
+  useGetKAFOEstimateMutation, useGetAFOEstimateMutation
 } from '@/rtk-query/apis/orders';
 // ❌ removed paymentsApi + useCreatePaymentOrderMutation imports
 // import { paymentsApi, useCreatePaymentOrderMutation } from '@/rtk-query/apis/payments';
@@ -43,6 +44,7 @@ import { estimateOrderClientSide } from '@/uttils/getEstimate';
 
 // ✅ reusable payment launcher
 import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
+import { toast } from 'react-toastify';
 
 /* ------------------------------- Types/Schema ------------------------------ */
 
@@ -109,7 +111,7 @@ type FormValues = {
   length_ground_to_waist_line?: string;
   measurement_unit?: 'cm' | 'in';
 
-  ankle_frontal_alignment?: string;
+  ankle_alignment?: string;
   ankle_flexibility?: string;
   ankle_frontal_degrees?: string;
   ankle_rotation?: string;
@@ -162,6 +164,7 @@ type FormValues = {
   agree_terms?: boolean;
 
   // From SERVER ONLY
+  estimate_price?: string | number;
   design_price?: string | number;
   print_price?: string | number;
   item_special_discount?: string | number;
@@ -176,7 +179,7 @@ type FormValues = {
   gst_rate?: 0 | 0.05 | 0.18;
 };
 
-const HKAFO_LIMITS = {
+/*const HKAFO_LIMITS = {
   circ_waist: { min: 43.4, max: 110 },
   circ_iliac_crest: { min: 44.2, max: 115 },
   circ_greater_trochanter: { min: 46.8, max: 120 },
@@ -201,7 +204,7 @@ const HKAFO_LIMITS = {
   length_ground_to_greater_trochanter: { min: 37.6, max: 110 },
   length_ground_to_pelvic_line: { min: 37.6, max: 120 },
   length_ground_to_waist_line: { min: 49.1, max: 125 }
-} as const;
+} as const;*/
 const cmToIn = (cm: number) => cm / 2.54;
 
 const MIN_PATIENT_AGE_MONTHS = 18;
@@ -214,7 +217,7 @@ const getMinAllowedDob = () => {
   return d;
 };
 
-const applyHkafoRange = (key: keyof typeof HKAFO_LIMITS, schema: any) =>
+/*const applyHkafoRange = (key: keyof typeof HKAFO_LIMITS, schema: any) =>
   schema.test('hkafo-range', '', function (this: Yup.TestContext, value: unknown) {
     if (value === undefined || value === null || value === '') return true;
 
@@ -238,8 +241,9 @@ const applyHkafoRange = (key: keyof typeof HKAFO_LIMITS, schema: any) =>
       return this.createError({ message: `Value must be between ${min} and ${max} cm` });
     }
     return true;
-  });
+  });*/
 
+/*
 const Schema = Yup.object({
   // Patient details (step 0)
   patient_name: Yup.string().required('Patient name is required'),
@@ -451,6 +455,7 @@ const Schema = Yup.object({
 
   // keep numbers monetary optional or validated elsewhere
 });
+*/
 const STEP_FIELDS: Record<number, string[]> = {
   0: [
     'patient_name',
@@ -490,7 +495,7 @@ const STEP_FIELDS: Record<number, string[]> = {
     'length_ground_to_waist_line',
   ],
   2: [
-    'ankle_frontal_alignment',
+    'ankle_alignment',
     'ankle_flexibility',
     'ankle_rotation',
     'ankle_plane',
@@ -733,6 +738,7 @@ function flattenForSalesOrder(values: FormValues) {
 
     // Payment Summary (send as plain numbers; backend can format)
     design_price: values.design_price ?? 0,
+    estimate_price: values.estimate_price ?? 0,
     print_price: values.print_price ?? 0,
     item_special_discount: values.item_special_discount ?? 0,
     item_standard_discount: values.item_standard_discount ?? 0,
@@ -763,27 +769,80 @@ function toCreatePayload(
   const in7 = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
   const flattened = flattenForSalesOrder(values);
+  function mapKafoMeasurements(values: FormValues) {
+    return {
+      // Circumferences
+      circ_greater_trochanter: toNumOrNull(values.circ_greater_trochanter),
+      circ_upper_mid_tigh: toNumOrNull(values.circ_upper_mid_thigh), // backend typo
+      circ_upper_mid_calf: toNumOrNull(values.circ_upper_mid_calf),
+      circ_perineum: toNumOrNull(values.circ_perineum),
+      circ_lower_mid_thigh: toNumOrNull(values.circ_lower_mid_thigh),
+      circ_lower_mid_calf: toNumOrNull(values.circ_lower_mid_calf),
+
+      // ML
+      ml_greater_trochanter: toNumOrNull(values.ml_greater_trochanter),
+      ml_mid_thigh: toNumOrNull(values.ml_mid_thigh),
+      ml_knee_axis: toNumOrNull(values.ml_knee_axis),
+      ml_perineum: toNumOrNull(values.ml_perineum),
+      ml_mid_calf: toNumOrNull(values.ml_mid_calf),
+      ml_ankle_axis: toNumOrNull(values.ml_ankle_axis),
+
+      // Lengths (⚠ backend uses `len_`)
+      len_ankle_axis_to_mid_tibia: toNumOrNull(values.length_ankle_axis_to_mid_tibia),
+      len_ground_to_knee_axis: toNumOrNull(values.length_ground_to_knee_axis),
+      len_ground_to_ischial_tuberosity: toNumOrNull(values.length_ground_to_ischial_tuberosity),
+      len_ground_to_pelvic_line: toNumOrNull(values.length_ground_to_pelvic_line),
+      len_ground_to_fibular_neck: toNumOrNull(values.length_ground_to_fibular_neck),
+      len_ground_to_30mm_bl_perineum: toNumOrNull(values.length_ground_to_perineum_30mm_down),
+      len_ground_to_greater_trochanter: toNumOrNull(values.length_ground_to_greater_trochanter),
+      len_ground_to_waist_line: toNumOrNull(values.length_ground_to_waist_line),
+    };
+    }
+  function mapKafoAlignment(values: FormValues) {
+    return {
+      ankle_alignment: orEmpty(values.ankle_alignment),
+      ankle_flexibility: orEmpty(values.ankle_flexibility),
+      ankle_rotation: orEmpty(values.ankle_rotation),
+      ankle_plane: orEmpty(values.ankle_plane),
+
+      ankle_frontal_degrees: toNumOrNull(values.ankle_frontal_degrees),
+      ankle_plane_degrees: toNumOrNull(values.ankle_plane_degrees),
+      ankle_heel_height: toNumOrNull(values.ankle_heel_height),
+
+      knee_alignment: orEmpty(values.knee_alignment),
+      knee_flexibility: orEmpty(values.knee_flexibility),
+      knee_sagittal_condition: orEmpty(values.knee_sagittal_condition),
+      knee_alignment_degrees: toNumOrNull(values.knee_alignment_degrees),
+      knee_sagittal_degrees: toNumOrNull(values.knee_sagittal_degrees),
+    };
+  }
+  const kafoMeasurements = mapKafoMeasurements(values);
+  const kafoAlignment = mapKafoAlignment(values);
+
+  const rate =
+    Number(String(values.print_price || '0').replace(/,/g, ''));
 
   const payload: any = {
-    item_type: 'CH',
+    item_type: values.type === 'KAFO' ? 'KAFO' : 'HKAFO',
     customer: ctx.customerId || values.customer || '',
-    item_code: productCode || '',
+    item_code: values.item_code!,
     qty: 1,
     rate: Number(values.print_price ?? 0),
     total_price: String(values.total_price ?? ''),
-
-    addicoins: 0,
     custom_payment_reference_id: orEmpty(values.coupon_code),
-
-    gst_5: gst_5_num > 0,
-    gst_18: gst_18_num > 0,
 
     transaction_date: ymd,
     delivery_date: in7,
 
     order_details,
-    ...flattened
+
+    // 🔥 KAFO MEASUREMENTS MUST BE AT ROOT
+    ...kafoMeasurements,
+    ...kafoAlignment,
+
+    ...flattened,
   };
+
 
   if (values.scan_gdrive_link) {
     payload.custom_scan_items = { scan_file: values.scan_gdrive_link };
@@ -802,36 +861,6 @@ function toCreatePayload(
   return payload;
 }
 
-/* ---------- Payment helpers (keep) ---------- */
-
-function normalizePaymentResponse(paymentRes: any) {
-  let success = false;
-  let paymentLink: string | undefined;
-  let msgText = '';
-
-  if (typeof paymentRes === 'string') {
-    msgText = paymentRes;
-  } else if (paymentRes && typeof paymentRes === 'object') {
-    const msg = paymentRes.message;
-    if (msg && typeof msg === 'object') {
-      success = !!msg.success || msg.status === 'success' || msg.ok === true;
-      paymentLink = msg.data?.payment_link || msg.payment_link;
-      msgText = msg.message || '';
-    } else {
-      success = !!paymentRes.success || paymentRes.status === 'success' || paymentRes.ok === true;
-      paymentLink = paymentRes.data?.payment_link || paymentRes.payment_link;
-      msgText = paymentRes.message || '';
-    }
-  }
-
-  return { success, paymentLink, msgText };
-}
-
-function redirectToPayment(link: string) {
-  const trimmed = (link || '').trim();
-  if (!trimmed) throw new Error('Empty payment link');
-  window.location.assign(trimmed);
-}
 
 /* -------------------------------- Component -------------------------------- */
 
@@ -848,16 +877,20 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
   const [busy, setBusy] = useState<null | 'place' | 'later'>(null);
   const [formResetKey, setFormResetKey] = useState(0);
 
-  const [createCranialOrder] = useCreateCranialOrderMutation();
+  const [createOrder] = useCreateKAFOOrderMutation();
   const [validateCoupon] = useValidateCouponMutation();
   const [getOrderDetails] = useGetOrderDetailsMutation();
   const [preSignedUrl] = usePreSignedUrlMutation();
 
   const { startPayment } = usePaymentLauncher(); // ✅ get reusable payment launcher
+  const [getEstimate] = useGetKAFOEstimateMutation();
+  const [isEstimating, setIsEstimating] = useState(false);
+  const [couponData, setCouponData] = useState<any>(null);
 
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const { user }: { user: USER } = useSelector((state: any) => state.userReducer);
-
+  const salesOrderIdRef = useRef<string | null>(null);
+  const paymentLaunchedRef = useRef(false);
   // ❌ removed popup/status hooks & listeners
 
   const pill = (i: number) => {
@@ -933,7 +966,7 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
       length_ground_to_waist_line: '',
       measurement_unit: 'cm',
 
-      ankle_frontal_alignment: '',
+      ankle_alignment: '',
       ankle_flexibility: '',
       ankle_frontal_degrees: '',
       ankle_rotation: '',
@@ -975,6 +1008,7 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
       agree_terms: false,
 
       design_price: '',
+      estimate_price: '',
       print_price: '',
       item_special_discount: '',
       item_standard_discount: '',
@@ -1098,7 +1132,6 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
       <Formik
         key={formResetKey + (prefilled ? 1 : 0)}
         initialValues={prefilled ? formSeed : initialValues}
-        validationSchema={Schema}
         onSubmit={() => {}}
         enableReinitialize
         validateOnChange
@@ -1148,133 +1181,56 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
             return !!fieldError && !!fieldTouched;
           };
 
-          const { cr, cvai } = useMemo(() => {
-            const apN = toNum(values.ap);
-            const mlN = toNum(values.ml);
-            const daN = toNum(values.da);
-            const dbN = toNum(values.db);
 
-            let crV: number | undefined;
-            let cvaiV: number | undefined;
+          const onEstimate = async () => {
+            const resolvedItemCode = values.item_code;
 
-            if (
-              typeof apN === 'number' &&
-              Number.isFinite(apN) &&
-              apN > 0 &&
-              typeof mlN === 'number' &&
-              Number.isFinite(mlN) &&
-              mlN > 0
-            ) {
-              try {
-                crV = calculateCephalicRatio(apN, mlN).value;
-              } catch {}
-            }
-
-            if (
-              typeof daN === 'number' &&
-              Number.isFinite(daN) &&
-              daN > 0 &&
-              typeof dbN === 'number' &&
-              Number.isFinite(dbN) &&
-              dbN > 0
-            ) {
-              try {
-                cvaiV = calculateCVAI(daN, dbN).value;
-              } catch {}
-            }
-
-            return { cr: crV, cvai: cvaiV };
-          }, [values.ap, values.ml, values.da, values.db]);
-
-          const productCode = useMemo(() => {
-            const cond = normalizeCondition(values.positional);
-            const sev = normalizeSeverity(values.severity as string, cvai);
-            return cond && sev ? makeProductCode(sev, cond) : '';
-          }, [values.positional, values.severity, cvai]);
-
-          useEffect(() => {
-            setFieldValue('item_code', productCode || '');
-          }, [productCode, setFieldValue]);
-
-          const onEstimate = async (p: {
-            design_by: string;
-            print_by: string;
-            coupon_code?: string;
-            product_code?: string;
-          }): Promise<
-            | void
-            | {
-            design: number;
-            print: number;
-            stdDiscPct?: number;
-            gstRate?: number;
-          }
-          > => {
-            if (!productCode) {
-              alert('Select Positional Diagnosis and Severity to generate Product Code first.');
+            if (!resolvedItemCode) {
+              toast.error('Please select a Product Code');
               return;
             }
 
-            const qty = 1;
-            const couponPayload =
-              p.coupon_code && p.coupon_code.trim()
-                ? { code: p.coupon_code.trim(), discount_type: 'Percent' as const, discount_value: 0 }
-                : undefined;
-
-            const { result, error } = await estimateOrderClientSide({
-              company: undefined,
-              customer: undefined,
-              items: [{ item_code: productCode, qty }],
-              coupon: couponPayload,
-              price_list: 'Standard Selling',
-              baseQuery: baseQueryWithReauth,
-              api: {} as any
-            });
-
-            if (error) {
-              alert(error);
+            if (!values.design_by || !values.print_by) {
+              toast.error('Design by and Print by are required');
               return;
             }
-            if (!result) return;
 
-            const subtotal = Number(result.subtotal || 0);
-            const totalDisc = Number(result.total_discount || 0);
-            const baseBeforeCoupon = Math.max(0, subtotal - totalDisc);
-            const stdPct = subtotal > 0 ? totalDisc / subtotal : 0;
+            setIsEstimating(true);
 
-            const prevGstRate =
-              typeof values.gst_rate === 'number' && values.gst_rate > 0
-                ? values.gst_rate!
-                : 0.05;
+            const estimatePayload = {
+              item_code: resolvedItemCode,        // ✅ now string
+              design_by: values.design_by!,       // safe
+              print_by: values.print_by!,         // safe
+              discount_per: couponData?.discount_percentage || 0,
+              discount_amt: couponData?.discount_amount || 0,
+              coupon_code: (values.coupon_code || '').trim()
+            };
 
-            const firstLine = result.breakdown?.items?.[0];
-            const computedGstRate =
-              typeof firstLine?.tax_rate === 'number' && firstLine.tax_rate > 0
-                ? firstLine.tax_rate / 100
-                : prevGstRate;
+            try {
+              const response = await getEstimate(estimatePayload).unwrap();
+              const apiRes = response?.data || {};
+              setFieldValue('estimate_price', apiRes.estimate_price || '0.00');
 
-            setFieldValue('design_price', 0);
-            setFieldValue('print_price', baseBeforeCoupon);
-            setFieldValue('standard_discount_pct', stdPct);
-            setFieldValue('gst_rate', computedGstRate);
-
-            const totalAmount = Number(
-              result.total ?? result.grand_total ?? baseBeforeCoupon * (1 + (computedGstRate || 0))
-            );
-
-            setFieldValue('total_price', totalAmount);
-
-            return { design: 0, print: baseBeforeCoupon, stdDiscPct: stdPct, gstRate: computedGstRate };
+              setFieldValue('design_price', apiRes.design || '0.00');
+              setFieldValue('print_price', apiRes.print || '0.00');
+              setFieldValue('item_standard_discount', apiRes.item_standard_discount || '0.00');
+              setFieldValue('additional_discount', apiRes.additional_discount || '0.00');
+              setFieldValue('discounted_price', apiRes.discounted_price || '0.00');
+              setFieldValue('gst_5_amt', apiRes.gst_5 || '0.00');
+              setFieldValue('gst_18_amt', apiRes.gst_18 || '0.00');
+              setFieldValue('total_price', apiRes.total_price || '0.00');
+            } catch (err: any) {
+              toast.error(err?.data?.message || 'Failed to get estimate');
+            } finally {
+              setIsEstimating(false);
+            }
           };
 
+
           const onValidateCoupon = async (code: string) => {
-            if (!code) return null;
-            try {
-              const res = await validateCoupon({ coupon_code: code }).unwrap();
-              return res;
-            } catch {
-              return null;
-            }
+            const res = await validateCoupon({ coupon_code: code }).unwrap();
+            setCouponData(res?.data || null);
+            return res;
           };
 
           const [isPlacing, isSavingLater] = [busy === 'place', busy === 'later'] as const;
@@ -1310,15 +1266,15 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
           function normalizeCreateResponse(res: unknown) {
             let ok = false;
             let salesId: string | undefined;
-            let cranialId: string | undefined;
+            let hkafoId: string | undefined;
             let note = '';
 
-            if (res == null) return { ok, salesId, cranialId, note: 'Empty response' };
+            if (res == null) return { ok, salesId, hkafoId, note: 'Empty response' };
 
             if (typeof res === 'string') {
               ok = /success|ok/i.test(res);
               note = res;
-              return { ok, salesId, cranialId, note };
+              return { ok, salesId, hkafoId, note };
             }
 
             const obj = res as Record<string, any>;
@@ -1335,8 +1291,8 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
 
             salesId =
               msgObj?.sales_order_id ?? obj?.sales_order_id ?? obj?.data?.sales_order_id;
-            cranialId =
-              msgObj?.cranial_order_id ?? obj?.cranial_order_id ?? obj?.data?.cranial_order_id;
+            hkafoId =
+              msgObj?.kafo_order_id ?? obj?.kafo_order_id ?? obj?.data?.kafo_order_id;
 
             note =
               (typeof msgObj?.message === 'string' && msgObj.message) ||
@@ -1344,106 +1300,132 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
               statusStr ||
               '';
 
-            return { ok, salesId, cranialId, note };
+            return { ok, salesId, hkafoId, note };
           }
 
           // ✅ postOrder now uses the reusable payment launcher
+/*
           const postOrder = async (intent: 'place' | 'later') => {
-            if (!values.agree_terms) return alert('Please agree to the terms and conditions.');
-            const cond = normalizeCondition(values.positional);
-            const sev = normalizeSeverity(values.severity as string, cvai);
-            const productCode = cond && sev ? makeProductCode(sev, cond) : '';
-            if (!productCode)
-              return alert('Please select Positional Diagnosis + Severity (product code missing).');
+            if (!values.agree_terms) {
+              toast.error('Please agree to the terms and conditions');
+              return;
+            }
+
+            if (!values.item_code) {
+              toast.error('Product Code is required');
+              return;
+            }
 
             try {
               setBusy(intent);
 
-              const payload = toCreatePayload(values, productCode, {
+              const payload = toCreatePayload(values, values.item_code, {
                 customerId: user?.customer_id,
                 orderId,
                 deviceTypeId
               });
 
-              // If there's a scan file, try presign upload first
-              if (values.scan_file instanceof File) {
-                try {
-                  const meta = await uploadFileAndStoreMetadata(
-                    values.scan_file,
-                    user?.customer_id || '1'
-                  );
-                  payload.custom_scan_items = payload.custom_scan_items || {};
-                  payload.custom_scan_items.scan_file = meta.key;
-                  payload.custom_upload_link_with_photos = meta.key;
-                } catch (presignErr) {
-                  // Fallback to multipart POST
-                  console.warn('Presign/upload failed — using multipart POST', presignErr);
-                  const bodyOrForm = buildBodyOrForm(payload);
-                  const resFallback = (await createCranialOrder(bodyOrForm).unwrap()) as CreateOk;
-                  const { ok, note, salesId } = normalizeCreateResponse(resFallback);
-
-                  if (ok) {
-                    if (intent === 'place' && salesId) {
-                      // ✅ Use reusable payment launcher
-                      const raw = String(values.total_price ?? '0').replace(/,/g, '');
-                      const amount = Number(parseFloat(raw || '0').toFixed(2));
-                      await startPayment(salesId);
-
-                      return;
-                    }
-                    alert(
-                      intent === 'place'
-                        ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
-                        : 'Order saved. You can pay later.'
-                    );
-                    router.push('/orders');
-                    return;
-                  }
-
-                  alert(note || 'Order created response not marked as success.');
-                  setBusy(null);
-                  return;
-                }
-              }
-
-              // JSON payload path (preferred)
-              const res = (await createCranialOrder(payload).unwrap()) as CreateOk;
+              const res = (await createOrder(payload).unwrap()) as CreateOk;
               const { ok, note, salesId } = normalizeCreateResponse(res);
 
               if (ok) {
                 if (intent === 'place' && salesId) {
-                  // ✅ Use reusable payment launcher
-                  const raw = String(values.total_price ?? '0').replace(/,/g, '');
-                  const amount = Number(parseFloat(raw || '0').toFixed(2));
-                  await startPayment(salesId);
+                  if (paymentStartedRef.current) return;
+                  paymentStartedRef.current = true;
 
+                  await startPayment(salesId);
                   return;
                 }
 
-                alert(
+
+                toast.success(
                   intent === 'place'
-                    ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}.`
+                    ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}`
                     : 'Order saved. You can pay later.'
                 );
                 router.push('/orders');
                 return;
               }
 
-              alert(note || 'Order created response not marked as success.');
+              toast.error(note || 'Order creation failed');
             } catch (e: any) {
-              const msg =
+              toast.error(
                 e?.data?.message ||
                 e?.data?._server_messages ||
-                e?.error ||
                 e?.message ||
-                'Failed to submit order.';
-              alert(msg);
+                'Failed to submit order'
+              );
             } finally {
               setBusy(null);
             }
           };
+*/
 
-          const placeOrder = () => postOrder('place');
+          const postOrder = async (intent: 'place' | 'later') => {
+            if (!values.agree_terms) {
+              alert('Please agree to the terms and conditions.');
+              return;
+            }
+
+            try {
+              setBusy(intent);
+
+              const payload = {
+                ...values,
+                item_code: values.item_code,
+                customer: user?.customer_id,
+                payment_status: intent === 'later' ? 'Draft' : undefined,
+              };
+
+
+              const bodyOrForm = buildBodyOrForm(payload);
+              const res = (await createOrder(bodyOrForm).unwrap()) as CreateOk;
+
+              const { ok, salesId, hkafoId, note } = normalizeCreateResponse(res);
+
+              if (!ok) {
+                alert(note || 'Order creation failed.');
+                return;
+              }
+
+              // ✅ Pay later
+              if (intent === 'later') {
+                alert(
+                  `Order saved. You can pay later.${
+                    salesId ? ` (SO: ${salesId})` : ''
+                  }`
+                );
+                router.push('/orders');
+                return;
+              }
+
+              // ✅ Pay & Place
+              if (!salesId) {
+                alert('Order created but Sales Order ID missing.');
+                return;
+              }
+
+              const raw = String(values.total_price ?? '0').replace(/,/g, '');
+              const amount = Number(parseFloat(raw || '0').toFixed(2));
+              if (!amount || amount <= 0) {
+                alert('Invalid payment amount.');
+                return;
+              }
+
+              await startPayment(salesId);
+
+            } catch (e: any) {
+              alert(
+                e?.data?.message ||
+                e?.data?._server_messages ||
+                e?.error ||
+                e?.message ||
+                'Failed to submit order.'
+              );
+            } finally {
+              setBusy(null);
+            }
+          };          const placeOrder = () => postOrder('place');
           const payLater = () => postOrder('later');
 
           const validateStepAndShowErrors = async (stepIndex: number) => {
@@ -1599,7 +1581,6 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                   {activeStep === 4 && (
                     <FinishPayment
                       values={values}
-                      productCode={productCode}
                       UI={{ Input, Button, Label, Card, SelectBox }}
                       onEstimate={onEstimate}
                       onValidateCoupon={onValidateCoupon}
