@@ -7,6 +7,11 @@ import BEOrderForm from '../_child/BEOrderForm';
 import AEOrderForm from '../_child/AEOrderForm';
 import HkafoAndKafoForm from '../_child/HkaforAndKafoForm'
 import CranialForm from '@/app/(pages)/(protected-routes)/orders/new-order/_child/CranialOrderForm';
+import ASPOrderForm from '../_child/ASPOrderForm';
+import ASEPOrderForm from '../_child/ASEPOrderForm';
+import ASEPAOrderForm from '../_child/ASEPAOrderForm';
+import HelmetOrderEntryPage from '@/app/(pages)/(protected-routes)/orders/new-order/_child/HelmetOrderEntryPage';
+import AFOOrderForm from '../_child/AFOOrderForm';
 
 export default function NewOrderController({
   params
@@ -41,6 +46,19 @@ export default function NewOrderController({
     return <HkafoAndKafoForm item_type={"cranial"} />
 
   }
+  else if (product?.toLowerCase()==='addishieldplus') {
+    return <HelmetOrderEntryPage />
+  }
+  else if (product?.toLowerCase()?.includes('afo')) {
+    return <AFOOrderForm item_type={product} />
+
+  }
+  /*else if (product?.toLowerCase()?.includes('asep')) {
+    return <ASEPOrderForm item_type={product} />
+  }
+  else if (product?.toLowerCase()?.includes('asp')) {
+    return <ASPOrderForm item_type={product} />
+  }*/
   else {
     return <p>Invalid product</p>;
   }

@@ -40,7 +40,7 @@ export const BK_FORM_INITIAL_VALUES = {
   custom_upload_link_with_photos: '',
   item_code: '',
   global_volume_reduction: '',
- 
+
   gst_5: 0.0,
   gst_18: 0.0,
   item_discount: 0.0,
@@ -259,6 +259,8 @@ export const AKB_FORM_INITIAL_VALUES = {
   foot_Amputation: 'Both',
   images_link: '',
   global_volume_reduction: '',
+  design_by: '',
+  print_by: '',
   socket_design_details: [
     {
       area: 'A',

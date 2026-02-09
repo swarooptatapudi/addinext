@@ -1,6 +1,7 @@
 // src/rtk-query/apis/payments.ts
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQueryWithReauth } from '@/rtk-query/apis';
+import  baseQueryWithReauth  from '../base/baseQueryReAuth';
+
 
 export type Provider = 'HDFC';
 export type Currency = 'INR';
@@ -20,11 +21,7 @@ export interface UpdateStatusResponse {
 }
 
 export interface CreatePaymentOrderInput {
-  amount_rupees: number;
   sales_order: string;
-  currency?: Currency;
-  provider?: Provider;
-  return_url?: string;
 }
 
 export interface CreatePaymentOrderResponse {
@@ -77,26 +74,19 @@ export const paymentsApi = createApi({
   tagTypes: ['PaymentStatus'],
   endpoints: (builder) => ({
     /** 🔹 Create payment order (calls Frappe create_payment_order) */
-    createPaymentOrder: builder.mutation<CreatePaymentOrderResponse, CreatePaymentOrderInput>({
-      query: (body) => {
-        const RETURN_URL = `${window.location.origin}/api/payments/return`;
-        const payload = {
-          ...body,
-          provider: body.provider || 'HDFC',
-          currency: body.currency || 'INR',
-          return_url: body.return_url || RETURN_URL,
-        };
-
-        return {
-          url: '/method/addiwise.apis.payments.hdfc_payments.create_payment_order',
-          method: 'POST',
-          body: JSON.stringify(payload),
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-        };
-      },
+    createPaymentOrder: builder.mutation<
+      CreatePaymentOrderResponse,
+      CreatePaymentOrderInput
+    >({
+      query: (body) => ({
+        url: '/method/addiwise.apis.payments.hdfc_payments.create_payment_order',
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      }),
     }),
 
     /** 🔹 Get payment status (calls Frappe get_payment_status) */

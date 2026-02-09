@@ -1,22 +1,12 @@
-// app/(your-path)/buy-product-with-hdfc.tsx
 'use client';
-
+import DOMPurify from 'dompurify';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
-import {
-  ShoppingCartIcon,
-  CreditCardIcon,
-  BookmarkIcon,
-  InfoIcon
-} from 'lucide-react';
+
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+
+import { ShoppingCartIcon, CreditCardIcon, BookmarkIcon, InfoIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useValidateCouponMutation, useCreateProductOrderMutation } from '@/rtk-query/apis/orders';
 import { useGetProductsListQuery } from '@/rtk-query/apis/products';
@@ -27,12 +17,50 @@ import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { Loader, Check, X } from 'lucide-react';
 import { usePaymentLauncher } from '@/hooks/usePaymentLauncherForScannersPrinters';
-
+import { Interweave ,Matcher} from 'interweave';
+import { HashtagMatcher, UrlMatcher } from 'interweave-autolink';
+import linkifyHtml from 'linkify-html';
 declare global {
   interface Window {
     Razorpay: any;
   }
 }
+
+
+class ColoredUrlMatcher extends Matcher<{}> {
+  replaceWith(children: React.ReactNode, props: any) {
+    const { key, escapeHtml, ...rest } = props; // remove key + escapeHtml
+
+    return (
+      <a
+        key={key}
+        {...rest} // href, target, rel, etc.
+        className="text-blue-600 hover:text-blue-700 underline"
+      >
+        {children}
+      </a>
+    );
+  }
+
+  asTag() {
+    return 'a';
+  }
+
+  match(string: string) {
+    const regex = /(https?:\/\/[^\s]+)/;
+    const result = string.match(regex);
+    if (!result) return null;
+
+    return {
+      match: result[0],
+      index: result.index!,
+      length: result[0].length,
+      url: result[0],
+      valid: true,
+    };
+  }
+}
+
 
 export default function BuyProductsWithHdfc() {
   const [quantity, setQuantity] = useState<number | ''>('');
@@ -54,6 +82,8 @@ export default function BuyProductsWithHdfc() {
   // payment launcher hook
   const { startPayment } = usePaymentLauncher();
 
+
+
   // coupon debounce
   useEffect(() => {
     if (!couponCode) {
@@ -74,10 +104,14 @@ export default function BuyProductsWithHdfc() {
   const discountAmountPercent = selectedProduct?.standard_discount || 0;
 
   const baseAmount = mrp * (typeof quantity === 'number' ? quantity : 0);
-  const netAmount = baseAmount - (discountAmountPercent / 100) * baseAmount - (couponData?.discount_amount || 0);
+  const netAmount =
+    baseAmount - (discountAmountPercent / 100) * baseAmount - (couponData?.discount_amount || 0);
   const tax = netAmount * 0.18;
   const totalAmount = netAmount + tax;
-  const finalAmount = totalAmount - (totalAmount * (couponData?.discount_percentage || 0) / 100 || 0);
+  const finalAmount =
+    totalAmount - ((totalAmount * (couponData?.discount_percentage || 0)) / 100 || 0);
+
+  const linkMatcher = new ColoredUrlMatcher('coloredUrl');
 
   async function handleCouponValidation() {
     if (!couponCode || couponCode.trim().length < 3) {
@@ -96,10 +130,6 @@ export default function BuyProductsWithHdfc() {
       setIsValidatingCoupon(false);
     }
   }
-
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Failed to load products</p>;
-  if (!selectedProduct) return <p>No product selected</p>;
 
   // ---------- Helper: robust extractor ----------
   const extractSalesAndPrice = (res: any) => {
@@ -203,39 +233,8 @@ export default function BuyProductsWithHdfc() {
       }
 
       // 3) Call startPayment (pass rupees, NOT paise). Do NOT pass returnUrl to let hook use its default.
-      await startPayment({
-        amount: canonicalAmountRupees, // rupees
-        salesOrder: String(salesOrderId),
-        provider: 'HDFC',
-        openInPopup: true,
-        pollingAttempts: 20,
-        pollingIntervalMs: 2000,
-        // finalize the order when payment confirmed
-        onSuccess: async (payload) => {
-          try {
-            // try to extract payment reference id from payload delivered by HDFC / hook
-            const paymentRef =
-              payload?.data?.payment_reference_id ||
-              payload?.data?.order_id ||
-              payload?.payment_id ||
-              payload?.order_id ||
-              payload?.payment_reference_id ||
-              null;
+      await startPayment(salesOrderId);
 
-            await finalizeOrder(String(salesOrderId), paymentRef);
-            toast.success('Payment successful & order finalized');
-            router.push('/transcations#other-transcation-history');
-          } catch (err) {
-            console.error('Failed to finalize after success:', err);
-            toast.error('Payment succeeded but finalizing failed.');
-            // Keep user on page or redirect depending on your UX choice
-          }
-        },
-        onFailure: (err) => {
-          console.error('Payment failed/cancelled', err);
-          toast.error('Payment failed or cancelled. Please try again.');
-        }
-      });
     } catch (err: any) {
       console.error('Error in payment flow', err);
       toast.error(err?.data?.message || err?.message || 'Failed to prepare payment. Try again.');
@@ -244,14 +243,65 @@ export default function BuyProductsWithHdfc() {
 
   // ----- UI card helpers -----
   const custom_product_image = selectedProduct?.custom_product_image;
-  const description = selectedProduct?.description || '';
+  // const description = selectedProduct?.description || '';
 
+  function sanitizeDescription(raw: string): string {
+    if (!raw) return '';
+
+    return DOMPurify.sanitize(raw, {
+      ALLOWED_TAGS: ['div', 'p', 'br', 'strong', 'em', 'b', 'i'],
+      ALLOWED_ATTR: [], // no attributes needed yet
+    });
+  }
+
+  // const getProductDescriptionCard = () => {
+  //   if (!selectedProduct) return null;
+  //   const safeDescription =
+  //     description?.includes('<a') || description?.includes('<p') ? (
+  //       <div dangerouslySetInnerHTML={{ __html: description }} />
+  //     ) : (
+  //       <p>{description}</p>
+  //     );
+  //
+  //   return (
+  //     <Card className="border border-gray-200 bg-gray-50 shadow-sm rounded-lg mb-6">
+  //       <CardHeader className="pb-2">
+  //         <div className="flex items-center gap-2">
+  //           <InfoIcon className="w-5 h-5 text-primary" />
+  //           <CardTitle className="text-lg font-semibold text-primary">
+  //             {selectedProduct.item_name}
+  //           </CardTitle>
+  //         </div>
+  //       </CardHeader>
+  //       <CardContent className="text-sm text-gray-700">
+  //         {safeDescription}
+  //         {custom_product_image && (
+  //           <img
+  //             src={custom_product_image}
+  //             alt={selectedProduct.item_name}
+  //             className="mt-3 rounded-md w-full max-w-sm"
+  //           />
+  //         )}
+  //       </CardContent>
+  //     </Card>
+  //   );
+  // };
   const getProductDescriptionCard = () => {
     if (!selectedProduct) return null;
-    const safeDescription =
-      description?.includes('<a') || description?.includes('<p')
-        ? <div dangerouslySetInnerHTML={{ __html: description }} />
-        : <p>{description}</p>;
+    const descriptionNew = selectedProduct?.description || '';
+    // console.warn(descriptionNew);
+
+    const refinedContent =  linkifyHtml(descriptionNew, {
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      className: 'text-blue-600 underline',
+    });
+
+
+    if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Failed to load products</p>;
+  if (!selectedProduct) return <p>No product selected</p>;
+
 
     return (
       <Card className="border border-gray-200 bg-gray-50 shadow-sm rounded-lg mb-6">
@@ -263,8 +313,11 @@ export default function BuyProductsWithHdfc() {
             </CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="text-sm text-gray-700">
-          {safeDescription}
+        <CardContent className="text-sm text-gray-700 space-y-2">
+          <Interweave
+            content={refinedContent}
+            matchers={[new UrlMatcher('url', { validateTLD: false })]}
+          />
           {custom_product_image && (
             <img
               src={custom_product_image}
@@ -298,7 +351,9 @@ export default function BuyProductsWithHdfc() {
               {couponData?.discount_amount > 0 && (
                 <li className="text-green-600">Coupon Applied: -₹{couponData.discount_amount}</li>
               )}
-              <li>Net Amount: <span className="font-semibold">₹{netAmount.toFixed(2)}</span></li>
+              <li>
+                Net Amount: <span className="font-semibold">₹{netAmount.toFixed(2)}</span>
+              </li>
               <li>Taxes @ 18%</li>
               <li className="font-bold text-primary">Total Amount: ₹{finalAmount.toFixed(2)}</li>
             </ul>
@@ -313,9 +368,7 @@ export default function BuyProductsWithHdfc() {
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
             <ShoppingCartIcon className="w-5 h-5 text-blue-600" />
-            <CardTitle className="text-xl font-semibold text-primary">
-              {productName}
-            </CardTitle>
+            <CardTitle className="text-xl font-semibold text-primary">{productName}</CardTitle>
           </div>
         </CardHeader>
 

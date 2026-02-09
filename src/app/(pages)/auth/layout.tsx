@@ -3,8 +3,8 @@ import React from 'react';
 // import ErrorBoundary from '@/components/app/common/ErrorBoundary';
 
 export default function AuthLayout({
-  children
-}: Readonly<{
+                                     children
+                                   }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (

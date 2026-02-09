@@ -1,7 +1,7 @@
 // app/api/payments/return/route.ts
 import { NextRequest } from 'next/server';
 
-const BASE = 'https://addinxt.addiwise.com/';
+const BASE = 'http://localhost:4701/';
 const FRAPPE_CONFIRM = `${BASE}api/method/addiwise.apis.payments.hdfc_payments.confirm_payment`;
 
 function jsSafe(obj: any) {
@@ -37,116 +37,171 @@ export async function POST(req: NextRequest) {
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Payment Result</title>
+  <title>Payment Status</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: system-ui, sans-serif; padding: 20px; color: #111; background: #f9fafb; }
-    .box { background: #fff; border: 1px solid #eee; padding: 16px; border-radius: 8px; white-space: pre-wrap; }
-    .bar { margin-top: 14px; display:flex; gap:8px; }
-    button { padding: 8px 14px; border-radius: 6px; background: #0b64d1; color: #fff; border: none; cursor: pointer; }
-    .secondary { background: #6b7280; }
-    .status { font-weight: 600; margin-bottom: 8px; }
-    .small { font-size: 13px; color: #374151; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.08);
+      text-align: center;
+    }
+
+    .icon {
+      font-size: 56px;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.5rem;
+    }
+
+    p {
+      color: #4b5563;
+      font-size: 0.95rem;
+      margin: 0 0 16px;
+    }
+
+    .order {
+      font-size: 0.85rem;
+      color: #374151;
+      background: #f3f4f6;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+    }
+
+    button:hover {
+      opacity: .95;
+    }
+
+    details {
+      margin-top: 20px;
+      text-align: left;
+      font-size: 0.8rem;
+      color: #374151;
+    }
+
+    pre {
+      background: #111827;
+      color: #e5e7eb;
+      padding: 12px;
+      border-radius: 8px;
+      overflow: auto;
+      font-size: 0.75rem;
+    }
   </style>
 </head>
-<body>
-  <h2>Processing Payment Result</h2>
-  <div class="box" id="log">Initializing...</div>
 
-  <div class="bar">
-    <button id="closeBtn">Close</button>
-    <button id="copyBtn" class="secondary">Copy payload</button>
+<body>
+  <div class="card">
+    <div id="icon" class="icon">⏳</div>
+
+    <h2 id="title">Processing Payment</h2>
+    <p id="message">Please wait while we confirm your payment.</p>
+
+    <div id="order" class="order" style="display:none"></div>
+
+    <button id="closeBtn">Continue</button>
+
+    <details>
+      <summary>View technical details</summary>
+      <pre id="payload"></pre>
+    </details>
   </div>
 
   <script>
-    (async function(){
-      const payload = ${payloadJson};
-      const logEl = document.getElementById('log');
-      const closeBtn = document.getElementById('closeBtn');
-      const copyBtn = document.getElementById('copyBtn');
+    const payload = ${payloadJson};
 
-      const log = (msg) => {
-        logEl.textContent += (logEl.textContent ? "\\n" : "") + msg;
-        console.log(msg);
-      };
+    const icon = document.getElementById('icon');
+    const title = document.getElementById('title');
+    const message = document.getElementById('message');
+    const orderBox = document.getElementById('order');
+    const payloadBox = document.getElementById('payload');
+    const closeBtn = document.getElementById('closeBtn');
 
-      function findOrderId(obj) {
-        if (!obj) return null;
-        return (
-          obj?.data?.order_id ||
-          obj?.order_id ||
-          obj?.forwarded?.received?.body?.order_id ||
-          obj?.forwarded?.body?.order_id ||
-          null
-        );
-      }
+    payloadBox.textContent = JSON.stringify(payload, null, 2);
 
-      function findStatus(obj) {
-        if (!obj) return '';
-        return (
-          String(obj?.data?.status ||
-                 obj?.status ||
-                 obj?.forwarded?.received?.body?.status ||
-                 obj?.forwarded?.body?.status || '')
-          .toUpperCase()
-        );
-      }
+    function getOrderId(obj) {
+      return (
+        obj?.data?.order_id ||
+        obj?.order_id ||
+        obj?.forwarded?.received?.body?.order_id ||
+        obj?.forwarded?.body?.order_id ||
+        null
+      );
+    }
 
-      const orderId = findOrderId(payload);
-      const status = findStatus(payload) || 'UNKNOWN';
+    function getStatus(obj) {
+      return String(
+        obj?.data?.status ||
+        obj?.status ||
+        obj?.forwarded?.received?.body?.status ||
+        ''
+      ).toUpperCase();
+    }
 
-      log('Extracted order_id=' + orderId + ', status=' + status);
+    const orderId = getOrderId(payload);
+    const status = getStatus(payload);
 
-      if (!orderId) {
-        log('❌ No order_id found in payload.');
-        if (window.opener) window.opener.postMessage({ type: 'HDFC_RETURN', payload: { raw: payload } }, '*');
-        // keep the page open for debugging — user can close manually
-        return;
-      }
+    if (orderId) {
+      orderBox.style.display = 'inline-block';
+      orderBox.textContent = 'Order ID: ' + orderId;
+    }
 
-      const confirmBody = { order_id: orderId, status, signature_valid: true };
+    if (status === 'CHARGED' || status === 'CAPTURED') {
+      icon.textContent = '✅';
+      title.textContent = 'Payment Successful';
+      message.textContent = 'Your payment has been completed successfully.';
+    } else if (status === 'FAILED') {
+      icon.textContent = '❌';
+      title.textContent = 'Payment Failed';
+      message.textContent = 'The payment could not be completed.';
+    } else {
+      icon.textContent = '⏳';
+      title.textContent = 'Payment Processing';
+      message.textContent = 'Your payment is being processed. You may safely close this window.';
+    }
 
+    closeBtn.addEventListener('click', () => {
       try {
-        const resp = await fetch('${FRAPPE_CONFIRM}', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(confirmBody)
-        });
-        const result = await resp.json();
-        log('Confirm payment result: ' + JSON.stringify(result));
-
-        // notify parent window that payment return has arrived
         if (window.opener) {
-          window.opener.postMessage({ type: 'HDFC_RETURN', payload: { data: payload, confirm: result } }, '*');
-          log('✅ Message posted to opener window.');
-        } else {
-          log('⚠️ No opener window to post message to.');
-        }
+          window.opener.postMessage(
+            { type: 'PAYMENT_CLOSE_CLICKED' },
 
-        // DO NOT auto-close — let user inspect and manually close
-        log('\\nYou may now close this window when ready.');
-      } catch (err) {
-        log('❌ confirm_payment error: ' + String(err));
-        if (window.opener) {
-          window.opener.postMessage({ type: 'HDFC_RETURN', payload: { data: payload, error: String(err) } }, '*');
+            '*'
+          );
         }
-        log('There was an error confirming payment. Please copy payload for debugging and close manually.');
-      }
-
-      // wire up buttons
-      closeBtn.addEventListener('click', () => {
-        try { window.close(); } catch {}
-      });
-
-      copyBtn.addEventListener('click', () => {
-        try {
-          navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-          alert('Payload copied to clipboard');
-        } catch (e) {
-          alert('Copy failed: ' + String(e));
-        }
-      });
-    })();
+        window.close();
+      } catch {}
+    });
   </script>
 </body>
 </html>`;

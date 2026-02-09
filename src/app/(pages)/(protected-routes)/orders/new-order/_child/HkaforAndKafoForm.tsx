@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/datepicker';
 import { Card } from '@/components/ui/card';
-
+import baseQueryWithReauth from '@/rtk-query/base/baseQueryReAuth';
 import {
   calculateCephalicRatio,
   calculateCVAI,
@@ -39,7 +39,7 @@ import {
 
 import { USER } from '@/uttils/Types';
 import { estimateOrderClientSide } from '@/uttils/getEstimate';
-import { baseQueryWithReauth } from '@/rtk-query/apis';
+
 
 // ✅ reusable payment launcher
 import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
@@ -1387,17 +1387,8 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                       // ✅ Use reusable payment launcher
                       const raw = String(values.total_price ?? '0').replace(/,/g, '');
                       const amount = Number(parseFloat(raw || '0').toFixed(2));
-                      await startPayment({
-                        amount,
-                        salesOrder: salesId,
-                        onSuccess: () => {
-                          alert('Payment successful.');
-                          router.push('/orders');
-                        },
-                        onFailure: () => {
-                          alert('Payment failed or timed out. Please check status in Orders.');
-                        }
-                      });
+                      await startPayment(salesId);
+
                       return;
                     }
                     alert(
@@ -1424,17 +1415,8 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                   // ✅ Use reusable payment launcher
                   const raw = String(values.total_price ?? '0').replace(/,/g, '');
                   const amount = Number(parseFloat(raw || '0').toFixed(2));
-                  await startPayment({
-                    amount,
-                    salesOrder: salesId,
-                    onSuccess: () => {
-                      alert('Payment successful.');
-                      router.push('/orders');
-                    },
-                    onFailure: () => {
-                      alert('Payment failed or timed out. Please check status in Orders.');
-                    }
-                  });
+                  await startPayment(salesId);
+
                   return;
                 }
 
@@ -1548,7 +1530,7 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
 
             // const stepErrors = await validateStepAndShowErrors(activeStep);
             // if (stepErrors.length === 0) {
-            //   setActiveStep(targetStep); 
+            //   setActiveStep(targetStep);
             // }
             setActiveStep(targetStep)
           };

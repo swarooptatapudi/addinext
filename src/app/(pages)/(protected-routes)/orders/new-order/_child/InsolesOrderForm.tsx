@@ -55,6 +55,8 @@ import {
   insoletypeToThicknessMap
 } from '@/app/(pages)/(protected-routes)/orders/new-order/_child/constants';
 import Link from 'next/link';
+import { getDownloadUrl } from '@/baseurl';
+import { UploadedFilesPanel } from '@/components/ui/UploadedFilesPanel';
 
 declare global {
   interface Window {
@@ -100,60 +102,60 @@ const step1Validation = Yup.object().shape({
     .test('min-value', 'Size must be at least 20', (value) => parseInt(value) >= 20)
     .test('max-value', 'Size must be no more than 45', (value) => parseInt(value) <= 45),
 
-// foot_length: Yup.string()
-//     .required(FORMIK_ERRORS.REQUIRED)
-//     .matches(/^\d+$/, 'Must contain only digits')
-//     .test('min-value', 'foot length must be at least 5', (value) => parseInt(value) >= 5)
-//     .test('max-value', 'foot length must be no more than 50', (value) => parseInt(value) <= 25),
-//   custom_metatarsal_to_heel_length: Yup.string()
-//     .required(FORMIK_ERRORS.REQUIRED)
-//     .matches(/^\d+$/, 'Must contain only digits')
-//     .test('min-value', 'metatarsal length must be at least 3', (value) => parseInt(value) >= 3)
-//     .test(
-//       'max-value',
-//       'metatarsal length must be no more than 45',
-//       (value) => parseInt(value) <= 45
-//     ),
-//   custom_metatarsal_width_cm: Yup.string()
-//     .required(FORMIK_ERRORS.REQUIRED)
-//     .matches(/^\d+$/, 'Must contain only digits')
-//     .test('min-value', 'metatarsal width must be at least 3', (value) => parseInt(value) >= 3)
-//     .test(
-//       'max-value',
-//       'metatarsal width must be no more than 25',
-//       (value) => parseInt(value) <= 25
-//     ),
-     foot_length: Yup.string()
+  // foot_length: Yup.string()
+  //     .required(FORMIK_ERRORS.REQUIRED)
+  //     .matches(/^\d+$/, 'Must contain only digits')
+  //     .test('min-value', 'foot length must be at least 5', (value) => parseInt(value) >= 5)
+  //     .test('max-value', 'foot length must be no more than 50', (value) => parseInt(value) <= 25),
+  //   custom_metatarsal_to_heel_length: Yup.string()
+  //     .required(FORMIK_ERRORS.REQUIRED)
+  //     .matches(/^\d+$/, 'Must contain only digits')
+  //     .test('min-value', 'metatarsal length must be at least 3', (value) => parseInt(value) >= 3)
+  //     .test(
+  //       'max-value',
+  //       'metatarsal length must be no more than 45',
+  //       (value) => parseInt(value) <= 45
+  //     ),
+  //   custom_metatarsal_width_cm: Yup.string()
+  //     .required(FORMIK_ERRORS.REQUIRED)
+  //     .matches(/^\d+$/, 'Must contain only digits')
+  //     .test('min-value', 'metatarsal width must be at least 3', (value) => parseInt(value) >= 3)
+  //     .test(
+  //       'max-value',
+  //       'metatarsal width must be no more than 25',
+  //       (value) => parseInt(value) <= 25
+  //     ),
+  foot_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, "Must contain only digits")
-    .test("min-value", "Foot length must be at least 5", (value) => parseInt(value || "0") >= 5)
-    .test("max-value", "Foot length must be no more than 50", (value) => parseInt(value || "0") <= 50)
+    .matches(/^\d+$/, 'Must contain only digits')
+    .test('min-value', 'Foot length must be at least 5', (value) => parseInt(value || '0') >= 5)
     .test(
-      "greater-than-heel",
-      "Foot length must be greater than heel length",
-      function (value) {
-        const { custom_metatarsal_to_heel_length } = this.parent;
-        if (!value || !custom_metatarsal_to_heel_length) return true; // Skip if empty (handled by required)
-        return parseInt(value) > parseInt(custom_metatarsal_to_heel_length);
-      }
-    ),
+      'max-value',
+      'Foot length must be no more than 50',
+      (value) => parseInt(value || '0') <= 50
+    )
+    .test('greater-than-heel', 'Foot length must be greater than heel length', function (value) {
+      const { custom_metatarsal_to_heel_length } = this.parent;
+      if (!value || !custom_metatarsal_to_heel_length) return true; // Skip if empty (handled by required)
+      return parseInt(value) > parseInt(custom_metatarsal_to_heel_length);
+    }),
 
   custom_metatarsal_to_heel_length: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, "Must contain only digits")
+    .matches(/^\d+$/, 'Must contain only digits')
     .test(
-      "min-value",
-      "Metatarsal length must be at least 3",
-      (value) => parseInt(value || "0") >= 3
+      'min-value',
+      'Metatarsal length must be at least 3',
+      (value) => parseInt(value || '0') >= 3
     )
     .test(
-      "max-value",
-      "Metatarsal length must be no more than 45",
-      (value) => parseInt(value || "0") <= 45
+      'max-value',
+      'Metatarsal length must be no more than 45',
+      (value) => parseInt(value || '0') <= 45
     )
     .test(
-      "greater-than-width",
-      "Heel length must be greater than metatarsal width",
+      'greater-than-width',
+      'Heel length must be greater than metatarsal width',
       function (value) {
         const { custom_metatarsal_width_cm } = this.parent;
         if (!value || !custom_metatarsal_width_cm) return true;
@@ -163,16 +165,16 @@ const step1Validation = Yup.object().shape({
 
   custom_metatarsal_width_cm: Yup.string()
     .required(FORMIK_ERRORS.REQUIRED)
-    .matches(/^\d+$/, "Must contain only digits")
+    .matches(/^\d+$/, 'Must contain only digits')
     .test(
-      "min-value",
-      "Metatarsal width must be at least 3",
-      (value) => parseInt(value || "0") >= 3
+      'min-value',
+      'Metatarsal width must be at least 3',
+      (value) => parseInt(value || '0') >= 3
     )
     .test(
-      "max-value",
-      "Metatarsal width must be no more than 25",
-      (value) => parseInt(value || "0") <= 25
+      'max-value',
+      'Metatarsal width must be no more than 25',
+      (value) => parseInt(value || '0') <= 25
     ),
   // shoe_width: Yup.string()
   //   .required(FORMIK_ERRORS.REQUIRED)
@@ -701,22 +703,22 @@ const Step1 = ({
     }));
   }, [values.socket_type, values.design_variation, FORM_OPTIONS]);
   const footProblemOptions = [
-  { id: 'plantar-fascitis', label: 'Plantar Fascitis', group: 'Heel Pain' },
-  { id: 'heel-spur', label: 'Heel Spur', group: 'Heel Pain' },
-  { id: 'flat-feet', label: 'Flat Feet', group: 'Arch Pain' },
-  { id: 'pronation', label: 'Pronation', group: 'Arch Pain' },
-  { id: 'metatarsalgia', label: 'Metatarsalgia', group: 'Metatarsal Pain' },
-  { id: 'mortons-neuroma', label: 'Mortons Neuroma', group: 'Metatarsal Pain' },
-  { id: 'heel-deformity', label: 'Heel Deformity', group: 'Ankle Pain' },
-  { id: 'ankle-pain', label: 'Ankle Pain', group: 'Ankle Pain' },
-  { id: 'osteoarthritis', label: 'Osteoarthritis', group: 'Knee Pain' },
-  { id: 'corn', label: 'Corn', group: 'Skin Issues' },
-  { id: 'calluses', label: 'Calluses', group: 'Skin Issues' },
-  { id: 'achiles-tendonitis', label: 'Achilles Tendonitis', group: 'Ach Tend.' },
-  { id: 'neuroma', label: 'Neuroma', group: 'Diabetic' },
-  { id: 'shin-pain', label: 'Shin Pain', group: 'Shin Splint' },
-  { id: 'high-arches', label: 'High Arches', group: 'Lateral Foot Pain' }
-];
+    { id: 'plantar-fascitis', label: 'Plantar Fascitis', group: 'Heel Pain' },
+    { id: 'heel-spur', label: 'Heel Spur', group: 'Heel Pain' },
+    { id: 'flat-feet', label: 'Flat Feet', group: 'Arch Pain' },
+    { id: 'pronation', label: 'Pronation', group: 'Arch Pain' },
+    { id: 'metatarsalgia', label: 'Metatarsalgia', group: 'Metatarsal Pain' },
+    { id: 'mortons-neuroma', label: 'Mortons Neuroma', group: 'Metatarsal Pain' },
+    { id: 'heel-deformity', label: 'Heel Deformity', group: 'Ankle Pain' },
+    { id: 'ankle-pain', label: 'Ankle Pain', group: 'Ankle Pain' },
+    { id: 'osteoarthritis', label: 'Osteoarthritis', group: 'Knee Pain' },
+    { id: 'corn', label: 'Corn', group: 'Skin Issues' },
+    { id: 'calluses', label: 'Calluses', group: 'Skin Issues' },
+    { id: 'achiles-tendonitis', label: 'Achilles Tendonitis', group: 'Ach Tend.' },
+    { id: 'neuroma', label: 'Neuroma', group: 'Diabetic' },
+    { id: 'shin-pain', label: 'Shin Pain', group: 'Shin Splint' },
+    { id: 'high-arches', label: 'High Arches', group: 'Lateral Foot Pain' }
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -1037,25 +1039,24 @@ const Step1 = ({
         <h6 className="text-2xl font-bold text-[16px] ml-5 text-primary">
           FOOT COMPLAINTS/ PROBLEMS
         </h6>
-       <div className="grid grid-cols-2 gap-4 mr-40 mb-5">
-  <CheckboxGroup
-    options={footProblemOptions}
-    selectedOptions={selectedOptions}
-    onChange={(newSelectedOptions) => {
-      const selectedMapped = newSelectedOptions.map((id) => {
-        const option = footProblemOptions.find((opt) => opt.id === id);
-        return {
-          complaint: option?.group || "",
-          foot_problems: option?.label || ""
-        };
-      });
+        <div className="grid grid-cols-2 gap-4 mr-40 mb-5">
+          <CheckboxGroup
+            options={footProblemOptions}
+            selectedOptions={selectedOptions}
+            onChange={(newSelectedOptions) => {
+              const selectedMapped = newSelectedOptions.map((id) => {
+                const option = footProblemOptions.find((opt) => opt.id === id);
+                return {
+                  complaint: option?.group || '',
+                  foot_problems: option?.label || ''
+                };
+              });
 
-      setSelectedOptions(newSelectedOptions);
-      setFieldValue("foot_complaints", selectedMapped);
-    }}
-  />
-</div>
-
+              setSelectedOptions(newSelectedOptions);
+              setFieldValue('foot_complaints', selectedMapped);
+            }}
+          />
+        </div>
       </div>
 
       <InsolesDialog
@@ -1087,7 +1088,8 @@ const Step2 = ({
   touched,
   setFieldValue,
   FORM_OPTIONS,
-  formSubmitted
+  formSubmitted,
+  isReadOnly
 }: any) => {
   const shouldShowError = (fieldName: string, isRequired = false) => {
     if (!isRequired && !values[fieldName]) {
@@ -1141,72 +1143,72 @@ const Step2 = ({
                 </div>
               </div>
             </div>
-
             {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
               <div className="w-fit justify-center">
                 <StlFilePicker
-  label="Upload file (left foot)"
-  buttonText="Left Foot"
-  accept={['.stl']}
-  onFileSelect={(file) => {
-    if (file) {
-      setFieldValue('left_foot_file', file); // ✅ store actual File object
-    } else {
-      setFieldValue('left_foot_file', null);
-    }
-  }}
-/>
+                  label="Upload file (left foot)"
+                  buttonText="Left Foot"
+                  accept={['.stl']}
+                  onFileSelect={(file) => {
+                    if (file) {
+                      setFieldValue('left_foot_file', file); // ✅ store actual File object
+                    } else {
+                      setFieldValue('left_foot_file', null);
+                    }
+                  }}
+                />
 
                 {shouldShowError('left_foot_file', true) && (
                   <p className="text-xs text-red-500 mt-1">{errors.left_foot_file}</p>
                 )}
               </div>
-            )}       {/* ✅ Show existing left foot file name or link */}
-{values.left_foot_file && typeof values.left_foot_file === "string" && (
-  <div className="mt-2 text-sm text-gray-700">
-    <span className="font-medium">Existing Left Foot File: </span>
-    <a
-      href={`https://your-bucket-name.s3.amazonaws.com/${values.left_foot_file}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-600 underline break-all"
-    >
-      {values.left_foot_file.split('/').pop()}
-    </a>
-  </div>
-)}
+            )}{' '}
+            {/* ✅ Show existing left foot file name or link */}
+            {!isReadOnly && values.left_foot_file && typeof values.left_foot_file === 'string' && (
+              <div className="mt-2 text-sm text-gray-700">
+                <span className="font-medium">Existing Left Foot File: </span>
 
+                <a
+                  href={`https://your-bucket-name.s3.amazonaws.com/${values.left_foot_file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline break-all"
+                >
+                  {values.left_foot_file.split('/').pop()}
+                </a>
+              </div>
+            )}
             {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
               <div className="w-fit">
-               <StlFilePicker
-  label="Upload file (right foot)"
-  buttonText="Right Foot"
-  accept={['.stl']}
-  onFileSelect={(file) => {
-    if (file) {
-      setFieldValue('right_foot_file', file); // ✅ store actual File object
-    } else {
-      setFieldValue('right_foot_file', null);
-    }
-  }}
-/>
+                <StlFilePicker
+                  label="Upload file (right foot)"
+                  buttonText="Right Foot"
+                  accept={['.stl']}
+                  onFileSelect={(file) => {
+                    if (file) {
+                      setFieldValue('right_foot_file', file); // ✅ store actual File object
+                    } else {
+                      setFieldValue('right_foot_file', null);
+                    }
+                  }}
+                />
                 {shouldShowError('left_foot_file', true) && (
                   <p className="text-xs text-red-500 mt-1">{errors.left_foot_file}</p>
                 )}
                 {/* ✅ Show existing right foot file name or link */}
-{values.right_foot_file && typeof values.right_foot_file === "string" && (
-  <div className="mt-2 text-sm text-gray-700">
-    <span className="font-medium">Existing Right Foot File: </span>
-    <a
-      href={`https://your-bucket-name.s3.amazonaws.com/${values.right_foot_file}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-600 underline break-all"
-    >
-      {values.right_foot_file.split('/').pop()}
-    </a>
-  </div>
-)}
+                {!isReadOnly && values.right_foot_file && typeof values.right_foot_file === 'string' && (
+                  <div className="mt-2 text-sm text-gray-700">
+                    <span className="font-medium">Existing Right Foot File: </span>
+                    <a
+                      href={`https://your-bucket-name.s3.amazonaws.com/${values.right_foot_file}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline break-all"
+                    >
+                      {values.right_foot_file.split('/').pop()}
+                    </a>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1403,7 +1405,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   const [formValues, setFormValues] = useState(initialValues);
   const [modelOpen, setModelOpen] = useState(false);
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);1
+  const [currentStep, setCurrentStep] = useState(1);
+  1;
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [socketTypeDialog, setSocketTypeDialog] = useState({
@@ -1421,7 +1424,8 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
   const [thicknests, setThickness] = useState<string>('');
   const skipValidation = searchParams.get('skipValidation') === 'true';
   const [isEstimateDisabled, setIsEstimateDisabled] = useState(false);
-  const isReadOnly = searchParams.get('readonly') === 'true';
+  // const isReadOnly = searchParams.get('readonly') === 'true';
+  const isReadOnly = (searchParams.get('readonly') ?? 'false') === 'true';
 
   // const { values, setFieldValue } = useFormikContext<any>(); // ✅ Formik hook
   //payment states
@@ -1441,7 +1445,7 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
       })
         .unwrap()
         .then((response) => {
-          console.log("Full API response =>", response);
+          console.log('Full API response =>', response);
 
           if (response.data) {
             // console.log("API Keys =>", Object.keys(response.data));
@@ -1454,14 +1458,12 @@ export default function InsolesOrderForm({ item_type }: { item_type: string }): 
             ];
             const matchedUsage = insoleOptions.find((opt) => opt.value === response.data.usage);
             // console.log("✅ Matched Usage Option:", matchedUsage);
-const scanItem = response.data?.scan_items?.[0];
-console.log(" Scan Item =>", scanItem);
-let mappedFootSide = '';
-if (scanItem?.ight_foot_file === 'Right') mappedFootSide = 'Right_Foot';
-if (scanItem?.
-left_foot_file
- === 'Left') mappedFootSide = 'Left_Foot';
-if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
+            const scanItem = response.data?.scan_items?.[0];
+            console.log(' Scan Item =>', scanItem);
+            let mappedFootSide = '';
+            if (scanItem?.ight_foot_file === 'Right') mappedFootSide = 'Right_Foot';
+            if (scanItem?.left_foot_file === 'Left') mappedFootSide = 'Left_Foot';
+            if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
 
             const transformedData = {
               ...INSOLES_FORM_INITIAL_VALUES,
@@ -1486,8 +1488,8 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
               design_variation: response.data.custom_design_by || '',
               custom_scan_type: response.data.custom_scan_type || '',
               // foot_side: response.data.foot_side || '',
-          left_foot_file: scanItem.left_foot_file || null,
-  right_foot_file: scanItem.right_foot_file || null,
+              left_foot_file: scanItem.left_foot_file || null,
+              right_foot_file: scanItem.right_foot_file || null,
               Print_by: response.data.custom_print_by || '',
               table_zbib: response.data.table_zbib?.length
                 ? response.data.table_zbib.map((item: any) => ({
@@ -1500,7 +1502,7 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
                 : ['']
             };
 
-            console.log("Transformed Insole Data =>", transformedData);
+            console.log('Transformed Insole Data =>', transformedData);
             setFormValues(transformedData);
 
             if (response.data.item_code) {
@@ -1558,10 +1560,10 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
         design_variation: apiData.custom_design_by || '',
         Print_by: apiData.custom_print_by || '',
         //  foot_side: apiData.foot_side || '',
-         custom_scan_type: apiData.custom_scan_type || '',
-     left_foot_file: scanItem.left_foot_file || null,
-  right_foot_file: scanItem.right_foot_file || null,
-      // scan_date: apiData.scan_date || '',
+        custom_scan_type: apiData.custom_scan_type || '',
+        left_foot_file: scanItem.left_foot_file || null,
+        right_foot_file: scanItem.right_foot_file || null,
+        // scan_date: apiData.scan_date || '',
         insole_model: apiData.custom_insoles_model || '',
         insole_design_variation: apiData.layers || '',
         table_zbib:
@@ -1569,8 +1571,7 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
             point_name: item.point_name || '',
             pressure_mm: item.pressure_mm || ''
           })) || INSOLES_FORM_INITIAL_VALUES.table_zbib,
-        foot_complaints:
-          apiData.foot_complaints || INSOLES_FORM_INITIAL_VALUES.foot_complaints
+        foot_complaints: apiData.foot_complaints || INSOLES_FORM_INITIAL_VALUES.foot_complaints
       });
     }
   }, [orderDetails]);
@@ -1719,7 +1720,6 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
     // createInsoleOrder(orderPayload); // store for later payment step
     setShowStep5Confirmation(true); // open confirmation dialog
     setShowPriceSummary(true); // show price summary
-
   };
 
   const getItemCodeByValues = async (payload: any) => {
@@ -1834,6 +1834,23 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
     setFormSubmitted(false);
   };
 
+  function normalizeFilePath(value: unknown): string | null {
+    return typeof value === 'string' && value.length > 0 ? value : null;
+  }
+
+  function openFile(fileValue: unknown) {
+    const path = normalizeFilePath(fileValue);
+    if (!path) return;
+
+    window.open(getDownloadUrl(path), '_blank', 'noopener,noreferrer');
+  }
+
+  const leftFootFilePath: string | undefined =
+    typeof formValues.left_foot_file === 'string' ? formValues.left_foot_file : undefined;
+
+  const rightFootFilePath: string | undefined =
+    typeof formValues.right_foot_file === 'string' ? formValues.right_foot_file : undefined;
+
   return (
     <div className="pb-16 relative">
       <Formik
@@ -1867,154 +1884,168 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
           isValid
         }) => (
           <div className="flex flex-col gap-6">
-            <fieldset disabled={isReadOnly} className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}>
-
-            <WatchFieldReset />
-            {/* Socket Type Dialog */}
-            <SocketTypeDialog
-              open={socketTypeDialog.open}
-              onOpenChange={(open) => setSocketTypeDialog((prev) => ({ ...prev, open }))}
-              data={socketTypeDialog.data}
-            />
-            {/* Step indicator */}
-            <div className="flex justify-center mb-8">
-              <div className="flex items-center gap-2">
-                {[
-                  { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
-                  { step: 2, name: 'Scan', icon: '📁' },
-                  // { step: 3, name: 'Locking Mechanism', icon: '🔒' },
-                  // { step: 4, name: 'Modifications', icon: '✏️' },
-                  { step: 5, name: 'Finish', icon: '🎨' }
-                ].map(({ step, name, icon }) => (
-                  <React.Fragment key={step}>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const errors = await validateCurrentStep(values);
-                        if (Object.keys(errors).length === 0 || step < currentStep) {
-                          setCurrentStep(step);
-                          setFormSubmitted(false);
-                        } else {
-                          setErrors(errors);
-                          setFormSubmitted(true);
-                        }
-                      }}
-                      className="flex flex-col items-center gap-1"
-                    >
-                      <div
-                        className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${
-                          currentStep === step
-                            ? 'bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4'
-                            : completedSteps.includes(step)
-                              ? 'bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4'
-                              : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4'
-                        } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+            <fieldset
+              disabled={isReadOnly}
+              className={isReadOnly ? 'opacity-70 pointer-events-none' : ''}
+            >
+              <WatchFieldReset />
+              {/* Socket Type Dialog */}
+              <SocketTypeDialog
+                open={socketTypeDialog.open}
+                onOpenChange={(open) => setSocketTypeDialog((prev) => ({ ...prev, open }))}
+                data={socketTypeDialog.data}
+              />
+              {/* Step indicator */}
+              <div className="flex justify-center mb-8">
+                <div className="flex items-center gap-2">
+                  {[
+                    { step: 1, name: 'Basic Details & Measurements', icon: '📋' },
+                    { step: 2, name: 'Scan', icon: '📁' },
+                    // { step: 3, name: 'Locking Mechanism', icon: '🔒' },
+                    // { step: 4, name: 'Modifications', icon: '✏️' },
+                    { step: 5, name: 'Finish', icon: '🎨' }
+                  ].map(({ step, name, icon }) => (
+                    <React.Fragment key={step}>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const errors = await validateCurrentStep(values);
+                          if (Object.keys(errors).length === 0 || step < currentStep) {
+                            setCurrentStep(step);
+                            setFormSubmitted(false);
+                          } else {
+                            setErrors(errors);
+                            setFormSubmitted(true);
+                          }
+                        }}
+                        className="flex flex-col items-center gap-1"
                       >
-                        <span className="flex items-center gap-2">
-                          {currentStep === step && <></>}
-                          {completedSteps.includes(step) && !(currentStep === step) && (
-                            <svg
-                              className="w-3 h-3 text-gray-500 flex-shrink-0"
-                              fill="none"
+                        <div
+                          className={`h-7 flex items-center justify-center text-sm transition-all duration-300 ease-in-out rounded-full ${
+                            currentStep === step
+                              ? 'bg-primary/88 text-white text-gray-900 scale-105 text-sm ring-0 bg-gray-200 px-4'
+                              : completedSteps.includes(step)
+                                ? 'bg-gray-300 text-gray-800 border border-gray-200 hover:bg-gray-400 px-4'
+                                : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-gray-300 px-4'
+                          } ${step > currentStep && !completedSteps.includes(step) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                        >
+                          <span className="flex items-center gap-2">
+                            {currentStep === step && <></>}
+                            {completedSteps.includes(step) && !(currentStep === step) && (
+                              <svg
+                                className="w-3 h-3 text-gray-500 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                            <span className="whitespace-nowrap">{name}</span>
+                          </span>
+                        </div>
+                      </button>
+                      {step < 5 && (
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                            <path
+                              d="M13 5l7 7-7 7M5 5l7 7-7 7"
                               stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          )}
-                          <span className="whitespace-nowrap">{name}</span>
-                        </span>
-                      </div>
-                    </button>
-                    {step < 5 && (
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                          <path
-                            d="M13 5l7 7-7 7M5 5l7 7-7 7"
-                            stroke="currentColor"
-                            strokeWidth={1.5}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`transition-all duration-500 ${
-                              completedSteps.includes(step) ? 'stroke-primary' : 'stroke-gray-300'
-                            }`}
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </React.Fragment>
-                ))}
+                              strokeWidth={1.5}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className={`transition-all duration-500 ${
+                                completedSteps.includes(step) ? 'stroke-primary' : 'stroke-gray-300'
+                              }`}
+                            />
+                          </svg>
+                        </div>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {currentStep === 1 && (
-              <Step1
-                values={values}
-                handleChange={handleChange}
-                errors={errors}
-                touched={touched}
-                setFieldValue={setFieldValue}
-                FORM_OPTIONS={FORM_OPTIONS}
-                formSubmitted={formSubmitted}
-                setSocketTypeDialog={setSocketTypeDialog}
-              />
-            )}
-            {currentStep === 2 && (
-              <Step2
-                values={values}
-                handleChange={handleChange}
-                errors={errors}
-                touched={touched}
-                setFieldValue={setFieldValue}
-                FORM_OPTIONS={FORM_OPTIONS}
-                formSubmitted={formSubmitted}
-              />
-            )}
-            {currentStep === 3 && (
-              <Step3
-                values={values}
-                handleChange={handleChange}
-                errors={errors}
-                touched={touched}
-                setFieldValue={setFieldValue}
-                FORM_OPTIONS={FORM_OPTIONS}
-                formSubmitted={formSubmitted}
-              />
-            )}
-            {currentStep === 4 && (
-              <Step4
-                values={values}
-                handleChange={handleChange}
-                errors={errors}
-                touched={touched}
-                setFieldValue={setFieldValue}
-                FORM_OPTIONS={FORM_OPTIONS}
-                formSubmitted={formSubmitted}
-              />
-            )}
-            {currentStep === 5 && (
-              <Step5
-                values={values}
-                thicknests={thicknests}
-                selectedItem={selectedItem}
-                errors={errors}
-                touched={touched}
-                setFieldValue={setFieldValue}
-                FORM_OPTIONS={FORM_OPTIONS}
-                formSubmitted={formSubmitted}
-                setSelectedOptions={setSelectedOptions}
-                selectedOptions={selectedOptions}
-                showPriceSummary={showPriceSummary}
-                handleSubmit={handleSubmit}
-              />
-            )}
+              {currentStep === 1 && (
+                <Step1
+                  values={values}
+                  handleChange={handleChange}
+                  errors={errors}
+                  touched={touched}
+                  setFieldValue={setFieldValue}
+                  FORM_OPTIONS={FORM_OPTIONS}
+                  formSubmitted={formSubmitted}
+                  setSocketTypeDialog={setSocketTypeDialog}
+                />
+              )}
+              {currentStep === 2 && (
+                <Step2
+                  values={values}
+                  handleChange={handleChange}
+                  errors={errors}
+                  touched={touched}
+                  setFieldValue={setFieldValue}
+                  FORM_OPTIONS={FORM_OPTIONS}
+                  formSubmitted={formSubmitted}
+                  isReadOnly={isReadOnly}
+                />
+              )}
+              {currentStep === 3 && (
+                <Step3
+                  values={values}
+                  handleChange={handleChange}
+                  errors={errors}
+                  touched={touched}
+                  setFieldValue={setFieldValue}
+                  FORM_OPTIONS={FORM_OPTIONS}
+                  formSubmitted={formSubmitted}
+                />
+              )}
+              {currentStep === 4 && (
+                <Step4
+                  values={values}
+                  handleChange={handleChange}
+                  errors={errors}
+                  touched={touched}
+                  setFieldValue={setFieldValue}
+                  FORM_OPTIONS={FORM_OPTIONS}
+                  formSubmitted={formSubmitted}
+                />
+              )}
+              {currentStep === 5 && (
+                <Step5
+                  values={values}
+                  thicknests={thicknests}
+                  selectedItem={selectedItem}
+                  errors={errors}
+                  touched={touched}
+                  setFieldValue={setFieldValue}
+                  FORM_OPTIONS={FORM_OPTIONS}
+                  formSubmitted={formSubmitted}
+                  setSelectedOptions={setSelectedOptions}
+                  selectedOptions={selectedOptions}
+                  showPriceSummary={showPriceSummary}
+                  handleSubmit={handleSubmit}
+                />
+              )}
             </fieldset>
+            {/* 🔓 Read-only download panel (OUTSIDE fieldset) */}
+
+            {isReadOnly && (
+              <UploadedFilesPanel
+                leftFootFile={leftFootFilePath}
+                rightFootFile={rightFootFilePath}
+                additionalFile1={orderDetails?.additional_file_1}
+                additionalFile2={orderDetails?.additional_file_2}
+                driveLink={orderDetails?.custom_upload_link_with_photos}
+              />
+            )}
 
             <div className="sticky bottom-4 left-0 flex justify-between bg-white p-2 rounded-lg shadow-md">
               <div>
@@ -2084,12 +2115,12 @@ if (scanItem?.foot_side === 'Both') mappedFootSide = 'Both';
             {/* If read-only, show an informational bar and disable submit/payment controls */}
             {isReadOnly && (
               <div className="mt-4 p-3 rounded bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
-                This form is opened in **read-only** mode from Orders. Editing and payment are disabled.
+                This form is opened in **read-only** mode from Orders. Editing and payment are
+                disabled.
               </div>
             )}
           </div>
         )}
-
       </Formik>
 
       {/* Confirmation dialog after Step 1 */}

@@ -24,9 +24,9 @@ export const FORMIK_ERRORS = {
     VALUE: /^\d+$/,
     MESSAGE: ' Invalid contact number',
   },
-  MOBILE_NUMBER:{
-    VALUE:/^\+[1-9]\d{1,2}\d{10}$/,
-    MESSAGE: 'Mobile must include country code and 10 digits (e.g. +911234567890)',
+  MOBILE_NUMBER: {
+    VALUE: /^\+[1-9]\d{7,14}$/,
+    MESSAGE: 'Enter a valid mobile number along with country code (e.g. +919876543210)',
   },
   MIN_2: { VALUE: 2, MESSAGE: 'Too Stort!' },
   MAX_50: { VALUE: 50, MESSAGE: 'Too Long!' },
