@@ -64,18 +64,149 @@ export default function DesignSessionWorkspacePage() {
   //     setActionLoading(false);
   //   }
   // }
+// Add state to store iframe URLs
+  const [cleanIframeUrl, setCleanIframeUrl] = useState<string | null>(null);
+  const [designIframeUrl, setDesignIframeUrl] = useState<string | null>(null);
 
+  // async function launchIframe(type: 'clean' | 'design') {
+  //   setActionLoading(true);
+  //   setError(null);
+  //
+  //   try {
+  //     const r = await fetch(
+  //       `/api/method/addiwise.apis.wiky_scan.wiky_workflow.get_wiky_iframe?session_id=${id}&iframe_type=${type}`
+  //     );
+  //     const d = await r.json();
+  //     console.log('Iframe launch response:', d);
+  //
+  //     if (d?.message?.iframe_url) {
+  //       // Store the URL before navigating
+  //       if (type === 'clean') {
+  //         setCleanIframeUrl(d.message.iframe_url);
+  //         // Store in sessionStorage so child route can access it
+  //         sessionStorage.setItem(`wiky_clean_${id}`, d.message.iframe_url);
+  //       } else {
+  //         setDesignIframeUrl(d.message.iframe_url);
+  //         sessionStorage.setItem(`wiky_design_${id}`, d.message.iframe_url);
+  //       }
+  //
+  //       const route = type === 'clean' ? 'scan-cleaning' : 'design';
+  //       router.push(`/design-sessions/${id}/${route}`);
+  //     } else {
+  //       setError('Unable to generate iframe URL.');
+  //     }
+  //   } catch (err) {
+  //     console.error('Failed to launch iframe:', err);
+  //     setError(`Unable to launch ${type === 'clean' ? 'scan cleaning' : 'design'}.`);
+  //   } finally {
+  //     setActionLoading(false);
+  //   }
+  // }
+  // async function launchIframe(type: 'clean' | 'design') {
+  //   setActionLoading(true);
+  //   setError(null);
+  //
+  //   try {
+  //     const r = await fetch(
+  //       `/api/method/addiwise.apis.wiky_scan.wiky_workflow.get_wiky_iframe?session_id=${id}&iframe_type=${type}`
+  //     );
+  //     const d = await r.json();
+  //     console.log('Iframe launch response:', d);
+  //     if (d?.message?.iframe_url) {
+  //       if (type === 'clean') {
+  //         // Open in popup - this ALWAYS works
+  //         const cleanWindow = window.open(
+  //           d.message.iframe_url,
+  //           'WikyScanCleaning',
+  //           'width=' + (screen.availWidth * 0.9) +
+  //           ',height=' + (screen.availHeight * 0.9) +
+  //           ',toolbar=no,menubar=no,location=yes,status=no,resizable=yes'
+  //         );
+  //
+  //         if (cleanWindow) {
+  //           cleanWindow.focus();
+  //         }
+  //       } else {
+  //         sessionStorage.setItem(`wiky_design_${id}`, d.message.iframe_url);
+  //         router.push(`/design-sessions/${id}/design`);
+  //       }
+  //     } else {
+  //       setError('Unable to generate iframe URL.');
+  //     }
+  //   } catch (err) {
+  //     console.error('Failed to launch iframe:', err);
+  //     setError(`Unable to launch ${type === 'clean' ? 'scan cleaning' : 'design'}.`);
+  //   } finally {
+  //     setActionLoading(false);
+  //   }
+  // }
+  // async function launchIframe(type: 'clean' | 'design') {
+  //   setActionLoading(true);
+  //   setError(null);
+  //
+  //   try {
+  //     const r = await fetch(
+  //       `/api/method/addiwise.apis.wiky_scan.wiky_workflow.get_wiky_iframe?session_id=${id}&iframe_type=${type}`
+  //     );
+  //     const d = await r.json();
+  //     console.log('Iframe launch response:', d);
+  //
+  //     if (d?.message?.iframe_url) {
+  //       if (type === 'clean') {
+  //         // Clean: Open Wiky URL directly in popup window
+  //         const width = Math.floor(screen.availWidth * 0.9);
+  //         const height = Math.floor(screen.availHeight * 0.9);
+  //         const left = Math.floor((screen.availWidth - width) / 2);
+  //         const top = Math.floor((screen.availHeight - height) / 2);
+  //
+  //         window.open(
+  //           d.message.iframe_url,
+  //           'WikyScanCleaning',
+  //           `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,resizable=yes`
+  //         );
+  //       } else {
+  //         // Design: Navigate to fullscreen route
+  //         sessionStorage.setItem(`wiky_design_${id}`, d.message.iframe_url);
+  //         router.push(`/design-sessions/${id}/design`);
+  //       }
+  //     } else {
+  //       setError('Unable to generate iframe URL.');
+  //     }
+  //   } catch (err) {
+  //     console.error('Failed to launch iframe:', err);
+  //     setError(`Unable to launch ${type === 'clean' ? 'scan cleaning' : 'design'}.`);
+  //   } finally {
+  //     setActionLoading(false);
+  //   }
+  // }
   async function launchIframe(type: 'clean' | 'design') {
     setActionLoading(true);
+    setError(null);
+
     try {
       const r = await fetch(
         `/api/method/addiwise.apis.wiky_scan.wiky_workflow.get_wiky_iframe?session_id=${id}&iframe_type=${type}`
       );
       const d = await r.json();
+      console.log('Iframe launch response:', d);
 
       if (d?.message?.iframe_url) {
-        const route = type === 'clean' ? 'scan-cleaning' : 'design';
-        router.push(`/design-sessions/${id}/${route}`);
+        if (type === 'clean') {
+          // Clean: Open Wiky URL directly in popup window
+          const width = Math.floor(screen.availWidth * 0.9);
+          const height = Math.floor(screen.availHeight * 0.9);
+          const left = Math.floor((screen.availWidth - width) / 2);
+          const top = Math.floor((screen.availHeight - height) / 2);
+
+          window.open(
+            d.message.iframe_url,
+            'WikyScanCleaning',
+            `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,resizable=yes`
+          );
+        } else {
+          // Design: Navigate to route (unchanged)
+          router.push(`/design-sessions/${id}/design`);
+        }
       } else {
         setError('Unable to generate iframe URL.');
       }
@@ -86,6 +217,31 @@ export default function DesignSessionWorkspacePage() {
       setActionLoading(false);
     }
   }
+
+
+
+  // async function launchIframe(type: 'clean' | 'design') {
+  //   setActionLoading(true);
+  //   try {
+  //     const r = await fetch(
+  //       `/api/method/addiwise.apis.wiky_scan.wiky_workflow.get_wiky_iframe?session_id=${id}&iframe_type=${type}`
+  //     );
+  //     const d = await r.json();
+  //     console.log('Iframe launch response:', d);
+  //
+  //     if (d?.message?.iframe_url) {
+  //       const route = type === 'clean' ? 'scan-cleaning' : 'design';
+  //       router.push(`/design-sessions/${id}/${route}`);
+  //     } else {
+  //       setError('Unable to generate iframe URL.');
+  //     }
+  //   } catch (err) {
+  //     console.error('Failed to launch iframe:', err);
+  //     setError(`Unable to launch ${type === 'clean' ? 'scan cleaning' : 'design'}.`);
+  //   } finally {
+  //     setActionLoading(false);
+  //   }
+  // }
 
 
   async function loadFiles() {

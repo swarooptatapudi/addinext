@@ -223,6 +223,7 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import baseQueryWithReauth from '../base/baseQueryReAuth';
 import { estimateOrderClientSide } from '@/uttils/getEstimate';
 
+
 interface AKEstimateRequest {
   item_code: string;
   design_by: string;
@@ -232,16 +233,18 @@ interface AKEstimateRequest {
   coupon_code?: string;
 }
 
-interface AKEstimateResponse {
-  message: {
-    status: number;
-    message: string;
+export interface AKEstimateResponse
+  {
+    message: string; // "Item Estimate Done"
     data: {
       design: string;
       print: string;
+      laticess: string;
+      finish: string;
       estimate_price: string;
-      item_standard_discount: string;
       item_special_discount?: string;
+      item_standard_discount: string;
+      item_discount: string;
       additional_discount: string;
       discounted_price: string;
       discounted_price_18: string;
@@ -249,11 +252,11 @@ interface AKEstimateResponse {
       gst_18: string;
       gst_5: string;
       total_price: string;
+      total_distcounted_price: string;
       customer_available_coins?: string;
       design_coin_use?: string;
     };
-  };
-}
+  }
 
 
 
@@ -428,7 +431,36 @@ interface INEstimateResponse {
     };
   };
 }
+interface KAFOEstimateRequest {
+  item_code: string;
+  design_by: string;
+  print_by: string;
+  discount_per: number;
+  discount_amt: number;
+  coupon_code?: string;
+}
 
+interface KAFOEstimateResponse {
+  message: string;
+    data: {
+      design: string;
+      print: string;
+      estimate_price: string;
+      item_standard_discount: string;
+      item_special_discount: string;
+      additional_discount: string;
+      discounted_price: string;
+      discounted_price_18: string;
+      discounted_price_5: string;
+      gst_18: string;
+      gst_5: string;
+      total_price: string;
+      item_discount: string;
+      total_distcounted_price: string;
+      customer_available_coins: string;
+      design_coin_use: string;
+    };
+}
 interface CouponRequest {
   coupon_code: string;
 }
@@ -449,6 +481,12 @@ interface CouponResponse {
 interface GetSalesOrderDetailsRequest {
   order_type: string;
   order_id: string;
+}
+interface GetAKSalesOrderDetailsRequest {
+  data: {
+    order_type: string;
+    order_id: string;
+  }
 }
 const isFormData = (v: unknown): v is FormData =>
   typeof FormData !== 'undefined' && v instanceof FormData;
@@ -556,14 +594,6 @@ export const ordersApi = createApi({
       }),
       transformResponse: (response: ASPEstimateResponse) => response
     }),
-    getAKEstimate: builder.mutation<AKEstimateResponse, AKEstimateRequest>({
-      query: (data) => ({
-        url: '/method/addiwise.apis.order_types.afo_order.get_afo_estimate',
-        method: 'POST',
-        body: data
-      }),
-      transformResponse: (response: AKEstimateResponse) => response
-    }),
     getOrderPdf: builder.query<
       Blob,
       { doctype: 'Sales Invoice' | 'Payment Entry'; name: string }
@@ -657,6 +687,24 @@ export const ordersApi = createApi({
       }),
       transformResponse: (response: ASPEstimateResponse) => response
     }),
+    getKAFOEstimate: builder.mutation<KAFOEstimateResponse, INEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.kfao_order.get_kafo_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: KAFOEstimateResponse) => response
+    }),
+    createKAFOOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.kfao_order.create_kafo_order',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        return response;
+      },
+    }),
     getAFOItemOptions: builder.mutation({
       query: (payload) => ({
         url: '/method/addiwise.apis.order_types.afo_order.get_itemcode',
@@ -685,6 +733,38 @@ export const ordersApi = createApi({
       }),
       transformResponse: (response: any) => response
     }),
+    getAKOrderDetails: builder.mutation<any, { order_id: string; order_type?: string }>({
+      query: (params) => ({
+        url: '/method/addiwise.apis.order_types.ak_order.get_ak_order_details',
+        method: 'POST',
+        body: params,
+      }),
+      transformResponse: (response: any) => response
+    }),
+    createAKOrder: builder.mutation({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.ak_order.create_ak_order',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: SalesOrdersResponse) => {
+        // console.log("create_bk_order", response);
+        return response;
+      }
+    }),
+    /**
+     * Get AK Order Estimate
+     * Calculates pricing breakdown for AK orders
+     */
+    getAKEstimate: builder.mutation<BKEstimateResponse, BKEstimateRequest>({
+      query: (data) => ({
+        url: '/method/addiwise.apis.order_types.ak_order.get_ak_estimate',
+        method: 'POST',
+        body: data
+      }),
+      transformResponse: (response: BKEstimateResponse) => response
+    }),
+
     createProductOrder: builder.mutation({
       query: (data) => ({
         url: '/method/addiwise.apis.order_types.bk_order.create_sales_order_for_off_the_shelf',
@@ -726,6 +806,7 @@ export const {
   useCreateCranialOrderMutation,
   useGetCHEstimateMutation,
   useGetAKEstimateMutation,
+  useCreateAKOrderMutation,
   useGetINEstimateMutation,
   useGetAFOEstimateMutation,
   usePreSignedUrlMutation,
@@ -736,7 +817,10 @@ export const {
   useGetASEPAEstimateMutation,
   useCreateASEPAOrderMutation,
   useLazyGetOrderPdfQuery,
-  useGetAFOItemOptionsMutation
+  useGetAFOItemOptionsMutation,
+  useGetAKOrderDetailsMutation,
+  useGetKAFOEstimateMutation,
+  useCreateKAFOOrderMutation
 } = ordersApi;
 export type OrderData = SalesOrder | SalesOrderDetails;
 

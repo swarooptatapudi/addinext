@@ -17,7 +17,15 @@ export const store = configureStore({
   reducer,
   // Adding the api middleware enables caching, invalidation, polling,
   // and other useful features of `rtk-query`.
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(middlewares)
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore RTK Query paths where Blobs/non-serializable data might exist
+        ignoredActions: ['ordersApi/executeMutation/rejected'],
+        ignoredActionPaths: ['payload', 'error', 'meta.arg', 'meta.baseQueryMeta'],
+        ignoredPaths: APIS_LIST.map(api => api.reducerPath),
+      },
+    }).concat(middlewares)
 });
 
 // optional, but required for refetchOnFocus/refetchOnReconnect behaviors

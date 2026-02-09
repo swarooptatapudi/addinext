@@ -22,7 +22,7 @@ import {
   type SeverityCode,
   type ConditionCode
 } from '@/lib/metrics';
-
+import baseQueryWithReauth from '@/rtk-query/base/baseQueryReAuth'; // import base query from rtk-query base
 import PatientDetails from './steps/PatientDetails';
 import Measurement from './steps/Measurement';
 import Computation from './steps/Computation';
@@ -42,7 +42,7 @@ import {
 
 import { USER } from '@/uttils/Types';
 import { estimateOrderClientSide } from '@/uttils/getEstimate';
-import { baseQueryWithReauth } from '@/rtk-query/apis';
+
 
 // ✅ reusable payment launcher
 import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';

@@ -127,6 +127,7 @@ export default function Orders(): React.JSX.Element {
 
     const routes: Record<string, string> = {
       'BK Orders': '/orders/new-order/BK',
+      'AK Orders': '/orders/new-order/AK',
       'Insole Orders': '/orders/new-order/Insoles',
       'Cranial Helmet Orders': '/orders/new-order/Cranial',
       'AddiShield Pro Order': '/orders/new-order/AddiShieldPlus',

@@ -93,6 +93,7 @@ export default function ASPOrderForm({ initialPatient }: Props) {
   const [createASPOrder] = useCreateASPOrderMutation();
   const [validateCoupon] = useValidateCouponMutation();
   const [getOrderDetails] = useGetOrderDetailsMutation();
+  const [preSignedUrl] = usePreSignedUrlMutation(); // 🔥 NEW
 
   const initialValues = {
     ...initialPatient,
@@ -121,6 +122,48 @@ export default function ASPOrderForm({ initialPatient }: Props) {
   type FormValues = typeof initialValues;
   const [formSeed, setFormSeed] = useState(initialValues);
   const [prefilled, setPrefilled] = useState(false);
+  const uploadFileAndStoreMetadata = async (file: File, userId: string) => {
+    try {
+      let contentType = 'application/octet-stream';
+      const lower = file.name.toLowerCase();
+      if (lower.endsWith('.stl')) contentType = 'model/stl';
+      else if (file.type) contentType = file.type;
+
+      const result: any = await preSignedUrl({
+        fileName: file.name,
+        fileType: contentType,
+        userId,
+      }).unwrap();
+
+      if (!result?.message?.status) {
+        throw new Error('Presigned URL request failed');
+      }
+
+      const uploadUrl = result?.message?.data?.uploadUrl;
+      const key = result?.message?.data?.key;
+
+      if (!uploadUrl) {
+        throw new Error('No uploadUrl from presign response');
+      }
+
+      // Upload directly to S3
+      await fetch(String(uploadUrl), {
+        method: 'PUT',
+        headers: { 'Content-Type': contentType },
+        body: file,
+      });
+
+      return {
+        key: key ? String(key) : String(uploadUrl.split('?')[0]),
+        size: file.size,
+        type: contentType,
+        originalName: file.name,
+      };
+    } catch (err) {
+      console.error('Presigned upload error', err);
+      throw err;
+    }
+  };
   useEffect(() => {
     const hydrate = async () => {
       if (!orderId || !deviceTypeId) return;
@@ -284,15 +327,31 @@ export default function ASPOrderForm({ initialPatient }: Props) {
           const { startPayment } = usePaymentLauncher();
           const [busy, setBusy] = useState<'place' | 'later' | null>(null);
 
-          const buildBodyOrForm = (payload: any) => {
-            const hasFile = !!values.uploaded_stl_file;
+          const buildBodyOrForm = (values: any) => {
+            const hasFile =
+              values.left_leg_file instanceof File ||
+              values.right_leg_file instanceof File;
 
-            if (!hasFile) return payload;
+            if (!hasFile) {
+              return {
+                data: JSON.stringify({
+                  ...values,
+                  item_code: values.afo_item_code,
+                }),
+              };
+            }
 
             const fd = new FormData();
+            const payload = {
+              ...values,
+              item_code: ITEM_CODE,
+            };
+
+            delete payload.uploaded_stl_file;
+
             fd.append('data', JSON.stringify(payload));
 
-            if (values.uploaded_stl_file) {
+            if (values.uploaded_stl_file instanceof File) {
               fd.append('uploaded_stl_file', values.uploaded_stl_file);
             }
 
@@ -368,6 +427,7 @@ export default function ASPOrderForm({ initialPatient }: Props) {
 
 
           // ✅ postOrder now uses the reusable payment launcher
+          /*
           const postOrder = async (intent: 'place' | 'later') => {
             if (!values.agree_terms) {
               alert('Please agree to the terms and conditions.');
@@ -407,6 +467,114 @@ export default function ASPOrderForm({ initialPatient }: Props) {
               }
 
               // ✅ Pay & Place
+              if (!salesId) {
+                alert('Order created but Sales Order ID missing.');
+                return;
+              }
+
+              const raw = String(values.total_price ?? '0').replace(/,/g, '');
+              const amount = Number(parseFloat(raw || '0').toFixed(2));
+              if (!amount || amount <= 0) {
+                alert('Invalid payment amount.');
+                return;
+              }
+
+              await startPayment(salesId);
+
+            } catch (e: any) {
+              alert(
+                e?.data?.message ||
+                e?.data?._server_messages ||
+                e?.error ||
+                e?.message ||
+                'Failed to submit order.'
+              );
+            } finally {
+              setBusy(null);
+            }
+          };
+*/
+
+          const postOrder = async (intent: 'place' | 'later') => {
+            if (!values.agree_terms) {
+              alert('Please agree to the terms and conditions.');
+              return;
+            }
+
+            try {
+              setBusy(intent);
+
+              const payload = {
+                ...values,
+                item_code: ITEM_CODE,
+                customer: user?.customer_id,
+                payment_status: intent === 'later' ? 'Draft' : undefined,
+              };
+
+              let res: CreateOk;
+
+              // 🔥 Check if any files exist
+              const hasAnyFiles = (values.uploaded_stl_file as any) instanceof File;
+
+              if (!hasAnyFiles) {
+                // ✅ No files - send plain JSON
+                console.log('📤 Sending JSON payload (no files)');
+                res = (await createASPOrder(payload).unwrap()) as CreateOk;
+
+              } else {
+                // ✅ Has files - try S3 upload first
+                const uploadedFiles: any = {};
+                let useS3 = true;
+
+                if ((values.uploaded_stl_file as any) instanceof File) {
+                  try {
+                    const meta = await uploadFileAndStoreMetadata(
+                      values.uploaded_stl_file as unknown as File,
+                      user?.customer_id || '1'
+                    );
+                    uploadedFiles.uploaded_stl_file = { url: meta.key };
+                    console.log('✅ File uploaded to S3:', meta.key);
+                  } catch (err) {
+                    console.warn('❌ File S3 upload failed, using multipart', err);
+                    useS3 = false;
+                  }
+                }
+
+
+                if (useS3 && Object.keys(uploadedFiles).length > 0) {
+                  // S3 upload succeeded - send JSON with paths
+                  delete payload.uploaded_stl_file;
+                  payload.uploaded_files = uploadedFiles;
+
+                  console.log('📤 Sending JSON payload with S3 paths');
+                  res = (await createASPOrder(payload).unwrap()) as CreateOk;
+
+                } else {
+                  // S3 upload failed - use FormData fallback
+                  console.log('📤 Sending FormData (S3 failed)');
+                  const bodyOrForm = buildBodyOrForm(values);
+                  res = (await createASPOrder(bodyOrForm).unwrap()) as CreateOk;
+                }
+              }
+
+              // 🔥 Common response handling (no duplication!)
+              const { ok, salesId, aspOrderId, note } = normalizeCreateResponse(res);
+
+              if (!ok) {
+                alert(note || 'Order creation failed.');
+                return;
+              }
+
+              if (intent === 'later') {
+                alert(
+                  `Order saved. You can pay later.${
+                    salesId ? ` (SO: ${salesId})` : ''
+                  }`
+                );
+                router.push('/orders');
+                return;
+              }
+
               if (!salesId) {
                 alert('Order created but Sales Order ID missing.');
                 return;

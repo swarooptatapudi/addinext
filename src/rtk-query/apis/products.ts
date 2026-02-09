@@ -69,10 +69,18 @@ export const productsApi = createApi({
       },
     }),
 
-
-
-
-  })
+    /* ======================================================
+       ✅ NEW: KAFO / HKAFO PRODUCT CODE FETCH (POST)
+    ====================================================== */
+    getKafoProductCodes: builder.mutation({
+      query: (payload) => ({
+        url: '/method/addiwise.apis.order_types.kfao_order.get_kafo_item_codes',
+        method: 'POST',
+        body: payload
+      }),
+      transformResponse: (res: any) => res
+    }),
+  }),
 });
 
 export const {
@@ -83,5 +91,8 @@ export const {
   useGetProductsListQuery,
   useGetProductsSalesOrderListQuery,
   useGetItemNameInByDetailsMutation,
-  useGetItemNameAfoByDetailsMutation
+  useGetItemNameAfoByDetailsMutation,
+
+  /* ✅ EXPORT NEW HOOK */
+  useGetKafoProductCodesMutation,
 } = productsApi;
