@@ -25,7 +25,7 @@ type Props = {
 
 const ANKLE_SELECT_FIELDS: SelectFieldConfig[] = [
   {
-    name: 'ankle_frontal_alignment',
+    name: 'ankle_alignment',
     label: 'Alignment (Varus / Valgus)',
     required: true,
     options: [
