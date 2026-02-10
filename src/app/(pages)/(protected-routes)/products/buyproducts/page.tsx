@@ -99,17 +99,54 @@ export default function BuyProductsWithHdfc() {
 
   const selectedProduct = products?.find((p: any) => p.item_name === productName);
 
-  // pricing fields
+  // // pricing fields
+  // const mrp = selectedProduct?.mrp || 0;
+  // const discountAmountPercent = selectedProduct?.standard_discount || 0;
+  //
+  // const baseAmount = mrp * (typeof quantity === 'number' ? quantity : 0);
+  // const netAmount =
+  //   baseAmount - (discountAmountPercent / 100) * baseAmount - (couponData?.discount_amount || 0);
+  // const tax = netAmount * 0.18;
+  // const totalAmount = netAmount + tax;
+  // const finalAmount =
+  //   totalAmount - ((totalAmount * (couponData?.discount_percentage || 0)) / 100 || 0);
+// ---- Pricing from server values ----
+//   const mrp = selectedProduct?.mrp || 0;
+//   const discountAmountPercent = selectedProduct?.standard_discount || 0;
+//   const taxPct = selectedProduct?.tax_pct || 0;
+//
+//   const qty = typeof quantity === 'number' ? quantity : 0;
+//
+//   const baseAmount = mrp * qty;
+//   const discountAmount = (discountAmountPercent / 100) * baseAmount;
+//   const netAmount = baseAmount - discountAmount;
+//
+//   const taxAmount = (taxPct / 100) * netAmount;
+//   const totalAmount = netAmount + taxAmount;
+//
+//   const finalAmount =
+//     totalAmount -
+//     (couponData?.discount_amount || 0) -
+//     (totalAmount * (couponData?.discount_percentage || 0)) / 100;
   const mrp = selectedProduct?.mrp || 0;
   const discountAmountPercent = selectedProduct?.standard_discount || 0;
+  const taxPct = selectedProduct?.tax_pct || 0;
 
-  const baseAmount = mrp * (typeof quantity === 'number' ? quantity : 0);
-  const netAmount =
-    baseAmount - (discountAmountPercent / 100) * baseAmount - (couponData?.discount_amount || 0);
-  const tax = netAmount * 0.18;
-  const totalAmount = netAmount + tax;
+  const qty = typeof quantity === 'number' ? quantity : 0;
+
+  const baseAmount = mrp * qty;
+  const discountAmount = (discountAmountPercent / 100) * baseAmount;
+  const netAmount = baseAmount - discountAmount;
+
+  const taxAmount = (taxPct / 100) * netAmount;
+  const totalAmount = netAmount + taxAmount;
+
   const finalAmount =
-    totalAmount - ((totalAmount * (couponData?.discount_percentage || 0)) / 100 || 0);
+    totalAmount -
+    (couponData?.discount_amount || 0) -
+    (totalAmount * (couponData?.discount_percentage || 0)) / 100;
+
+
 
   const linkMatcher = new ColoredUrlMatcher('coloredUrl');
 
@@ -354,7 +391,8 @@ export default function BuyProductsWithHdfc() {
               <li>
                 Net Amount: <span className="font-semibold">₹{netAmount.toFixed(2)}</span>
               </li>
-              <li>Taxes @ 18%</li>
+              <li>Taxes @ {taxPct}%</li>
+
               <li className="font-bold text-primary">Total Amount: ₹{finalAmount.toFixed(2)}</li>
             </ul>
           </CardContent>
