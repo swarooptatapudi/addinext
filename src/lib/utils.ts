@@ -347,6 +347,6 @@ export async function exportAddishieldOrderToExcel(
 
   XLSX.writeFile(
     wb,
-    `Addishield_${orderType}_${orderIdVal}.xlsx`
+    `${orderType}_${orderIdVal}.xlsx`
   );
 }
