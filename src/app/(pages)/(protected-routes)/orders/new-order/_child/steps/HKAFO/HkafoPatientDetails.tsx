@@ -4,17 +4,28 @@ import React, { useEffect, useRef, useState } from 'react';
 import PatientPicker from '@/components/app/common/PatientPicker';
 import { AddCranialPatientDialog } from '@/components/app/common/AddCranialPatientDialog';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 
 export default function HkafoPatientDetails({
-  values,
-  errors,
-  touched: _touched,
-  setFieldValue,
-  handleChange,
-  shouldShowError,
-  UI,
-}: any) {
+                                              values,
+                                              errors,
+                                              touched: _touched,
+                                              setFieldValue,
+                                              handleChange,
+                                              shouldShowError,
+                                              UI,
+                                              activeStep,        // ✅ ADD
+                                            }: any) {
   const { Input, SelectBox } = UI;
+
+  /* ---------------- Product Type ---------------- */
+
+  const handleProductTypeChange = (type: 'HKAFO' | 'KAFO') => {
+    setFieldValue('type', type, true);
+  };
+
+  /* ---------------- Field Mapping ---------------- */
 
   const mappedSetFieldValue = (field: string, val: any) => {
     switch (field) {
@@ -49,10 +60,17 @@ export default function HkafoPatientDetails({
     }
   };
 
+  /* ---------------- Add Patient ---------------- */
+
   const [addOpen, setAddOpen] = useState(false);
+
   const handleNewPatientConfirm = (p: any) => {
     setAddOpen(false);
-    const pn = p?.patient_name || `${p?.first_name ?? ''} ${p?.last_name ?? ''}`.trim();
+
+    const pn =
+      p?.patient_name ||
+      `${p?.first_name ?? ''} ${p?.last_name ?? ''}`.trim();
+
     if (pn) mappedSetFieldValue('patient_name', pn);
     if (p?.first_name) mappedSetFieldValue('first_name', p.first_name);
     if (p?.last_name) mappedSetFieldValue('last_name', p.last_name);
@@ -67,21 +85,113 @@ export default function HkafoPatientDetails({
     mappedSetFieldValue('clinic_name', p?.clinic_name);
   };
 
+  /* ---------------- Sync Patient Name ---------------- */
+
   const prevFLRef = useRef<string>('');
+
   useEffect(() => {
-    const full = `${values.first_name ?? ''}${values.last_name ? ` ${values.last_name}` : ''}`.trim();
-    const prevFL = prevFLRef.current;
+    const full = `${values.first_name ?? ''}${
+      values.last_name ? ` ${values.last_name}` : ''
+    }`.trim();
+
     if (full && full !== values.patient_name) {
       setFieldValue('patient_name', full);
     }
+
     prevFLRef.current = full;
-  }, [values.first_name, values.last_name]);
+  }, [values.first_name, values.last_name, values.patient_name, setFieldValue]);
+
+  /* ================= RENDER ================= */
+  const isLocked = activeStep > 0;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-      <h2 className="text-primary text-lg font-semibold border-b pb-2">Patient Details</h2>
+    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm space-y-6">
 
-      <div className="mt-4 flex flex-col md:flex-row gap-3 md:items-end">
+      {/* ================= PRODUCT TYPE ================= */}
+
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-primary border-b pb-2">
+          Product Type <span className="text-red-500">*</span>
+          {isLocked && (
+            <span className="ml-2 text-xs text-gray-500">
+        (locked)
+      </span>
+          )}
+        </h2>
+
+        <div className="grid grid-cols-2 gap-4 mt-4">
+
+          {/* HKAFO */}
+          <div
+            onClick={() => {
+              if (!isLocked) {
+                setFieldValue('type', 'HKAFO', true);
+              }
+            }}
+            className={`
+        rounded-lg border p-4 text-center transition
+        ${
+              values.type === 'HKAFO'
+                ? 'border-primary bg-primary/5'
+                : 'border-gray-300 hover:border-primary'
+            }
+        ${
+              isLocked
+                ? 'cursor-not-allowed opacity-60'
+                : 'cursor-pointer'
+            }
+      `}
+          >
+            <div className="font-semibold">HKAFO</div>
+          </div>
+
+          {/* KAFO */}
+          <div
+            onClick={() => {
+              if (!isLocked) {
+                setFieldValue('type', 'KAFO', true);
+              }
+            }}
+            className={`
+        rounded-lg border p-4 text-center transition
+        ${
+              values.type === 'KAFO'
+                ? 'border-primary bg-primary/5'
+                : 'border-gray-300 hover:border-primary'
+            }
+        ${
+              isLocked
+                ? 'cursor-not-allowed opacity-60'
+                : 'cursor-pointer'
+            }
+      `}
+          >
+            <div className="font-semibold">KAFO</div>
+          </div>
+
+        </div>
+
+        {/* Product Type Error */}
+        {shouldShowError('type', true) && (
+          <p className="text-sm text-red-500 mt-2">
+            {errors.type}
+          </p>
+        )}
+
+        {isLocked && (
+          <p className="text-xs text-gray-500 mt-2">
+            Product type cannot be changed after moving to Measurement step.
+          </p>
+        )}
+      </div>
+
+      {/* ================= HEADER ================= */}
+      <h2 className="text-primary text-lg font-semibold border-b pb-2">
+        Patient Details
+      </h2>
+
+      {/* ================= PATIENT PICKER ================= */}
+      <div className="flex flex-col md:flex-row gap-3 md:items-end">
         <div className="flex-1">
           <PatientPicker
             label="Patient Name"
@@ -102,8 +212,13 @@ export default function HkafoPatientDetails({
         </div>
       </div>
 
-      <AddCranialPatientDialog open={addOpen} onOpenChange={setAddOpen} onConfirm={handleNewPatientConfirm} />
+      <AddCranialPatientDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onConfirm={handleNewPatientConfirm}
+      />
 
+      {/* ================= PATIENT FORM ================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
         <Input
           label="Patient First Name"
@@ -112,14 +227,12 @@ export default function HkafoPatientDetails({
           required
           inVaild={shouldShowError('first_name', true)}
           error={errors?.first_name}
-          placeholder="First name"
         />
         <Input
           label="Patient Last Name"
           value={values.last_name || ''}
           onChange={handleChange('last_name')}
           required
-          placeholder="Last name"
           inVaild={shouldShowError('last_name', true)}
           error={errors?.last_name}
         />
@@ -127,7 +240,6 @@ export default function HkafoPatientDetails({
           label="Parent / Guardian"
           value={values.parent_name || ''}
           onChange={handleChange('parent_name')}
-          placeholder="Parent or Guardian"
         />
         <Input
           label="Date of Birth"
@@ -137,25 +249,16 @@ export default function HkafoPatientDetails({
           required
           inVaild={shouldShowError('date_of_birth', true)}
           error={errors?.date_of_birth}
-          max={(() => {
-            const now = new Date();
-            const d = new Date(now);
-            d.setMonth(d.getMonth() - 18);
-            const year = d.getFullYear();
-            const month = `${d.getMonth() + 1}`.padStart(2, '0');
-            const day = `${d.getDate()}`.padStart(2, '0');
-            return `${year}-${month}-${day}`;
-          })()}
         />
         <SelectBox
+          label="Gender"
+          value={values.gender ?? ''}
+          onValueChange={handleChange('gender')}
           options={[
             { value: 'Male', label: 'Male' },
             { value: 'Female', label: 'Female' },
             { value: 'Other', label: 'Other' },
           ]}
-          label="Gender"
-          value={values.gender ?? ''}
-          onValueChange={handleChange('gender')}
           inVaild={shouldShowError('gender')}
           error={errors?.gender}
         />
@@ -163,13 +266,11 @@ export default function HkafoPatientDetails({
           label="Height (cm)"
           value={values.height_cm || ''}
           onChange={handleChange('height_cm')}
-          placeholder="cm"
         />
         <Input
           label="Weight (kg)"
           value={values.weight_kg || ''}
           onChange={handleChange('weight_kg')}
-          placeholder="kg"
           required
           inVaild={shouldShowError('weight_kg', true)}
           error={errors?.weight_kg}
@@ -178,7 +279,6 @@ export default function HkafoPatientDetails({
           label="Mobile"
           value={values.parent_mobile || ''}
           onChange={handleChange('parent_mobile')}
-          placeholder="+91xxxxxxxxxx"
           required
           inVaild={shouldShowError('parent_mobile', true)}
           error={errors?.parent_mobile}
@@ -189,7 +289,6 @@ export default function HkafoPatientDetails({
           value={values.email || ''}
           onChange={handleChange('email')}
           required
-          placeholder="name@example.com"
           inVaild={shouldShowError('email', true)}
           error={errors?.email}
         />
@@ -198,7 +297,6 @@ export default function HkafoPatientDetails({
           value={values.clinic_name || ''}
           onChange={handleChange('clinic_name')}
           required
-          placeholder="Clinic name"
           inVaild={shouldShowError('clinic_name', true)}
           error={errors?.clinic_name}
         />
@@ -206,7 +304,6 @@ export default function HkafoPatientDetails({
           label="Consultant"
           value={values.consultant || ''}
           onChange={handleChange('consultant')}
-          placeholder="Doctor name"
         />
       </div>
     </div>

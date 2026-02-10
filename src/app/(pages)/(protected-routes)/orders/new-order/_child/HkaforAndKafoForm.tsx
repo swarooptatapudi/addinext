@@ -159,7 +159,7 @@ type FormValues = {
   gst_rate?: 0 | 0.05 | 0.18;
 };
 
-/*const HKAFO_LIMITS = {
+const HKAFO_LIMITS = {
   circ_waist: { min: 43.4, max: 110 },
   circ_iliac_crest: { min: 44.2, max: 115 },
   circ_greater_trochanter: { min: 46.8, max: 120 },
@@ -184,7 +184,7 @@ type FormValues = {
   length_ground_to_greater_trochanter: { min: 37.6, max: 110 },
   length_ground_to_pelvic_line: { min: 37.6, max: 120 },
   length_ground_to_waist_line: { min: 49.1, max: 125 }
-} as const;*/
+} as const;
 const cmToIn = (cm: number) => cm / 2.54;
 
 const MIN_PATIENT_AGE_MONTHS = 18;
@@ -197,7 +197,7 @@ const getMinAllowedDob = () => {
   return d;
 };
 
-/*const applyHkafoRange = (key: keyof typeof HKAFO_LIMITS, schema: any) =>
+const applyHkafoRange = (key: keyof typeof HKAFO_LIMITS, schema: any) =>
   schema.test('hkafo-range', '', function (this: Yup.TestContext, value: unknown) {
     if (value === undefined || value === null || value === '') return true;
 
@@ -221,9 +221,8 @@ const getMinAllowedDob = () => {
       return this.createError({ message: `Value must be between ${min} and ${max} cm` });
     }
     return true;
-  });*/
+  });
 
-/*
 const Schema = Yup.object({
   // Patient details (step 0)
   patient_name: Yup.string().required('Patient name is required'),
@@ -389,11 +388,15 @@ const Schema = Yup.object({
   ankle_frontal_alignment: Yup.string().required('Ankle frontal alignment is required'),
   ankle_flexibility: Yup.string().required('Ankle flexibility is required'),
   ankle_rotation: Yup.string().required('Ankle rotation is required'),
-  ankle_plane: Yup.string().required('Ankle plane is required'),
+  //ankle_plane: Yup.string().required('Ankle plane is required'),
+  ankle_plane: Yup.number()
+    .typeError('Enter a number')
+    .min(0, 'Must be zero or greater')
+    .required('Toe in/out degrees are required'),
   ankle_frontal_degrees: Yup.number()
     .typeError('Enter a number')
     .min(0, 'Must be zero or greater')
-    .required('Ankle alignment degrees are required'),
+    .required('Varus/Valgus degrees are required'),
   ankle_plane_degrees: Yup.number()
     .typeError('Enter a number')
     .min(0, 'Must be 0 or greater than 0')
@@ -408,11 +411,11 @@ const Schema = Yup.object({
   knee_alignment_degrees: Yup.number()
     .typeError('Enter a number')
     .min(0, 'Must be 0 or greater than 0')
-    .required('Knee alignment degrees are required'),
+    .required('Varus/Valgus degrees are required'),
   knee_sagittal_degrees: Yup.number()
     .typeError('Enter a number')
     .min(0, 'Must be 0 or greater than 0')
-    .required('Knee sagittal degrees are required'),
+    .required('Knee Hyperextended/Flexion Contracture degrees are required'),
 
   // Computation doesn't add new fields  cr/cvai are derived so no required validation here
 
@@ -435,7 +438,6 @@ const Schema = Yup.object({
 
   // keep numbers monetary optional or validated elsewhere
 });
-*/
 const STEP_FIELDS: Record<number, string[]> = {
   0: [
     'patient_name',
@@ -734,7 +736,7 @@ function toCreatePayload(
       ankle_alignment: orEmpty(values.ankle_alignment),
       ankle_flexibility: orEmpty(values.ankle_flexibility),
       ankle_rotation: orEmpty(values.ankle_rotation),
-      ankle_plane: orEmpty(values.ankle_plane),
+      ankle_plane: toNumOrNull(values.ankle_plane),
 
       ankle_frontal_degrees: toNumOrNull(values.ankle_frontal_degrees),
       ankle_plane_degrees: toNumOrNull(values.ankle_plane_degrees),
@@ -1051,6 +1053,7 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
         enableReinitialize
         validateOnChange
         validateOnBlur
+        validationSchema={Schema}
       >
         {({ values, errors, touched, setFieldValue, validateForm, setTouched }) => {
           const handleChange = (field: string) => (eOrVal: any) => {
@@ -1060,6 +1063,23 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                 : eOrVal;
             setFieldValue(field, next, true);
           };
+          useEffect(() => {
+            if (!values.type) return;
+
+            // HKAFO-only fields
+            const HKAFO_ONLY_FIELDS = [
+              'circ_waist',
+              'circ_iliac_crest',
+              'ml_waist',
+              'ml_iliac_crest',
+            ];
+
+            if (values.type === 'KAFO') {
+              HKAFO_ONLY_FIELDS.forEach((f) => {
+                setFieldValue(f, '', false);
+              });
+            }
+          }, [values.type, setFieldValue]);
 
           useEffect(() => {
             setFieldValue('customer', user?.customer_id || '');
@@ -1245,64 +1265,6 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
             return { ok, salesId, hkafoId, note };
           }
 
-          // ✅ postOrder now uses the reusable payment launcher
-/*
-          const postOrder = async (intent: 'place' | 'later') => {
-            if (!values.agree_terms) {
-              toast.error('Please agree to the terms and conditions');
-              return;
-            }
-
-            if (!values.item_code) {
-              toast.error('Product Code is required');
-              return;
-            }
-
-            try {
-              setBusy(intent);
-
-              const payload = toCreatePayload(values, values.item_code, {
-                customerId: user?.customer_id,
-                orderId,
-                deviceTypeId
-              });
-
-              const res = (await createOrder(payload).unwrap()) as CreateOk;
-              const { ok, note, salesId } = normalizeCreateResponse(res);
-
-              if (ok) {
-                if (intent === 'place' && salesId) {
-                  if (paymentStartedRef.current) return;
-                  paymentStartedRef.current = true;
-
-                  await startPayment(salesId);
-                  return;
-                }
-
-
-                toast.success(
-                  intent === 'place'
-                    ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}`
-                    : 'Order saved. You can pay later.'
-                );
-                router.push('/orders');
-                return;
-              }
-
-              toast.error(note || 'Order creation failed');
-            } catch (e: any) {
-              toast.error(
-                e?.data?.message ||
-                e?.data?._server_messages ||
-                e?.message ||
-                'Failed to submit order'
-              );
-            } finally {
-              setBusy(null);
-            }
-          };
-*/
-
           const postOrder = async (intent: 'place' | 'later') => {
             if (!values.agree_terms) {
               alert('Please agree to the terms and conditions.');
@@ -1466,8 +1428,8 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
           };
 
           const handleNextStep = async () => {
-            if (isReadOnly) {
-              setActiveStep((s) => Math.min(s + 1, steps.length - 1));
+            if (activeStep === 0 && !values.type) {
+              toast.error('Please select Product Type');
               return;
             }
 
@@ -1538,6 +1500,7 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                       handleChange={handleChange}
                       shouldShowError={shouldShowError}
                       UI={{ Input, Label, SelectBox, DatePicker, Textarea }}
+                      activeStep={activeStep}   // ✅ ADD THIS
                     />
                   )}
                   {activeStep === 1 && (
@@ -1579,38 +1542,22 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                 </fieldset>
 
                 {/* Navigation */}
-                <div className="flex justify-between items-center gap-3 pt-2">
+                <div className="flex justify-between items-center pt-4">
                   {activeStep > 0 && (
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setActiveStep((s) => Math.max(s - 1, 0))}
+                      onClick={() => setActiveStep((s) => s - 1)}
                     >
                       Previous
                     </Button>
                   )}
+
                   <div className="ml-auto">
-                    {activeStep === 0 ? (
-                      <div className="flex gap-3">
-                        <Button
-                          type="button"
-                          onClick={() => handleDeviceTypeChange('HKAFO')}
-                        >
-                          HKAFO & NEXT
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => handleDeviceTypeChange('KAFO')}
-                        >
-                          KAFO & NEXT
-                        </Button>
-                      </div>
-                    ) : (
-                      activeStep < steps.length - 1 && (
-                        <Button type="button" onClick={handleNextStep}>
-                          Next
-                        </Button>
-                      )
+                    {activeStep < steps.length - 1 && (
+                      <Button type="button" onClick={handleNextStep}>
+                        Next
+                      </Button>
                     )}
                   </div>
                 </div>
