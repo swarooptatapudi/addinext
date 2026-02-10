@@ -24,7 +24,7 @@ export default function Products(): React.JSX.Element {
 
   const orthotics = products?.filter((item: any) => (item.item_group === "Orthotics" && item.custom_allow_to_ui === 1))
   const offtheself = products?.filter((item: any) => (item.item_group === "Off the Shelf" && item.custom_allow_to_ui === 1))
-  const scanners = products?.filter((item: any) => (item.item_group === "Scanners" && item.custom_allow_to_ui === 1))
+  const scanners = products?.filter((item: any) => (['Scanners', 'Scanner 3D'].includes(item.item_group) && item.custom_allow_to_ui === 1))
   return (
     <div className="p-6 max-w-full">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">

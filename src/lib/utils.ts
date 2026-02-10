@@ -162,3 +162,191 @@ export async function exportCranialOrderToExcel(
   const filename = `CranialOrder_${orderIdVal}.xlsx`;
   XLSX.writeFile(wb, filename);
 }
+
+export type AddishieldType =
+  | 'AddiShield Pro Order'
+  | 'AddiShield EpiPro Order'
+  | 'AddiShield EpiPro Active Order';
+
+export async function exportAddishieldOrderToExcel(
+  orderId: string,
+  orderType: AddishieldType,
+  opts?: { apiPath?: string }
+) {
+  const apiPath =
+    opts?.apiPath ??
+    '/api/method/addiwise.apis.order.get_sales_order_details';
+
+  const payload = { order_id: orderId, order_type: orderType };
+
+  const resp = await fetch(apiPath, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    throw new Error(`API failed ${resp.status}`);
+  }
+
+  const json: any = await resp.json();
+
+  const d =
+    json?.message?.data ??   // ✅ YOUR API
+    json?.data ??            // fallback (other APIs)
+    {};
+  const orderIdVal =
+    d.sales_order_id ??
+    d.so_order_id ??
+    orderId;
+
+  /* -------------------------------------------------------
+   Patient Details (COMMON)
+  ------------------------------------------------------- */
+  const patientDetails = [
+    {
+      OrderID: orderIdVal,
+      FirstName: d.first_name ?? '',
+      LastName: d.last_name ?? '',
+      ParentMobile: d.parent_mobile ?? '',
+      DateOfBirth: d.date_of_birth ?? '',
+      Gender: d.gender ?? '',
+      HeightCM: d.height_cm ?? '',
+      WeightKG: d.weight_kg ?? '',
+      Email: d.email ?? '',
+      ClinicName: d.clinic_name ?? '',
+    },
+  ];
+
+  /* -------------------------------------------------------
+   Measurement (VARIES)
+  ------------------------------------------------------- */
+  const baseMeasurement: any = {
+    OrderID: orderIdVal,
+    Length_AP_CM: d.length_ap_cm ?? '',
+    HeadCircumference_CM: d.head_circumference_cm ?? '',
+    TempleWidth_CM: d.temple_width_cm ?? '',
+    Width_ML_CM: d.width_ml_cm ?? '',
+    EyebrowToVertex_CM: d.eyebrow_to_vertex_cm ?? '',
+    TragusToVertex_CM: d.tragus_to_vertex_cm ?? '',
+    OcciputToVertex_CM: d.occiput_to_vertex_cm ?? '',
+    SuboccipitalChin_CM: d.suboccipital_chin_cm ?? '',
+    EarClearance_CM: d.ear_clearance_cm ?? '',
+    NeckClearance_CM: d.neck_clearance_cm ?? '',
+  };
+
+  if (orderType === 'AddiShield Pro Order') {
+    baseMeasurement.BonyDefectSize = d.bony_defect_size ?? '';
+  }
+
+  const measurement = [baseMeasurement];
+
+  /* -------------------------------------------------------
+   Assessment (VARIES)
+  ------------------------------------------------------- */
+  let assessment: any[] = [];
+
+  if (
+    orderType === 'AddiShield Pro Order' ||
+    orderType === 'AddiShield EpiPro Active Order'
+  ) {
+    assessment = [
+      {
+        OrderID: orderIdVal,
+        SiteOfCraniectomy: d.site_of_craniectomy ?? '',
+        SideOfCraniectomy: d.side_of_craniectomy ?? '',
+        ScalpSkinCondition: d.scalp_skin_condition ?? '',
+        MobilityLevel: d.mobility_level ?? '',
+      },
+    ];
+  }
+
+  if (orderType === 'AddiShield EpiPro Order') {
+    assessment = [
+      {
+        OrderID: orderIdVal,
+        SeizureFrequency: d.seizure_frequency ?? '',
+        EpilepsyType: d.epilepsy_type ?? '',
+        RiskSituations: d.risk_situations ?? '',
+        FallPattern: d.fall_pattern ?? '',
+      },
+    ];
+  }
+
+  /* -------------------------------------------------------
+   Scan File Details (COMMON)
+  ------------------------------------------------------- */
+  const scanFileDetails = [
+    {
+      OrderID: orderIdVal,
+      ScanFile: d.uploaded_stl_file ?? '',
+      ExtraFiles: Array.isArray(d.extra_files)
+        ? d.extra_files.map((f: any) => f?.name ?? '').join(', ')
+        : '',
+      Remarks: d.other_remarks ?? '',
+    },
+  ];
+
+  /* -------------------------------------------------------
+   Payment Summary (COMMON)
+  ------------------------------------------------------- */
+  const paymentSummary = [
+    {
+      OrderID: orderIdVal,
+      DesignBy: d.design_by ?? '',
+      PrintBy: d.print_by ?? '',
+      Colour: d.colour ?? '',
+      CouponCode: d.coupon_code ?? '',
+      DesignPrice: d.design_price ?? '',
+      PrintPrice: d.print_price ?? '',
+      DiscountedPrice: d.discounted_price ?? '',
+      GST5: d.gst_5 ?? '',
+      GST18: d.gst_18 ?? '',
+      TotalPrice: d.total_price ?? '',
+    },
+  ];
+
+  /* -------------------------------------------------------
+   Workbook
+  ------------------------------------------------------- */
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(patientDetails),
+    'Patient Details'
+  );
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(measurement),
+    'Measurement'
+  );
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(assessment),
+    'Assessment'
+  );
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(scanFileDetails),
+    'Scan File Details'
+  );
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(paymentSummary),
+    'Payment Summary'
+  );
+
+  XLSX.writeFile(
+    wb,
+    `${orderType}_${orderIdVal}.xlsx`
+  );
+}
