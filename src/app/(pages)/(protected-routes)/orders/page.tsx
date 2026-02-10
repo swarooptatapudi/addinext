@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { exportCranialOrderToExcel } from '@/lib/utils';
+import { exportCranialOrderToExcel, exportAddishieldOrderToExcel,AddishieldType } from '@/lib/utils';
 import { usePaymentLauncher } from '@/hooks/usePaymentLauncher';
 import { WikyScanModal } from '@/components/wiky/WikyScanModal';
 
@@ -144,10 +144,29 @@ export default function Orders(): React.JSX.Element {
 
   const handleExport = useCallback(async (order: Order) => {
     if (!order?.order_id) return;
+
     const id = order.order_id;
     setExportingIds((s) => new Set(s).add(id));
+
     try {
-      await exportCranialOrderToExcel(order.order_id, order.device_type);
+      // 🔹 Cranial
+      if (order.device_type === 'Cranial Helmet Orders') {
+        await exportCranialOrderToExcel(order.order_id, order.device_type);
+      }
+
+      // 🔹 Addishield (Pro / EpiPro / EpiPro Active)
+      else if (order.device_type.startsWith('AddiShield')) {
+        await exportAddishieldOrderToExcel(
+          order.order_id,
+          order.device_type as AddishieldType
+        );
+      }
+
+      else {
+        toast.info('Excel export not supported for this order type yet');
+        return;
+      }
+
       toast.success('Export complete');
     } catch (err) {
       console.error('Export failed', err);
@@ -312,7 +331,10 @@ export default function Orders(): React.JSX.Element {
               </Button>
             </div>
 
-            {order.device_type === 'Cranial Helmet Orders' && (
+            {(
+              order.device_type === 'Cranial Helmet Orders' ||
+              order.device_type.startsWith('AddiShield')
+            ) && (
               <Button
                 size="sm"
                 variant="ghost"
