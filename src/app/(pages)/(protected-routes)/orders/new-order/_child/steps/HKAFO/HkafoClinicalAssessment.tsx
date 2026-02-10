@@ -26,11 +26,12 @@ type Props = {
 const ANKLE_SELECT_FIELDS: SelectFieldConfig[] = [
   {
     name: 'ankle_alignment',
-    label: 'Alignment (Varus / Valgus)',
+    label: 'Alignment',
     required: true,
     options: [
       { value: 'Varus', label: 'Varus' },
       { value: 'Valgus', label: 'Valgus' },
+      { value: 'Normal Range', label: 'Normal Range' },
     ],
   },
   {
@@ -49,15 +50,7 @@ const ANKLE_SELECT_FIELDS: SelectFieldConfig[] = [
     options: [
       { value: 'Toe Out', label: 'Toe Out' },
       { value: 'Toe In', label: 'Toe In' },
-    ],
-  },
-  {
-    name: 'ankle_plane',
-    label: 'Plane (Medial / Lateral)',
-    required: true,
-    options: [
-      { value: 'Medial Plane', label: 'Medial plane' },
-      { value: 'Lateral Plane', label: 'Lateral plane' },
+      { value: 'Normal Range', label: 'Normal Range' },
     ],
   },
 ] ;
@@ -65,7 +58,12 @@ const ANKLE_SELECT_FIELDS: SelectFieldConfig[] = [
 const ANKLE_NUMERIC_FIELDS: LengthFieldConfig[] = [
   {
     name: 'ankle_frontal_degrees',
-    label: 'Alignment degrees',
+    label: 'Varus / Valgus Degrees',
+    placeholder: '0',
+  },
+  {
+    name: 'ankle_plane',
+    label: 'Toe In / Toe Out Degrees',
     placeholder: '0',
   },
   {
@@ -83,11 +81,12 @@ const ANKLE_NUMERIC_FIELDS: LengthFieldConfig[] = [
 const KNEE_SELECT_FIELDS: SelectFieldConfig[] = [
   {
     name: 'knee_alignment',
-    label: 'Alignment (Varus / Valgum)',
+    label: 'Alignment',
     required: true,
     options: [
       { value: 'Varus', label: 'Varus' },
-      { value: 'Valgum', label: 'Valgum' },
+      { value: 'Valgus', label: 'Valgus' },
+      { value: 'Normal Range', label: 'Normal Range' },
     ],
   },
   {
@@ -106,6 +105,7 @@ const KNEE_SELECT_FIELDS: SelectFieldConfig[] = [
     options: [
       { value: 'Hyperextended', label: 'Hyperextended' },
       { value: 'Knee Flexion Contracture', label: 'Knee flexion contracture' },
+      { value: 'Normal Range', label: 'Normal Range' },
     ],
   },
   {
@@ -136,12 +136,12 @@ const KNEE_SELECT_FIELDS: SelectFieldConfig[] = [
 const KNEE_NUMERIC_FIELDS: LengthFieldConfig[] = [
   {
     name: 'knee_alignment_degrees',
-    label: 'Alignment degrees',
+    label: 'Varus / Valgus Degrees',
     placeholder: '0',
   },
   {
     name: 'knee_sagittal_degrees',
-    label: 'Sagittal degrees',
+    label: 'Knee Hyperextended/ Knee Flexion Contracture Degrees',
     placeholder: '0',
   },
 ];
@@ -185,7 +185,7 @@ function LengthField({ config, UI, measurementUnit }: LengthFieldProps) {
       <div className="gap-3">
         <Label
           htmlFor={config.name}
-          className="block text-sm whitespace-nowrap w-"
+          className="block text-xs font-medium leading-normal mb-1 whitespace-nowrap text-black-700"
         >
           {config.label}
         </Label>
