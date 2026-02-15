@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import ASPMeasurement from './steps/ASEPA/ASEPAMeasurement';
-import ASPAssessment from './steps/ASP/ASPAssessment';
+import ASEPAAssessment from './steps/ASEP/ASEPAssessment';
 import ASPSummary from './steps/ASP/ASPSummary';
 import ASPScanUpload from './steps//ASP/ASPScanUpload';
 import ASPFinishPayment from './steps/ASP/ASPFinishPayment';
@@ -51,10 +51,10 @@ const Schema = Yup.object({
 
   bony_defect_size: Yup.string().required(),
 
-  site_of_craniectomy: Yup.string().required(),
-  side_of_craniectomy: Yup.string().required(),
-  scalp_skin_condition: Yup.string().required(),
-  mobility_level: Yup.string().required(),
+  seizure_frequency: Yup.string().required(),
+  epilepsy_type: Yup.string().required(),
+  risk_situations: Yup.string().required(),
+  fall_pattern: Yup.string().required(),
 
 
   agree_terms: Yup.boolean().oneOf([true]),
@@ -108,10 +108,10 @@ export default function ASEPAOrderForm({ initialPatient }: Props) {
     ear_clearance_cm: '',
     neck_clearance_cm: '',
 
-    site_of_craniectomy: '',
-    side_of_craniectomy: '',
-    scalp_skin_condition: '',
-    mobility_level: '',
+    seizure_frequency: '',
+    epilepsy_type: '',
+    risk_situations: '',
+    fall_pattern: '',
     other_diagnosis: '',
 
     uploaded_stl_file: null,
@@ -203,10 +203,10 @@ export default function ASEPAOrderForm({ initialPatient }: Props) {
           bony_defect_size: d.bony_defect_size ?? '',
 
           /* ---------------- Assessment ---------------- */
-          site_of_craniectomy: d.site_of_craniectomy || '',
-          side_of_craniectomy: d.side_of_craniectomy || '',
-          scalp_skin_condition: d.scalp_skin_condition || '',
-          mobility_level: d.mobility_level || '',
+          seizure_frequency: d.seizure_frequency || '',
+          epilepsy_type: d.epilepsy_type || '',
+          risk_situations: d.risk_situations || '',
+          fall_pattern: d.fall_pattern || '',
           other_diagnosis: d.other_diagnosis || '',
 
           /* ---------------- Uploads ---------------- */
@@ -609,7 +609,7 @@ export default function ASEPAOrderForm({ initialPatient }: Props) {
               >
 
               {activeStep === 0 && <ASPMeasurement UI={{ Input, Label, Card }}/>}
-              {activeStep === 1 && <ASPAssessment />}
+              {activeStep === 1 && <ASEPAAssessment />}
 
               {activeStep === 2 && (
                 <ASPSummary values={values} productCode={ITEM_CODE} UI={{ Input, Label }} />
@@ -663,10 +663,10 @@ export default function ASEPAOrderForm({ initialPatient }: Props) {
                           'neck_clearance_cm',
                         ],
                         1: [
-                          'site_of_craniectomy',
-                          'side_of_craniectomy',
-                          'scalp_skin_condition',
-                          'mobility_level',
+                          'seizure_frequency',
+                          'epilepsy_type',
+                          'risk_situations',
+                          'fall_pattern',
                         ],
                       };
 
