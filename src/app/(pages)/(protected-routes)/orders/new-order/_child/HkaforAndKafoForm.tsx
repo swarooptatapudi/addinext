@@ -248,7 +248,7 @@ const Schema = Yup.object({
   clinic_name: Yup.string().required('Clinic name is required'),
   parent_mobile: Yup.string().required('Mobile number is required along with country code'),
 
-  // Measurements (step 1) - require numeric > 0
+  /*// Measurements (step 1) - require numeric > 0
   ap: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('AP is required'),
   ml: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('ML is required'),
   da: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('Diagonal A is required'),
@@ -384,7 +384,7 @@ const Schema = Yup.object({
   length_ground_to_waist_line: applyHkafoRange(
     'length_ground_to_waist_line',
     Yup.number().typeError('Enter a number')
-  ).required('Ground to waist line length is required'),
+  ).required('Ground to waist line length is required'),*/
   ankle_frontal_alignment: Yup.string().required('Ankle frontal alignment is required'),
   ankle_flexibility: Yup.string().required('Ankle flexibility is required'),
   ankle_rotation: Yup.string().required('Ankle rotation is required'),
