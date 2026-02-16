@@ -153,12 +153,30 @@ export default function FinishPayment({
     });
 
     if (r) {
-      setDesignPrice(Number(r.design ?? designPrice));
-      setPrintPrice(Number(r.print ?? printPrice));
-      if (typeof r.stdDiscPct === 'number') setStdPct(r.stdDiscPct);
-      if (typeof r.gstRate === 'number') setGstRate(r.gstRate);
+      const d = Number(r.design ?? designPrice);
+      const p = Number(r.print ?? printPrice);
+      const pct = typeof r.stdDiscPct === 'number' ? r.stdDiscPct : stdPct;
+      const gst = typeof r.gstRate === 'number' ? r.gstRate : gstRate;
+
+      setDesignPrice(d);
+      setPrintPrice(p);
+      setStdPct(pct);
+      setGstRate(gst);
+
+      // keep backend payload fields synced
+      const subtotal = d + p;
+      const std = subtotal * pct;
+      const taxable = subtotal - std;
+      const gstAmount = taxable * gst;
+      const total = taxable + gstAmount;
+
+      setFieldValue?.('estimate_price', subtotal);
+      setFieldValue?.('item_standard_discount', std);
+      setFieldValue?.('gst_5', gstAmount);
+      setFieldValue?.('total_price', total);
     }
   };
+
 
   const applyCoupon = async () => {
     if (!onValidateCoupon) return;
@@ -300,56 +318,76 @@ export default function FinishPayment({
           </div>
 
           <ul className="text-sm space-y-2">
+
+            {/* Design */}
             <li className="flex justify-between">
               <span>Design</span>
-              <span>₹{toNum(values.design_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              <span>
+        ₹{summary.subtotal
+                ? designPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })
+                : '0.00'}
+      </span>
             </li>
 
+            {/* Print */}
             <li className="flex justify-between">
               <span>Print</span>
-              <span>₹{toNum(values.print_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              <span>
+        ₹{printPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+      </span>
             </li>
 
+            {/* Estimate */}
             <li className="flex justify-between pt-2 border-t">
               <span className="text-gray-600">Estimate Price</span>
-              <span>₹{toNum(values.estimate_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-            </li>
-
-            <li className="flex justify-between">
-              <span className="text-gray-600">Standard Discount</span>
-              <span className="text-emerald-700">
-        −₹{toNum(values.item_standard_discount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              <span>
+        ₹{summary.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
       </span>
             </li>
 
+            {/* Standard Discount */}
+            {summary.std > 0 && (
+              <li className="flex justify-between">
+                <span className="text-gray-600">Standard Discount</span>
+                <span className="text-emerald-700">
+          −₹{summary.std.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+        </span>
+              </li>
+            )}
+
+            {/* Coupon */}
+            {summary.couponDisc > 0 && (
+              <li className="flex justify-between">
+        <span className="text-gray-600">
+          Additional Discount {coupon?.code ? `(${coupon.code})` : ''}
+        </span>
+                <span className="text-emerald-700">
+          −₹{summary.couponDisc.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+        </span>
+              </li>
+            )}
+
+            {/* GST — ALWAYS SHOW */}
             <li className="flex justify-between">
-              <span className="text-gray-600">Additional Discount</span>
-              <span className="text-emerald-700">
-        −₹{toNum(values.additional_discount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+      <span className="text-gray-600">
+        GST ({(gstRate * 100).toFixed(0)}%)
+      </span>
+              <span>
+        +₹{summary.gst.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
       </span>
             </li>
 
-            {toNum(values.gst_5) > 0 && (
-              <li className="flex justify-between">
-                <span className="text-gray-600">GST (5%)</span>
-                <span>+₹{toNum(values.gst_5).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </li>
-            )}
-
-            {toNum(values.gst_18) > 0 && (
-              <li className="flex justify-between">
-                <span className="text-gray-600">GST (18%)</span>
-                <span>+₹{toNum(values.gst_18).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </li>
-            )}
           </ul>
 
+          {/* TOTAL */}
           <div className="mt-3 pt-3 border-t flex justify-between text-base font-semibold">
             <span>Total Amount</span>
             <span className="text-primary">
-      ₹{toNum(values.total_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+      ₹{summary.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
     </span>
           </div>
+
+          {/* Terms */}
           <label className="mt-4 flex items-center gap-2 text-sm">
             <input
               type="checkbox"
