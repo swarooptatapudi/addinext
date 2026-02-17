@@ -305,9 +305,13 @@ export default function Orders(): React.JSX.Element {
           isPaid = true;
         }
 
+        // Update: allow both Insole Orders and AFO Orders
         const isInsoleOrder = order.device_type === 'Insole Orders';
+        const isAFOOrder = order.device_type === 'AFO Orders';
+        const canDesign = (isInsoleOrder || isAFOOrder) && isPaid;
+
         const canPay = !isPaid;
-        const canDesign = isInsoleOrder && isPaid;
+
 
         return (
           <div className="flex gap-2 items-center">
