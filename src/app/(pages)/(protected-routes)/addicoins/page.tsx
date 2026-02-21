@@ -474,7 +474,142 @@ export default function Addicoins(): React.JSX.Element {
         </Card>
 
       </div>
+      <div className="w-[50%] mt-6">
+        {/* AddiCoins Required Card */}
+        <Card className="bg-gradient-to-br from-blue-10 to-indigo-50 shadow-sm border border-gray-200 rounded-lg">
+          <CardHeader className="pb-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <InfoIcon className="w-5 h-5 " />
+              </div>
+              <div>
+                <span className="text-md font-bold text-primary">AddiCoins Required</span>
+                <CardTitle className="text-sm text-gray-700">
+                  Socket Categories
+                </CardTitle>
+              </div>
+            </div>
+          </CardHeader>
 
+          <CardContent className="pt-4">
+            <div className="flex flex-col gap-2">
+              {/* BK Category */}
+              <div className="flex justify-between items-center p-2 bg-white rounded-md border border-gray-100">
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-800">Below Knee (BK)</span>
+                  <span className="text-xs text-gray-500">DS, CS</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CoinsIcon className="w-4 h-4 " />
+                  <span className="font-bold text-primary">8</span>
+                </div>
+              </div>
+
+              {/* AK Category */}
+              <div className="flex justify-between items-center p-2 bg-white rounded-md border border-gray-100">
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-800">Above Knee (AK)</span>
+                  <span className="text-xs text-gray-500">DS, CS</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CoinsIcon className="w-4 h-4 " />
+                  <span className="font-bold text-primary">10</span>
+                </div>
+              </div>
+
+              {/* BE Category */}
+              <div className="flex justify-between items-center p-2 bg-white rounded-md border border-gray-100">
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-800">Below Elbow (BE)</span>
+                  <span className="text-xs text-gray-500">DS, CS</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CoinsIcon className="w-4 h-4 " />
+                  <span className="font-bold text-primary">6</span>
+                </div>
+              </div>
+
+              {/* LE Category */}
+              <div className="flex justify-between items-center p-2 bg-white rounded-md border border-gray-100">
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-800">Above Elbow (AE)</span>
+                  <span className="text-xs text-gray-500">DS, CS</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CoinsIcon className="w-4 h-4 " />
+                  <span className="font-bold text-primary">6</span>
+                </div>
+              </div>
+
+              {/* BK Mold Category */}
+              <div className="flex justify-between items-center p-2 bg-white rounded-md border border-gray-100">
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-800">Below Knee (BK)</span>
+                  <span className="text-xs text-gray-500">Mould</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CoinsIcon className="w-4 h-4 " />
+                  <span className="font-bold text-primary">4</span>
+                </div>
+              </div>
+
+              {/* AK Mold Category */}
+              <div className="flex justify-between items-center p-2 bg-white rounded-md border border-gray-100">
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-800">Above Knee (AK)</span>
+                  <span className="text-xs text-gray-500">Mould</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CoinsIcon className="w-4 h-4 " />
+                  <span className="font-bold text-primary">5</span>
+                </div>
+              </div>
+
+              {/* BE & LE Mold Category */}
+              <div className="flex justify-between items-center p-2 bg-white rounded-md border border-gray-100">
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-800">Below Elbow (BE) & Above Elbow (AE)</span>
+                  <span className="text-xs text-gray-500">Mould</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CoinsIcon className="w-4 h-4 " />
+                  <span className="font-bold text-primary">3</span>
+                </div>
+              </div>
+
+              {/* insole */}
+              <div className="flex justify-between items-center p-2 bg-white rounded-md border border-gray-100">
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-800">AddiSole </span>
+                  <span className="text-xs text-gray-500">Insoles</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CoinsIcon className="w-4 h-4 " />
+                  <span className="font-bold text-primary">4</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center p-2 bg-white rounded-md border border-gray-100">
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-800">AddiFlex</span>
+                  <span className="text-xs text-gray-500">AFO/SMO</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CoinsIcon className="w-4 h-4" />
+                  <span className="font-bold text-primary">8</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 p-2 bg-orange-50 rounded-md border border-orange-100">
+              <p className="text-xs  font-medium">
+                <span className="font-semibold">Note:</span> DS = Definitive Socket, CS = Check Socket
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+      </div>
     </div>
   );
 }
