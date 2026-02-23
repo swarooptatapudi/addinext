@@ -91,19 +91,11 @@ export default function FinishPayment({
   const [coupon, setCoupon] = useState<Coupon | null>(null);
   const [validating, setValidating] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<Coupon[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const couponBoxRef = useRef<HTMLDivElement>(null);
 
-  /* ======================================================
-     SYNC BACK TO FORMIK
-  ====================================================== */
-
-  useEffect(() => {
-    setFieldValue?.('design_price', designPrice);
-    setFieldValue?.('print_price', printPrice);
-    setFieldValue?.('standard_discount_pct', stdPct);
-    setFieldValue?.('gst_rate', gstRate);
-  }, [designPrice, printPrice, stdPct, gstRate, setFieldValue]);
 
   useEffect(() => {
     setFieldValue?.('coupon_code', coupon?.code ?? couponText ?? '');
@@ -135,73 +127,76 @@ export default function FinishPayment({
     };
   }, [designPrice, printPrice, stdPct, coupon, gstRate]);
 
-  /* ======================================================
-     ACTIONS
-  ====================================================== */
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!couponBoxRef.current) return;
+      if (!couponBoxRef.current.contains(e.target as Node)) setShowSuggestions(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
 
+  // lightweight local suggestions
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const q = couponText.trim();
+      if (!q) {
+        setSuggestions([]);
+        return;
+      }
+      const pool: Coupon[] = [
+        { code: 'CRAN10', title: '10% off', percent: 0.1 },
+        { code: 'SAVE500', title: '₹500 off', amount: 500 },
+      ];
+      setSuggestions(pool.filter((c) => c.code.toLowerCase().includes(q.toLowerCase())));
+      setShowSuggestions(true);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [couponText]);
+
+  // push coupon code back to form
+  useEffect(() => {
+    setFieldValue?.('coupon_code', coupon?.code ?? couponText ?? '');
+  }, [coupon, couponText, setFieldValue]);
+
+
+  // --- actions ---
   const handleEstimate = async () => {
-    if (!values.item_code) {
-      alert('Please select a Product Code');
-      return;
-    }
+    if (!onEstimate) return;
 
-    const r = await onEstimate?.({
+    await onEstimate({
       design_by: designBy,
       print_by: printBy,
       coupon_code: couponText,
       product_code: values.item_code,
     });
-
-    if (r) {
-      const d = Number(r.design ?? designPrice);
-      const p = Number(r.print ?? printPrice);
-      const pct = typeof r.stdDiscPct === 'number' ? r.stdDiscPct : stdPct;
-      const gst = typeof r.gstRate === 'number' ? r.gstRate : gstRate;
-
-      setDesignPrice(d);
-      setPrintPrice(p);
-      setStdPct(pct);
-      setGstRate(gst);
-
-      // keep backend payload fields synced
-      const subtotal = d + p;
-      const std = subtotal * pct;
-      const taxable = subtotal - std;
-      const gstAmount = taxable * gst;
-      const total = taxable + gstAmount;
-
-      setFieldValue?.('estimate_price', subtotal);
-      setFieldValue?.('item_standard_discount', std);
-      setFieldValue?.('gst_5', gstAmount);
-      setFieldValue?.('total_price', total);
-    }
   };
+
 
 
   const applyCoupon = async () => {
     if (!onValidateCoupon) return;
-    if (!couponText.trim()) return;
+    const code = couponText.trim();
+    if (!code) return;
 
     try {
       setValidating(true);
       setCouponError(null);
-
-      const res = await onValidateCoupon(couponText.trim());
+      const res = await onValidateCoupon(code);
       const percent = Number(res?.data?.discount_percentage || 0);
       const amount = Number(res?.data?.discount_amount || 0);
-
       if (!percent && !amount) {
         setCoupon(null);
         setCouponError('Invalid or expired coupon.');
         return;
       }
-
       setCoupon({
-        code: couponText.trim(),
+        code,
         percent: percent ? percent / 100 : undefined,
         amount: amount || undefined,
-        title: res?.data?.coupon_name,
+        title: res?.data?.coupon_name || res?.data?.message,
       });
+      setShowSuggestions(false);
     } catch {
       setCoupon(null);
       setCouponError('Could not validate coupon.');
@@ -209,10 +204,6 @@ export default function FinishPayment({
       setValidating(false);
     }
   };
-
-  /* ======================================================
-     UI
-  ====================================================== */
   const toNum = (v: any) =>
     Number(String(v || '0').replace(/,/g, '')) || 0;
   return (
@@ -232,28 +223,28 @@ export default function FinishPayment({
             label="Design by"
             value={designBy}
             options={[
-              { value: 'Addiwise', label: 'Addiwise' },
-              { value: 'Clinic', label: 'Clinic' },
+              { value: 'Addiwise', label: 'Addiwise' }
             ]}
             onValueChange={(v: string) => {
               setDesignBy(v);
               setFieldValue?.('design_by', v);
             }}
             required
+            disabled
           />
 
           <SelectBox
             label="Print by"
             value={printBy}
             options={[
-              { value: 'Addiwise', label: 'Addiwise' },
-              { value: 'Clinic', label: 'Clinic' },
+              { value: 'Addiwise', label: 'Addiwise' }
             ]}
             onValueChange={(v: string) => {
               setPrintBy(v);
               setFieldValue?.('print_by', v);
             }}
             required
+            disabled
           />
 
           {/* ✅ PRODUCT CODE DROPDOWN */}
@@ -282,112 +273,134 @@ export default function FinishPayment({
           />
 
           {/* Coupon */}
-          <div ref={couponBoxRef}>
-            <Label>Coupon Code</Label>
+          <div ref={couponBoxRef} className="relative">
+            <Label className="mb-1 block">Enter coupon code</Label>
+
             <div className="flex">
               <Input
+                placeholder="Enter coupon code"
                 value={couponText}
                 onChange={(e: any) => {
                   setCouponText(e.target.value);
                   setCoupon(null);
                   setCouponError(null);
                 }}
+                onFocus={() => setShowSuggestions(suggestions.length > 0)}
+                className="h-10 rounded-r-none"
               />
+
               <Button
                 type="button"
-                variant="outline"
                 onClick={applyCoupon}
-                disabled={validating}
+                disabled={validating || !couponText.trim()}
+                aria-busy={validating}
+                className="h-10 rounded-l-none -ml-px px-4"
+                variant="outline"
               >
-                Apply
+                {validating ? (
+                  <span className="inline-flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
+                    </svg>
+                    Applying…
+                  </span>
+                ) : (
+                  'Apply'
+                )}
               </Button>
             </div>
-            {couponError && (
-              <div className="text-xs text-red-600 mt-1">
-                {couponError}
+
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow">
+                {suggestions.map((s) => (
+                  <div
+                    key={s.code}
+                    className="px-3 py-2 text-sm hover:bg-primary/10 cursor-pointer"
+                    onClick={() => {
+                      setCouponText(s.code);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    <div className="font-medium">{s.code}</div>
+                    <div className="text-xs text-gray-500">
+                      {s.title ||
+                        (s.percent != null ? `${Math.round(s.percent * 100)}% off` : s.amount ? `₹${s.amount} off` : '')}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
+
+            {couponError ? (
+              <div className="text-xs text-red-600 mt-1">{couponError}</div>
+            ) : coupon ? (
+              <div className="text-xs text-emerald-700 mt-1">
+                Applied {coupon.title || coupon.code}{' '}
+                {coupon.percent != null
+                  ? `(${Math.round(coupon.percent * 100)}% off)`
+                  : coupon.amount
+                    ? `(₹${coupon.amount} off)`
+                    : ''}
+              </div>
+            ) : null}
           </div>
         </div>
 
         {/* RIGHT */}
-        <Card className="p-5">
-          <div className="flex justify-between font-semibold mb-2">
-            <span>Payment Summary</span>
-            <span className="text-primary">{values.item_code}</span>
+        <Card className="p-5 bg-gradient-to-b from-gray-50 to-white">
+          <div className="flex items-center justify-between mb-1">
+              <span>Payment Summary</span>
+              <span className="text-primary">{values.item_code}</span>
           </div>
 
           <ul className="text-sm space-y-2">
-
-            {/* Design */}
             <li className="flex justify-between">
               <span>Design</span>
-              <span>
-        ₹{summary.subtotal
-                ? designPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })
-                : '0.00'}
-      </span>
+              <span>₹{toNum(values.design_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </li>
 
-            {/* Print */}
             <li className="flex justify-between">
               <span>Print</span>
-              <span>
-        ₹{printPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-      </span>
+              <span>₹{toNum(values.print_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </li>
 
-            {/* Estimate */}
             <li className="flex justify-between pt-2 border-t">
               <span className="text-gray-600">Estimate Price</span>
-              <span>
-        ₹{summary.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-      </span>
+              <span>₹{toNum(values.estimate_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </li>
 
-            {/* Standard Discount */}
-            {summary.std > 0 && (
-              <li className="flex justify-between">
-                <span className="text-gray-600">Standard Discount</span>
-                <span className="text-emerald-700">
-          −₹{summary.std.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-        </span>
-              </li>
-            )}
-
-            {/* Coupon */}
-            {summary.couponDisc > 0 && (
-              <li className="flex justify-between">
-        <span className="text-gray-600">
-          Additional Discount {coupon?.code ? `(${coupon.code})` : ''}
-        </span>
-                <span className="text-emerald-700">
-          −₹{summary.couponDisc.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-        </span>
-              </li>
-            )}
-
-            {/* GST — ALWAYS SHOW */}
             <li className="flex justify-between">
-      <span className="text-gray-600">
-        GST ({(gstRate * 100).toFixed(0)}%)
-      </span>
-              <span>
-        +₹{summary.gst.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              <span className="text-gray-600">Standard Discount</span>
+              <span className="text-emerald-700">
+        −₹{toNum(values.item_standard_discount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
       </span>
             </li>
 
+            <li className="flex justify-between">
+              <span className="text-gray-600">Additional Discount</span>
+              <span className="text-emerald-700">
+        −₹{toNum(values.additional_discount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+      </span>
+            </li>
+            <li className="flex justify-between pt-2 border-t">
+              <span className="text-gray-600">GST (5%)</span>
+              <span>₹{toNum(values.gst_5).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            </li>
+            {/*{toNum(values.gst_18) > 0 && (
+              <li className="flex justify-between">
+                <span className="text-gray-600">GST (18%)</span>
+                <span>+₹{toNum(values.gst_18).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </li>
+            )}*/}
           </ul>
 
-          {/* TOTAL */}
           <div className="mt-3 pt-3 border-t flex justify-between text-base font-semibold">
             <span>Total Amount</span>
             <span className="text-primary">
-      ₹{summary.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+      ₹{toNum(values.total_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
     </span>
           </div>
-
-          {/* Terms */}
           <label className="mt-4 flex items-center gap-2 text-sm">
             <input
               type="checkbox"
