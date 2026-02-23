@@ -151,8 +151,8 @@ type FormValues = {
   item_standard_discount?: string | number;
   additional_discount?: string | number;
   discounted_price?: string | number;
-  gst_5_amt?: string | number;
-  gst_18_amt?: string | number;
+  gst_5?: string | number;
+  gst_18?: string | number;
   total_price?: string | number;
 
   // For flags
@@ -677,8 +677,8 @@ function flattenForSalesOrder(values: FormValues) {
     item_standard_discount: values.item_standard_discount ?? 0,
     additional_discount: values.additional_discount ?? 0,
     discounted_price: values.discounted_price ?? 0,
-    gst_5_amt: values.gst_5_amt ?? 0,
-    gst_18_amt: values.gst_18_amt ?? 0,
+    gst_5: values.gst_5 ?? 0,
+    gst_18: values.gst_18 ?? 0,
     gst_rate: values.gst_rate ?? 0.05
   };
 }
@@ -694,8 +694,8 @@ function toCreatePayload(
 ) {
   const order_details = toOrderDetails(values);
 
-  const gst_18_num = Number(String(values.gst_18_amt ?? 0).replace(/,/g, '')) || 0;
-  const gst_5_num = Number(String(values.gst_5_amt ?? 0).replace(/,/g, '')) || 0;
+  const gst_18 = Number(String(values.gst_18 ?? 0).replace(/,/g, '')) || 0;
+  const gst_5 = Number(String(values.gst_5 ?? 0).replace(/,/g, '')) || 0;
 
   const today = new Date();
   const ymd = today.toISOString().slice(0, 10);
@@ -944,8 +944,8 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
       item_standard_discount: '',
       additional_discount: '',
       discounted_price: '',
-      gst_5_amt: '',
-      gst_18_amt: '',
+      gst_5: '',
+      gst_18: '',
       total_price: '',
       gst_rate: 0.05
     }),
@@ -1143,7 +1143,10 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
 
             try {
               const response = await getEstimate(estimatePayload).unwrap();
+
+              // ✅ CORRECT EXTRACTION
               const apiRes = response?.data || {};
+              console.log("apiRes...........",apiRes)
               setFieldValue('estimate_price', apiRes.estimate_price || '0.00');
 
               setFieldValue('design_price', apiRes.design || '0.00');
@@ -1151,8 +1154,8 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
               setFieldValue('item_standard_discount', apiRes.item_standard_discount || '0.00');
               setFieldValue('additional_discount', apiRes.additional_discount || '0.00');
               setFieldValue('discounted_price', apiRes.discounted_price || '0.00');
-              setFieldValue('gst_5_amt', apiRes.gst_5 || '0.00');
-              setFieldValue('gst_18_amt', apiRes.gst_18 || '0.00');
+              setFieldValue('gst_5', apiRes.gst_5 || '0.00');
+              setFieldValue('gst_18', apiRes.gst_18 || '0.00');
               setFieldValue('total_price', apiRes.total_price || '0.00');
             } catch (err: any) {
               toast.error(err?.data?.message || 'Failed to get estimate');
