@@ -107,7 +107,8 @@ const [preSignedUrl, setPreSignedUrl] = usePreSignedUrlMutation();
   const showFinishOptions = isAddiSole || isAddiSoleEco;
   const [selectedItemCode, setSelectedItemcode] = React.useState<string>('');
   const [formValues, setFormValues] = useState(initialValues);
-
+  const num = (v: any) => parseFloat(String(v ?? '0').replace(/,/g, '')) || 0;
+  const money = (v: any) => String(v ?? '0.00');
   {
     /**payment */
   }
@@ -371,7 +372,7 @@ setUploadURL(key);
 
     try {
       // 1️⃣ Ensure estimate data exists
-      const amount = Number(String(estimateData?.apiResponse?.total_price || 0).replace(/,/g, ''));
+      const amount = num(estimateData?.apiResponse?.total_price);
       if (!amount || amount <= 0) {
         toast.error('Please generate an estimate before proceeding to payment.');
         setIsPaymentProcessing(false);
@@ -1919,7 +1920,7 @@ for (const f of filesToUpload) {
               </CardHeader>
               <CardContent className="pt-2">
                 <ul className="text-sm space-y-2.5">
-                  {parseFloat(estimateData?.apiResponse?.design.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.design) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -1928,7 +1929,7 @@ for (const f of filesToUpload) {
                       </div>
                     </li>
                   )}
-                  {parseFloat(estimateData?.apiResponse?.print.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.print) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -1947,7 +1948,7 @@ for (const f of filesToUpload) {
                       </span>
                     </div>
                   </li>
-                  {parseFloat(estimateData?.apiResponse?.item_standard_discount.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.item_standard_discount) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -1970,7 +1971,8 @@ for (const f of filesToUpload) {
                       </div>
                     </li>
                   )}
-                  {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.gst_5) > 0
+                    && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -1979,7 +1981,7 @@ for (const f of filesToUpload) {
                       </div>
                     </li>
                   )}
-                  {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.gst_18) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -2045,7 +2047,7 @@ for (const f of filesToUpload) {
               </CardHeader>
               <CardContent className="pt-2">
                 <ul className="text-sm space-y-2.5">
-                  {parseFloat(estimateData?.apiResponse?.design.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.design) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -2054,7 +2056,7 @@ for (const f of filesToUpload) {
                       </div>
                     </li>
                   )}
-                  {parseFloat(estimateData?.apiResponse?.print.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.print) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -2073,7 +2075,7 @@ for (const f of filesToUpload) {
                       </span>
                     </div>
                   </li>
-                  {parseFloat(estimateData?.apiResponse?.item_standard_discount.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.item_standard_discount) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -2096,7 +2098,8 @@ for (const f of filesToUpload) {
                       </div>
                     </li>
                   )}
-                  {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.gst_5) > 0
+                    && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -2105,7 +2108,7 @@ for (const f of filesToUpload) {
                       </div>
                     </li>
                   )}
-                  {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.gst_18) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -2249,7 +2252,7 @@ for (const f of filesToUpload) {
                       </span>
                     </div>
                   </li>
-                  {parseFloat(estimateData?.apiResponse?.item_standard_discount.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.item_standard_discount) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -2272,7 +2275,7 @@ for (const f of filesToUpload) {
                       </div>
                     </li>
                   )}
-                  {parseFloat(estimateData?.apiResponse?.gst_5.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.gst_5) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
@@ -2281,7 +2284,7 @@ for (const f of filesToUpload) {
                       </div>
                     </li>
                   )}
-                  {parseFloat(estimateData?.apiResponse?.gst_18.replace(/,/g, '')) > 0 && (
+                  {num(estimateData?.apiResponse?.gst_18) > 0 && (
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                       <div className="flex justify-between w-full">
