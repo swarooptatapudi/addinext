@@ -158,12 +158,117 @@ const step1Validation = Yup.object().shape({
   ),
 });
 
-const step2Validation = Yup.object().shape({
-  images_link: Yup.string()
-    .url('Must be a valid URL (e.g., https://drive.google.com/...)')
-    .nullable(),
-  direct_body: Yup.string().required('Scan condition is required'),
-});
+const step2Validation = Yup.object()
+  .shape({
+    custom_upload_link_with_photos: Yup.string()
+      .url('Must be a valid URL (e.g., https://drive.google.com/...)')
+      .nullable(),
+    direct_body: Yup.string().required('Scan condition is required'),
+    foot_side: Yup.string().nullable(),
+    liner_thickness: Yup.string().nullable(),
+    liner_type: Yup.string().nullable(),
+    left_foot_file: Yup.mixed().nullable(),
+    right_foot_file: Yup.mixed().nullable(),
+    custom_obj_file_1: Yup.mixed().nullable(),
+    custom_mtl_file_2: Yup.mixed().nullable(),
+    custom_jpg_file_3: Yup.mixed().nullable()
+  })
+  .test('file-upload-validation', 'File upload validation', function (value) {
+    const { foot_side, custom_upload_link_with_photos, left_foot_file, right_foot_file } =
+      value as {
+        foot_side: string | null;
+        custom_upload_link_with_photos: string | null;
+        left_foot_file: File | null;
+        right_foot_file: File | null;
+      };
+    // console.log('Validation Values:', {
+    //   foot_side,
+    //   custom_upload_link_with_photos,
+    //   left_foot_file,
+    //   right_foot_file
+    // });
+    // If custom_upload_link_with_photos is provided, validation passes
+    if (custom_upload_link_with_photos && custom_upload_link_with_photos.trim()) {
+      return true;
+    }
+
+    // If foot_side is not selected, require custom_upload_link_with_photos
+    if (!foot_side) {
+      return this.createError({
+        path: 'custom_upload_link_with_photos',
+        message: 'Either upload scans or provide a photo link is required'
+      });
+    }
+
+    // If foot_side is selected, check for required files
+    if (foot_side === 'Left_Foot' && !left_foot_file) {
+      return this.createError({
+        path: 'left_foot_file',
+        message: 'File for Left Foot is required'
+      });
+    }
+
+    if (foot_side === 'Right_Foot' && !right_foot_file) {
+      return this.createError({
+        path: 'right_foot_file',
+        message: 'File for Right Foot is required'
+      });
+    }
+
+    if (foot_side === 'Both') {
+      if (!left_foot_file && !right_foot_file) {
+        // Create errors for both files
+        // this.createError({
+        //   path: 'left_foot_file',
+        //   message: 'STL file for Left Foot is required'
+        // });
+        return this.createError({
+          path: 'right_foot_file',
+          message: 'Both file for Right and Left Foot is required'
+        });
+      } else if (!left_foot_file) {
+        return this.createError({
+          path: 'left_foot_file',
+          message: 'File for Left Foot is required'
+        });
+      } else if (!right_foot_file) {
+        return this.createError({
+          path: 'right_foot_file',
+          message: 'File for Right Foot is required'
+        });
+      }
+    }
+
+    return true;
+  })
+  .test(
+    'validate-liner-fields',
+    'Liner fields are required when "With Liner" is selected',
+    function (value) {
+      const { direct_body, liner_thickness, liner_type } = value as {
+        direct_body: string;
+        liner_thickness: string | null;
+        liner_type: string | null;
+      };
+
+      if (direct_body === 'With_Liner') {
+        if (!liner_thickness) {
+          return this.createError({
+            path: 'liner_thickness',
+            message: 'Liner thickness is required when "With Liner" is selected'
+          });
+        }
+        if (!liner_type) {
+          return this.createError({
+            path: 'liner_type',
+            message: 'Liner type is required when "With Liner" is selected'
+          });
+        }
+      }
+
+      return true;
+    }
+  );
 const step4Validation = Yup.object().shape({
   global_volume_reduction: Yup.string()
     .nullable()
@@ -1021,155 +1126,371 @@ return !!fieldError && (touched[fieldName] || formSubmitted);
 };
 
 const Step2 = ({
-  values,
-  handleChange,
-  errors,
-  touched,
-  setFieldValue,
-  FORM_OPTIONS,
-  formSubmitted
-}: any) => {
+                 values,
+                 handleChange,
+                 errors,
+                 touched,
+                 setFieldValue,
+                 setErrors,
+                 FORM_OPTIONS,
+                 formSubmitted,
+                 isViewMode
+               }: any) => {
+
   const shouldShowError = (fieldName: string, isRequired = false) => {
-    if (!isRequired && !values[fieldName]) {
+    const fieldValue = fieldName.includes('.')
+      ? fieldName
+        .split('.')
+        .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], values)
+      : values[fieldName];
+
+    const fieldError = fieldName.includes('.')
+      ? fieldName
+        .split('.')
+        .reduce((obj, key) => obj && obj[key.replace(/\[(\d+)\]/, (_, i) => `.${i}`)], errors)
+      : errors[fieldName];
+
+    if (fieldName === 'direct_body' && fieldValue && fieldError) {
       return false;
     }
-    if (isRequired && (formSubmitted || touched[fieldName])) {
-      return !!errors[fieldName];
+
+    if (
+      fieldName === 'custom_upload_link_with_photos' &&
+      fieldError === 'Either upload scans or provide a photo link is required'
+    ) {
+      return true;
     }
-    return !!(touched[fieldName] && errors[fieldName]);
+
+    if (isRequired) {
+      return (
+        (!fieldValue && (formSubmitted || touched[fieldName])) ||
+        (!!fieldError && (touched[fieldName] || formSubmitted))
+      );
+    }
+
+    return !!fieldError && (touched[fieldName] || formSubmitted);
   };
+
+  // Enhanced error checking for file fields
+  const shouldShowFileError = (fieldName: string) => {
+    const fieldError = errors[fieldName];
+
+    const shouldShow =
+      !!fieldError &&
+      (formSubmitted ||
+        touched[fieldName] ||
+        (values.foot_side &&
+          ((fieldName === 'left_foot_file' &&
+              (values.foot_side === 'Left_Foot' || values.foot_side === 'Both')) ||
+            (fieldName === 'right_foot_file' &&
+              (values.foot_side === 'Right_Foot' || values.foot_side === 'Both')))));
+
+    return shouldShow;
+  };
+
+  const showEitherOrError =
+    formSubmitted &&
+    !values.foot_side &&
+    !values.custom_upload_link_with_photos &&
+    errors.custom_upload_link_with_photos ===
+    'Either upload scans or provide a photo link is required';
 
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-4 items-end">
-        <div className="grid grid-cols-1 gap-4 ">
+        <div>
           <h3 className="font-semibold text-lg text-primary">Scan Condition</h3>
           <SelectBox
             options={[
               { label: 'Direct Body', value: 'Direct_Body ' },
-              { label: 'With Liner', value: 'With_Liner' },
+              { label: 'With Liner', value: 'With_Liner' }
             ]}
-            label="Direct Body"
+            label="Scan Type"
             required={true}
-            value={values.direct_body}
-            onValueChange={handleChange('direct_body')}
-            inVaild={shouldShowError('direct_body', true)}
+            disabled={isViewMode}
+            value={values.direct_body || ''}
+            onValueChange={(value) => {
+              handleChange('direct_body')(value);
+              if (value && errors.direct_body) {
+                setErrors({ ...errors, direct_body: undefined });
+              }
+              if (value !== 'With_Liner') {
+                setFieldValue('liner_thickness', '');
+                setFieldValue('liner_type', '');
+              }
+            }}
+            inVaild={!!errors.direct_body && (touched.direct_body || formSubmitted)}
             error={errors.direct_body}
           />
-          {values.direct_body === 'With_Liner' && (
-            <div style={{ marginBottom: '55px' }}></div>
-          )}
+          {values.direct_body === 'With_Liner' && <div style={{ marginBottom: '55px' }}></div>}
         </div>
+
         <div>
-          <div className="grid grid-cols gap-4">
-            {values.direct_body === 'With_Liner' && (
-              <>
-                <SelectBox
-                  options={FORM_OPTIONS['liner_thickness'] ?? []}
-                  label="Liner Thickness"
-                  value={values.liner_thickness}
-                  onValueChange={handleChange('liner_thickness')}
-                />
-                <div style={{ marginBottom: '55px' }}></div>
-              </>
-            )}
-          </div>
-        </div>
-        <div className="grid grid-cols gap-4">
           {values.direct_body === 'With_Liner' && (
-            <>
-              <SelectBox
-                options={FORM_OPTIONS[values.liner_thickness + '_' + 'variation'] || []}
-                label="Liner Type"
-                value={values.liner_type}
-                onValueChange={handleChange('liner_type')}
-              />
-              <div style={{ marginBottom: '55px' }}></div>
-            </>
+            <SelectBox
+              options={FORM_OPTIONS['liner_thickness'] ?? []}
+              label="Liner Thickness"
+              value={values.liner_thickness || ''}
+              onValueChange={(value) => {
+                handleChange('liner_thickness')(value);
+                setFieldValue('liner_type', '');
+                if (value && errors.liner_thickness) {
+                  setErrors({ ...errors, liner_thickness: undefined });
+                }
+              }}
+              required={values.direct_body === 'With_Liner'}
+              inVaild={shouldShowError('liner_thickness', values.direct_body === 'With_Liner')}
+              error={errors.liner_thickness}
+              disabled={isViewMode}
+            />
           )}
+        </div>
+
+        <div>
+          {values.direct_body === 'With_Liner' && (
+            <SelectBox
+              options={FORM_OPTIONS[`${values.liner_thickness}_variation`] || []}
+              label="Liner Type"
+              disabled={isViewMode}
+              value={values.liner_type || ''}
+              onValueChange={(value) => {
+                handleChange('liner_type')(value);
+                if (value && errors.liner_type) {
+                  setErrors({ ...errors, liner_type: undefined });
+                }
+              }}
+              required={values.direct_body === 'With_Liner'}
+              inVaild={shouldShowError('liner_type', values.direct_body === 'With_Liner')}
+              error={errors.liner_type}
+            />
+          )}
+          <div style={{ marginBottom: '55px' }}></div>
         </div>
       </div>
-      <h3 className="font-semibold text-lg text-primary">Scans Upload</h3>
+
+      <h3 className="font-semibold text-lg text-primary">Scans Uploaded</h3>
       <div className="grid grid-cols-8 gap-4">
+        {/* Foot Selection */}
         <div className="col-span-3">
           <div className="grid grid-cols-2">
-            <p className="mb-1 text-[14px]  flex items-center">Upload Scan</p>
+            <p className="mb-1 text-[14px] flex items-center">Upload Scans</p>
             <div className="w-[150px] ml-8">
               <SelectBox
                 options={[
-                  { value: 'Left_Foot', label: 'Left Foot ' },
-                  { value: 'Right_Foot', label: 'Right Foot' },
-                  { value: 'Both', label: 'Both' },
+                  { value: 'Selected', label: 'Select to Upload ' },
+                  { value: 'left_foot_file', label: 'Left Foot ' },
+                  { value: 'right_foot_file', label: 'Right Foot' },
+                  { value: 'Both', label: 'Both' }
                 ]}
-                value={values.foot_Amputation}
-                onValueChange={handleChange('foot_Amputation')}
+                className={`mt-3 min-w-max ml-0 w-[410px] ${
+                  showEitherOrError ? 'border-red-500' : ''
+                }`}
+                value={values.foot_side || ''}
+                // onValueChange={(value) => {
+                //   // console.log('🦶 Selected foot_side value:', value);
+                //   handleChange('foot_side')(value);
+                //   setFieldValue('left_foot_file', value);
+                //   setFieldValue('right_foot_file', value);
+                // }}
+                onValueChange={(value) => {
+                  setFieldValue('foot_side', value);
+                }}
+                inVaild={shouldShowError('custom_upload_link_with_photos')}
+                disabled={isViewMode}
               />
             </div>
           </div>
         </div>
-        {(values.foot_Amputation === 'Left_Foot' || values.foot_Amputation === 'Both') && (
+
+        {/* Left Foot Upload */}
+        {(values.foot_side === 'left_foot_file' || values.foot_side === 'Both') && (
           <div className="w-fit justify-center">
             <StlFilePicker
-              label="Upload STL file (left foot)"
+              label="Upload file (Left Foot)"
               buttonText="Left Foot"
-              onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+              accept={['.stl', '.ply']}
+              onFileSelect={(file: any) => {
+                setFieldValue('left_foot_file', file);
+                if (file) {
+                  setErrors({
+                    ...errors,
+                    left_foot_file: undefined,
+                    custom_upload_link_with_photos: undefined
+                  });
+                }
+              }} //@ts-ignore
+              inVaild={shouldShowFileError('left_foot_file')}
+              error={errors.left_foot_file}
             />
+            {shouldShowFileError('left_foot_file') && errors.left_foot_file && (
+              <div className="text-red-500 text-xs mt-1">{errors.left_foot_file}</div>
+            )}
+            {/* ✅ Show existing left foot file name or link */}
+            {!isViewMode && values.left_foot_file && typeof values.left_foot_file === 'string' && (
+              <div className="mt-2 text-sm text-gray-700">
+                <span className="font-medium">Existing Left Foot File: </span>
+                <a
+                  href={`https://your-bucket-name.s3.amazonaws.com/${values.left_foot_file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline break-all"
+                >
+                  {values.left_foot_file.split('/').pop()}
+                </a>
+              </div>
+            )}
+
+            {/* ✅ Show existing left foot file if present */}
           </div>
         )}
 
-        {(values.foot_Amputation === 'Right_Foot' || values.foot_Amputation === 'Both') && (
-          <div className="w-fit ">
+        {/* Right Foot Upload */}
+        {(values.foot_side === 'right_foot_file' || values.foot_side === 'Both') && (
+          <div className="w-fit">
             <StlFilePicker
-              label="Upload STL file (Rgiht foot)"
+              label="Upload file (Right Foot)"
               buttonText="Right Foot"
-              onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+              accept={['.stl', '.ply']}
+              value={values.right_foot_file}
+              onFileSelect={(file: any) => {
+                setFieldValue('right_foot_file', file);
+                if (file) {
+                  setErrors({
+                    ...errors,
+                    right_foot_file: undefined,
+                    custom_upload_link_with_photos: undefined
+                  });
+                }
+              }}
+              //@ts-ignore
+              inVaild={shouldShowFileError('right_foot_file')}
+              error={errors.right_foot_file}
             />
+            {shouldShowFileError('right_foot_file') && errors.right_foot_file && (
+              <div className="text-red-500 text-xs mt-1">{errors.right_foot_file}</div>
+            )}
+            {/* ✅ Show existing right foot file if present */}
+
+            {/* ✅ Show existing right foot file name or link */}
+            {!isViewMode && values.right_foot_file && typeof values.right_foot_file === 'string' && (
+              <div className="mt-2 text-sm text-gray-700">
+                <span className="font-medium">Existing Right Foot File: </span>
+                <a
+                  href={`https://your-bucket-name.s3.amazonaws.com/${values.right_foot_file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline break-all"
+                >
+                  {values.right_foot_file.split('/').pop()}
+                </a>
+              </div>
+            )}
           </div>
         )}
       </div>
+
       <div className="grid grid-cols-8 gap-4">
         <div className="col-span-3">
-          <p className="mb-0 text-[14px] ">Upload Addtional Files</p>
-          <span className="mb-1 text-[12px] ">(Design / Rough calculations etc.)</span>
+          <p className="mb-0 text-[14px]">Upload OBJ File</p>
+        </div>
+        <StlFilePicker
+          label="Select Scan"
+          buttonText="File 1"
+          accept={['.obj']}
+          onFileSelect={(file: any) => {
+            setFieldValue('custom_obj_file_1', file);
+            setErrors({ ...errors, custom_obj_file_1: undefined });
+            // updateScanItems(values.foot_side, file);
+          }}
+        />
+        <StlFilePicker
+          label="Select Scan"
+          buttonText="File 2"
+          accept={['.mtl']}
+          onFileSelect={(file: any) => {
+            setFieldValue('custom_mtl_file_2', file);
+            setErrors({ ...errors, custom_mtl_file_2: undefined });
+          }}
+        />
+        <StlFilePicker
+          label="Select Scan"
+          buttonText="File 3"
+          accept={['.jpg']}
+          onFileSelect={(file: any) => {
+            setFieldValue('custom_jpg_file_3', file);
+            setErrors({ ...errors, custom_jpg_file_3: undefined });
+          }}
+        />
+      </div>
+
+      <div className="grid grid-cols-8 gap-4">
+        <div className="col-span-3">
+          <p className="mb-0 text-[14px] ">Upload Additional Files</p>
+          <span className="mb-1 text-[12px]">(Design / Rough calculations etc.)</span>
         </div>
 
         <div className="w-fit">
           <GenericFileViewer
+            disabled={isViewMode}
             allowedTypes={['.pdf', '.png', '.jpg', '.jpeg']}
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 1"
-            // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+            onFileSelect={(file) => {
+              setFieldValue('custom_additional_file_1', file);
+              setErrors({
+                ...errors,
+                custom_additional_file_1: undefined,
+                custom_upload_link_with_photos: undefined
+              });
+            }}
           />
         </div>
         <div className="w-fit ml-2">
           <GenericFileViewer
+            disabled={isViewMode}
             allowedTypes={['.pdf', '.png', '.jpg', '.jpeg']}
             maxSizeMB={5}
             label="Select Image"
             buttonText="File 2"
-            // onFileSelect={(file) => console.log('Model A selected:', file?.name)}
+            onFileSelect={(file) => {
+              setFieldValue('custom_additional_file_2', file);
+              setErrors({
+                ...errors,
+                custom_additional_file_2: undefined,
+                custom_upload_link_with_photos: undefined
+              });
+            }}
           />
         </div>
       </div>
-      <div className="flex flex-col-6 gap-4">
+
+      <div className="flex flex-col gap-4">
         <div className="col-span-3">
-          <p className="mb-1 text-[14px]  ">Upload Link with Photos</p>
-          <p className="mb-1 text-[12px] ">
+          <p className="mb-1 text-[14px]">Upload Link with Photos</p>
+          <p className="mb-1 text-[12px]">
             (Upload in Google /Cloud drive and give relevant permission)
           </p>
         </div>
-        <div className="flex flex-col-6 gap-4">
+        <div className="flex flex-col gap-4">
           <Input
             placeholder="https://drive.google.com/..."
-            className="mt-3 min-w-max ml-0 w-[410px]"
-            value={values.images_link}
-            onChange={handleChange('images_link')}
-            inVaild={shouldShowError('images_link')}
-            error={errors.images_link}
+            className={`mt-3 min-w-max ml-0 w-[410px] ${showEitherOrError ? 'border-red-500' : ''}`}
+            value={values.custom_upload_link_with_photos || ''}
+            onChange={(value) => {
+              handleChange('custom_upload_link_with_photos')(value);
+              // Optionally clear file-related errors here if you want
+            }}
+            inVaild={shouldShowError('custom_upload_link_with_photos')}
+            disabled={isViewMode}
           />
         </div>
       </div>
+      {showEitherOrError && (
+        <div className="text-red-500 text-[12px] mt-1">
+          <span>Either Upload scans or Upload Link with Photos is required</span>
+        </div>
+      )}
     </div>
   );
 };
@@ -2009,6 +2330,7 @@ export default function AkOrderForm({ item_type }: { item_type: string }): React
                 errors={errors}
                 touched={touched}
                 setFieldValue={setFieldValue}
+                setErrors={setErrors} // Add this line
                 FORM_OPTIONS={FORM_OPTIONS}
                 formSubmitted={formSubmitted}
               />

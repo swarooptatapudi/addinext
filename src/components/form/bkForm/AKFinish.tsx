@@ -150,29 +150,25 @@ export const AKFinish = ({
     const printRow  = rows.find((r: any) => r.field_name === 'print_by');
 
     if (designRow?.select_options) {
-      const opts = designRow.select_options.split(',').map((option: string) => {
-        const v = option.trim();
-        return { value: v, label: v };
-      });
-      setDesignOptions(opts);
+      const opts = designRow.select_options
+        .split(',')
+        .map((option: string) => option.trim())
+        .filter((opt: string) => opt === 'Addiwise') // keep only Addiwise
+        .map((v: string) => ({ value: v, label: v }));
 
-      // Set default value only if empty
-      if (!values.design_by && opts[0]) {
-        setFieldValue('design_by', opts[0].value);
-      }
+      setDesignOptions(opts);
+      setFieldValue('design_by', 'Addiwise');
     }
 
     if (printRow?.select_options) {
-      const opts = printRow.select_options.split(',').map((option: string) => {
-        const v = option.trim();
-        return { value: v, label: v };
-      });
-      setPrintOptions(opts);
+      const opts = printRow.select_options
+        .split(',')
+        .map((option: string) => option.trim())
+        .filter((opt: string) => opt === 'Addiwise')
+        .map((v: string) => ({ value: v, label: v }));
 
-      // Set default value only if empty
-      if (!values.print_by && opts[0]) {
-        setFieldValue('print_by', opts[0].value);
-      }
+      setPrintOptions(opts);
+      setFieldValue('print_by', 'Addiwise');
     }
   }, [formSettings, setFieldValue, values.design_by, values.print_by]);
 
@@ -449,7 +445,15 @@ export const AKFinish = ({
 
     fetchColors();
   }, []);
+  useEffect(() => {
+    if (values.design_by !== 'Addiwise') {
+      setFieldValue('design_by', 'Addiwise');
+    }
 
+    if (values.print_by !== 'Addiwise') {
+      setFieldValue('print_by', 'Addiwise');
+    }
+  }, [setFieldValue]);
   const validateBeforeAction = () => {
     if (!selectedItem) {
       toast.error('Please complete the basic form first');
@@ -567,7 +571,7 @@ export const AKFinish = ({
                   }}
                   inVaild={!!errors.design_by && !!touched.design_by}
                   required
-                  disabled={isViewMode}
+                  disabled={true}
                 />
                 {errors.design_by && touched.design_by && (
                   <p className="text-red-500 text-xs mt-1">{errors.design_by}</p>
@@ -589,7 +593,7 @@ export const AKFinish = ({
                   }}
                   inVaild={!!errors.print_by && !!touched.print_by}
                   required
-                  disabled={isViewMode}
+                  disabled={true}
                 />
                 {errors.print_by && touched.print_by && (
                   <p className="text-red-500 text-xs mt-1">{errors.print_by}</p>
