@@ -22,19 +22,29 @@ export default function WikyDesignPage() {
 
   useEffect(() => {
     function debugListener(e: MessageEvent) {
-      if (
-        e.origin === 'https://edserinsole.leopoly.com' &&
-        e.data &&
-        typeof e.data === 'object' &&
-        e.data.EVENT_NAME === 'loaded_IFrame'
-      ) {
-        resendToIframe(e.data);
+      console.log('[WIKY EVENT]', e.origin, e.data);
+
+      if (e.origin !== 'https://edserinsole.leopoly.com') return;
+
+      const data = e.data;
+
+      // iframe ready
+      if (data?.EVENT_NAME === 'loaded_IFrame') {
+        resendToIframe(data);
+      }
+
+      // editor closed
+      if (data?.EVENT_NAME === 'closed_IFrame') {
+        window.location.href = `/design-sessions/${id}`;
       }
     }
 
     window.addEventListener('message', debugListener);
-    return () => window.removeEventListener('message', debugListener);
-  }, []);
+
+    return () => {
+      window.removeEventListener('message', debugListener);
+    };
+  }, [router, id]);
 
   useEffect(() => {
     async function loadIframe() {
