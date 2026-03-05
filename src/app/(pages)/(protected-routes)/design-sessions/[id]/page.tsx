@@ -205,8 +205,7 @@ export default function DesignSessionWorkspacePage() {
           );
         } else {
           // Design: Navigate to route (unchanged)
-          router.push(`/design-sessions/${id}/design`);
-        }
+          router.push(`/design/${id}`);        }
       } else {
         setError('Unable to generate iframe URL.');
       }
