@@ -50,7 +50,7 @@ function inr(v: any): string {
 
 const DESIGN_PRINT_OPTIONS = [
   { value: 'Addiwise', label: 'Addiwise' },
-  { value: 'Clinic',   label: 'Clinic (Self)' },
+  { value: 'Self',   label: 'Self' },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -109,7 +109,7 @@ export default function FinishPayment({
   const couponRef = useRef<HTMLDivElement>(null);
 
   // Coin mode: both clinic (self+self)
-  const isCoinMode = designBy === 'Clinic' && printBy === 'Clinic';
+  const isCoinMode = designBy === 'Self' && printBy === 'Self';
 
   // ── Sync coupon code to form ─────────────────────────────────────────────
   useEffect(() => {
