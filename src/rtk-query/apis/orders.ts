@@ -98,6 +98,7 @@ interface AKEstimateResponse {
     total_distcounted_price:  any;
     customer_available_coins: string;
     design_coin_use:          string;
+
   };
 }
 
@@ -291,27 +292,66 @@ interface KAFOEstimateRequest {
   coupon_code?: string;
 }
 
+// interface KAFOEstimateResponse {
+//   message: string;
+//     data: {
+//       design: string;
+//       print: string;
+//       estimate_price: string;
+//       item_standard_discount: string;
+//       item_special_discount: string;
+//       additional_discount: string;
+//       discounted_price: string;
+//       discounted_price_18: string;
+//       discounted_price_5: string;
+//       gst_18: string;
+//       gst_5: string;
+//       total_price: string;
+//       item_discount: string;
+//       total_distcounted_price: string;
+//       customer_available_coins: string;
+//       design_coin_use: string;
+//     };
+// }
+
 interface KAFOEstimateResponse {
   message: string;
-    data: {
-      design: string;
-      print: string;
-      estimate_price: string;
-      item_standard_discount: string;
-      item_special_discount: string;
-      additional_discount: string;
-      discounted_price: string;
-      discounted_price_18: string;
-      discounted_price_5: string;
-      gst_18: string;
-      gst_5: string;
-      total_price: string;
-      item_discount: string;
-      total_distcounted_price: string;
-      customer_available_coins: string;
-      design_coin_use: string;
-    };
+  data: {
+    // Pricing components
+    design: string;
+    print: string;
+    estimate_price: string;
+
+    // Discounts
+    item_standard_discount: string;
+    additional_discount: string;
+    discount_percent: string;       // ✅ Added
+    coupon_discount: string;        // ✅ Added
+
+    // Taxable bases
+    discounted_price: string;
+    discounted_price_18: string;
+    discounted_price_5: string;
+
+    // GST
+    gst_5: string;
+    gst_18: string;
+
+    // Final
+    total_price: string;
+    price_list: string;
+
+    // Coins
+    customer_available_coins: string;
+    design_coin_use: string;
+
+    // Raw numbers
+    base_rate: number;
+    net_rate: number;
+    total: number;
+  };
 }
+
 interface CouponRequest {
   coupon_code: string;
 }

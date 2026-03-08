@@ -86,6 +86,13 @@ export const AKFinish = ({
   const isPrintSelf             = values.print_by  === 'Self';
   const hideLaticesAndFinish    = isDesignSelf && isPrintSelf;
 
+  // ✅ Set immediately on mount — don't wait for formSettings
+  useEffect(() => {
+    setFieldValue('design_by', 'Addiwise');
+    setFieldValue('print_by',  'Addiwise');
+  }, []); // runs once, guaranteed before formSettings resolves
+
+
   // ─── Form settings → lock design_by / print_by to Addiwise ───────────────
   useEffect(() => {
     if (!formSettings) return;
@@ -506,12 +513,14 @@ export const AKFinish = ({
               <label className="font-sm min-w-[100px] text-sm">Design by</label>
               <div className="w-[300px] min-w-[200px]">
                 <SelectBox
-                  options={designOptions.length ? designOptions : FORM_OPTIONS.Design_by || []}
-                  value={values.design_by || ''}
+                  options={designOptions.length ? designOptions : [
+                    { value: 'Addiwise', label: 'Addiwise' },
+                    { value: 'Self', label: 'Self' }
+                  ]}
+                  value={values.design_by || 'Addiwise'}   // ← add || 'Addiwise'
                   onValueChange={(value) => { setFieldValue('design_by', value); setEstimateConform(false); }}
                   inVaild={!!errors.design_by && !!touched.design_by}
                   required
-                  disabled={true}
                 />
                 {errors.design_by && touched.design_by && (
                   <p className="text-red-500 text-xs mt-1">{errors.design_by}</p>
@@ -525,12 +534,14 @@ export const AKFinish = ({
               <label className="font-medium min-w-[100px] text-sm">Print by</label>
               <div className="w-[300px] min-w-[200px]">
                 <SelectBox
-                  options={printOptions.length ? printOptions : FORM_OPTIONS.Print_by || []}
-                  value={values.print_by || ''}
+                  options={printOptions.length ? printOptions : [
+                    { value: 'Addiwise', label: 'Addiwise' },
+                    { value: 'Self', label: 'Self' }
+                  ]}
+                  value={values.print_by || 'Addiwise'}    // ← add || 'Addiwise'
                   onValueChange={(value) => { setFieldValue('print_by', value); setEstimateConform(false); }}
                   inVaild={!!errors.print_by && !!touched.print_by}
                   required
-                  disabled={true}
                 />
                 {errors.print_by && touched.print_by && (
                   <p className="text-red-500 text-xs mt-1">{errors.print_by}</p>

@@ -417,11 +417,11 @@ export default function FinishPayment({
               {/* Component breakdown */}
               <li className="flex justify-between text-gray-500">
                 <span>Design</span>
-                <span>₹{inr(values.design)}</span>
+                <span>₹{inr(values.design_price)}</span>
               </li>
               <li className="flex justify-between text-gray-500">
                 <span>Print</span>
-                <span>₹{inr(values.print)}</span>
+                <span>₹{inr(values.print_price)}</span>
               </li>
 
               {/* Estimate price */}
