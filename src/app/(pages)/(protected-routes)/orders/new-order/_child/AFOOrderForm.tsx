@@ -10,7 +10,7 @@ import AFOMeasurement from './steps/AFO/AFOMeasurementsStep';
 import Assessment from './steps/AFO/Assessment';
 import PatientDetails from './steps/AFO/AfoPatientDetails';
 import ScanUpload from './steps/AFO/ScanUpload';
-import ASPFinishPayment from './steps/ASP/ASPFinishPayment';
+import FinishPayment from './steps/AFO/FinishPayment';
 
 import {
   useCreateAfoOrderMutation,
@@ -141,6 +141,9 @@ export default function AFOOrderForm(_: CranialOrderFormProps) {
     discounted_price: '0.00',
     gst_18: '0.00',
     total_price: '0.00',
+    design_coin_use: '0',
+    customer_available_coins: '0',
+    base_rate: 0,
   };
 
   const [formSeed, setFormSeed] = useState(initialValues);
@@ -334,6 +337,11 @@ export default function AFOOrderForm(_: CranialOrderFormProps) {
               setFieldValue('gst_5', apiRes.gst_5 || '0.00');
               setFieldValue('gst_18', apiRes.gst_18 || '0.00');
               setFieldValue('total_price', apiRes.total_price || '0.00');
+
+              // ⭐ ADD THESE 3 LINES
+              setFieldValue('design_coin_use', apiRes.design_coin_use || '0');
+              setFieldValue('customer_available_coins', apiRes.customer_available_coins || '0');
+
             } catch (err: any) {
               toast.error(err?.data?.message || 'Failed to get estimate');
             } finally {
@@ -589,8 +597,7 @@ export default function AFOOrderForm(_: CranialOrderFormProps) {
           //     setBusy(null);
           //   }
           // };
-          const postOrder = async (intent: 'place' | 'later') => {
-            if (!values.agree_terms) {
+          const postOrder = async (intent: 'place' | 'later', isCoinMode?: boolean) => {            if (!values.agree_terms) {
               alert('Please agree to the terms and conditions.');
               return;
             }
@@ -708,7 +715,11 @@ export default function AFOOrderForm(_: CranialOrderFormProps) {
                 alert('Invalid payment amount.');
                 return;
               }
-
+              if (isCoinMode) {
+                toast.success('Order placed using Addicoins');
+                router.push('/orders');
+                return;
+              }
               await startPayment(salesId);
 
             } catch (e: any) {
@@ -724,7 +735,9 @@ export default function AFOOrderForm(_: CranialOrderFormProps) {
             }
           };
 
-          const placeOrder = () => postOrder('place');
+          const placeOrder = (isCoinMode?: boolean) => {
+            postOrder('place', isCoinMode);
+          };
           const payLater = () => postOrder('later');
 
           const stepFields: Record<number, string[]> = {
@@ -792,7 +805,7 @@ export default function AFOOrderForm(_: CranialOrderFormProps) {
                   />
                 )}
                 {activeStep === 4 && (
-                  <ASPFinishPayment
+                  <FinishPayment
                     values={values}
                     productCode={values.afo_item_code}
                     UI={{ Input, Button, Label, Card, SelectBox }}

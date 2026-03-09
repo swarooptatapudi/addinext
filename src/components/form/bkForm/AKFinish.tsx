@@ -409,7 +409,7 @@ export const AKFinish = ({
         <li className="flex items-start gap-2">
           <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0" />
           <div className="flex justify-between w-full">
-            <span className="font-medium text-gray-700">GST (18%)</span>
+            <span className="font-medium text-gray-700">GST (5%)</span>
             <span className="text-gray-700">₹{apiResponse.gst_18}</span>
           </div>
         </li>

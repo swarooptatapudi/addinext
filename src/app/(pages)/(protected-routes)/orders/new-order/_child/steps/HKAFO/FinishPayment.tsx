@@ -22,7 +22,7 @@ type Props = {
     item_code?: string;
   }) => Promise<void>;
   onValidateCoupon?: (code: string) => Promise<any | null>;
-  onPlaceOrder?: () => void;
+  onPlaceOrder?: (isCoinMode?: boolean) => void;
   onPayLater?: () => void;
   isPlacing?: boolean;
   isSavingLater?: boolean;
@@ -475,7 +475,7 @@ export default function FinishPayment({
               {/* GST 18% */}
               {gst18 > 0 && (
                 <li className="flex justify-between">
-                  <span className="text-gray-600">GST (18%)</span>
+                  <span className="text-gray-600">GST (5%)</span>
                   <span>+₹{inr(values.gst_18)}</span>
                 </li>
               )}
@@ -530,7 +530,7 @@ export default function FinishPayment({
 
         <div className="flex gap-3">
           <Button
-            onClick={onPlaceOrder}
+            onClick={() => onPlaceOrder?.(isCoinMode)}
             disabled={
               !!isPlacing ||
               !values.agree_terms ||

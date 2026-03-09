@@ -1335,8 +1335,7 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
             return { ok, salesId, hkafoId, note };
           }
 
-          const postOrder = async (intent: 'place' | 'later') => {
-            if (!values.agree_terms) {
+          const postOrder = async (intent: 'place' | 'later', isCoinMode?: boolean) => {            if (!values.agree_terms) {
               alert('Please agree to the terms and conditions.');
               return;
             }
@@ -1427,7 +1426,11 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                 alert('Invalid payment amount.');
                 return;
               }
-
+              if (isCoinMode) {
+                toast.success('Order placed using Addicoins');
+                router.push('/orders');
+                return;
+              }
               await startPayment(salesId);
 
             } catch (e: any) {
@@ -1442,7 +1445,9 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
               setBusy(null);
             }
           };
-          const placeOrder = () => postOrder('place');
+          const placeOrder = (isCoinMode?: boolean) => {
+            postOrder('place', isCoinMode);
+          };
           const payLater = () => postOrder('later');
 
           const validateStepAndShowErrors = async (stepIndex: number) => {
