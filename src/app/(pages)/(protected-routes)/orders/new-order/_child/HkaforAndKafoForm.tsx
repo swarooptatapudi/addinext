@@ -157,6 +157,14 @@ type FormValues = {
 
   // For flags
   gst_rate?: 0 | 0.05 | 0.18;
+  // ✅ ADD THESE THREE
+  design_coin_use?: string | number;
+  customer_available_coins?: string | number;
+  base_rate?: number;
+  discount_percent?: string | number;   // ✅ Add
+  coupon_discount?:  string | number;   // ✅ Add
+
+
 };
 
 const HKAFO_LIMITS = {
@@ -947,8 +955,16 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
       gst_5: '',
       gst_18: '',
       total_price: '',
-      gst_rate: 0.05
+      gst_rate: 0.05,
+      design_coin_use: '',
+      customer_available_coins: '',
+      base_rate: 0,
+      discount_percent: '',   // ✅ Add
+      coupon_discount:  '',   // ✅ Add
+
+
     }),
+
     [user?.customer_id]
   );
 
@@ -1117,6 +1133,55 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
           };
 
 
+          // const onEstimate = async () => {
+          //   const resolvedItemCode = values.item_code;
+          //
+          //   if (!resolvedItemCode) {
+          //     toast.error('Please select a Product Code');
+          //     return;
+          //   }
+          //
+          //   if (!values.design_by || !values.print_by) {
+          //     toast.error('Design by and Print by are required');
+          //     return;
+          //   }
+          //
+          //   setIsEstimating(true);
+          //
+          //   const estimatePayload = {
+          //     item_code: resolvedItemCode,        // ✅ now string
+          //     design_by: values.design_by!,       // safe
+          //     print_by: values.print_by!,         // safe
+          //     discount_per: couponData?.discount_percentage || 0,
+          //     discount_amt: couponData?.discount_amount || 0,
+          //     coupon_code: (values.coupon_code || '').trim()
+          //   };
+          //
+          //   try {
+          //     const response = await getEstimate(estimatePayload).unwrap();
+          //
+          //     // ✅ CORRECT EXTRACTION
+          //     const apiRes = response?.data || {};
+          //     console.log("apiRes...........",apiRes)
+          //     setFieldValue('estimate_price', apiRes.estimate_price || '0.00');
+          //
+          //     setFieldValue('design_price', apiRes.design || '0.00');
+          //     setFieldValue('print_price', apiRes.print || '0.00');
+          //     setFieldValue('item_standard_discount', apiRes.item_standard_discount || '0.00');
+          //     setFieldValue('additional_discount', apiRes.additional_discount || '0.00');
+          //     setFieldValue('discounted_price', apiRes.discounted_price || '0.00');
+          //     setFieldValue('gst_5', apiRes.gst_5 || '0.00');
+          //     setFieldValue('gst_18', apiRes.gst_18 || '0.00');
+          //     setFieldValue('total_price', apiRes.total_price || '0.00');
+          //     setFieldValue('design_coin_use',          apiRes.design_coin_use          || '0');
+          //     setFieldValue('customer_available_coins', apiRes.customer_available_coins || '0');
+          //     setFieldValue('base_rate',                apiRes.base_rate                || 0);
+          //   } catch (err: any) {
+          //     toast.error(err?.data?.message || 'Failed to get estimate');
+          //   } finally {
+          //     setIsEstimating(false);
+          //   }
+          // };
           const onEstimate = async () => {
             const resolvedItemCode = values.item_code;
 
@@ -1133,30 +1198,32 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
             setIsEstimating(true);
 
             const estimatePayload = {
-              item_code: resolvedItemCode,        // ✅ now string
-              design_by: values.design_by!,       // safe
-              print_by: values.print_by!,         // safe
+              item_code:    resolvedItemCode,
+              design_by:    values.design_by!,
+              print_by:     values.print_by!,
               discount_per: couponData?.discount_percentage || 0,
-              discount_amt: couponData?.discount_amount || 0,
-              coupon_code: (values.coupon_code || '').trim()
+              discount_amt: couponData?.discount_amount     || 0,
+              coupon_code:  (values.coupon_code || '').trim()
             };
 
             try {
               const response = await getEstimate(estimatePayload).unwrap();
-
-              // ✅ CORRECT EXTRACTION
               const apiRes = response?.data || {};
-              console.log("apiRes...........",apiRes)
-              setFieldValue('estimate_price', apiRes.estimate_price || '0.00');
 
-              setFieldValue('design_price', apiRes.design || '0.00');
-              setFieldValue('print_price', apiRes.print || '0.00');
-              setFieldValue('item_standard_discount', apiRes.item_standard_discount || '0.00');
-              setFieldValue('additional_discount', apiRes.additional_discount || '0.00');
-              setFieldValue('discounted_price', apiRes.discounted_price || '0.00');
-              setFieldValue('gst_5', apiRes.gst_5 || '0.00');
-              setFieldValue('gst_18', apiRes.gst_18 || '0.00');
-              setFieldValue('total_price', apiRes.total_price || '0.00');
+              setFieldValue('design_price',             apiRes.design                  || '0.00');
+              setFieldValue('print_price',              apiRes.print                   || '0.00');
+              setFieldValue('estimate_price',           apiRes.estimate_price          || '0.00');
+              setFieldValue('item_standard_discount',   apiRes.item_standard_discount  || '0.00');
+              setFieldValue('additional_discount',      apiRes.additional_discount     || '0.00');
+              setFieldValue('discount_percent',         apiRes.discount_percent        || '0.00'); // ✅
+              setFieldValue('coupon_discount',          apiRes.coupon_discount         || '0.00'); // ✅
+              setFieldValue('discounted_price',         apiRes.discounted_price        || '0.00');
+              setFieldValue('gst_5',                    apiRes.gst_5                   || '0.00');
+              setFieldValue('gst_18',                   apiRes.gst_18                  || '0.00');
+              setFieldValue('total_price',              apiRes.total_price             || '0.00');
+              setFieldValue('design_coin_use',          apiRes.design_coin_use         || '0');
+              setFieldValue('customer_available_coins', apiRes.customer_available_coins|| '0');
+              setFieldValue('base_rate',                apiRes.base_rate               || 0);
             } catch (err: any) {
               toast.error(err?.data?.message || 'Failed to get estimate');
             } finally {
@@ -1268,8 +1335,7 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
             return { ok, salesId, hkafoId, note };
           }
 
-          const postOrder = async (intent: 'place' | 'later') => {
-            if (!values.agree_terms) {
+          const postOrder = async (intent: 'place' | 'later', isCoinMode?: boolean) => {            if (!values.agree_terms) {
               alert('Please agree to the terms and conditions.');
               return;
             }
@@ -1360,7 +1426,11 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                 alert('Invalid payment amount.');
                 return;
               }
-
+              if (isCoinMode) {
+                toast.success('Order placed using Addicoins');
+                router.push('/orders');
+                return;
+              }
               await startPayment(salesId);
 
             } catch (e: any) {
@@ -1375,7 +1445,9 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
               setBusy(null);
             }
           };
-          const placeOrder = () => postOrder('place');
+          const placeOrder = (isCoinMode?: boolean) => {
+            postOrder('place', isCoinMode);
+          };
           const payLater = () => postOrder('later');
 
           const validateStepAndShowErrors = async (stepIndex: number) => {
