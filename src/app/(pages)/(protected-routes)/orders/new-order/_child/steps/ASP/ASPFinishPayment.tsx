@@ -337,7 +337,7 @@ export default function ASPFinishPayment({
 
             {toNum(values.gst_18) > 0 && (
               <li className="flex justify-between">
-                <span className="text-gray-600">GST (18%)</span>
+                <span className="text-gray-600">GST (5%)</span>
                 <span>+₹{toNum(values.gst_18).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </li>
             )}
