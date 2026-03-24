@@ -133,7 +133,8 @@ export default function Orders(): React.JSX.Element {
       'AddiShield Pro Order': '/orders/new-order/AddiShieldPlus',
       'AddiShield EpiPro Order': '/orders/new-order/AddiShieldPlus',
       'AddiShield EpiPro Active Order': '/orders/new-order/AddiShieldPlus',
-      'AFO Orders': '/orders/new-order/AFO'
+      'AFO Orders': '/orders/new-order/AFO',
+      'Kafo Orders': '/orders/new-order/HkAFO'
     };
 
     const route = routes[order.device_type];
@@ -212,8 +213,50 @@ export default function Orders(): React.JSX.Element {
       setWikyOrderId(order.order_id);
     }
   }, [router]);
-
   // ✅ USE useMemo FOR COLUMNS - Recalculates when dependencies change
+  const resolveOrderStatus = (order: Order): string => {
+    const docstatus = (order as any).docstatus ?? 0;
+    const advancePaid = Number((order as any).advance_paid || 0);
+    const grandTotal = Number((order as any).grand_total || order.order_value || 0);
+    const orderValue = order.order_value || 0;
+
+    let status = order.status;
+
+    // 1️⃣ Draft
+    if (docstatus === 0) {
+      status = 'Draft';
+    }
+
+    // 2️⃣ Fully Paid
+    else if (docstatus === 1 && advancePaid >= grandTotal - 0.01) {
+      status = 'Paid';
+    }
+
+    // 3️⃣ Submitted but unpaid
+    else if (docstatus === 1) {
+      status = 'Payment Pending';
+    }
+
+    // 4️⃣ Draft but payment reference exists
+    if (
+      status === 'Draft' &&
+      (order.custom_payment_reference_id || order.sales_invoices.length > 0)
+    ) {
+      status = 'Paid';
+    }
+
+    // 5️⃣ Zero value orders
+    if (orderValue === 0) {
+      status = 'Paid';
+    }
+
+    // 6️⃣ SPECIAL RULE: KAFO To Deliver = Paid
+    if (order.device_type === 'Kafo Orders' && order.status === 'To Deliver') {
+      status = 'Paid';
+    }
+
+    return status;
+  };
   const columns: ColumnDef<Order>[] = useMemo(() => [
     {
       accessorKey: 'order_id',
@@ -253,25 +296,14 @@ export default function Orders(): React.JSX.Element {
       header: 'Status',
       cell: ({ row }) => {
         const order = row.original;
-        let status = order.status;
-        const orderValue = order.order_value || 0;
-
-        // ✅ Recalculate status based on current data
-        if (
-          status === 'Draft' &&
-          (order.custom_payment_reference_id || order.sales_invoices.length > 0)
-        ) {
-          status = 'Paid';
-        }
-        if (orderValue === 0) {
-          status = 'Paid';
-        }
+        const status = resolveOrderStatus(order);
 
         const statusClasses = {
           Draft: 'bg-yellow-100 text-yellow-800',
           Completed: 'bg-green-100 text-green-800',
           Paid: 'bg-blue-100 text-blue-800',
           Cancelled: 'bg-red-100 text-red-800',
+          'Payment Pending': 'bg-orange-100 text-orange-800',
           default: 'bg-gray-100 text-gray-800'
         };
 
@@ -281,8 +313,8 @@ export default function Orders(): React.JSX.Element {
               statusClasses[status as keyof typeof statusClasses] || statusClasses.default
             }`}
           >
-            {status}
-          </span>
+        {status}
+      </span>
         );
       }
     },
@@ -293,21 +325,15 @@ export default function Orders(): React.JSX.Element {
         const order: Order = row.original;
 
         // ✅ Calculate button states dynamically on each render
-        let isPaid = order.status === 'Paid';
-
-        // Check if order is actually paid even if status says Draft
-        if (order.status === 'Draft' &&
-          (order.custom_payment_reference_id || order.sales_invoices.length > 0)) {
-          isPaid = true;
-        }
-
-        if (order.order_value === 0) {
-          isPaid = true;
-        }
-
-        const isInsoleOrder = order.device_type === 'Insole Orders';
+        const resolvedStatus = resolveOrderStatus(order);
+        const isPaid = resolvedStatus === 'Paid';
         const canPay = !isPaid;
-        const canDesign = isInsoleOrder && isPaid;
+
+        // Update: allow both Insole Orders and AFO Orders
+        const isInsoleOrder = order.device_type === 'Insole Orders';
+        const isAFOOrder = order.device_type === 'AFO Orders';
+        const canDesign = (isInsoleOrder || isAFOOrder) && isPaid;
+
 
         return (
           <div className="flex gap-2 items-center">

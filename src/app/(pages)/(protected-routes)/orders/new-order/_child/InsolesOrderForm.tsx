@@ -414,11 +414,6 @@ const InsolesDialog = ({
     const normalizedVariation = variation.trim();
 
     const contentMap: Record<string, { title: string; description: string; image: string }> = {
-      AddiSole: {
-        title: 'AddiSole',
-        description: 'Premium Insole printed on HP-MJF',
-        image: '/assets/order-forms/insoles/AddiSole.png'
-      },
       AddiSoleL: {
         title: 'AddiSoleL',
         description: 'Insoles printed on SLS Printer ',
@@ -469,7 +464,9 @@ const InsolesDialog = ({
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {options.map((option) => {
+          {options
+            .filter(opt => opt.value?.toLowerCase() !== 'addisole')
+            .map((option) => {
             const variationText = option.label || option.value;
             const content = getDynamicContent(variationText);
 
@@ -668,7 +665,14 @@ const Step1 = ({
   }, [FORM_OPTIONS?.socket_type]);
 
   const designVariationOptions = useMemo(() => {
-    return FORM_OPTIONS['insole_model'] || [];
+    const options = FORM_OPTIONS['insole_model'] || [];
+
+    // remove AddiSole completely
+    return options.filter(
+      (opt: any) =>
+        opt.value?.trim().toLowerCase() !== 'addisole' &&
+        opt.label?.trim().toLowerCase() !== 'addisole'
+    );
   }, [FORM_OPTIONS]);
 
   // useEffect(() => {

@@ -8,8 +8,8 @@ import { useLazyLogoutQuery } from '@/rtk-query/apis/auth';
 import React from 'react';
 
 export default function MainLayout({
-  children
-}: Readonly<{
+                                     children
+                                   }: Readonly<{
   children: React.ReactNode;
 }>) {
   const { user, isLoading } = useUser();

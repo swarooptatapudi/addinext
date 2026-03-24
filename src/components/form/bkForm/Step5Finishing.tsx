@@ -999,14 +999,14 @@ export const Step5 = ({
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
-                                <span className="font-medium text-gray-700">GST (18%)</span>
+                                <span className="font-medium text-gray-700">GST (5%)</span>
                                 <span className="text-gray-700">
                                   ₹{estimateData.apiResponse.gst_18}
                                 </span>
                               </div>
                             </li>
                           )}
-                          {parseFloat(estimateData.apiResponse.gst_5.replace(/,/g, '')) > 0 && (
+                          {/*{parseFloat(estimateData.apiResponse.gst_5.replace(/,/g, '')) > 0 && (
                             <li className="flex items-start gap-2">
                               <div
                                 className={`w-1.5 h-1.5 mt-2 rounded-full ${
@@ -1020,7 +1020,7 @@ export const Step5 = ({
                                 </span>
                               </div>
                             </li>
-                          )}
+                          )}*/}
                           <div
                             className={`border-t ${isEstimateStale ? 'border-gray-300' : 'border-gray-200'} my-2`}
                           ></div>
@@ -1267,7 +1267,7 @@ export const Step5 = ({
                                     }`}
                                   ></div>
                                   <div className="flex justify-between w-full">
-                                    <span className="font-medium text-gray-700">GST (18%)</span>
+                                    <span className="font-medium text-gray-700">GST (5%)</span>
                                     <span className="text-gray-700">
                                       ₹{estimateData.apiResponse.gst_18}
                                     </span>
@@ -1483,7 +1483,7 @@ export const Step5 = ({
                                 }`}
                               ></div>
                               <div className="flex justify-between w-full">
-                                <span className="font-medium text-gray-700">GST (18%)</span>
+                                <span className="font-medium text-gray-700">GST (5%)</span>
                                 <span className="text-gray-700">
                                   ₹{estimateData.apiResponse.gst_18}
                                 </span>
@@ -1664,7 +1664,7 @@ export const Step5 = ({
                           <li className="flex items-start gap-2">
                             <div className="w-1.5 h-1.5 mt-2 rounded-full bg-purple-800 flex-shrink-0"></div>
                             <div className="flex justify-between w-full">
-                              <span className="font-medium text-gray-700">GST (18%)</span>
+                              <span className="font-medium text-gray-700">GST (5%)</span>
                               <span className="text-gray-700">
                                 +₹{estimateData.apiResponse.gst_18}
                               </span>

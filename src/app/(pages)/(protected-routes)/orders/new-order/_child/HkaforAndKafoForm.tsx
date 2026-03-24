@@ -151,15 +151,23 @@ type FormValues = {
   item_standard_discount?: string | number;
   additional_discount?: string | number;
   discounted_price?: string | number;
-  gst_5_amt?: string | number;
-  gst_18_amt?: string | number;
+  gst_5?: string | number;
+  gst_18?: string | number;
   total_price?: string | number;
 
   // For flags
   gst_rate?: 0 | 0.05 | 0.18;
+  // ✅ ADD THESE THREE
+  design_coin_use?: string | number;
+  customer_available_coins?: string | number;
+  base_rate?: number;
+  discount_percent?: string | number;   // ✅ Add
+  coupon_discount?:  string | number;   // ✅ Add
+
+
 };
 
-/*const HKAFO_LIMITS = {
+const HKAFO_LIMITS = {
   circ_waist: { min: 43.4, max: 110 },
   circ_iliac_crest: { min: 44.2, max: 115 },
   circ_greater_trochanter: { min: 46.8, max: 120 },
@@ -184,7 +192,7 @@ type FormValues = {
   length_ground_to_greater_trochanter: { min: 37.6, max: 110 },
   length_ground_to_pelvic_line: { min: 37.6, max: 120 },
   length_ground_to_waist_line: { min: 49.1, max: 125 }
-} as const;*/
+} as const;
 const cmToIn = (cm: number) => cm / 2.54;
 
 const MIN_PATIENT_AGE_MONTHS = 18;
@@ -197,7 +205,7 @@ const getMinAllowedDob = () => {
   return d;
 };
 
-/*const applyHkafoRange = (key: keyof typeof HKAFO_LIMITS, schema: any) =>
+const applyHkafoRange = (key: keyof typeof HKAFO_LIMITS, schema: any) =>
   schema.test('hkafo-range', '', function (this: Yup.TestContext, value: unknown) {
     if (value === undefined || value === null || value === '') return true;
 
@@ -221,9 +229,8 @@ const getMinAllowedDob = () => {
       return this.createError({ message: `Value must be between ${min} and ${max} cm` });
     }
     return true;
-  });*/
+  });
 
-/*
 const Schema = Yup.object({
   // Patient details (step 0)
   patient_name: Yup.string().required('Patient name is required'),
@@ -249,7 +256,7 @@ const Schema = Yup.object({
   clinic_name: Yup.string().required('Clinic name is required'),
   parent_mobile: Yup.string().required('Mobile number is required along with country code'),
 
-  // Measurements (step 1) - require numeric > 0
+  /*// Measurements (step 1) - require numeric > 0
   ap: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('AP is required'),
   ml: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('ML is required'),
   da: Yup.number().typeError('Enter a number').positive('Must be a positive value').required('Diagonal A is required'),
@@ -385,15 +392,19 @@ const Schema = Yup.object({
   length_ground_to_waist_line: applyHkafoRange(
     'length_ground_to_waist_line',
     Yup.number().typeError('Enter a number')
-  ).required('Ground to waist line length is required'),
+  ).required('Ground to waist line length is required'),*/
   ankle_frontal_alignment: Yup.string().required('Ankle frontal alignment is required'),
   ankle_flexibility: Yup.string().required('Ankle flexibility is required'),
   ankle_rotation: Yup.string().required('Ankle rotation is required'),
-  ankle_plane: Yup.string().required('Ankle plane is required'),
+  //ankle_plane: Yup.string().required('Ankle plane is required'),
+  ankle_plane: Yup.number()
+    .typeError('Enter a number')
+    .min(0, 'Must be zero or greater')
+    .required('Toe in/out degrees are required'),
   ankle_frontal_degrees: Yup.number()
     .typeError('Enter a number')
     .min(0, 'Must be zero or greater')
-    .required('Ankle alignment degrees are required'),
+    .required('Varus/Valgus degrees are required'),
   ankle_plane_degrees: Yup.number()
     .typeError('Enter a number')
     .min(0, 'Must be 0 or greater than 0')
@@ -408,11 +419,11 @@ const Schema = Yup.object({
   knee_alignment_degrees: Yup.number()
     .typeError('Enter a number')
     .min(0, 'Must be 0 or greater than 0')
-    .required('Knee alignment degrees are required'),
+    .required('Varus/Valgus degrees are required'),
   knee_sagittal_degrees: Yup.number()
     .typeError('Enter a number')
     .min(0, 'Must be 0 or greater than 0')
-    .required('Knee sagittal degrees are required'),
+    .required('Knee Hyperextended/Flexion Contracture degrees are required'),
 
   // Computation doesn't add new fields  cr/cvai are derived so no required validation here
 
@@ -435,7 +446,6 @@ const Schema = Yup.object({
 
   // keep numbers monetary optional or validated elsewhere
 });
-*/
 const STEP_FIELDS: Record<number, string[]> = {
   0: [
     'patient_name',
@@ -675,8 +685,8 @@ function flattenForSalesOrder(values: FormValues) {
     item_standard_discount: values.item_standard_discount ?? 0,
     additional_discount: values.additional_discount ?? 0,
     discounted_price: values.discounted_price ?? 0,
-    gst_5_amt: values.gst_5_amt ?? 0,
-    gst_18_amt: values.gst_18_amt ?? 0,
+    gst_5: values.gst_5 ?? 0,
+    gst_18: values.gst_18 ?? 0,
     gst_rate: values.gst_rate ?? 0.05
   };
 }
@@ -692,8 +702,8 @@ function toCreatePayload(
 ) {
   const order_details = toOrderDetails(values);
 
-  const gst_18_num = Number(String(values.gst_18_amt ?? 0).replace(/,/g, '')) || 0;
-  const gst_5_num = Number(String(values.gst_5_amt ?? 0).replace(/,/g, '')) || 0;
+  const gst_18 = Number(String(values.gst_18 ?? 0).replace(/,/g, '')) || 0;
+  const gst_5 = Number(String(values.gst_5 ?? 0).replace(/,/g, '')) || 0;
 
   const today = new Date();
   const ymd = today.toISOString().slice(0, 10);
@@ -734,7 +744,7 @@ function toCreatePayload(
       ankle_alignment: orEmpty(values.ankle_alignment),
       ankle_flexibility: orEmpty(values.ankle_flexibility),
       ankle_rotation: orEmpty(values.ankle_rotation),
-      ankle_plane: orEmpty(values.ankle_plane),
+      ankle_plane: toNumOrNull(values.ankle_plane),
 
       ankle_frontal_degrees: toNumOrNull(values.ankle_frontal_degrees),
       ankle_plane_degrees: toNumOrNull(values.ankle_plane_degrees),
@@ -942,11 +952,19 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
       item_standard_discount: '',
       additional_discount: '',
       discounted_price: '',
-      gst_5_amt: '',
-      gst_18_amt: '',
+      gst_5: '',
+      gst_18: '',
       total_price: '',
-      gst_rate: 0.05
+      gst_rate: 0.05,
+      design_coin_use: '',
+      customer_available_coins: '',
+      base_rate: 0,
+      discount_percent: '',   // ✅ Add
+      coupon_discount:  '',   // ✅ Add
+
+
     }),
+
     [user?.customer_id]
   );
 
@@ -1051,6 +1069,7 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
         enableReinitialize
         validateOnChange
         validateOnBlur
+        validationSchema={Schema}
       >
         {({ values, errors, touched, setFieldValue, validateForm, setTouched }) => {
           const handleChange = (field: string) => (eOrVal: any) => {
@@ -1060,6 +1079,23 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                 : eOrVal;
             setFieldValue(field, next, true);
           };
+          useEffect(() => {
+            if (!values.type) return;
+
+            // HKAFO-only fields
+            const HKAFO_ONLY_FIELDS = [
+              'circ_waist',
+              'circ_iliac_crest',
+              'ml_waist',
+              'ml_iliac_crest',
+            ];
+
+            if (values.type === 'KAFO') {
+              HKAFO_ONLY_FIELDS.forEach((f) => {
+                setFieldValue(f, '', false);
+              });
+            }
+          }, [values.type, setFieldValue]);
 
           useEffect(() => {
             setFieldValue('customer', user?.customer_id || '');
@@ -1097,6 +1133,55 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
           };
 
 
+          // const onEstimate = async () => {
+          //   const resolvedItemCode = values.item_code;
+          //
+          //   if (!resolvedItemCode) {
+          //     toast.error('Please select a Product Code');
+          //     return;
+          //   }
+          //
+          //   if (!values.design_by || !values.print_by) {
+          //     toast.error('Design by and Print by are required');
+          //     return;
+          //   }
+          //
+          //   setIsEstimating(true);
+          //
+          //   const estimatePayload = {
+          //     item_code: resolvedItemCode,        // ✅ now string
+          //     design_by: values.design_by!,       // safe
+          //     print_by: values.print_by!,         // safe
+          //     discount_per: couponData?.discount_percentage || 0,
+          //     discount_amt: couponData?.discount_amount || 0,
+          //     coupon_code: (values.coupon_code || '').trim()
+          //   };
+          //
+          //   try {
+          //     const response = await getEstimate(estimatePayload).unwrap();
+          //
+          //     // ✅ CORRECT EXTRACTION
+          //     const apiRes = response?.data || {};
+          //     console.log("apiRes...........",apiRes)
+          //     setFieldValue('estimate_price', apiRes.estimate_price || '0.00');
+          //
+          //     setFieldValue('design_price', apiRes.design || '0.00');
+          //     setFieldValue('print_price', apiRes.print || '0.00');
+          //     setFieldValue('item_standard_discount', apiRes.item_standard_discount || '0.00');
+          //     setFieldValue('additional_discount', apiRes.additional_discount || '0.00');
+          //     setFieldValue('discounted_price', apiRes.discounted_price || '0.00');
+          //     setFieldValue('gst_5', apiRes.gst_5 || '0.00');
+          //     setFieldValue('gst_18', apiRes.gst_18 || '0.00');
+          //     setFieldValue('total_price', apiRes.total_price || '0.00');
+          //     setFieldValue('design_coin_use',          apiRes.design_coin_use          || '0');
+          //     setFieldValue('customer_available_coins', apiRes.customer_available_coins || '0');
+          //     setFieldValue('base_rate',                apiRes.base_rate                || 0);
+          //   } catch (err: any) {
+          //     toast.error(err?.data?.message || 'Failed to get estimate');
+          //   } finally {
+          //     setIsEstimating(false);
+          //   }
+          // };
           const onEstimate = async () => {
             const resolvedItemCode = values.item_code;
 
@@ -1113,27 +1198,32 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
             setIsEstimating(true);
 
             const estimatePayload = {
-              item_code: resolvedItemCode,        // ✅ now string
-              design_by: values.design_by!,       // safe
-              print_by: values.print_by!,         // safe
+              item_code:    resolvedItemCode,
+              design_by:    values.design_by!,
+              print_by:     values.print_by!,
               discount_per: couponData?.discount_percentage || 0,
-              discount_amt: couponData?.discount_amount || 0,
-              coupon_code: (values.coupon_code || '').trim()
+              discount_amt: couponData?.discount_amount     || 0,
+              coupon_code:  (values.coupon_code || '').trim()
             };
 
             try {
               const response = await getEstimate(estimatePayload).unwrap();
               const apiRes = response?.data || {};
-              setFieldValue('estimate_price', apiRes.estimate_price || '0.00');
 
-              setFieldValue('design_price', apiRes.design || '0.00');
-              setFieldValue('print_price', apiRes.print || '0.00');
-              setFieldValue('item_standard_discount', apiRes.item_standard_discount || '0.00');
-              setFieldValue('additional_discount', apiRes.additional_discount || '0.00');
-              setFieldValue('discounted_price', apiRes.discounted_price || '0.00');
-              setFieldValue('gst_5_amt', apiRes.gst_5 || '0.00');
-              setFieldValue('gst_18_amt', apiRes.gst_18 || '0.00');
-              setFieldValue('total_price', apiRes.total_price || '0.00');
+              setFieldValue('design_price',             apiRes.design                  || '0.00');
+              setFieldValue('print_price',              apiRes.print                   || '0.00');
+              setFieldValue('estimate_price',           apiRes.estimate_price          || '0.00');
+              setFieldValue('item_standard_discount',   apiRes.item_standard_discount  || '0.00');
+              setFieldValue('additional_discount',      apiRes.additional_discount     || '0.00');
+              setFieldValue('discount_percent',         apiRes.discount_percent        || '0.00'); // ✅
+              setFieldValue('coupon_discount',          apiRes.coupon_discount         || '0.00'); // ✅
+              setFieldValue('discounted_price',         apiRes.discounted_price        || '0.00');
+              setFieldValue('gst_5',                    apiRes.gst_5                   || '0.00');
+              setFieldValue('gst_18',                   apiRes.gst_18                  || '0.00');
+              setFieldValue('total_price',              apiRes.total_price             || '0.00');
+              setFieldValue('design_coin_use',          apiRes.design_coin_use         || '0');
+              setFieldValue('customer_available_coins', apiRes.customer_available_coins|| '0');
+              setFieldValue('base_rate',                apiRes.base_rate               || 0);
             } catch (err: any) {
               toast.error(err?.data?.message || 'Failed to get estimate');
             } finally {
@@ -1245,66 +1335,7 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
             return { ok, salesId, hkafoId, note };
           }
 
-          // ✅ postOrder now uses the reusable payment launcher
-/*
-          const postOrder = async (intent: 'place' | 'later') => {
-            if (!values.agree_terms) {
-              toast.error('Please agree to the terms and conditions');
-              return;
-            }
-
-            if (!values.item_code) {
-              toast.error('Product Code is required');
-              return;
-            }
-
-            try {
-              setBusy(intent);
-
-              const payload = toCreatePayload(values, values.item_code, {
-                customerId: user?.customer_id,
-                orderId,
-                deviceTypeId
-              });
-
-              const res = (await createOrder(payload).unwrap()) as CreateOk;
-              const { ok, note, salesId } = normalizeCreateResponse(res);
-
-              if (ok) {
-                if (intent === 'place' && salesId) {
-                  if (paymentStartedRef.current) return;
-                  paymentStartedRef.current = true;
-
-                  await startPayment(salesId);
-                  return;
-                }
-
-
-                toast.success(
-                  intent === 'place'
-                    ? `Order placed successfully${salesId ? ` (SO: ${salesId})` : ''}`
-                    : 'Order saved. You can pay later.'
-                );
-                router.push('/orders');
-                return;
-              }
-
-              toast.error(note || 'Order creation failed');
-            } catch (e: any) {
-              toast.error(
-                e?.data?.message ||
-                e?.data?._server_messages ||
-                e?.message ||
-                'Failed to submit order'
-              );
-            } finally {
-              setBusy(null);
-            }
-          };
-*/
-
-          const postOrder = async (intent: 'place' | 'later') => {
-            if (!values.agree_terms) {
+          const postOrder = async (intent: 'place' | 'later', isCoinMode?: boolean) => {            if (!values.agree_terms) {
               alert('Please agree to the terms and conditions.');
               return;
             }
@@ -1395,7 +1426,11 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                 alert('Invalid payment amount.');
                 return;
               }
-
+              if (isCoinMode) {
+                toast.success('Order placed using Addicoins');
+                router.push('/orders');
+                return;
+              }
               await startPayment(salesId);
 
             } catch (e: any) {
@@ -1410,7 +1445,9 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
               setBusy(null);
             }
           };
-          const placeOrder = () => postOrder('place');
+          const placeOrder = (isCoinMode?: boolean) => {
+            postOrder('place', isCoinMode);
+          };
           const payLater = () => postOrder('later');
 
           const validateStepAndShowErrors = async (stepIndex: number) => {
@@ -1466,8 +1503,8 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
           };
 
           const handleNextStep = async () => {
-            if (isReadOnly) {
-              setActiveStep((s) => Math.min(s + 1, steps.length - 1));
+            if (activeStep === 0 && !values.type) {
+              toast.error('Please select Product Type');
               return;
             }
 
@@ -1538,6 +1575,7 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                       handleChange={handleChange}
                       shouldShowError={shouldShowError}
                       UI={{ Input, Label, SelectBox, DatePicker, Textarea }}
+                      activeStep={activeStep}   // ✅ ADD THIS
                     />
                   )}
                   {activeStep === 1 && (
@@ -1579,38 +1617,22 @@ export default function HkafoAndKafoForm(_: CranialOrderFormProps) {
                 </fieldset>
 
                 {/* Navigation */}
-                <div className="flex justify-between items-center gap-3 pt-2">
+                <div className="flex justify-between items-center pt-4">
                   {activeStep > 0 && (
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setActiveStep((s) => Math.max(s - 1, 0))}
+                      onClick={() => setActiveStep((s) => s - 1)}
                     >
                       Previous
                     </Button>
                   )}
+
                   <div className="ml-auto">
-                    {activeStep === 0 ? (
-                      <div className="flex gap-3">
-                        <Button
-                          type="button"
-                          onClick={() => handleDeviceTypeChange('HKAFO')}
-                        >
-                          HKAFO & NEXT
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => handleDeviceTypeChange('KAFO')}
-                        >
-                          KAFO & NEXT
-                        </Button>
-                      </div>
-                    ) : (
-                      activeStep < steps.length - 1 && (
-                        <Button type="button" onClick={handleNextStep}>
-                          Next
-                        </Button>
-                      )
+                    {activeStep < steps.length - 1 && (
+                      <Button type="button" onClick={handleNextStep}>
+                        Next
+                      </Button>
                     )}
                   </div>
                 </div>
