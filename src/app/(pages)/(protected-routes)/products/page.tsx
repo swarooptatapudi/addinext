@@ -38,11 +38,13 @@ export default function Products(): React.JSX.Element {
               src="/assets/order-forms/products/BK.jpg"
               label="AddiEase LE (BK)"
               href="/orders/new-order/BK"
+              disabled={true}
             />
             <ProductItem
               src="/assets/order-forms/products/AK.jpg"
               label="AddiEase LE (AK)"
               href="/orders/new-order/AK"
+              disabled={true}
             />
           </div>
         </div>
@@ -78,26 +80,31 @@ export default function Products(): React.JSX.Element {
             src="/assets/order-forms/products/IN.jpg"
             label="AddiSole (Insole/UCBL)"
             href="/orders/new-order/Insoles"
+            disabled={true}
           />
           <ProductItem
             src="/assets/order-forms/products/AFO.jpg"
             label="AddiFlex (AFO/DAFO)"
             href="/orders/new-order/AFO"
+            disabled={true}
           />
           <ProductItem
             src="/assets/order-forms/products/kafo_icon.jpg"
             label="AddiKneeFlex (KAFO/HKFO)"
             href="/orders/new-order/HkAFO"
+            disabled={true}
           />
           <ProductItem
             src="/assets/order-forms/products/Cranial Helmet.jpg"
             label="AddiShield (Cranial Helmets)"
             href="/orders/new-order/Cranial"
+            disabled={true}
           />
           <ProductItem
             src="/assets/order-forms/products/Addisheild_icon.jpg"
             label="AddiShield+"
             href="/orders/new-order/AddiShieldPlus"
+            disabled={true}
           />
           <ProductItem
             src="/assets/order-forms/products/Braces.jpg"
