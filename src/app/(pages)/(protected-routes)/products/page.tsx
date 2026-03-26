@@ -46,9 +46,9 @@ export default function Products(): React.JSX.Element {
             />
           </div>
         </div>
-
         {/* Prosthetics Upper Extremity */}
-        {/*<div>
+
+        <div>
           <p className="text-xs  font-extrabold text-[#2e2a6f] mb-3 uppercase">Prosthetics</p>{' '}
           <div className="text-xs  font-extrabold text-[#2e2a6f] mb-3  -mt-3 uppercase">
             Upper Extremity
@@ -58,14 +58,16 @@ export default function Products(): React.JSX.Element {
               src="/assets/order-forms/products/BE.jpg"
               label="AddiEase UE (BE)"
               href="/orders/new-order/BE"
+              disabled={true}
             />
             <ProductItem
               src="/assets/order-forms/products/AE.jpg"
               label="AddiEase UE (AE)"
               href="/orders/new-order/AE"
+              disabled={true}
             />
           </div>
-        </div>*/}
+        </div>
       </div>
 
       {/* Orthotics */}
