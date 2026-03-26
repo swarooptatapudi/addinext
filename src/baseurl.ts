@@ -29,7 +29,7 @@
 // use this file for base url for all places - IMPORTANT change this for production
 export const getBaseUrl = () => {
   // always return WITHOUT trailing slash
-  return 'https://uaterp.addiwise.com';
+  return 'https://erp.addiwise.com';
 };
 
 export function getDownloadUrl(filePath?: string) {
