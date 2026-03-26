@@ -48,8 +48,8 @@ export default function Products(): React.JSX.Element {
             />
           </div>
         </div>
-        {/* Prosthetics Upper Extremity */}
 
+        {/* Prosthetics Upper Extremity */}
         <div>
           <p className="text-xs  font-extrabold text-[#2e2a6f] mb-3 uppercase">Prosthetics</p>{' '}
           <div className="text-xs  font-extrabold text-[#2e2a6f] mb-3  -mt-3 uppercase">
