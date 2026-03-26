@@ -90,7 +90,6 @@ export default function Products(): React.JSX.Element {
             src="/assets/order-forms/products/kafo_icon.jpg"
             label="AddiKneeFlex (KAFO/HKFO)"
             href="/orders/new-order/HkAFO"
-
           />
           <ProductItem
             src="/assets/order-forms/products/Cranial Helmet.jpg"
