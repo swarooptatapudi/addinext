@@ -80,13 +80,11 @@ export default function Products(): React.JSX.Element {
             src="/assets/order-forms/products/IN.jpg"
             label="AddiSole (Insole/UCBL)"
             href="/orders/new-order/Insoles"
-
           />
           <ProductItem
             src="/assets/order-forms/products/AFO.jpg"
             label="AddiFlex (AFO/DAFO)"
             href="/orders/new-order/AFO"
-
           />
           <ProductItem
             src="/assets/order-forms/products/kafo_icon.jpg"
