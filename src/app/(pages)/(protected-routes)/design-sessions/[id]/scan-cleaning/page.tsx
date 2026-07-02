@@ -1,81 +1,43 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+/**
+ * LeoShape does not have a separate scan-cleaning step.
+ * The 3D editor handles raw scan import directly.
+ *
+ * This page informs the user and redirects back to the workspace.
+ */
+
+import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-export default function WikyScanCleaningPage() {
+export default function ScanCleaningDeprecatedPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadIframe() {
-      try {
-        const r = await fetch(
-          `/api/method/addiwise.apis.wiky_scan.wiky_workflow.get_wiky_iframe?session_id=${id}&iframe_type=clean`
-        );
-        const d = await r.json();
-
-        if (d?.message?.iframe_url) {
-          setIframeUrl(d.message.iframe_url);
-        } else {
-          setError('Unable to load scan cleaning iframe.');
-        }
-      } catch (err) {
-        console.error('Failed to load iframe:', err);
-        setError('Failed to connect to Wiky.');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadIframe();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading Scan Cleaning...</div>
-      </div>
-    );
-  }
-
-  if (error || !iframeUrl) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center gap-4">
-        <div className="text-red-600">{error || 'No iframe URL available'}</div>
-        <button
-          onClick={() => router.push(`/design-sessions/${id}`)}
-          className="px-4 py-2 rounded border hover:bg-gray-50"
-        >
-          Back to Workspace
-        </button>
-      </div>
-    );
-  }
+    const t = setTimeout(() => {
+      router.replace(`/design-sessions/${id}`);
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [id, router]);
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="bg-white border-b px-4 py-3 flex items-center justify-between">
-        <div className="font-medium">3D Scan Cleaning</div>
-        <button
-          onClick={() => router.push(`/design-sessions/${id}`)}
-          className="text-sm text-primary hover:underline"
-        >
-          Back to Workspace
-        </button>
-      </div>
-
-      <div className="flex-1 relative">
-        <iframe
-          id="wiky_iframe"
-          src={iframeUrl}
-          className="absolute inset-0 w-full h-full border-0"
-          allow="camera; microphone; clipboard-write"
-        />
-      </div>
+    <div className="h-screen flex flex-col items-center justify-center gap-4 text-center px-6">
+      <div className="text-4xl">ℹ️</div>
+      <h2 className="text-lg font-semibold text-gray-800">
+        Scan Cleaning is not required with LeoShape
+      </h2>
+      <p className="text-sm text-gray-500 max-w-sm">
+        The LeoShape editor handles scan import directly. Use{' '}
+        <strong>Launch 3D Design</strong> from the workspace to open the editor.
+      </p>
+      <p className="text-xs text-gray-400">Redirecting back to workspace…</p>
+      <button
+        onClick={() => router.replace(`/design-sessions/${id}`)}
+        className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50 transition"
+      >
+        Back to Workspace
+      </button>
     </div>
   );
 }
