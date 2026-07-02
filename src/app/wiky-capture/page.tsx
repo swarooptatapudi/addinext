@@ -1,94 +1,52 @@
-// "use client";
-//
-// import { useEffect, useState } from "react";
-//
-// const WIKY_IFRAME_URL =
-//   "https://scan.wikyapps.com/custom-form/view-custom-form/32f37890-b03f-4b3f-8569-f4f783acd812" +
-//   "?clientID=ba004e9f-f569-4ae2-9793-3a2607fdecac";
-//
-// export default function WikyCapturePage() {
-//   const [done, setDone] = useState(false);
-//
-//   useEffect(() => {
-//     function onMessage(event: MessageEvent) {
-//       // 🔴 IMPORTANT: inspect payload once in console
-//       console.log("WIKY MESSAGE", event.data);
-//
-//       // Example payload – adjust keys if Wiky changes
-//       const scanId = event.data?.scanId;
-//       const formResponseId = event.data?.formResponseId;
-//
-//       if (scanId && formResponseId) {
-//         // Send to parent
-//         window.opener?.postMessage(
-//           {
-//             type: "WIKY_CAPTURED",
-//             scanId,
-//             formResponseId
-//           },
-//           "*"
-//         );
-//
-//         setDone(true);
-//
-//         // Close popup after short delay
-//         setTimeout(() => window.close(), 500);
-//       }
-//     }
-//
-//     window.addEventListener("message", onMessage);
-//     return () => window.removeEventListener("message", onMessage);
-//   }, []);
-//
-//   if (done) {
-//     return <p>Captured. Closing...</p>;
-//   }
-//
-//   return (
-//     <div style={{ height: "100vh" }}>
-//       <iframe
-//         src={WIKY_IFRAME_URL}
-//         style={{ width: "100%", height: "100%", border: "none" }}
-//         allow="camera *; microphone *"
-//       />
-//     </div>
-//   );
-// }
-"use client";
+/**
+ * DEPRECATED – Wiky capture page.
+ *
+ * This page handled the Wiky custom-form iframe popup flow, which captured
+ * scanId + formResponseId via a postMessage 'customFormSubmitted' event.
+ *
+ * LeoShape does NOT have a separate pre-form step. The editor is opened
+ * directly from the design workspace via the iframe at /design/[id].
+ *
+ * This route is kept as a redirect so any existing deep-links or bookmarks
+ * do not result in a hard 404.
+ */
+'use client';
 
-import { useEffect } from "react";
-// f096efe4-93d6-4306-accf-c62ca4b3c4fe
-const IFRAME_URL =
-  "https://scan.wikyapps.com/custom-form/view-custom-form/f096efe4-93d6-4306-accf-c62ca4b3c4fe?clientID=c023f568-8562-4a1a-b81c-a673a5770c67";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function WikyCapturePage() {
+  const router = useRouter();
+
   useEffect(() => {
-    function onMessage(e: MessageEvent) {
-      if (e.data?.event === "customFormSubmitted") {
-        window.opener?.postMessage(
-          {
-            type: "WIKY_CAPTURED",
-            scanId: e.data.scanId,
-            formResponseId: e.data.formResponseId,
-          },
-          "*"
-        );
-        window.close();
-      }
+    // If this page was opened as a popup by old code, close it gracefully.
+    if (window.opener) {
+      window.opener?.postMessage(
+        { type: 'WIKY_CAPTURE_DEPRECATED' },
+        '*'
+      );
+      window.close();
+      return;
     }
 
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, []);
+    // Otherwise redirect to the dashboard.
+    router.replace('/dashboard');
+  }, [router]);
 
   return (
-    <iframe
-      src={IFRAME_URL}
+    <div
       style={{
-        width: "100vw",
-        height: "100vh",
-        border: "none",
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'sans-serif',
+        color: '#888',
+        fontSize: '14px',
       }}
-    />
+    >
+      Redirecting…
+    </div>
   );
 }
