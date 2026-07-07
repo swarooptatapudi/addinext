@@ -60,13 +60,11 @@ export default function Products(): React.JSX.Element {
               src="/assets/order-forms/products/BE.jpg"
               label="AddiEase UE (BE)"
               href="/orders/new-order/BE"
-              disabled={true}
             />
             <ProductItem
               src="/assets/order-forms/products/AE.jpg"
               label="AddiEase UE (AE)"
               href="/orders/new-order/AE"
-              disabled={true}
             />
           </div>
         </div>
